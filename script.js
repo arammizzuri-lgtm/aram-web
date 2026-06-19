@@ -102,12 +102,20 @@ function buildKurdishSun(container, opts = {}) {
     // Hero — full-opacity sun + stat pills revealed on each full rotation
     var heroWrap = document.getElementById('heroSun');
     if (heroWrap) {
-        // Build sun first (no built-in spin; we drive it to track rotations)
-        var heroSvg = buildKurdishSun(heroWrap, { size: 520, color: '#F5C518' });
+        // Two nested rotation layers so each transform stays independent and they
+        // never fight each other:
+        //   .hs-idle → a gentle, perpetual drift driven by CSS (keeps it alive)
+        //   .hs-spin → deliberate single 360° turns driven by JS between stats
+        var heroIdle = document.createElement('div'); heroIdle.className = 'hs-idle';
+        var heroSpin = document.createElement('div'); heroSpin.className = 'hs-spin';
+        heroIdle.appendChild(heroSpin);
+        heroWrap.appendChild(heroIdle);
+
+        var heroSvg = buildKurdishSun(heroSpin, { size: 520, color: '#F5C518' });
         heroSvg.style.width  = '100%';
         heroSvg.style.height = '100%';
 
-        // Four stats, revealed one per full 360° rotation
+        // Four stats — each pinned to a compass point around the sun.
         var HERO_STATS = [
             { num: '21',   lbl: 'Projects',    dir: 'n' },
             { num: '16',   lbl: 'Cities',      dir: 'e' },
@@ -115,35 +123,93 @@ function buildKurdishSun(container, opts = {}) {
             { num: '34',   lbl: 'Partners',    dir: 'w' },
         ];
 
-        // Build anchors + cards, appended AFTER the SVG so they paint on top
-        var heroStatCards = HERO_STATS.map(function(st) {
+        // Build an anchor → pill → connector beam for every stat. We split each
+        // number into its target value and suffix (e.g. "870K" → 870 + "K") so the
+        // number can count up when its pill is revealed.
+        var heroAnchors = HERO_STATS.map(function (st) {
+            var parts  = String(st.num).match(/^([\d.]+)(\D*)$/);
+            var target = parts ? parts[1] : '0';
+            var suffix = parts ? parts[2] : '';
+
             var anchor = document.createElement('div');
             anchor.className = 'hs-anchor hs-anchor--' + st.dir;
-            var card = document.createElement('div');
-            card.className = 'hs-stat';
-            card.innerHTML =
-                '<span class="hs-stat__num">' + st.num + '</span>' +
-                '<span class="hs-stat__lbl">' + st.lbl + '</span>' +
-                '<div class="hs-stat__stem"></div>';
-            anchor.appendChild(card);
+            anchor.innerHTML =
+                '<div class="hs-stat">' +
+                    '<span class="hs-stat__num" data-target="' + target + '" data-suffix="' + suffix + '">' + st.num + '</span>' +
+                    '<span class="hs-stat__lbl">' + st.lbl + '</span>' +
+                    '<div class="hs-stat__stem"></div>' +
+                '</div>';
             heroWrap.appendChild(anchor);
-            return card;
+            return anchor;
         });
 
-        var heroAngle    = 0;
-        var heroRevealed = 0;
-        var HERO_SPEED   = 0.8; // degrees/frame ≈ 1 rotation per ~7.5 s at 60 fps
+        // Quick easing count-up for a single pill's number.
+        function heroCountUp(anchor) {
+            var el = anchor.querySelector('.hs-stat__num');
+            if (!el) return;
+            var target = parseFloat(el.getAttribute('data-target')) || 0;
+            var suffix = el.getAttribute('data-suffix') || '';
+            var dur = 900, start = null;
+            (function frame(t) {
+                if (start === null) start = t;
+                var p = Math.min((t - start) / dur, 1);
+                var eased = 1 - Math.pow(1 - p, 3);            // easeOutCubic
+                el.textContent = Math.round(target * eased) + suffix;
+                if (p < 1) requestAnimationFrame(frame);
+                else el.textContent = target + suffix;
+            })(performance.now());
+        }
 
-        (function spinHero() {
-            heroAngle += HERO_SPEED;
-            heroSvg.style.transform = 'rotate(' + heroAngle + 'deg)';
-            var done = Math.floor(heroAngle / 360);
-            while (heroRevealed < done && heroRevealed < HERO_STATS.length) {
-                heroStatCards[heroRevealed].classList.add('visible');
-                heroRevealed++;
+        // Respect users who ask for less motion: skip the whole show and just
+        // present every stat, settled in place.
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (reduceMotion) {
+            heroAnchors.forEach(function (a) { a.classList.add('is-active'); });
+        } else {
+            var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+            // Pause the cycle whenever the hero is scrolled out of view.
+            var heroInView = true;
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver(function (entries) {
+                    heroInView = entries[0].isIntersecting;
+                }, { threshold: 0.12 }).observe(heroWrap);
             }
-            requestAnimationFrame(spinHero);
-        }());
+
+            // One deliberate full turn of the sun.
+            var spinAngle = 0;
+            var SPIN_MS   = 1300;
+            function heroSpinOnce() {
+                spinAngle += 360;
+                heroSpin.style.transition = 'transform ' + SPIN_MS + 'ms cubic-bezier(.45,.05,.25,1)';
+                heroSpin.style.transform  = 'rotate(' + spinAngle + 'deg)';
+            }
+
+            // The choreography, looping forever:
+            //   draw a beam out of the sun → reveal one stat → hold it so it can
+            //   be read → retract it back into the sun → spin the sun once → next.
+            (async function runHeroCycle() {
+                await wait(700);                              // let the hero settle in
+                var i = 0;
+                while (true) {
+                    while (!heroInView) { await wait(400); }  // stay idle off-screen
+
+                    var anchor = heroAnchors[i];
+                    anchor.classList.add('is-active');        // beam draws out, pill blooms
+                    heroCountUp(anchor);                      // number ticks up
+                    await wait(3000);                         // hold so it can be read
+
+                    anchor.classList.remove('is-active');     // pill + beam retract into sun
+                    await wait(640);
+
+                    heroSpinOnce();                           // sun spins one full turn
+                    await wait(SPIN_MS);
+
+                    i = (i + 1) % heroAnchors.length;
+                }
+            })();
+        }
     }
 
     // Kurdish flag band (tiny)

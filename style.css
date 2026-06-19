@@ -191,20 +191,34 @@ img { display: block; max-width: 100%; }
     overflow: visible;
 }
 .hero__sun-wrap svg {
+    width: 100%; height: 100%;
     filter: drop-shadow(0 0 52px rgba(245,197,24,.32));
+    animation: hsGlow 6s ease-in-out infinite;       /* calm "breathing" glow */
 }
+@keyframes hsGlow {
+    0%, 100% { filter: drop-shadow(0 0 44px rgba(245,197,24,.24)); }
+    50%      { filter: drop-shadow(0 0 66px rgba(245,197,24,.44)); }
+}
+
+/* Sun rotation layers — idle drift (CSS) + deliberate single turns (JS).
+   Nesting keeps the two transforms from overwriting one another. */
+.hs-idle,
+.hs-spin { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.hs-idle { animation: hsIdle 90s linear infinite; }
+@keyframes hsIdle { to { transform: rotate(360deg); } }
+.hs-spin { will-change: transform; }
 .hero__content { position: relative; z-index: 2; max-width: 960px; }
 .hero__title   { text-shadow: 0 4px 36px rgba(0,0,0,.72); }
 .hero__sub     { text-shadow: 0 2px 18px rgba(0,0,0,.85); }
 
-/* ---- Hero stat pills (revealed on each sun rotation) ---- */
+/* ---- Hero stat pills (revealed one at a time, in step with the sun) ---- */
 .hs-anchor {
     position: absolute; pointer-events: none; z-index: 3;
 }
-.hs-anchor--n { top: 4%;  left: 50%; transform: translateX(-50%); }
-.hs-anchor--e { right: 3%; top: 50%; transform: translateY(-50%); }
-.hs-anchor--s { bottom: 4%; left: 50%; transform: translateX(-50%); }
-.hs-anchor--w { left: 3%; top: 38%; transform: translateY(-50%); }
+.hs-anchor--n { top: 4%;    left: 50%;  transform: translateX(-50%); }
+.hs-anchor--e { right: 3%;  top: 50%;   transform: translateY(-50%); }
+.hs-anchor--s { bottom: 4%; left: 50%;  transform: translateX(-50%); }
+.hs-anchor--w { left: 3%;   top: 50%;   transform: translateY(-50%); }
 
 .hs-stat {
     position: relative; overflow: visible;
@@ -218,11 +232,14 @@ img { display: block; max-width: 100%; }
         inset 0 1.5px 0 rgba(255,255,255,.12),
         inset 0 -1px 0 rgba(0,0,0,.25),
         0 8px 32px rgba(0,0,0,.55);
-    opacity: 0; transform: scale(0.15);
-    transition: opacity .72s cubic-bezier(.34,1.1,.64,1),
-                transform .85s cubic-bezier(.34,1.52,.64,1);
+    /* Resting (hidden) state — small, soft and tucked toward the sun */
+    opacity: 0; transform: scale(.42); filter: blur(7px);
+    transition: opacity   .5s ease,
+                filter     .5s ease,
+                transform  .6s cubic-bezier(.34,1.46,.64,1);
 }
-.hs-stat.visible { opacity: 1; transform: scale(1); }
+/* Pill blooms outward from the connector when its anchor goes active */
+.hs-anchor.is-active .hs-stat { opacity: 1; transform: scale(1); filter: blur(0); }
 .hs-anchor--n .hs-stat { transform-origin: bottom center; }
 .hs-anchor--e .hs-stat { transform-origin: left center; }
 .hs-anchor--s .hs-stat { transform-origin: top center; }
@@ -231,55 +248,70 @@ img { display: block; max-width: 100%; }
 .hs-stat__num {
     font-size: 28px; font-weight: 200;
     letter-spacing: -.02em; color: #fff; line-height: 1;
+    font-variant-numeric: tabular-nums;              /* steady digits while counting */
 }
 .hs-stat__lbl {
     font-size: 7.5px; letter-spacing: .28em;
     text-transform: uppercase; color: rgba(245,197,24,.82);
 }
 
-/* Connecting stems */
-.hs-stat__stem { position: absolute; }
+/* ---- Connector beam — shoots out of the sun toward the pill, then retracts ---- */
+.hs-stat__stem {
+    position: absolute; opacity: 0;
+    transition: transform .52s cubic-bezier(.5,0,.2,1) .04s,
+                opacity   .4s ease;
+}
+.hs-anchor.is-active .hs-stat__stem { opacity: 1; }
+/* glowing node where the beam meets the sun's rays */
+.hs-stat__stem::after {
+    content: ''; position: absolute;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 8px 1px rgba(245,197,24,.6);
+}
+
+/* North — beam hangs down into the sun (grows from the sun end) */
 .hs-anchor--n .hs-stat__stem {
-    top: calc(100% + 2px); left: 50%; transform: translateX(-50%);
-    width: 1px; height: 42px;
-    background: linear-gradient(to bottom, rgba(245,197,24,.55), rgba(245,197,24,.04));
+    top: calc(100% + 2px); left: 50%; width: 1px; height: 46px;
+    background: linear-gradient(to bottom, rgba(245,197,24,.7), rgba(245,197,24,.05));
+    transform: translateX(-50%) scaleY(0); transform-origin: bottom center;
 }
-.hs-anchor--n .hs-stat__stem::after {
-    content: ''; position: absolute;
-    bottom: -3px; left: 50%; transform: translateX(-50%);
-    width: 5px; height: 5px; border-radius: 50%; background: rgba(245,197,24,.52);
-}
+.hs-anchor--n.is-active .hs-stat__stem { transform: translateX(-50%) scaleY(1); }
+.hs-anchor--n .hs-stat__stem::after { bottom: -2px; left: 50%; transform: translateX(-50%); }
+
+/* East — beam reaches left into the sun */
 .hs-anchor--e .hs-stat__stem {
-    top: 50%; right: calc(100% + 2px); transform: translateY(-50%);
-    width: 42px; height: 1px;
-    background: linear-gradient(to left, rgba(245,197,24,.55), rgba(245,197,24,.04));
+    top: 50%; right: calc(100% + 2px); width: 46px; height: 1px;
+    background: linear-gradient(to left, rgba(245,197,24,.7), rgba(245,197,24,.05));
+    transform: translateY(-50%) scaleX(0); transform-origin: left center;
 }
-.hs-anchor--e .hs-stat__stem::after {
-    content: ''; position: absolute;
-    left: -3px; top: 50%; transform: translateY(-50%);
-    width: 5px; height: 5px; border-radius: 50%; background: rgba(245,197,24,.52);
-}
+.hs-anchor--e.is-active .hs-stat__stem { transform: translateY(-50%) scaleX(1); }
+.hs-anchor--e .hs-stat__stem::after { left: -2px; top: 50%; transform: translateY(-50%); }
+
+/* South — beam reaches up into the sun */
 .hs-anchor--s .hs-stat__stem {
-    bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
-    width: 1px; height: 42px;
-    background: linear-gradient(to top, rgba(245,197,24,.55), rgba(245,197,24,.04));
+    bottom: calc(100% + 2px); left: 50%; width: 1px; height: 46px;
+    background: linear-gradient(to top, rgba(245,197,24,.7), rgba(245,197,24,.05));
+    transform: translateX(-50%) scaleY(0); transform-origin: top center;
 }
-.hs-anchor--s .hs-stat__stem::after {
-    content: ''; position: absolute;
-    top: -3px; left: 50%; transform: translateX(-50%);
-    width: 5px; height: 5px; border-radius: 50%; background: rgba(245,197,24,.52);
-}
+.hs-anchor--s.is-active .hs-stat__stem { transform: translateX(-50%) scaleY(1); }
+.hs-anchor--s .hs-stat__stem::after { top: -2px; left: 50%; transform: translateX(-50%); }
+
+/* West — beam reaches right into the sun */
 .hs-anchor--w .hs-stat__stem {
-    top: 50%; left: calc(100% + 2px); transform: translateY(-50%);
-    width: 42px; height: 1px;
-    background: linear-gradient(to right, rgba(245,197,24,.55), rgba(245,197,24,.04));
+    top: 50%; left: calc(100% + 2px); width: 46px; height: 1px;
+    background: linear-gradient(to right, rgba(245,197,24,.7), rgba(245,197,24,.05));
+    transform: translateY(-50%) scaleX(0); transform-origin: right center;
 }
-.hs-anchor--w .hs-stat__stem::after {
-    content: ''; position: absolute;
-    right: -3px; top: 50%; transform: translateY(-50%);
-    width: 5px; height: 5px; border-radius: 50%; background: rgba(245,197,24,.52);
-}
+.hs-anchor--w.is-active .hs-stat__stem { transform: translateY(-50%) scaleX(1); }
+.hs-anchor--w .hs-stat__stem::after { right: -2px; top: 50%; transform: translateY(-50%); }
+
 @media (max-width: 840px) { .hs-anchor { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+    .hero__sun-wrap svg { animation: none; }
+    .hs-idle { animation: none; }
+    .hs-stat, .hs-stat__stem { transition: none; }
+}
 .hero__eyebrow {
     font-size: 11px; letter-spacing: .35em;
     text-transform: uppercase; color: var(--gold);
