@@ -1,0 +1,342 @@
+[
+  {
+    "key": "brand_name",
+    "value": "ARAM MIZURI",
+    "group": "brand"
+  },
+  {
+    "key": "brand_sub",
+    "value": "ARCHITECTURE · هەولێر",
+    "group": "brand"
+  },
+  {
+    "key": "hero_eyebrow",
+    "value": "Erbil · Kurdistan · Est. 2009",
+    "group": "hero"
+  },
+  {
+    "key": "hero_title_line1_en",
+    "value": "Architecture",
+    "group": "hero"
+  },
+  {
+    "key": "hero_title_line1_ku",
+    "value": "مێمارى",
+    "group": "hero"
+  },
+  {
+    "key": "hero_title_line2_en",
+    "value": "for Kurdistan",
+    "group": "hero"
+  },
+  {
+    "key": "hero_title_line2_ku",
+    "value": "بۆ کوردستان",
+    "group": "hero"
+  },
+  {
+    "key": "hero_sub_en",
+    "value": "Shaping the built environment of Erbil — and beyond.",
+    "group": "hero"
+  },
+  {
+    "key": "hero_sub_ku",
+    "value": "داناکردنی ژینگەی بینایی هەولێر و دوورتر.",
+    "group": "hero"
+  },
+  {
+    "key": "about_label_en",
+    "value": "About",
+    "group": "about"
+  },
+  {
+    "key": "about_label_ku",
+    "value": "دەربارەی",
+    "group": "about"
+  },
+  {
+    "key": "about_heading_en",
+    "value": "Architecture rooted in<br><em>Kurdish identity</em>",
+    "group": "about"
+  },
+  {
+    "key": "about_heading_ku",
+    "value": "مێمارى فڕێدراو لە <em>ناسنامەی کوردی</em>",
+    "group": "about"
+  },
+  {
+    "key": "about_bio_1",
+    "value": "Aram Mizuri is a leading architect based in Erbil, the capital of the Kurdistan Region of Iraq. His practice bridges the ancient and the contemporary — drawing from the rich spatial heritage of the Kurdish highlands, from the 7,000-year-old Erbil Citadel to the mountain villages of Amadiyah — to create buildings that are distinctly Kurdish in sensibility while rigorous in their modernity.",
+    "group": "about"
+  },
+  {
+    "key": "about_bio_2",
+    "value": "With completed projects across Kurdistan, including cultural institutions, urban towers, mountain retreats, and civic spaces, Mizuri Architecture has become a defining voice in the rapidly evolving built landscape of the region.",
+    "group": "about"
+  },
+  {
+    "key": "about_stat1_num",
+    "value": "47",
+    "group": "about"
+  },
+  {
+    "key": "about_stat1_label",
+    "value": "Projects",
+    "group": "about"
+  },
+  {
+    "key": "about_stat2_num",
+    "value": "12",
+    "group": "about"
+  },
+  {
+    "key": "about_stat2_label",
+    "value": "Awards",
+    "group": "about"
+  },
+  {
+    "key": "about_stat3_num",
+    "value": "15",
+    "group": "about"
+  },
+  {
+    "key": "about_stat3_label",
+    "value": "Years",
+    "group": "about"
+  },
+  {
+    "key": "about_stat4_num",
+    "value": "3",
+    "group": "about"
+  },
+  {
+    "key": "about_stat4_label",
+    "value": "Countries",
+    "group": "about"
+  },
+  {
+    "key": "about_quote",
+    "value": "\"Architecture is the bridge between a people's memory and the dreams of their future.\"",
+    "group": "about"
+  },
+  {
+    "key": "about_quote_cite",
+    "value": "— Aram Mizuri",
+    "group": "about"
+  },
+  {
+    "key": "about_portrait_img",
+    "value": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80",
+    "group": "about"
+  },
+  {
+    "key": "about_portrait_caption",
+    "value": "Aram Mizuri · Principal Architect",
+    "group": "about"
+  },
+  {
+    "key": "process_label_en",
+    "value": "Approach",
+    "group": "process"
+  },
+  {
+    "key": "process_label_ku",
+    "value": "ڕێگا",
+    "group": "process"
+  },
+  {
+    "key": "process_title_en",
+    "value": "How We Work",
+    "group": "process"
+  },
+  {
+    "key": "process_title_ku",
+    "value": "چۆن کار دەکەین",
+    "group": "process"
+  },
+  {
+    "key": "process_step1_title_en",
+    "value": "Discover",
+    "group": "process"
+  },
+  {
+    "key": "process_step1_title_ku",
+    "value": "دۆزینەوە",
+    "group": "process"
+  },
+  {
+    "key": "process_step1_desc",
+    "value": "Deep listening — understanding the client's vision, the site's cultural context, and the spatial traditions of Kurdistan.",
+    "group": "process"
+  },
+  {
+    "key": "process_step2_title_en",
+    "value": "Design",
+    "group": "process"
+  },
+  {
+    "key": "process_step2_title_ku",
+    "value": "دیزاین",
+    "group": "process"
+  },
+  {
+    "key": "process_step2_desc",
+    "value": "Iterative design informed by Kurdish spatial traditions, climate-responsive strategies, and contemporary architectural discourse.",
+    "group": "process"
+  },
+  {
+    "key": "process_step3_title_en",
+    "value": "Develop",
+    "group": "process"
+  },
+  {
+    "key": "process_step3_title_ku",
+    "value": "پەرەپێدان",
+    "group": "process"
+  },
+  {
+    "key": "process_step3_desc",
+    "value": "Technical precision and material research ensuring every detail honours both the concept and the craftsmanship of Kurdistan's builders.",
+    "group": "process"
+  },
+  {
+    "key": "process_step4_title_en",
+    "value": "Deliver",
+    "group": "process"
+  },
+  {
+    "key": "process_step4_title_ku",
+    "value": "گەیاندن",
+    "group": "process"
+  },
+  {
+    "key": "process_step4_desc",
+    "value": "On-site construction oversight and quality assurance — building relationships with the finest local contractors and artisans in Kurdistan.",
+    "group": "process"
+  },
+  {
+    "key": "heritage_label_en",
+    "value": "Heritage · هوێنە",
+    "group": "heritage"
+  },
+  {
+    "key": "heritage_label_ku",
+    "value": "هوێنە",
+    "group": "heritage"
+  },
+  {
+    "key": "heritage_title",
+    "value": "Shaped by\n7,000 years of\nKurdish civilization",
+    "group": "heritage"
+  },
+  {
+    "key": "heritage_desc",
+    "value": "The Erbil Citadel — one of the oldest continuously inhabited settlements on Earth — stands as testament to the enduring spirit of Kurdistan. Our architecture draws from this deep well of history while building boldly for the future.",
+    "group": "heritage"
+  },
+  {
+    "key": "heritage_cta",
+    "value": "View our projects",
+    "group": "heritage"
+  },
+  {
+    "key": "contact_label_en",
+    "value": "Contact",
+    "group": "contact"
+  },
+  {
+    "key": "contact_label_ku",
+    "value": "پەیوەندی",
+    "group": "contact"
+  },
+  {
+    "key": "contact_title_en",
+    "value": "Let's Build<br>Together",
+    "group": "contact"
+  },
+  {
+    "key": "contact_title_ku",
+    "value": "با پێکەوە بتیانێین",
+    "group": "contact"
+  },
+  {
+    "key": "contact_studio_label",
+    "value": "Studio",
+    "group": "contact"
+  },
+  {
+    "key": "contact_studio_value",
+    "value": "Erbil, Kurdistan Region<br>Iraq · هەولێر",
+    "group": "contact"
+  },
+  {
+    "key": "contact_newwork_label",
+    "value": "New Work",
+    "group": "contact"
+  },
+  {
+    "key": "contact_email_new",
+    "value": "projects@arammizuri.com",
+    "group": "contact"
+  },
+  {
+    "key": "contact_general_label",
+    "value": "General",
+    "group": "contact"
+  },
+  {
+    "key": "contact_email_general",
+    "value": "studio@arammizuri.com",
+    "group": "contact"
+  },
+  {
+    "key": "contact_phone_label",
+    "value": "Phone",
+    "group": "contact"
+  },
+  {
+    "key": "contact_phone",
+    "value": "+964 750 000 0000",
+    "group": "contact"
+  },
+  {
+    "key": "footer_logo",
+    "value": "ARAM MIZURI",
+    "group": "footer"
+  },
+  {
+    "key": "footer_tagline",
+    "value": "Architecture · Erbil · Kurdistan",
+    "group": "footer"
+  },
+  {
+    "key": "footer_kurdish",
+    "value": "مێمارى · هەولێر · کوردستان",
+    "group": "footer"
+  },
+  {
+    "key": "footer_instagram_url",
+    "value": "#",
+    "group": "footer"
+  },
+  {
+    "key": "footer_linkedin_url",
+    "value": "#",
+    "group": "footer"
+  },
+  {
+    "key": "footer_behance_url",
+    "value": "#",
+    "group": "footer"
+  },
+  {
+    "key": "footer_archello_url",
+    "value": "#",
+    "group": "footer"
+  },
+  {
+    "key": "footer_copy",
+    "value": "© 2024 Aram Mizuri Architecture.\nAll rights reserved.",
+    "group": "footer"
+  }
+]
