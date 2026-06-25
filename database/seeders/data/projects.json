@@ -1,0 +1,611 @@
+[
+  {
+    "num": "01",
+    "name": "Kurdish Cultural Center",
+    "category": "cultural",
+    "status": "Completed",
+    "area": "8,400 m²",
+    "typology": "Cultural / Civic",
+    "location": "Erbil, Kurdistan Region",
+    "year": "2022 – 2024",
+    "desc": "A landmark civic building celebrating Kurdish cultural identity. The centre houses a 600-seat performance hall, permanent and temporary exhibition galleries, a research library, and a generous public plaza. Its architecture distils the geometric vocabulary of Kurdish textiles and the tiered topography of the ancient Erbil Citadel into a rigorously contemporary language.",
+    "narrative": "\"We began not with form, but with memory — the memory of a people whose architecture was never buildings alone, but stories carved in stone and shadow. The Kurdish Cultural Center is our attempt to give that memory a contemporary home.\"",
+    "materials": [
+      "Amadiyah Limestone",
+      "Exposed Concrete",
+      "Perforated Brass Screen",
+      "Reclaimed Oak",
+      "Natural Sand Render"
+    ],
+    "related": [
+      6,
+      2
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1486218119243-13883505764c?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 1
+  },
+  {
+    "num": "02",
+    "name": "Erbil Tower Residences",
+    "category": "mixed-use",
+    "status": "Completed",
+    "area": "22,600 m²",
+    "typology": "Residential / High-Rise",
+    "location": "Erbil, Kurdistan Region",
+    "year": "2021 – 2023",
+    "desc": "A 32-storey mixed-use residential tower that redefines the Erbil skyline. The sculpted facade draws from the Khabur geometric pattern — one of the oldest ornamental traditions in the region — scaled and reinterpreted as a perforated sun-screen that regulates solar gain while giving the building a distinctive identity visible from across the city.",
+    "narrative": "\"The challenge of the high-rise in a hot-arid climate is not merely technical — it is poetic. How do you make a tower feel like it belongs to the landscape beneath it? The answer, for us, lay in the ancient geometry of Kurdish weaving.\"",
+    "materials": [
+      "High-Performance Glass",
+      "Anodised Aluminium",
+      "Perforated Steel Screen",
+      "Granite Cladding",
+      "ETFE Membrane"
+    ],
+    "related": [
+      7,
+      4
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 2
+  },
+  {
+    "num": "03",
+    "name": "Citadel View Hotel",
+    "category": "hospitality",
+    "status": "Completed",
+    "area": "14,200 m²",
+    "typology": "Hospitality / 5-Star",
+    "location": "Erbil Old City, Kurdistan Region",
+    "year": "2021 – 2023",
+    "desc": "A boutique luxury hotel positioned at the foot of the Erbil Citadel UNESCO World Heritage Site. The design draws the citadel's layered stone terraces down into a series of cascading garden courtyards, weaving exterior landscape through the guest experience at every level. Limestone sourced from the Amadiyah highlands anchors the building to its ancient context.",
+    "narrative": "\"To build beside a 7,000-year-old citadel is to understand your own smallness — and your responsibility. Every stone we chose, every courtyard we carved, had to earn its place in that view.\"",
+    "materials": [
+      "Amadiyah Limestone",
+      "Hand-Hammered Copper",
+      "Reclaimed Timber Beams",
+      "Zellige Tile",
+      "Burnished Plaster"
+    ],
+    "related": [
+      8,
+      0
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 3
+  },
+  {
+    "num": "04",
+    "name": "Kurdistan Tech Campus",
+    "category": "commercial",
+    "status": "Completed",
+    "area": "31,000 m²",
+    "typology": "Commercial / Education",
+    "location": "Erbil, Kurdistan Region",
+    "year": "2020 – 2022",
+    "desc": "A technology and innovation campus housing offices, co-working facilities, a start-up incubator, and a 400-seat auditorium. The master plan clusters six buildings around a central landscaped plaza, creating a micro-urban environment that encourages collaboration. The architecture references the modularity of circuit boards while remaining rooted in the local tradition of shaded courtyard spaces.",
+    "narrative": "\"Kurdistan's future is being written in code as much as in concrete. This campus is our wager that those two languages need not be in conflict — that innovation flourishes most where it is rooted in place.\"",
+    "materials": [
+      "Unitised Glass Curtain Wall",
+      "Micro-Cement",
+      "Recycled Steel Structure",
+      "Photovoltaic Cladding",
+      "Terrazzo"
+    ],
+    "related": [
+      7,
+      1
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 4
+  },
+  {
+    "num": "05",
+    "name": "Mountain Villa — Shaqlawa",
+    "category": "residential",
+    "status": "Completed",
+    "area": "1,850 m²",
+    "typology": "Residential / Private Villa",
+    "location": "Shaqlawa, Kurdistan Region",
+    "year": "2020 – 2022",
+    "desc": "A private hilltop residence set within the apple orchards of Shaqlawa, 1,000 metres above the Erbil plain. The villa is organised as a series of interlocking stone and concrete volumes stepping down the slope, each oriented to capture the mountain panorama. A 26-metre infinity pool edges the main terrace; cave-inspired interiors reference the rock shelters of the Bradost valley.",
+    "narrative": "\"The mountain taught us everything about this house. Every decision — where to carve, where to cantilever, where to yield — came from listening to the topography beneath our feet.\"",
+    "materials": [
+      "Local Basalt Stone",
+      "Board-Formed Concrete",
+      "Weathered Steel",
+      "Walnut Joinery",
+      "Travertine"
+    ],
+    "related": [
+      1,
+      8
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 5
+  },
+  {
+    "num": "06",
+    "name": "Erbil Urban Regeneration",
+    "category": "urban",
+    "status": "Concept / Planning",
+    "area": "180,000 m²",
+    "typology": "Urban Design / Masterplan",
+    "location": "Erbil City Centre, Kurdistan Region",
+    "year": "2021",
+    "desc": "A strategic urban regeneration masterplan for a 180,000 m² district in central Erbil. The proposal knits together fragmented city blocks with a new pedestrian-priority boulevard, integrates stormwater infrastructure into a linear park, and introduces a mix of residential, retail, and civic uses that activate the street at all hours. The framework allows phased delivery over 15 years.",
+    "narrative": "\"Cities are not built in decades — they are negotiated across generations. This masterplan is our contribution to that conversation: a framework generous enough to adapt, specific enough to anchor.\"",
+    "materials": [
+      "Local Sandstone Paving",
+      "Reinforced Concrete",
+      "Recycled Aggregate",
+      "Native Planting",
+      "Perforated Steel Canopy"
+    ],
+    "related": [
+      9,
+      0
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1494522855154-9297ac14b55f?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 6
+  },
+  {
+    "num": "07",
+    "name": "Kurdistan Museum of Art",
+    "category": "cultural",
+    "status": "Under Construction",
+    "area": "11,600 m²",
+    "typology": "Cultural / Museum",
+    "location": "Sulaymaniyah, Kurdistan Region",
+    "year": "2019 – 2021",
+    "desc": "The first dedicated museum of contemporary art in the Kurdistan Region. The building is organised around a dramatic top-lit atrium recalling the cave art of the Zagros mountains — a primordial gallery space rising through all four floors. Flexible exhibition halls surround the atrium and can be configured for large-scale installations, touring exhibitions, and permanent collection displays.",
+    "narrative": "\"The oldest art in this region is on the walls of caves. We took that seriously — the idea that art deserves a space that feels both ancient and charged with light. The atrium is our Zagros cave, inverted.\"",
+    "materials": [
+      "Poured Concrete",
+      "Northern Gypsum Plaster",
+      "Skylight Fritted Glass",
+      "Basalt Stone Floor",
+      "Micro-Pigment Render"
+    ],
+    "related": [
+      0,
+      2
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1604076913837-52ab5629fbe9?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 7
+  },
+  {
+    "num": "08",
+    "name": "Erbil Business Tower",
+    "category": "commercial",
+    "status": "Completed",
+    "area": "44,800 m²",
+    "typology": "Commercial / Office",
+    "location": "Erbil, Kurdistan Region",
+    "year": "2018 – 2020",
+    "desc": "A 48-storey Grade-A office tower that has become one of the defining landmarks of the Erbil skyline. The tapered form responds to the prevailing north-west wind, reducing structural loads while creating a dynamic silhouette. A double-skin facade incorporates photovoltaic panels integrated into the outer layer, contributing 18% of the building's annual energy demand.",
+    "narrative": "\"We modelled the tower’s silhouette by studying the wind. When you let the climate shape the form, the building stops fighting its environment and starts belonging to it.\"",
+    "materials": [
+      "Double-Skin Glass Facade",
+      "Integrated PV Panel",
+      "Structural Steel Core",
+      "Aluminium Brise-Soleil",
+      "Polished Concrete"
+    ],
+    "related": [
+      3,
+      1
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1444065381814-865dc9da92d0?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 8
+  },
+  {
+    "num": "09",
+    "name": "Duhok Mountain Resort",
+    "category": "hospitality",
+    "status": "Completed",
+    "area": "9,200 m²",
+    "typology": "Hospitality / Resort",
+    "location": "Duhok, Kurdistan Region",
+    "year": "2018 – 2020",
+    "desc": "A mountain resort and spa occupying a dramatic ridge above the Duhok valley. The 64-key resort is structured as a village of stone lodges cascading down the slope, separated by terraced gardens and water features that collect and recycle mountain spring water. An indoor/outdoor spa and a 200-seat restaurant command panoramic views across the Tigris River basin.",
+    "narrative": "\"We did not build on this mountain — we joined it. The lodges are arranged not as architecture imposed on landscape, but as stones that have always been there, waiting to be inhabited.\"",
+    "materials": [
+      "Duhok Field Stone",
+      "Lime-Washed Render",
+      "Cedar Timber Cladding",
+      "Copper Guttering",
+      "Hand-Laid Slate Roof"
+    ],
+    "related": [
+      2,
+      4
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1551882547-ff40c63fe2e2?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 9
+  },
+  {
+    "num": "10",
+    "name": "Kirkuk Public Square",
+    "category": "urban",
+    "status": "Completed",
+    "area": "24,000 m²",
+    "typology": "Urban Design / Public Space",
+    "location": "Kirkuk, Iraq",
+    "year": "2017 – 2019",
+    "desc": "A major civic square designed to serve as a shared gathering place in a city long defined by division. The design deploys a unified palette of local sandstone across interlocking terraces, fountains, and shaded pavilions. An underground car park removes 400 vehicles from the surrounding streets, dramatically improving pedestrian connectivity to the adjacent historic bazaar.",
+    "narrative": "\"Kirkuk has always been a city of many peoples. We were asked not to design for one community, but for all of them together. The square is deliberately un-symbolic — it belongs to whoever arrives.\"",
+    "materials": [
+      "Kirkuk Sandstone",
+      "Granite Sett Paving",
+      "Stainless Steel Fountain",
+      "Shade Steel Structure",
+      "Drought-Tolerant Planting"
+    ],
+    "related": [
+      5,
+      0
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 10
+  },
+  {
+    "num": "11",
+    "name": "Diyarbakır Heritage Library",
+    "category": "cultural",
+    "status": "Under Construction",
+    "area": "6,800 m²",
+    "typology": "Cultural / Library",
+    "location": "Diyarbakır, Turkey",
+    "year": "2023 – 2026",
+    "desc": "A public library and cultural archive set within the historic basalt-walled city of Diyarbakır. The building mediates between the ancient Armenian and Kurdish heritage of the Sur district and a contemporary reading of civic space. Perforated basalt screens cast shifting shadow patterns across the reading rooms, reconnecting the interior with the geology of the city walls that surround it.",
+    "narrative": "\"Diyarbakır's black basalt is not a building material — it is a geological memory. We asked it to speak again, this time for knowledge rather than defence.\"",
+    "materials": [
+      "Diyarbakır Black Basalt",
+      "Poured Concrete",
+      "Perforated Corten Steel",
+      "White Oak Shelving",
+      "Recycled Glass Block"
+    ],
+    "related": [
+      0,
+      18
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1481026469463-66327c86e544?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1568659358410-5eba5f84ede2?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 11
+  },
+  {
+    "num": "12",
+    "name": "Zakho River Pavilions",
+    "category": "hospitality",
+    "status": "Completed",
+    "area": "3,400 m²",
+    "typology": "Hospitality / Leisure",
+    "location": "Zakho, Kurdistan Region",
+    "year": "2022 – 2024",
+    "desc": "A sequence of lightweight leisure pavilions extending over the Khabur River in Zakho, the ancient crossroads city of the Kurdistan Region. Each pavilion — restaurant, café, event space — sits on slender steel stilts, allowing the river to flow unimpeded beneath. The arching structural forms echo the famous Delal Bridge, whose eight centuries of presence in the river have made it the spiritual centre of the city.",
+    "narrative": "\"The Delal Bridge has stood in this river for 800 years without apology. We asked ourselves what it would mean to add to that conversation — to place something new beside the enduring.\"",
+    "materials": [
+      "Weathered Steel Structure",
+      "Laminated Timber Deck",
+      "Tensile Fabric Canopy",
+      "Pale Zakho Stone",
+      "Oxidised Bronze Handrail"
+    ],
+    "related": [
+      8,
+      2
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1469796466635-d906090ddd4a?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 12
+  },
+  {
+    "num": "13",
+    "name": "Amadiyah Cliff Retreat",
+    "category": "hospitality",
+    "status": "Completed",
+    "area": "2,600 m²",
+    "typology": "Hospitality / Boutique Hotel",
+    "location": "Amadiyah, Kurdistan Region",
+    "year": "2021 – 2023",
+    "desc": "A 22-key boutique retreat carved into the limestone plateau of Amadiyah, one of the most dramatically positioned towns in the Middle East. Guest rooms step down the cliff escarpment as a cascade of stone volumes, each opening onto a private terrace with uninterrupted views of the Barzan valley. Local limestone and hand-plastered walls keep the architecture in quiet, unhurried dialogue with the ancient rock it inhabits.",
+    "narrative": "\"Amadiyah has been on this plateau since before written history. We spent one year studying the cliff before we placed a single line. The building grew from that patience.\"",
+    "materials": [
+      "Amadiyah Limestone",
+      "Hand-Beaten Copper Fixtures",
+      "Polished Gypsum Plaster",
+      "Mountain Cedar Joinery",
+      "Rammed Earth Partition"
+    ],
+    "related": [
+      8,
+      4
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 13
+  },
+  {
+    "num": "14",
+    "name": "Halabja Memorial Museum",
+    "category": "cultural",
+    "status": "Concept / Planning",
+    "area": "5,200 m²",
+    "typology": "Cultural / Memorial",
+    "location": "Halabja, Kurdistan Region",
+    "year": "2024",
+    "desc": "A memorial museum commemorating the victims of the 1988 chemical attack on Halabja. The architecture refuses spectacle: the building descends into the earth as a series of inclined planes that emerge from the landscape, drawing visitors inward through silence rather than monument. Rough concrete walls bear no ornament. The only light enters from above — a vertical shaft of sky at the deepest point of the descent.",
+    "narrative": "\"We were not asked to make architecture. We were asked to hold a wound open long enough for the world to look at it honestly. Every decision was made in that awareness.\"",
+    "materials": [
+      "Board-Formed Raw Concrete",
+      "Corten Steel Threshold",
+      "Compacted Earth Floor",
+      "Frosted Skylight Glass",
+      "Basalt Memorial Slab"
+    ],
+    "related": [
+      0,
+      10
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1590725121839-892b458a74fe?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 14
+  },
+  {
+    "num": "15",
+    "name": "Ranya Market Hall",
+    "category": "commercial",
+    "status": "Completed",
+    "area": "7,100 m²",
+    "typology": "Commercial / Market",
+    "location": "Ranya, Kurdistan Region",
+    "year": "2020 – 2022",
+    "desc": "A contemporary market hall that reorganises the informal trading culture of Ranya, a lakeside city on the Dukan reservoir. A single long-span concrete canopy — its coffers derived from the geometry of traditional Kurdish carpet — shelters market stalls, a wholesale zone, and a rooftop café terrace with views across the lake. The open-sided structure blurs the boundary between market and city.",
+    "narrative": "\"The bazaar is the oldest form of public space in Kurdistan. We did not try to modernise it — we tried to give it shelter, light, and air, and then step aside.\"",
+    "materials": [
+      "Precast Concrete Coffer",
+      "Polished Aggregate Floor",
+      "Galvanised Steel Frame",
+      "Translucent Polycarbonate",
+      "Reclaimed Brick Infill"
+    ],
+    "related": [
+      3,
+      9
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1524860769819-c4d8b74e1fdb?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 15
+  },
+  {
+    "num": "16",
+    "name": "Akre Hilltop Resort",
+    "category": "hospitality",
+    "status": "Under Construction",
+    "area": "12,400 m²",
+    "typology": "Hospitality / Resort",
+    "location": "Akre, Kurdistan Region",
+    "year": "2022 – 2025",
+    "desc": "A luxury resort positioned on the terraced hillsides above Akre, a mediaeval Kurdish town cascading down the Bradost mountains. Each of the 48 guest suites is a private stone-clad volume opening onto its own planted terrace — a contemporary reinterpretation of the traditional terrace house. A central hammam, two restaurants, and an infinity pool anchored to the cliff edge complete the programme.",
+    "narrative": "\"Akre has been terracing these hillsides for a thousand years. Every garden wall, every stone step, every fig tree is architecture. We tried to make something that could one day be mistaken for part of that accretion.\"",
+    "materials": [
+      "Akre Field Stone",
+      "Board-Formed Concrete",
+      "Hammered Copper Cladding",
+      "Mountain Cedar Screens",
+      "Lime Render"
+    ],
+    "related": [
+      2,
+      4
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1519052537078-4cd2f4f87b94?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1558369981-f9ca78462e61?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1519582707714-a98d39f31f56?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 16
+  },
+  {
+    "num": "17",
+    "name": "Sinjar Reconstruction Framework",
+    "category": "urban",
+    "status": "Concept / Planning",
+    "area": "420,000 m²",
+    "typology": "Urban Design / Reconstruction",
+    "location": "Sinjar, Iraq",
+    "year": "2024",
+    "desc": "An urban reconstruction framework for Sinjar, devastated by the 2014 IS occupation and largely abandoned since liberation in 2015. The plan prioritises the return of the Yazidi community through incremental reconstruction of the historic centre, new civic anchors — a community archive, a health clinic, a cultural hall — and a memorial landscape on the ruins of the main market. The framework is designed to be built by the community itself, over twenty years.",
+    "narrative": "\"There is no architectural brief in the world harder than this: design for a community that no longer exists in its homeland, for a future they are not yet certain they can return to.\"",
+    "materials": [
+      "Recycled Local Stone",
+      "Rammed Earth",
+      "Reclaimed Timber",
+      "Compressed Soil Block",
+      "Tensile Shade Structure"
+    ],
+    "related": [
+      9,
+      5
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 17
+  },
+  {
+    "num": "18",
+    "name": "Afrin Housing Collective",
+    "category": "residential",
+    "status": "Concept / Planning",
+    "area": "34,000 m²",
+    "typology": "Residential / Social Housing",
+    "location": "Afrin, Syria",
+    "year": "2024",
+    "desc": "A social housing prototype developed with displaced Kurdish communities from the Afrin canton of northern Syria. The scheme proposes 240 units organised around shared courtyards, drawing on the collective living traditions of Kurdish villages in the region. Modular construction using rammed earth and recycled concrete allows communities to build incrementally over time, adapting the framework as their needs and resources evolve.",
+    "narrative": "\"We did not design a building. We designed a kit of parts, and a set of rules, and then we handed it to the community. Architecture that is truly for people must at some point belong to them.\"",
+    "materials": [
+      "Rammed Earth Block",
+      "Recycled Concrete Aggregate",
+      "Timber Post-and-Beam",
+      "Lime Plaster",
+      "Hand-Formed Clay Tile"
+    ],
+    "related": [
+      4,
+      5
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 18
+  },
+  {
+    "num": "19",
+    "name": "Kobani Civic Center",
+    "category": "cultural",
+    "status": "Under Construction",
+    "area": "8,900 m²",
+    "typology": "Cultural / Civic",
+    "location": "Kobani, Syria",
+    "year": "2022 – 2025",
+    "desc": "A civic centre for a city rebuilt from near-total destruction following the 2014–15 siege. The building combines a municipal library, a cultural archive of the siege and reconstruction, a 350-seat hall, and flexible community spaces. Fragments of the original city fabric — reclaimed stone, salvaged steel — are embedded into the new walls, making memory a structural as much as symbolic element of the architecture.",
+    "narrative": "\"Kobani was destroyed and then it rebuilt itself. Our job was not to replace what was lost but to hold space for what the community is still in the process of becoming.\"",
+    "materials": [
+      "Reclaimed Kobani Stone",
+      "Salvaged Steel Frame",
+      "Exposed Concrete",
+      "Recycled Brick",
+      "Polished Concrete Floor"
+    ],
+    "related": [
+      0,
+      13
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1516455207990-7a41ce80f7ee?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1529417305485-480f579e7578?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 19
+  },
+  {
+    "num": "20",
+    "name": "Kermanshah Arts Complex",
+    "category": "cultural",
+    "status": "Completed",
+    "area": "15,800 m²",
+    "typology": "Cultural / Arts Complex",
+    "location": "Kermanshah, Iran",
+    "year": "2019 – 2022",
+    "desc": "A major arts complex serving the Kurdish-majority province of Kermanshah. The building brings together a 900-seat concert hall, three visual arts galleries, an artists-in-residence programme, and a rooftop garden with views of the Zagros foothills. The perforated concrete facade draws on the bas-relief tradition of the UNESCO site at Bisotun — 30 km distant — translating its layered stone registers into a contemporary sun-screen legible from the city below.",
+    "narrative": "\"Bisotun is one of the greatest works of public communication in human history — carved into a mountain so that every traveller on the ancient Silk Road would receive the message. We asked what the contemporary equivalent might look like.\"",
+    "materials": [
+      "Reinforced Concrete Shell",
+      "Perforated Concrete Screen",
+      "Kermanshah Travertine",
+      "Burnished Bronze Joinery",
+      "Acoustic Timber Ceiling"
+    ],
+    "related": [
+      6,
+      0
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1429041966141-44d228a42775?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 20
+  },
+  {
+    "num": "21",
+    "name": "Torre Mizuri — Madrid",
+    "category": "mixed-use",
+    "status": "Under Construction",
+    "area": "38,500 m²",
+    "typology": "Mixed-Use / High-Rise",
+    "location": "Madrid, Spain",
+    "year": "2023 – 2026",
+    "desc": "A 28-storey mixed-use tower in the Méndez Álvaro district of Madrid, combining Grade-A offices, 64 serviced residences, a sky garden on the 14th floor, and ground-floor retail and cultural space. The building's ceramic brise-soleil system draws on both the Spanish azulejo tile tradition and the geometric vocabulary of Kurdish ornament — a dialogue between two Mediterranean and Middle Eastern heritages in one facade.",
+    "narrative": "\"We were asked to build in Madrid but we could not leave Kurdistan behind. The ceramic screen is our attempt to bring those two worlds into a single surface — not as a gesture, but as an argument.\"",
+    "materials": [
+      "Handmade Ceramic Tile",
+      "High-Performance Glass",
+      "Structural Steel Core",
+      "Polished Concrete Slab",
+      "Green Roof System"
+    ],
+    "related": [
+      1,
+      7
+    ],
+    "imgs": [
+      "https://images.unsplash.com/photo-1431576901776-e539bd916ba2?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1400&q=80",
+      "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=1400&q=80"
+    ],
+    "sort_order": 21
+  }
+]

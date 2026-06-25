@@ -376,7 +376,12 @@
             </div>
         </div>
 
-        <div class="pg__grid" id="pgGrid">
+        <div class="pg__slider">
+            <button class="pg__nav pg__nav--prev" id="pgPrev" aria-label="Previous projects" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+
+            <div class="pg__grid" id="pgGrid">
 
             <article class="pgc pgc--large" data-index="0" data-category="cultural" data-name="Kurdish Cultural Center">
                 <div class="pgc__inner">
@@ -693,7 +698,14 @@
                 </div>
             </article>
 
-        </div>
+            </div><!-- /.pg__grid (slider track) -->
+
+            <button class="pg__nav pg__nav--next" id="pgNext" aria-label="Next projects">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div><!-- /.pg__slider -->
+
+        <div class="pg__progress" aria-hidden="true"><div class="pg__progress-bar" id="pgProgress"></div></div>
 
         <div class="pg__empty" id="pgEmpty" hidden>
             <p class="pg__empty-text">No projects match your criteria.</p>
@@ -734,6 +746,11 @@
                         <div class="stat__label">Countries</div>
                     </div>
                 </div>
+
+                <blockquote class="about__quote">
+                    <p>"Architecture is the bridge between a people's memory and the dreams of their future."</p>
+                    <cite>— Aram Mizuri</cite>
+                </blockquote>
             </div>
 
             <div class="about__side">
@@ -742,10 +759,6 @@
                     <img class="portrait__photo" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
                     <div class="portrait__caption">Aram Mizuri · Principal Architect</div>
                 </div>
-                <blockquote class="about__quote">
-                    <p>"Architecture is the bridge between a people's memory and the dreams of their future."</p>
-                    <cite>— Aram Mizuri</cite>
-                </blockquote>
             </div>
         </div>
     </section>
@@ -953,6 +966,7 @@
 
     <!-- ========== PROJECT OVERLAY ========== -->
     <div class="proj-overlay" id="projOverlay" aria-hidden="true" role="dialog" aria-label="Project details">
+      <div class="od-modal">
 
         <!-- Fixed top bar -->
         <div class="proj-overlay__topbar">
@@ -967,8 +981,9 @@
         <!-- Full-bleed body: image fills all, panel floats on top -->
         <div class="proj-overlay__body" id="overlayBody">
 
-            <!-- Background image — fills entire overlay at any ratio -->
+            <!-- Image — full image floats over a blurred ambient copy of itself -->
             <div class="od-bg">
+                <div class="od-bg__ambient od-ambient"></div>
                 <img class="od-bg__img" id="overlayHeroImg" src="" alt="">
                 <div class="od-bg__veil"></div>
             </div>
@@ -986,8 +1001,10 @@
             <!-- Thumbstrip -->
             <div class="od-thumbs" id="overlayThumbs"></div>
 
-            <!-- Floating frosted-glass data panel -->
+            <!-- Floating frosted-glass data panel (ambient-tinted) -->
             <div class="od-panel">
+                <div class="od-panel__ambient od-ambient"></div>
+                <div class="od-panel__scrim"></div>
                 <div class="od-panel__scroll">
 
                     <div class="od-status-row">
@@ -1027,6 +1044,7 @@
             </div>
 
         </div>
+      </div><!-- /.od-modal -->
 
     </div>
 

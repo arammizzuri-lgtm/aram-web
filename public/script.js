@@ -72,7 +72,10 @@ function buildKurdishSun(container, opts = {}) {
 
     container.appendChild(svg);
 
-    if (spin) {
+    // Decorative spin — but never for visitors who ask for reduced motion
+    // (this is a JS-driven inline transform, so CSS media queries can't stop it).
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (spin && !prefersReducedMotion) {
         let angle = 0;
         (function rotateSun() {
             angle += spinSpeed;
@@ -102,111 +105,185 @@ function buildKurdishSun(container, opts = {}) {
     // Hero — full-opacity sun + stat pills revealed on each full rotation
     var heroWrap = document.getElementById('heroSun');
     if (heroWrap) {
-        // Two nested rotation layers so each transform stays independent and they
-        // never fight each other:
-        //   .hs-idle → a gentle, perpetual drift driven by CSS (keeps it alive)
-        //   .hs-spin → deliberate single 360° turns driven by JS between stats
-        var heroIdle = document.createElement('div'); heroIdle.className = 'hs-idle';
-        var heroSpin = document.createElement('div'); heroSpin.className = 'hs-spin';
-        heroIdle.appendChild(heroSpin);
-        heroWrap.appendChild(heroIdle);
+        // The sun sits on a single rotation layer, scaled down inside its wrap so
+        // a clear ring of space surrounds it — room for a ray to grow into. There
+        // is NO perpetual drift: the sun spins exactly one full turn, comes to a
+        // complete stop, and only then does one ray reach out to present a stat.
+        var SUN_SCALE = 0.74;                       // sun diameter ÷ wrap
+        var heroSpin  = document.createElement('div');
+        heroSpin.className = 'hs-spin';
+        heroSpin.style.cssText =
+            'position:absolute;top:50%;left:50%;' +
+            'width:' + (SUN_SCALE * 100) + '%;height:' + (SUN_SCALE * 100) + '%;' +
+            'transform-origin:50% 50%;transform:translate(-50%,-50%) rotate(0deg);';
+        heroWrap.appendChild(heroSpin);
 
         var heroSvg = buildKurdishSun(heroSpin, { size: 520, color: '#F5C518' });
         heroSvg.style.width  = '100%';
         heroSvg.style.height = '100%';
 
-        // Four stats — each pinned to a compass point around the sun.
-        var HERO_STATS = [
-            { num: '21',   lbl: 'Projects',    dir: 'n' },
-            { num: '16',   lbl: 'Cities',      dir: 'e' },
-            { num: '870K', lbl: 'm² Designed', dir: 's' },
-            { num: '34',   lbl: 'Partners',    dir: 'w' },
-        ];
+        // --- Sun geometry (mirrors buildKurdishSun) --------------------------
+        var SUN_RAYS = 21, SUN_C = 100, RAY_BASE = 38, RAY_BASE_WIDE = 42, RAY_TIP = 76;
+        var STEP   = (2 * Math.PI) / SUN_RAYS;
+        var rayEls = heroSvg.querySelectorAll('polygon');   // 21 ray triangles, in build order
 
-        // Build an anchor → pill → connector beam for every stat. We split each
-        // number into its target value and suffix (e.g. "870K" → 870 + "K") so the
-        // number can count up when its pill is revealed.
+        // A ray's three points for a given tip + base radius. As a ray reaches out
+        // its base swells a little too, so it reads as a bold ray rather than a needle.
+        function rayPoints(i, tipR, baseR) {
+            if (baseR == null) baseR = RAY_BASE;
+            var aL = STEP * i         - Math.PI / 2;
+            var aM = STEP * (i + 0.5) - Math.PI / 2;
+            var aR = STEP * (i + 1)   - Math.PI / 2;
+            return (SUN_C + baseR * Math.cos(aL)) + ',' + (SUN_C + baseR * Math.sin(aL)) + ' ' +
+                   (SUN_C + tipR  * Math.cos(aM)) + ',' + (SUN_C + tipR  * Math.sin(aM)) + ' ' +
+                   (SUN_C + baseR * Math.cos(aR)) + ',' + (SUN_C + baseR * Math.sin(aR));
+        }
+        function rayMidDeg(i) { return STEP * (i + 0.5) * 180 / Math.PI - 90; }   // 0° = right, 90° = down
+        function angDiff(a, b) { return ((a - b) % 360 + 540) % 360 - 180; }
+
+        // --- Four stats, each pinned to a compass point ----------------------
+        var HERO_STATS = [
+            { num: '21',   lbl: 'Projects',    dir: 'n', angle: -90 },
+            { num: '16',   lbl: 'Cities',      dir: 'e', angle:   0 },
+            { num: '870K', lbl: 'm² Designed', dir: 's', angle:  90 },
+            { num: '34',   lbl: 'Partners',    dir: 'w', angle: 180 },
+        ];
+        // For each stat, pick the ray nearest its compass angle plus the tiny
+        // rotation that lands that ray dead on the axis, so the grown ray points
+        // straight at the pill.
+        HERO_STATS.forEach(function (st) {
+            var best = 0, bestD = 1e9;
+            for (var i = 0; i < SUN_RAYS; i++) {
+                var d = Math.abs(angDiff(rayMidDeg(i), st.angle));
+                if (d < bestD) { bestD = d; best = i; }
+            }
+            st.ray   = best;
+            st.align = angDiff(st.angle, rayMidDeg(best));
+        });
+
+        // --- Build the stat pills --------------------------------------------
         var heroAnchors = HERO_STATS.map(function (st) {
             var parts  = String(st.num).match(/^([\d.]+)(\D*)$/);
-            var target = parts ? parts[1] : '0';
-            var suffix = parts ? parts[2] : '';
-
             var anchor = document.createElement('div');
             anchor.className = 'hs-anchor hs-anchor--' + st.dir;
             anchor.innerHTML =
                 '<div class="hs-stat">' +
-                    '<span class="hs-stat__num" data-target="' + target + '" data-suffix="' + suffix + '">' + st.num + '</span>' +
+                    '<span class="hs-stat__num" data-target="' + (parts ? parts[1] : '0') + '" data-suffix="' + (parts ? parts[2] : '') + '">' + st.num + '</span>' +
                     '<span class="hs-stat__lbl">' + st.lbl + '</span>' +
-                    '<div class="hs-stat__stem"></div>' +
                 '</div>';
             heroWrap.appendChild(anchor);
             return anchor;
         });
 
-        // Quick easing count-up for a single pill's number.
+        // Distance (in the sun's own SVG units) from the centre to a pill's inner
+        // edge, so a ray can grow to meet it exactly at any screen size. The pill's
+        // sun-facing edge is its transform-origin, so this is correct even while
+        // the pill is still scaled down.
+        function pillReach(idx) {
+            var w  = heroWrap.getBoundingClientRect();
+            var cx = w.left + w.width / 2, cy = w.top + w.height / 2;
+            var half = (w.width / 2) * SUN_SCALE;            // sun's pixel radius → 100 units
+            var p  = heroAnchors[idx].querySelector('.hs-stat').getBoundingClientRect();
+            var nx = Math.max(p.left, Math.min(cx, p.right));
+            var ny = Math.max(p.top,  Math.min(cy, p.bottom));
+            var r  = Math.hypot(nx - cx, ny - cy) / half * 100 - 3;   // 3-unit breathing gap
+            return Math.max(RAY_TIP + 4, Math.min(99, r));           // always a visible grow, never poke through
+        }
+
+        // Count-up for one pill's number.
         function heroCountUp(anchor) {
             var el = anchor.querySelector('.hs-stat__num');
             if (!el) return;
             var target = parseFloat(el.getAttribute('data-target')) || 0;
             var suffix = el.getAttribute('data-suffix') || '';
-            var dur = 900, start = null;
+            var dur = 850, start = null;
             (function frame(t) {
                 if (start === null) start = t;
                 var p = Math.min((t - start) / dur, 1);
-                var eased = 1 - Math.pow(1 - p, 3);            // easeOutCubic
-                el.textContent = Math.round(target * eased) + suffix;
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
                 if (p < 1) requestAnimationFrame(frame);
                 else el.textContent = target + suffix;
             })(performance.now());
         }
 
-        // Respect users who ask for less motion: skip the whole show and just
-        // present every stat, settled in place.
+        // --- Tiny promise-based tween (one rAF timeline, full easing control) ---
+        function tween(dur, ease, onUpdate) {
+            return new Promise(function (resolve) {
+                var start = null;
+                (function frame(t) {
+                    if (start === null) start = t;
+                    var p = Math.min((t - start) / dur, 1);
+                    onUpdate(ease(p));
+                    if (p < 1) requestAnimationFrame(frame);
+                    else resolve();
+                })(performance.now());
+            });
+        }
+        var easeInOut    = function (p) { return p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; };
+        var easeOutCubic = function (p) { return 1 - Math.pow(1 - p, 3); };
+        var easeInCubic  = function (p) { return p*p*p; };
+        var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
         var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         if (reduceMotion) {
+            // Motion-free: present every stat at once, each already on a grown ray.
+            // Re-bake after web fonts load (they shift pill widths) and on resize,
+            // so the static rays always meet their pills.
             heroAnchors.forEach(function (a) { a.classList.add('is-active'); });
+            var bakeStatic = function () {
+                HERO_STATS.forEach(function (st, i) {
+                    rayEls[st.ray].setAttribute('points', rayPoints(st.ray, pillReach(i), RAY_BASE_WIDE));
+                });
+            };
+            bakeStatic();
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(bakeStatic);
+            var rzT;
+            window.addEventListener('resize', function () { clearTimeout(rzT); rzT = setTimeout(bakeStatic, 150); });
         } else {
-            var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
-
-            // Pause the cycle whenever the hero is scrolled out of view.
             var heroInView = true;
             if ('IntersectionObserver' in window) {
-                new IntersectionObserver(function (entries) {
-                    heroInView = entries[0].isIntersecting;
-                }, { threshold: 0.12 }).observe(heroWrap);
+                new IntersectionObserver(function (e) { heroInView = e[0].isIntersecting; }, { threshold: 0.12 }).observe(heroWrap);
             }
 
-            // One deliberate full turn of the sun.
-            var spinAngle = 0;
-            var SPIN_MS   = 1300;
-            function heroSpinOnce() {
-                spinAngle += 360;
-                heroSpin.style.transition = 'transform ' + SPIN_MS + 'ms cubic-bezier(.45,.05,.25,1)';
-                heroSpin.style.transform  = 'rotate(' + spinAngle + 'deg)';
+            var rot = 0;  // accumulated sun rotation (deg)
+            function setRot(deg) { heroSpin.style.transform = 'translate(-50%,-50%) rotate(' + deg + 'deg)'; }
+
+            // Spin one full turn forward, stopping with `align` so the next ray
+            // ends up dead on its compass axis.
+            function spinToNext(align) {
+                var from = rot;
+                var to   = from + 360 + angDiff(align, from + 360);   // ~one turn, snapped to align
+                rot = to;
+                return tween(1500, easeInOut, function (k) { setRot(from + (to - from) * k); });
             }
+            // Grow / pull back one ray's tip + base between its normal and reaching length.
+            function growRay(i, toR)    { return tween(660, easeOutCubic, function (k) { rayEls[i].setAttribute('points', rayPoints(i, RAY_TIP + (toR - RAY_TIP) * k, RAY_BASE + (RAY_BASE_WIDE - RAY_BASE) * k)); }); }
+            function shrinkRay(i, fromR){ return tween(430, easeInCubic,  function (k) { rayEls[i].setAttribute('points', rayPoints(i, fromR - (fromR - RAY_TIP) * k, RAY_BASE_WIDE - (RAY_BASE_WIDE - RAY_BASE) * k)); }); }
 
             // The choreography, looping forever:
-            //   draw a beam out of the sun → reveal one stat → hold it so it can
-            //   be read → retract it back into the sun → spin the sun once → next.
+            //   spin one full turn → stop → a ray grows out to a stat → hold so it
+            //   can be read → the ray retracts → spin again → the next ray presents
+            //   the next stat.
             (async function runHeroCycle() {
-                await wait(700);                              // let the hero settle in
+                await wait(650);
                 var i = 0;
                 while (true) {
-                    while (!heroInView) { await wait(400); }  // stay idle off-screen
+                    while (!heroInView) { await wait(400); }
+                    var st = HERO_STATS[i], anchor = heroAnchors[i];
 
-                    var anchor = heroAnchors[i];
-                    anchor.classList.add('is-active');        // beam draws out, pill blooms
-                    heroCountUp(anchor);                      // number ticks up
-                    await wait(3000);                         // hold so it can be read
+                    await spinToNext(st.align);              // full turn, comes to rest
+                    var reach = pillReach(i);
+                    anchor.classList.add('is-active');        // pill begins to appear
+                    heroCountUp(anchor);
+                    await growRay(st.ray, reach);             // its ray expands out to the pill
+                    await wait(3200);                         // hold so it can be read
 
-                    anchor.classList.remove('is-active');     // pill + beam retract into sun
-                    await wait(640);
+                    anchor.classList.remove('is-active');     // pill fades away
+                    await shrinkRay(st.ray, reach);           // ray pulls back into the sun
+                    await wait(280);                          // a beat before the next spin
 
-                    heroSpinOnce();                           // sun spins one full turn
-                    await wait(SPIN_MS);
-
-                    i = (i + 1) % heroAnchors.length;
+                    i = (i + 1) % HERO_STATS.length;
                 }
             })();
         }
@@ -417,7 +494,8 @@ function buildKurdishSun(container, opts = {}) {
             const text = isKu ? el.dataset.ku : el.dataset.en;
             // headings may contain inner HTML (em tags)
             if (el.tagName === 'H2' && text.includes('<')) {
-                el.innerHTML = text;
+                // only <em>, <br>, <strong> are intended here — strip any other tags
+                el.innerHTML = text.replace(/<(?!\/?(?:em|br|strong)\b)[^>]*>/gi, '');
             } else {
                 el.textContent = text;
             }
@@ -433,21 +511,55 @@ function buildKurdishSun(container, opts = {}) {
 
     form.addEventListener('submit', e => {
         e.preventDefault();
-        const btn   = form.querySelector('.form-submit__label');
+        const btn      = form.querySelector('.form-submit__label');
+        const original = btn.textContent;
+        const token    = document.querySelector('meta[name="csrf-token"]');
         btn.textContent = 'Sending…';
 
-        // Simulate send (replace with real endpoint / EmailJS / Formspree)
-        setTimeout(() => {
-            btn.textContent = 'Send Message';
+        const payload = {
+            name:    (form.querySelector('[name="name"]')    || {}).value || '',
+            email:   (form.querySelector('[name="email"]')   || {}).value || '',
+            project: (form.querySelector('[name="project"]') || {}).value || '',
+            message: (form.querySelector('[name="message"]') || {}).value || '',
+        };
+
+        fetch('/contact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token ? token.content : '',
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+            return res.json().catch(() => ({}));
+        })
+        .then(() => {
+            btn.textContent = original;
             form.reset();
-            if (success) { success.hidden = false; }
-            setTimeout(() => { if (success) success.hidden = true; }, 5000);
-        }, 1200);
+            if (success) {
+                success.hidden = false;
+                setTimeout(() => { success.hidden = true; }, 5000);
+            }
+        })
+        .catch(() => {
+            btn.textContent = original;
+            if (success) {
+                success.textContent = '⚠ Something went wrong — please email us directly.';
+                success.hidden = false;
+            }
+        });
     });
 })();
 
 /* ---- Project Data -------------------------------------- */
-const PROJECT_DATA = [
+/* Data is injected from the database via window.__SITE__ (see the Blade view).
+   The hard-coded array below is kept only as an offline safety fallback. */
+const PROJECT_DATA = (window.__SITE__ && Array.isArray(window.__SITE__.projects) && window.__SITE__.projects.length)
+  ? window.__SITE__.projects
+  : [
   {
     num: '01', name: 'Kurdish Cultural Center',
     category: 'cultural',
@@ -780,6 +892,14 @@ const PROJECT_DATA = [
     const imgNextBtn  = document.getElementById('overlayImgNext');
     const bodyEl      = document.getElementById('overlayBody');
     const topbarEl    = overlay.querySelector('.proj-overlay__topbar');
+    const ambientEls  = overlay.querySelectorAll('.od-ambient');
+
+    // Paint a blurred copy of the current image behind the image + info panel,
+    // so both pick up the project's own colours (ambient "liquid glass").
+    function applyAmbient(url) {
+        const bg = 'url("' + url + '")';
+        ambientEls.forEach(function (el) { el.style.backgroundImage = bg; });
+    }
 
 
     const cursor   = document.getElementById('cursor');
@@ -800,6 +920,7 @@ const PROJECT_DATA = [
             heroImg.src = proj.imgs[currentImgIdx];
             heroImg.alt = proj.name;
             heroImg.style.opacity = '1';
+            applyAmbient(proj.imgs[currentImgIdx]);
         }, 200);
         thumbsEl.querySelectorAll('.od-thumb').forEach((t, i) => {
             t.classList.toggle('active', i === currentImgIdx);
@@ -886,6 +1007,7 @@ const PROJECT_DATA = [
             heroImg.src = proj.imgs[0];
             heroImg.alt = proj.name;
             heroImg.style.opacity = '';  // CSS transition handles this
+            applyAmbient(proj.imgs[0]);
         }, 60);
 
         if (topbarEl) topbarEl.classList.remove('bar-solid');
@@ -977,6 +1099,8 @@ const PROJECT_DATA = [
 
     /* ---- Controls ---------------------------------------- */
     closeBtn && closeBtn.addEventListener('click', closeOverlay);
+    // click the blurred backdrop (outside the card) to dismiss
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
     projPrevBtn && projPrevBtn.addEventListener('click', e => { e.stopPropagation(); switchProject(currentProjIdx - 1); });
     projNextBtn && projNextBtn.addEventListener('click', e => { e.stopPropagation(); switchProject(currentProjIdx + 1); });
     imgPrevBtn  && imgPrevBtn.addEventListener('click',  e => { e.stopPropagation(); setImg(currentImgIdx - 1); });
@@ -1024,6 +1148,60 @@ const PROJECT_DATA = [
         if (img) imgObserver.observe(img);
     });
 
+    /* ---- Horizontal scroll controls ---------------------- */
+    const prevBtn  = document.getElementById('pgPrev');
+    const nextBtn  = document.getElementById('pgNext');
+    const progress = document.getElementById('pgProgress');
+
+    function maxScroll() { return grid.scrollWidth - grid.clientWidth; }
+    function pageStep()  { return Math.max(grid.clientWidth * 0.8, 280); }
+
+    function updateSliderUI() {
+        const max = maxScroll();
+        const x   = grid.scrollLeft;
+        if (prevBtn) prevBtn.disabled = x <= 4;
+        if (nextBtn) nextBtn.disabled = x >= max - 4;
+        if (progress) progress.style.width = (max > 4 ? (x / max) * 100 : 0) + '%';
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', () => grid.scrollBy({ left: -pageStep(), behavior: 'smooth' }));
+    if (nextBtn) nextBtn.addEventListener('click', () => grid.scrollBy({ left:  pageStep(), behavior: 'smooth' }));
+    grid.addEventListener('scroll', updateSliderUI, { passive: true });
+    window.addEventListener('resize', updateSliderUI);
+
+    /* Press-and-drag to scroll sideways (mouse / trackpad).
+       NOTE: we deliberately do NOT use setPointerCapture — capturing the pointer
+       on the track makes the browser retarget the follow-up `click` to the track,
+       which swallows the card's click and breaks opening a project. We track
+       move/up on the window instead, which also keeps drag working if the cursor
+       leaves the track. */
+    let down = false, startX = 0, startLeft = 0, moved = 0;
+    grid.addEventListener('pointerdown', e => {
+        if (e.pointerType === 'touch') return;            // touch scrolls natively
+        down = true; moved = 0; startX = e.clientX; startLeft = grid.scrollLeft;
+    });
+    window.addEventListener('pointermove', e => {
+        if (!down) return;
+        const dx = e.clientX - startX;
+        moved = Math.max(moved, Math.abs(dx));
+        if (moved > 3) grid.classList.add('is-dragging');  // only once it's a real drag
+        grid.scrollLeft = startLeft - dx;
+    });
+    window.addEventListener('pointerup', () => {
+        if (!down) return;
+        down = false;
+        grid.classList.remove('is-dragging');
+    });
+    /* swallow the click that follows a real drag so it doesn't open a project */
+    grid.addEventListener('click', e => {
+        if (moved > 6) { e.preventDefault(); e.stopPropagation(); }
+        moved = 0;                                         // reset so a later clean click works
+    }, true);
+
+    window.addEventListener('load', updateSliderUI);
+    setTimeout(updateSliderUI, 300);
+    updateSliderUI();
+
     /* ---- Filter + Search --------------------------------- */
     let activeFilter = 'all';
     let searchQuery  = '';
@@ -1044,6 +1222,10 @@ const PROJECT_DATA = [
         });
 
         if (emptyEl) emptyEl.hidden = visibleCount > 0;
+
+        // re-home the horizontal scroll when the visible set changes
+        grid.scrollTo({ left: 0, behavior: 'smooth' });
+        updateSliderUI();
     }
 
     document.querySelectorAll('.pgf-btn').forEach(btn => {
@@ -1122,6 +1304,7 @@ const PROJECT_DATA = [
     }).addTo(map);
 
     // Render the Kurdistan border from already-loaded GeoJSON data.
+    let mapBorderLayer = null;
     function renderKurdistanBorder() {
         if (typeof KURDISTAN_GEOJSON === 'undefined') return;
 
@@ -1145,8 +1328,22 @@ const PROJECT_DATA = [
             svg.appendChild(g);
         }
 
-        map.fitBounds(borderLayer.getBounds(), { padding: [72, 56] });
+        mapBorderLayer = borderLayer;
+        fitMap();
     }
+
+    // Frame Kurdistan tightly — and keep it framed when the window resizes
+    // (e.g. dev-tools opening) instead of drifting zoomed-out.
+    let mapFitTimer = null;
+    function fitMap() {
+        if (!mapBorderLayer) return;
+        map.invalidateSize();
+        map.fitBounds(mapBorderLayer.getBounds(), { padding: [40, 30], maxZoom: 8 });
+    }
+    window.addEventListener('resize', function () {
+        clearTimeout(mapFitTimer);
+        mapFitTimer = setTimeout(fitMap, 180);
+    });
 
     // Lazy-load the 1.5 MB border data only when the map section enters the viewport.
     // This keeps the initial page load fast for users who haven't scrolled down yet.
@@ -1170,6 +1367,7 @@ const PROJECT_DATA = [
     // Build markers
     COORDS.forEach((coords, i) => {
         const proj = PROJECT_DATA[i];
+        if (!proj) return; // project unpublished or removed — skip its map pin gracefully
         const icon = L.divIcon({
             className: '',
             html: `<div class="map-pin" id="mapPin${i}">
