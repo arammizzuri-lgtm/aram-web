@@ -877,6 +877,35 @@ const PROJECT_DATA = (window.__SITE__ && Array.isArray(window.__SITE__.projects)
   },
 ];
 
+/* ---- Project coordinates (shared) ---------------------- */
+/* Accurate [lat, lng] for each project, aligned by index with PROJECT_DATA.
+   Single source of truth — used by both the section map and the overlay
+   mini-map. NOTE: index-aligned, so reordering projects in the admin would
+   desync these; revisit by storing coordinates on the project record. */
+const PROJECT_COORDS = [
+    [36.1912, 44.0092],  // 01 Kurdish Cultural Center — Erbil centre
+    [36.2018, 44.0278],  // 02 Erbil Tower Residences
+    [36.1983, 44.0088],  // 03 Citadel View Hotel — Erbil Citadel
+    [36.1718, 44.0465],  // 04 Kurdistan Tech Campus — east Erbil
+    [36.4073, 44.3224],  // 05 Mountain Villa — Shaqlawa
+    [36.1958, 43.9988],  // 06 Erbil Urban Regeneration — west centre
+    [35.5616, 45.4322],  // 07 Kurdistan Museum of Art — Sulaymaniyah
+    [36.1785, 44.0152],  // 08 Erbil Business Tower
+    [36.8663, 42.9816],  // 09 Duhok Mountain Resort
+    [35.4676, 44.3922],  // 10 Kirkuk Public Square
+    [37.9144, 40.2306],  // 11 Diyarbakır Heritage Library — Diyarbakır, Turkey
+    [37.1444, 42.6849],  // 12 Zakho River Pavilions — Zakho, Kurdistan Region
+    [37.0861, 43.4889],  // 13 Amadiyah Cliff Retreat — Amadiyah, Kurdistan Region
+    [35.1803, 45.9864],  // 14 Halabja Memorial Museum — Halabja, Kurdistan Region
+    [36.2574, 44.8789],  // 15 Ranya Market Hall — Ranya, Kurdistan Region
+    [36.7439, 43.8904],  // 16 Akre Hilltop Resort — Akre, Kurdistan Region
+    [36.3199, 41.8596],  // 17 Sinjar Reconstruction Framework — Sinjar, Iraq
+    [36.5133, 36.8688],  // 18 Afrin Housing Collective — Afrin, Syria
+    [36.8932, 38.3533],  // 19 Kobani Civic Center — Kobani, Syria
+    [34.3142, 47.0650],  // 20 Kermanshah Arts Complex — Kermanshah, Iran
+    [40.4168, -3.7038],  // 21 Torre Mizuri — Madrid, Spain
+];
+
 /* ---- Project Overlay (immersive scrollable detail) ------ */
 (function initProjectOverlay() {
     const overlay = document.getElementById('projOverlay');
@@ -899,6 +928,53 @@ const PROJECT_DATA = (window.__SITE__ && Array.isArray(window.__SITE__.projects)
     function applyAmbient(url) {
         const bg = 'url("' + url + '")';
         ambientEls.forEach(function (el) { el.style.backgroundImage = bg; });
+    }
+
+    /* ---- Location mini-map (picture-in-picture) ---------- */
+    var miniMap = null, miniMarker = null;
+    var miniCanvas = document.getElementById('overlayMapCanvas');
+    var miniCityEl = document.getElementById('overlayMapCity');
+    var miniWrap   = document.getElementById('overlayMap');
+
+    function ensureMiniMap() {
+        if (miniMap || typeof L === 'undefined' || !miniCanvas) return;
+        miniMap = L.map(miniCanvas, {
+            zoomControl: false, attributionControl: false,
+            dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+            boxZoom: false, keyboard: false, touchZoom: false, tap: false,
+            inertia: false, fadeAnimation: false,
+        });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            subdomains: 'abcd', maxZoom: 18,
+        }).addTo(miniMap);
+        miniMarker = L.marker([0, 0], {
+            interactive: false,
+            icon: L.divIcon({
+                className: 'od-sidemap__pin-wrap',
+                html: '<span class="od-sidemap__pin"></span>',
+                iconSize: [20, 20], iconAnchor: [10, 20],
+            }),
+        }).addTo(miniMap);
+    }
+
+    // Recentre the mini-map on the given project's location and drop the pin.
+    function updateMiniMap(index, proj) {
+        var coords = PROJECT_COORDS[index];
+        if (!miniWrap) return;
+        if (!coords || typeof L === 'undefined' || !miniCanvas) {
+            miniWrap.style.display = 'none';      // no location → no map
+            return;
+        }
+        miniWrap.style.display = '';
+        ensureMiniMap();
+        miniMap.setView(coords, 12, { animate: false });   // city scale
+        miniMarker.setLatLng(coords);
+        if (miniCityEl) {
+            miniCityEl.textContent = (proj.location || '').split(',')[0].trim() || proj.location || '';
+        }
+        // The canvas may have rendered at the wrong size while the modal was
+        // scaling in; recompute tile layout once it has settled.
+        setTimeout(function () { if (miniMap) miniMap.invalidateSize(false); }, 360);
     }
 
 
@@ -988,6 +1064,9 @@ const PROJECT_DATA = (window.__SITE__ && Array.isArray(window.__SITE__.projects)
 
         // Counter
         counterEl.textContent = (index + 1) + ' / ' + PROJECT_DATA.length;
+
+        // Location mini-map
+        updateMiniMap(index, proj);
 
         // Thumbstrip
         thumbsEl.innerHTML = '';
@@ -1263,30 +1342,8 @@ const PROJECT_DATA = (window.__SITE__ && Array.isArray(window.__SITE__.projects)
     const cardCta     = document.getElementById('mapCardCta');
     const cardClose   = document.getElementById('mapCardClose');
 
-    // Accurate coordinates for each project
-    const COORDS = [
-        [36.1912, 44.0092],  // 01 Kurdish Cultural Center — Erbil centre
-        [36.2018, 44.0278],  // 02 Erbil Tower Residences
-        [36.1983, 44.0088],  // 03 Citadel View Hotel — Erbil Citadel
-        [36.1718, 44.0465],  // 04 Kurdistan Tech Campus — east Erbil
-        [36.4073, 44.3224],  // 05 Mountain Villa — Shaqlawa
-        [36.1958, 43.9988],  // 06 Erbil Urban Regeneration — west centre
-        [35.5616, 45.4322],  // 07 Kurdistan Museum of Art — Sulaymaniyah
-        [36.1785, 44.0152],  // 08 Erbil Business Tower
-        [36.8663, 42.9816],  // 09 Duhok Mountain Resort
-        [35.4676, 44.3922],  // 10 Kirkuk Public Square
-        [37.9144, 40.2306],  // 11 Diyarbakır Heritage Library — Diyarbakır, Turkey
-        [37.1444, 42.6849],  // 12 Zakho River Pavilions — Zakho, Kurdistan Region
-        [37.0861, 43.4889],  // 13 Amadiyah Cliff Retreat — Amadiyah, Kurdistan Region
-        [35.1803, 45.9864],  // 14 Halabja Memorial Museum — Halabja, Kurdistan Region
-        [36.2574, 44.8789],  // 15 Ranya Market Hall — Ranya, Kurdistan Region
-        [36.7439, 43.8904],  // 16 Akre Hilltop Resort — Akre, Kurdistan Region
-        [36.3199, 41.8596],  // 17 Sinjar Reconstruction Framework — Sinjar, Iraq
-        [36.5133, 36.8688],  // 18 Afrin Housing Collective — Afrin, Syria
-        [36.8932, 38.3533],  // 19 Kobani Civic Center — Kobani, Syria
-        [34.3142, 47.0650],  // 20 Kermanshah Arts Complex — Kermanshah, Iran
-        [40.4168, -3.7038],  // 21 Torre Mizuri — Madrid, Spain
-    ];
+    // Accurate coordinates for each project (shared single source of truth)
+    const COORDS = PROJECT_COORDS;
 
     // Init map — no default controls, scroll-zoom off (page scrolling otherwise hijacked)
     const map = L.map('projectMapEl', {

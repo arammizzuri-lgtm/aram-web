@@ -669,6 +669,16 @@
 
     <!-- ========== PROJECT OVERLAY ========== -->
     <div class="proj-overlay" id="projOverlay" aria-hidden="true" role="dialog" aria-label="Project details">
+
+      <!-- Location map — a separate window beside the main detail window -->
+      <aside class="od-sidemap" id="overlayMap" aria-hidden="true">
+          <div class="od-sidemap__canvas" id="overlayMapCanvas"></div>
+          <div class="od-sidemap__bar">
+              <span class="od-sidemap__dot"></span>
+              <span class="od-sidemap__city" id="overlayMapCity"></span>
+          </div>
+      </aside>
+
       <div class="od-modal">
 
         <!-- Fixed top bar -->
