@@ -1513,13 +1513,39 @@ const PROJECT_COORDS = [
     // Accurate coordinates for each project (shared single source of truth)
     const COORDS = PROJECT_COORDS;
 
+    // On touch devices a single-finger swipe would pan the map instead of
+    // scrolling the page, trapping the user in this section — so dragging/
+    // pinch-zoom start disabled and only engage once a second finger joins.
+    const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
     // Init map — no default controls, scroll-zoom off (page scrolling otherwise hijacked)
     const map = L.map('projectMapEl', {
         zoomControl:     false,
         scrollWheelZoom: false,
         doubleClickZoom: false,
         attributionControl: true,
+        dragging:  !isTouchDevice,
+        touchZoom: !isTouchDevice,
     }).setView([36.30, 43.80], 7); // centered on Erbil/Kurdistan region
+
+    if (isTouchDevice) {
+        const mapContainer = map.getContainer();
+        mapContainer.addEventListener('touchstart', function (e) {
+            if (e.touches.length >= 2) {
+                map.dragging.enable();
+                map.touchZoom.enable();
+            } else {
+                map.dragging.disable();
+                map.touchZoom.disable();
+            }
+        }, { passive: true });
+        mapContainer.addEventListener('touchend', function (e) {
+            if (e.touches.length < 2) {
+                map.dragging.disable();
+                map.touchZoom.disable();
+            }
+        }, { passive: true });
+    }
 
     // CartoDB light nolabels — inverted in CSS to give black land, white roads
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
