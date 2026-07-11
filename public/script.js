@@ -172,6 +172,7 @@ function buildKurdishSun(container, opts = {}) {
     const cursor   = document.getElementById('cursor');
     const follower = document.getElementById('cursorFollower');
     if (!cursor || !follower) return;
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
 
     let mx = 0, my = 0, fx = 0, fy = 0;
 

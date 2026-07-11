@@ -134,6 +134,12 @@ img { display: block; max-width: 100%; }
 .cursor--expand  { width: 14px; height: 14px; background: var(--text); }
 .cursor-follower--expand { width: 58px; height: 58px; border-color: var(--text); }
 
+/* Touch devices have no real pointer to track — a custom cursor just
+   ends up stuck wherever the last tap was, so hide it entirely. */
+@media (hover: none), (pointer: coarse) {
+    .cursor, .cursor-follower { display: none !important; }
+}
+
 /* ---- Loader -------------------------------------------- */
 .loader {
     position: fixed; inset: 0;
