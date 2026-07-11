@@ -39,7 +39,7 @@ class EncodedHtmlString extends HtmlString
      * @internal
      *
      * @param  string|null  $value
-     * @param  bool  $withQuote
+     * @param  int  $withQuote
      * @param  bool  $doubleEncode
      * @return string
      */

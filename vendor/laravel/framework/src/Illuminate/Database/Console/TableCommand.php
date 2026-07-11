@@ -3,7 +3,6 @@
 namespace Illuminate\Database\Console;
 
 use Illuminate\Database\ConnectionResolverInterface;
-use Illuminate\Database\Console\Concerns\InteractsWithPooledConnections;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -15,8 +14,6 @@ use function Laravel\Prompts\search;
 #[AsCommand(name: 'db:table')]
 class TableCommand extends DatabaseInspectionCommand
 {
-    use InteractsWithPooledConnections;
-
     /**
      * The name and signature of the console command.
      *
@@ -41,7 +38,7 @@ class TableCommand extends DatabaseInspectionCommand
      */
     public function handle(ConnectionResolverInterface $connections)
     {
-        $connection = $this->resolveDirectConnectionIfPossible($connections, $this->input->getOption('database'));
+        $connection = $connections->connection($this->input->getOption('database'));
         $tables = (new Collection($connection->getSchemaBuilder()->getTables()))
             ->keyBy('schema_qualified_name')->all();
 

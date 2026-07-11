@@ -40,8 +40,6 @@ class ThrottlesExceptionsWithRedis extends ThrottlesExceptions
      * @param  mixed  $job
      * @param  callable  $next
      * @return mixed
-     *
-     * @throws \Throwable
      */
     public function handle($job, $next)
     {
@@ -80,7 +78,7 @@ class ThrottlesExceptionsWithRedis extends ThrottlesExceptions
 
             $this->limiter->acquire();
 
-            return $job->release($this->getTimeUntilNextRetryAfterException($throwable));
+            return $job->release($this->retryAfterMinutes * 60);
         }
     }
 

@@ -22,7 +22,6 @@ use InvalidArgumentException;
  * @method \Illuminate\Routing\RouteRegistrar can(\UnitEnum|string  $ability, array|string $models = [])
  * @method \Illuminate\Routing\RouteRegistrar controller(string $controller)
  * @method \Illuminate\Routing\RouteRegistrar domain(\BackedEnum|string $value)
- * @method \Illuminate\Routing\RouteRegistrar metadata(array $metadata)
  * @method \Illuminate\Routing\RouteRegistrar middleware(array|string|null $middleware)
  * @method \Illuminate\Routing\RouteRegistrar missing(\Closure $missing)
  * @method \Illuminate\Routing\RouteRegistrar name(\BackedEnum|string $value)
@@ -73,7 +72,6 @@ class RouteRegistrar
         'can',
         'controller',
         'domain',
-        'metadata',
         'middleware',
         'missing',
         'name',
@@ -128,16 +126,6 @@ class RouteRegistrar
             foreach ($value as $index => $middleware) {
                 $value[$index] = (string) $middleware;
             }
-        }
-
-        if ($key === 'metadata') {
-            if (! is_array($value)) {
-                throw new InvalidArgumentException('Attribute [metadata] expects an array.');
-            }
-
-            $value = RouteGroup::mergeMetadata(
-                $this->attributes['metadata'] ?? [], $value
-            );
         }
 
         $attributeKey = Arr::get($this->aliases, $key, $key);
@@ -240,17 +228,6 @@ class RouteRegistrar
     }
 
     /**
-     * Add metadata to routes registered by the registrar.
-     *
-     * @param  array  $metadata
-     * @return $this
-     */
-    public function metadata(array $metadata)
-    {
-        return $this->attribute('metadata', $metadata);
-    }
-
-    /**
      * Register a new route with the router.
      *
      * @param  string  $method
@@ -295,18 +272,7 @@ class RouteRegistrar
             ];
         }
 
-        $metadata = RouteGroup::mergeMetadata(
-            $this->attributes['metadata'] ?? [],
-            $action['metadata'] ?? []
-        );
-
-        $action = array_merge($this->attributes, $action);
-
-        if ($metadata !== []) {
-            $action['metadata'] = $metadata;
-        }
-
-        return $action;
+        return array_merge($this->attributes, $action);
     }
 
     /**

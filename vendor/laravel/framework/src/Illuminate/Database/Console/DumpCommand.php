@@ -26,8 +26,7 @@ class DumpCommand extends Command
     protected $signature = 'schema:dump
                 {--database= : The database connection to use}
                 {--path= : The path where the schema dump file should be stored}
-                {--prune : Delete all existing migration files}
-                {--without-migration-data : Dump the schema without the migration data}';
+                {--prune : Delete all existing migration files}';
 
     /**
      * The console command description.
@@ -83,10 +82,6 @@ class DumpCommand extends Command
         $migrations = Config::get('database.migrations', 'migrations');
 
         $migrationTable = is_array($migrations) ? ($migrations['table'] ?? 'migrations') : $migrations;
-
-        if ($this->option('without-migration-data')) {
-            $migrationTable = null;
-        }
 
         return $connection->getSchemaState()
             ->withMigrationTable($migrationTable)

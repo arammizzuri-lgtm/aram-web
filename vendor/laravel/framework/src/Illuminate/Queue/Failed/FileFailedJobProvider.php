@@ -167,10 +167,8 @@ class FileFailedJobProvider implements CountableFailedJobProvider, FailedJobProv
     /**
      * Execute the given callback while holding a lock.
      *
-     * @template TReturn
-     *
-     * @param  (\Closure(): TReturn)  $callback
-     * @return TReturn
+     * @param  \Closure  $callback
+     * @return mixed
      */
     protected function lock(Closure $callback)
     {

@@ -246,7 +246,8 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
     /**
      * Convert the object to pretty print formatted JSON.
      *
-     * @param  int  $options
+     * @params int $options
+     *
      * @return string
      */
     public function toPrettyJson(int $options = 0)

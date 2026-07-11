@@ -2,7 +2,6 @@
 
 namespace Illuminate\Queue\Middleware;
 
-use Closure;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Container\Container;
 use Throwable;
@@ -40,7 +39,7 @@ class ThrottlesExceptions
     /**
      * The number of minutes to wait before retrying the job after an exception.
      *
-     * @var int|(\Closure(\Throwable): int)
+     * @var int
      */
     protected $retryAfterMinutes = 0;
 
@@ -104,8 +103,6 @@ class ThrottlesExceptions
      * @param  mixed  $job
      * @param  callable  $next
      * @return mixed
-     *
-     * @throws \Throwable
      */
     public function handle($job, $next)
     {
@@ -138,7 +135,7 @@ class ThrottlesExceptions
 
             $this->limiter->hit($jobKey, $this->decaySeconds);
 
-            return $job->release($this->getTimeUntilNextRetryAfterException($throwable));
+            return $job->release($this->retryAfterMinutes * 60);
         }
     }
 
@@ -235,7 +232,7 @@ class ThrottlesExceptions
     /**
      * Specify the number of minutes a job should be delayed when it is released (before it has reached its max exceptions).
      *
-     * @param  int|(\Closure(\Throwable): int)  $backoff
+     * @param  int  $backoff
      * @return $this
      */
     public function backoff($backoff)
@@ -243,21 +240,6 @@ class ThrottlesExceptions
         $this->retryAfterMinutes = $backoff;
 
         return $this;
-    }
-
-    /**
-     * Get the number of seconds that should elapse before the job is retried after an exception.
-     *
-     * @param  \Throwable  $throwable
-     * @return int
-     */
-    protected function getTimeUntilNextRetryAfterException(Throwable $throwable)
-    {
-        $backoff = $this->retryAfterMinutes instanceof Closure
-            ? call_user_func($this->retryAfterMinutes, $throwable)
-            : $this->retryAfterMinutes;
-
-        return $backoff * 60;
     }
 
     /**

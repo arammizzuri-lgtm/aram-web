@@ -88,10 +88,8 @@ trait PacksPhpRedisValues
     /**
      * Execute the given callback without serialization or compression when applicable.
      *
-     * @template TReturn
-     *
-     * @param  (callable(): TReturn)  $callback
-     * @return TReturn
+     * @param  callable  $callback
+     * @return mixed
      */
     public function withoutSerializationOrCompression(callable $callback)
     {

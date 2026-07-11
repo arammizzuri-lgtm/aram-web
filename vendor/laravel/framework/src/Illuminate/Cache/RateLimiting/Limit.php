@@ -116,7 +116,7 @@ class Limit
     /**
      * Create a new unlimited rate limit.
      *
-     * @return \Illuminate\Cache\RateLimiting\Unlimited
+     * @return static
      */
     public static function none()
     {

@@ -396,7 +396,7 @@ class Message
                 },
                 function ($data) use ($file) {
                     $this->message->addPart(
-                        $part = (new DataPart($data(), $file->as, $file->mime))->asInline()
+                        $part = $part = (new DataPart($data(), $file->as, $file->mime))->asInline()
                     );
 
                     return "cid:{$part->getContentId()}";

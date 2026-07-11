@@ -12,9 +12,6 @@ use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Contracts\Translation\HasLocalePreference;
-use Illuminate\Queue\Attributes\Connection;
-use Illuminate\Queue\Attributes\Delay;
-use Illuminate\Queue\Attributes\Queue as QueueAttribute;
 use Illuminate\Support\Collection;
 use Illuminate\Support\EncodedHtmlString;
 use Illuminate\Support\HtmlString;
@@ -23,7 +20,6 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\ForwardsCalls;
 use Illuminate\Support\Traits\Localizable;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Support\Traits\ReadsClassAttributes;
 use Illuminate\Support\Traits\Tappable;
 use Illuminate\Testing\Constraints\SeeInOrder;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -35,7 +31,7 @@ use Symfony\Component\Mime\Address;
 
 class Mailable implements MailableContract, Renderable
 {
-    use Conditionable, ForwardsCalls, Localizable, ReadsClassAttributes, Tappable, Macroable {
+    use Conditionable, ForwardsCalls, Localizable, Tappable, Macroable {
         __call as macroCall;
     }
 
@@ -228,23 +224,13 @@ class Mailable implements MailableContract, Renderable
      */
     public function queue(Queue $queue)
     {
-        $delay = $this->getAttributeValue($this, Delay::class, 'delay');
-
-        if (isset($delay)) {
-            return $this->later($delay, $queue);
+        if (isset($this->delay)) {
+            return $this->later($this->delay, $queue);
         }
 
-        $connection = $this->getAttributeValue($this, Connection::class, 'connection');
+        $connection = property_exists($this, 'connection') ? $this->connection : null;
 
-        if (is_null($connection) && method_exists($queue, 'resolveConnectionFromQueueRoute')) {
-            $connection = $queue->resolveConnectionFromQueueRoute($this);
-        }
-
-        $queueName = $this->getAttributeValue($this, QueueAttribute::class, 'queue');
-
-        if (is_null($queueName) && method_exists($queue, 'resolveQueueFromQueueRoute')) {
-            $queueName = $queue->resolveQueueFromQueueRoute($this);
-        }
+        $queueName = property_exists($this, 'queue') ? $this->queue : null;
 
         return $queue->connection($connection)->pushOn(
             $queueName ?: null, $this->newQueuedJob()
@@ -260,17 +246,9 @@ class Mailable implements MailableContract, Renderable
      */
     public function later($delay, Queue $queue)
     {
-        $connection = $this->getAttributeValue($this, Connection::class, 'connection');
+        $connection = property_exists($this, 'connection') ? $this->connection : null;
 
-        $queueName = $this->getAttributeValue($this, QueueAttribute::class, 'queue');
-
-        if (is_null($connection) && method_exists($queue, 'resolveConnectionFromQueueRoute')) {
-            $connection = $queue->resolveConnectionFromQueueRoute($this);
-        }
-
-        if (is_null($queueName) && method_exists($queue, 'resolveQueueFromQueueRoute')) {
-            $queueName = $queue->resolveQueueFromQueueRoute($this);
-        }
+        $queueName = property_exists($this, 'queue') ? $this->queue : null;
 
         $job = $this->newQueuedJob();
 
@@ -809,7 +787,7 @@ class Mailable implements MailableContract, Renderable
         if (is_array($recipient)) {
             if (array_values($recipient) === $recipient) {
                 return (object) array_map(function ($email) {
-                    return ['email' => $email];
+                    return compact('email');
                 }, $recipient);
             }
 
@@ -999,7 +977,7 @@ class Mailable implements MailableContract, Renderable
         }
 
         $this->attachments = (new Collection($this->attachments))
-            ->push(['file' => $file, 'options' => $options])
+            ->push(compact('file', 'options'))
             ->unique('file')
             ->all();
 
@@ -1164,7 +1142,7 @@ class Mailable implements MailableContract, Renderable
     public function attachData($data, $name, array $options = [])
     {
         $this->rawAttachments = (new Collection($this->rawAttachments))
-            ->push(['data' => $data, 'name' => $name, 'options' => $options])
+            ->push(compact('data', 'name', 'options'))
             ->unique(fn ($file) => $file['name'].$file['data'])
             ->all();
 
@@ -1552,28 +1530,6 @@ class Mailable implements MailableContract, Renderable
      * @param  array  $options
      * @return $this
      */
-    public function assertHasNoAttachments()
-    {
-        $this->renderForAssertions();
-
-        PHPUnit::assertEmpty(
-            $this->attachments,
-            'Expected no attachments, but found ['.count($this->attachments).'] file attachment(s).'
-        );
-
-        PHPUnit::assertEmpty(
-            $this->rawAttachments,
-            'Expected no attachments, but found ['.count($this->rawAttachments).'] raw data attachment(s).'
-        );
-
-        PHPUnit::assertEmpty(
-            $this->diskAttachments,
-            'Expected no attachments, but found ['.count($this->diskAttachments).'] storage attachment(s).'
-        );
-
-        return $this;
-    }
-
     public function assertHasAttachment($file, array $options = [])
     {
         $this->renderForAssertions();

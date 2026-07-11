@@ -82,13 +82,10 @@ trait InteractsWithData
     /**
      * Apply the callback if the instance contains the given key.
      *
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
      * @param  string  $key
-     * @param  callable(mixed): TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return $this|mixed
      */
     public function whenHas($key, callable $callback, ?callable $default = null)
     {
@@ -163,48 +160,15 @@ trait InteractsWithData
     /**
      * Apply the callback if the instance contains a non-empty value for the given key.
      *
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
      * @param  string  $key
-     * @param  callable(mixed): TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return $this|mixed
      */
     public function whenFilled($key, callable $callback, ?callable $default = null)
     {
         if ($this->filled($key)) {
             return $callback(data_get($this->all(), $key)) ?: $this;
-        }
-
-        if ($default) {
-            return $default();
-        }
-
-        return $this;
-    }
-
-    /**
-     * Apply the callback if the instance contains a valid enum value for the given key.
-     *
-     * @template TEnum of \BackedEnum
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
-     * @param  string  $key
-     * @param  class-string<TEnum>  $enumClass
-     * @param  callable(TEnum):TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
-     */
-    public function whenEnum($key, string $enumClass, callable $callback, ?callable $default = null)
-    {
-        if ($this->filled($key) && $this->isBackedEnum($enumClass)) {
-            $value = $enumClass::tryFrom(data_get($this->all(), $key));
-
-            if ($value !== null) {
-                return $callback($value) ?: $this;
-            }
         }
 
         if ($default) {
@@ -230,13 +194,10 @@ trait InteractsWithData
     /**
      * Apply the callback if the instance is missing the given key.
      *
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
      * @param  string  $key
-     * @param  callable(mixed): TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return $this|mixed
      */
     public function whenMissing($key, callable $callback, ?callable $default = null)
     {
@@ -386,7 +347,7 @@ trait InteractsWithData
 
         $unit = $unit instanceof Unit ? $unit : Unit::fromName($unit);
 
-        return CarbonInterval::fromString(number_format((float) $value, 10, '.', '').' '.$unit->name);
+        return $unit->interval((float) $value);
     }
 
     /**

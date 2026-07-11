@@ -140,7 +140,7 @@ class Str
      */
     public static function transliterate($string, $unknown = '?', $strict = false)
     {
-        return ASCII::to_transliterate((string) $string, $unknown, $strict);
+        return ASCII::to_transliterate($string, $unknown, $strict);
     }
 
     /**
@@ -225,7 +225,11 @@ class Str
      */
     public static function camel($value)
     {
-        return static::$camelCache[$value] ?? static::$camelCache[$value] = lcfirst(static::studly($value));
+        if (isset(static::$camelCache[$value])) {
+            return static::$camelCache[$value];
+        }
+
+        return static::$camelCache[$value] = lcfirst(static::studly($value));
     }
 
     /**
@@ -787,8 +791,6 @@ class Str
      */
     public static function markdown($string, array $options = [], array $extensions = [])
     {
-        $string = (string) $string;
-
         $converter = new GithubFlavoredMarkdownConverter($options);
 
         $environment = $converter->getEnvironment();
@@ -810,8 +812,6 @@ class Str
      */
     public static function inlineMarkdown($string, array $options = [], array $extensions = [])
     {
-        $string = (string) $string;
-
         $environment = new Environment($options);
 
         $environment->addExtension(new GithubFlavoredMarkdownExtension());
@@ -1202,7 +1202,7 @@ class Str
     public static function replaceArray($search, $replace, $subject)
     {
         if ($replace instanceof Traversable) {
-            $replace = iterator_to_array($replace);
+            $replace = Arr::from($replace);
         }
 
         $segments = explode($search, $subject);
@@ -1227,7 +1227,7 @@ class Str
     {
         try {
             return (string) $value;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             return $fallback;
         }
     }
@@ -1244,15 +1244,15 @@ class Str
     public static function replace($search, $replace, $subject, $caseSensitive = true)
     {
         if ($search instanceof Traversable) {
-            $search = iterator_to_array($search);
+            $search = Arr::from($search);
         }
 
         if ($replace instanceof Traversable) {
-            $replace = iterator_to_array($replace);
+            $replace = Arr::from($replace);
         }
 
         if ($subject instanceof Traversable) {
-            $subject = iterator_to_array($subject);
+            $subject = Arr::from($subject);
         }
 
         return $caseSensitive
@@ -1385,7 +1385,7 @@ class Str
     public static function remove($search, $subject, $caseSensitive = true)
     {
         if ($search instanceof Traversable) {
-            $search = iterator_to_array($search);
+            $search = Arr::from($search);
         }
 
         return $caseSensitive
@@ -1401,7 +1401,7 @@ class Str
      */
     public static function reverse(string $value)
     {
-        return implode('', array_reverse(mb_str_split($value)));
+        return implode(array_reverse(mb_str_split($value)));
     }
 
     /**
@@ -1448,7 +1448,7 @@ class Str
      */
     public static function headline($value)
     {
-        $parts = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = mb_split('\s+', $value);
 
         $parts = count($parts) > 1
             ? array_map(static::title(...), $parts)
@@ -1468,7 +1468,7 @@ class Str
      */
     public static function initials($value, $capitalize = false)
     {
-        $parts = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = mb_split("\s+", $value);
 
         $parts = array_map(fn ($part) => mb_substr($part, 0, 1), $parts);
 
@@ -1499,7 +1499,7 @@ class Str
 
         $endPunctuation = ['.', '!', '?', ':', '—', ','];
 
-        $words = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $words = mb_split('\s+', $value);
         $wordCount = count($words);
 
         for ($i = 0; $i < $wordCount; $i++) {
@@ -1709,42 +1709,32 @@ class Str
      * Convert a value to studly caps case.
      *
      * @param  string  $value
-     * @param  bool  $normalize  When true, all-uppercase words (e.g. acronyms) are lowercased before conversion so "CBOR" becomes "Cbor" instead of "CBOR".
      * @return ($value is '' ? '' : string)
      */
-    public static function studly($value, bool $normalize = false)
+    public static function studly($value)
     {
-        if ($normalize) {
-            $value = preg_replace_callback(
-                '/(^|[-_ \s])([A-Z]+)(?=[-_ \s]|$)/u',
-                fn ($m) => $m[1].static::lower($m[2]),
-                $value
-            );
-        }
-
         $key = $value;
 
         if (isset(static::$studlyCache[$key])) {
             return static::$studlyCache[$key];
         }
 
-        $words = preg_split('/\s+/u', static::replace(['-', '_'], ' ', $value), -1, PREG_SPLIT_NO_EMPTY);
+        $words = mb_split('\s+', static::replace(['-', '_'], ' ', $value));
 
         $studlyWords = array_map(fn ($word) => static::ucfirst($word), $words);
 
-        return static::$studlyCache[$key] = implode('', $studlyWords);
+        return static::$studlyCache[$key] = implode($studlyWords);
     }
 
     /**
      * Convert a value to Pascal case.
      *
      * @param  string  $value
-     * @param  bool  $normalize  When true, all-uppercase words (e.g. acronyms) are lowercased before conversion so "CBOR" becomes "Cbor" instead of "CBOR".
      * @return ($value is '' ? '' : string)
      */
-    public static function pascal($value, bool $normalize = false)
+    public static function pascal($value)
     {
-        return static::studly($value, $normalize);
+        return static::studly($value);
     }
 
     /**
@@ -2160,17 +2150,5 @@ class Str
         static::$snakeCache = [];
         static::$camelCache = [];
         static::$studlyCache = [];
-    }
-
-    /**
-     * Return all factory functions to their default state.
-     *
-     * @return void
-     */
-    public static function resetFactoryState()
-    {
-        static::createRandomStringsNormally();
-        static::createUlidsNormally();
-        static::createUuidsNormally();
     }
 }

@@ -125,7 +125,6 @@ class HandleExceptions
     protected function shouldIgnoreDeprecationErrors()
     {
         return ! class_exists(LogManager::class)
-            || is_null(static::$app)
             || ! static::$app->hasBeenBootstrapped()
             || (static::$app->runningUnitTests() && ! Env::get('LOG_DEPRECATIONS_WHILE_TESTING'));
     }

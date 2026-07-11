@@ -33,7 +33,7 @@ class QueryException extends PDOException
     /**
      * The PDO read / write type for the executed query.
      *
-     * @var null|'read'|'write'|'direct'
+     * @var null|'read'|'write'
      */
     public $readWriteType;
 
@@ -52,7 +52,7 @@ class QueryException extends PDOException
      * @param  array  $bindings
      * @param  \Throwable  $previous
      * @param  array  $connectionDetails
-     * @param  null|'read'|'write'|'direct'  $readWriteType
+     * @param  null|'read'|'write'  $readWriteType
      */
     public function __construct($connectionName, $sql, array $bindings, Throwable $previous, array $connectionDetails = [], $readWriteType = null)
     {

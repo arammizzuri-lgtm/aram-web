@@ -4,7 +4,6 @@ namespace Illuminate\Cache;
 
 use Illuminate\Contracts\Cache\Lock as LockContract;
 use Illuminate\Contracts\Cache\LockTimeoutException;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
@@ -77,7 +76,7 @@ abstract class Lock implements LockContract
     /**
      * Returns the owner value written into the driver for this lock.
      *
-     * @return string|null
+     * @return string
      */
     abstract protected function getCurrentOwner();
 
@@ -113,12 +112,12 @@ abstract class Lock implements LockContract
      */
     public function block($seconds, $callback = null)
     {
-        $starting = ((int) Carbon::now()->format('Uu')) / 1000;
+        $starting = ((int) now()->format('Uu')) / 1000;
 
         $milliseconds = $seconds * 1000;
 
         while (! $this->acquire()) {
-            $now = ((int) Carbon::now()->format('Uu')) / 1000;
+            $now = ((int) now()->format('Uu')) / 1000;
 
             if (($now + $this->sleepMilliseconds - $milliseconds) >= $starting) {
                 throw new LockTimeoutException;
@@ -157,16 +156,6 @@ abstract class Lock implements LockContract
     public function owner()
     {
         return $this->owner;
-    }
-
-    /**
-     * Determine if the lock is currently held by any process.
-     *
-     * @return bool
-     */
-    public function isLocked(): bool
-    {
-        return $this->getCurrentOwner() !== null;
     }
 
     /**

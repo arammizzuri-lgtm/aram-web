@@ -26,6 +26,7 @@ class IpUtils
         '169.254.0.0/16', // RFC3927
         '0.0.0.0/8',      // RFC5735
         '240.0.0.0/4',    // RFC1112
+        '100.64.0.0/10',  // RFC6598
         '::1/128',        // Loopback
         'fc00::/7',       // Unique Local Address
         'fe80::/10',      // Link Local Address
@@ -188,8 +189,11 @@ class IpUtils
      * @param int<0, 4>  $v4Bytes
      * @param int<0, 16> $v6Bytes
      */
-    public static function anonymize(string $ip, int $v4Bytes = 1, int $v6Bytes = 8): string
+    public static function anonymize(string $ip/* , int $v4Bytes = 1, int $v6Bytes = 8 */): string
     {
+        $v4Bytes = 1 < \func_num_args() ? func_get_arg(1) : 1;
+        $v6Bytes = 2 < \func_num_args() ? func_get_arg(2) : 8;
+
         if ($v4Bytes < 0 || $v6Bytes < 0) {
             throw new \InvalidArgumentException('Cannot anonymize less than 0 bytes.');
         }

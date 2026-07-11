@@ -116,9 +116,9 @@ trait EnumeratesValues
      * @param  \Illuminate\Contracts\Support\Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null  $items
      * @return static<TMakeKey, TMakeValue>
      */
-    public static function make($items = [], ...$args)
+    public static function make($items = [])
     {
-        return new static($items, ...$args);
+        return new static($items);
     }
 
     /**
@@ -129,11 +129,11 @@ trait EnumeratesValues
      * @param  iterable<array-key, TWrapValue>|TWrapValue  $value
      * @return static<array-key, TWrapValue>
      */
-    public static function wrap($value, ...$args)
+    public static function wrap($value)
     {
         return $value instanceof Enumerable
-            ? new static($value, ...$args)
-            : new static(Arr::wrap($value), ...$args);
+            ? new static($value)
+            : new static(Arr::wrap($value));
     }
 
     /**
@@ -155,9 +155,9 @@ trait EnumeratesValues
      *
      * @return static
      */
-    public static function empty(...$args)
+    public static function empty()
     {
-        return new static([], ...$args);
+        return new static([]);
     }
 
     /**
@@ -169,13 +169,13 @@ trait EnumeratesValues
      * @param  (callable(int): TTimesValue)|null  $callback
      * @return static<int, TTimesValue>
      */
-    public static function times($number, ?callable $callback = null, ...$args)
+    public static function times($number, ?callable $callback = null)
     {
         if ($number < 1) {
-            return new static([], ...$args);
+            return new static;
         }
 
-        return static::range(1, $number, 1, ...$args)
+        return static::range(1, $number)
             ->unless($callback == null)
             ->map($callback);
     }
@@ -188,9 +188,9 @@ trait EnumeratesValues
      * @param  int  $flags
      * @return static<TKey, TValue>
      */
-    public static function fromJson($json, $depth = 512, $flags = 0, ...$args)
+    public static function fromJson($json, $depth = 512, $flags = 0)
     {
-        return new static(json_decode($json, true, $depth, $flags), ...$args);
+        return new static(json_decode($json, true, $depth, $flags));
     }
 
     /**
@@ -486,10 +486,8 @@ trait EnumeratesValues
     /**
      * Get the min value of a given key.
      *
-     * @template TMinResult = mixed
-     *
-     * @param  (callable(TValue): TMinResult)|string|null  $callback
-     * @return ($callback is callable ? ?TMinResult : ($callback is null ? ?TValue : mixed))
+     * @param  (callable(TValue):mixed)|string|null  $callback
+     * @return mixed
      */
     public function min($callback = null)
     {
@@ -503,10 +501,8 @@ trait EnumeratesValues
     /**
      * Get the max value of a given key.
      *
-     * @template TMaxResult = mixed
-     *
-     * @param  (callable(TValue): TMaxResult)|string|null  $callback
-     * @return ($callback is callable ? ?TMaxResult : ($callback is null ? ?TValue : mixed))
+     * @param  (callable(TValue):mixed)|string|null  $callback
+     * @return mixed
      */
     public function max($callback = null)
     {
@@ -549,7 +545,7 @@ trait EnumeratesValues
 
         [$passed, $failed] = Arr::partition($this->getIterator(), $callback);
 
-        return $this->newInstance([$this->newInstance($passed), $this->newInstance($failed)]);
+        return new static([new static($passed), new static($failed)]);
     }
 
     /**
@@ -576,7 +572,7 @@ trait EnumeratesValues
      *
      * @template TReturnType
      *
-     * @param  (callable(TValue, TKey): TReturnType)|string|null  $callback
+     * @param  (callable(TValue): TReturnType)|string|null  $callback
      * @return ($callback is callable ? TReturnType : mixed)
      */
     public function sum($callback = null)
@@ -585,7 +581,7 @@ trait EnumeratesValues
             ? $this->identity()
             : $this->valueRetriever($callback);
 
-        return $this->reduce(fn ($result, $item, $key) => $result + $callback($item, $key), 0);
+        return $this->reduce(fn ($result, $item) => $result + $callback($item), 0);
     }
 
     /**
@@ -844,7 +840,7 @@ trait EnumeratesValues
      *
      * @param  callable(TReduceInitial|TReduceReturnType, TValue, TKey): TReduceReturnType  $callback
      * @param  TReduceInitial  $initial
-     * @return TReduceInitial|TReduceReturnType
+     * @return TReduceReturnType
      */
     public function reduce(callable $callback, $initial = null)
     {
@@ -892,7 +888,7 @@ trait EnumeratesValues
      *
      * @param  callable(TReduceWithKeysInitial|TReduceWithKeysReturnType, TValue, TKey): TReduceWithKeysReturnType  $callback
      * @param  TReduceWithKeysInitial  $initial
-     * @return TReduceWithKeysInitial|TReduceWithKeysReturnType
+     * @return TReduceWithKeysReturnType
      */
     public function reduceWithKeys(callable $callback, $initial = null)
     {

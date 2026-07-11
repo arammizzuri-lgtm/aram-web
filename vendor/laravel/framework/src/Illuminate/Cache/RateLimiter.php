@@ -289,10 +289,8 @@ class RateLimiter
     /**
      * Execute the given callback without serialization or compression when applicable.
      *
-     * @template TReturn
-     *
-     * @param  (callable(): TReturn)  $callback
-     * @return TReturn
+     * @param  callable  $callback
+     * @return mixed
      */
     protected function withoutSerializationOrCompression(callable $callback)
     {

@@ -2,7 +2,6 @@
 
 namespace Illuminate\Concurrency;
 
-use Carbon\CarbonInterval;
 use Closure;
 use Exception;
 use Illuminate\Console\Application;
@@ -27,24 +26,18 @@ class ProcessDriver implements Driver
 
     /**
      * Run the given tasks concurrently and return an array containing the results.
-     *
-     * @throws \Throwable
      */
-    public function run(Closure|array $tasks, CarbonInterval|int|null $timeout = null): array
+    public function run(Closure|array $tasks): array
     {
         $command = Application::formatCommandString('invoke-serialized-closure');
 
-        $results = $this->processFactory->pool(function (Pool $pool) use ($tasks, $command, $timeout) {
+        $results = $this->processFactory->pool(function (Pool $pool) use ($tasks, $command) {
             foreach (Arr::wrap($tasks) as $key => $task) {
-                $process = $pool->as($key)->path(base_path())->env([
+                $pool->as($key)->path(base_path())->env([
                     'LARAVEL_INVOKABLE_CLOSURE' => base64_encode(
                         serialize(new SerializableClosure($task))
                     ),
                 ])->command($command);
-
-                if (! is_null($timeout)) {
-                    $process->timeout($timeout);
-                }
             }
         })->start()->wait();
 

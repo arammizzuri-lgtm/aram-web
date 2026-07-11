@@ -3,6 +3,8 @@
 namespace Livewire\Features\SupportComputed;
 
 use function Livewire\invade;
+use function Livewire\on;
+use function Livewire\off;
 
 use Livewire\Features\SupportAttributes\Attribute;
 use Illuminate\Support\Facades\Cache;
@@ -20,6 +22,15 @@ class BaseComputed extends Attribute
         public $tags = null,
     ) {}
 
+    function boot()
+    {
+        off('__get', $this->handleMagicGet(...));
+        on('__get', $this->handleMagicGet(...));
+
+        off('__unset', $this->handleMagicUnset(...));
+        on('__unset', $this->handleMagicUnset(...));
+    }
+
     function call()
     {
         throw new CannotCallComputedDirectlyException(
@@ -28,20 +39,19 @@ class BaseComputed extends Attribute
         );
     }
 
-    public function handleMagicGet($returnValue)
+    protected function handleMagicGet($target, $property, $returnValue)
     {
+        if ($target !== $this->component) return;
+        if ($this->generatePropertyName($property) !== $this->getName()) return;
+
         if ($this->persist) {
-            $returnValue(
-                $this->requestCachedValue ??= $this->handlePersistedGet()
-            );
+            $returnValue($this->handlePersistedGet());
 
             return;
         }
 
         if ($this->cache) {
-            $returnValue(
-                $this->requestCachedValue ??= $this->handleCachedGet()
-            );
+            $returnValue($this->handleCachedGet());
 
             return;
         }
@@ -51,18 +61,19 @@ class BaseComputed extends Attribute
         );
     }
 
-    public function handleMagicUnset()
+    protected function handleMagicUnset($target, $property)
     {
+        if ($target !== $this->component) return;
+        if ($property !== $this->getName()) return;
+
         if ($this->persist) {
             $this->handlePersistedUnset();
-            unset($this->requestCachedValue);
 
             return;
         }
 
         if ($this->cache) {
             $this->handleCachedUnset();
-            unset($this->requestCachedValue);
 
             return;
         }

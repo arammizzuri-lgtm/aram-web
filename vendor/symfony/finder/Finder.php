@@ -54,7 +54,6 @@ class Finder implements \IteratorAggregate, \Countable
     private array $depths = [];
     private array $sizes = [];
     private bool $followLinks = false;
-    private bool $unixPaths = false;
     private bool $reverseSorting = false;
     private \Closure|int|false $sort = false;
     private int $ignore = 0;
@@ -613,20 +612,6 @@ class Finder implements \IteratorAggregate, \Countable
     }
 
     /**
-     * Forces forward slashes as the directory separator in returned paths.
-     *
-     * This is intended for Windows, where the native separator is "\".
-     *
-     * @return $this
-     */
-    public function useUnixPaths(): static
-    {
-        $this->unixPaths = true;
-
-        return $this;
-    }
-
-    /**
      * Tells finder to ignore unreadable directories.
      *
      * By default, scanning unreadable directories content throws an AccessDeniedException.
@@ -797,10 +782,6 @@ class Finder implements \IteratorAggregate, \Countable
             $flags |= \RecursiveDirectoryIterator::FOLLOW_SYMLINKS;
         }
 
-        if ($this->unixPaths) {
-            $flags |= \RecursiveDirectoryIterator::UNIX_PATHS;
-        }
-
         $iterator = new Iterator\RecursiveDirectoryIterator($dir, $flags, $this->ignoreUnreadableDirs);
 
         if ($exclude) {
@@ -851,7 +832,7 @@ class Finder implements \IteratorAggregate, \Countable
     /**
      * Normalizes given directory names by removing trailing slashes.
      *
-     * Excluding: (s)ftp:// or ssh2.(s)ftp:// wrapper
+     * Excluding: stream wrapper schemes such as ftp:// or s3://
      */
     private function normalizeDir(string $dir): string
     {
@@ -861,7 +842,7 @@ class Finder implements \IteratorAggregate, \Countable
 
         $dir = rtrim($dir, '/'.\DIRECTORY_SEPARATOR);
 
-        if (preg_match('#^(ssh2\.)?s?ftp://#', $dir)) {
+        if (preg_match('#^[a-zA-Z][a-zA-Z0-9.+-]*://#', $dir)) {
             $dir .= '/';
         }
 

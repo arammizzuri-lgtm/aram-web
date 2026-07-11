@@ -2,11 +2,6 @@
 
 namespace Illuminate\Database\Eloquent;
 
-/**
- * @template TModel of \Illuminate\Database\Eloquent\Model
- *
- * @implements \Illuminate\Database\Eloquent\Scope<TModel>
- */
 class SoftDeletingScope implements Scope
 {
     /**
@@ -18,6 +13,8 @@ class SoftDeletingScope implements Scope
 
     /**
      * Apply the scope to a given Eloquent query builder.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
      *
      * @param  \Illuminate\Database\Eloquent\Builder<TModel>  $builder
      * @param  TModel  $model
@@ -57,7 +54,7 @@ class SoftDeletingScope implements Scope
      */
     protected function getDeletedAtColumn(Builder $builder)
     {
-        if ((array) $builder->getQuery()->joins !== []) {
+        if (count((array) $builder->getQuery()->joins) > 0) {
             return $builder->getModel()->getQualifiedDeletedAtColumn();
         }
 

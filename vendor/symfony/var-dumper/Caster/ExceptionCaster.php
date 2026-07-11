@@ -23,7 +23,7 @@ use Symfony\Component\VarDumper\Exception\ThrowingCasterException;
  *
  * @final
  *
- * @internal
+ * @internal since Symfony 7.3
  */
 class ExceptionCaster
 {
@@ -221,7 +221,7 @@ class ExceptionCaster
                         if (isset($f['object'])) {
                             $template = $f['object'];
                         } elseif ((new \ReflectionClass($f['class']))->isInstantiable()) {
-                            $template = unserialize(\sprintf('O:%d:"%s":0:{}', \strlen($f['class']), $f['class']));
+                            $template = unserialize(\sprintf('O:%d:"%s":0:{}', \strlen($f['class']), $f['class']), ['allowed_classes' => true]);
                         }
                         if (null !== $template) {
                             $ellipsis = 0;
