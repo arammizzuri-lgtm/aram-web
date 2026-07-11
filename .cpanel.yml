@@ -1,0 +1,16 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/qbpxqy9q9gzc/aram-web
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R * $DEPLOYPATH
+    - /bin/mkdir -p $DEPLOYPATH/storage/framework/sessions $DEPLOYPATH/storage/framework/views $DEPLOYPATH/storage/framework/cache/data $DEPLOYPATH/storage/logs $DEPLOYPATH/storage/app/public $DEPLOYPATH/storage/app/private $DEPLOYPATH/bootstrap/cache
+    - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
+    - test -f $DEPLOYPATH/.env || /bin/cp $DEPLOYPATH/.env.example $DEPLOYPATH/.env
+    - test -f $DEPLOYPATH/database/database.sqlite || /bin/touch $DEPLOYPATH/database/database.sqlite
+    - cd $DEPLOYPATH && (grep -q '^APP_KEY=$' .env && php artisan key:generate --force || true)
+    - cd $DEPLOYPATH && php artisan migrate --force
+    - cd $DEPLOYPATH && (test -L public/storage || php artisan storage:link)
+    - cd $DEPLOYPATH && php artisan config:cache
+    - cd $DEPLOYPATH && php artisan route:cache
+    - cd $DEPLOYPATH && php artisan view:cache
