@@ -16,22 +16,22 @@
   },
   {
     "key": "hero_title_line1_en",
-    "value": "Architecture",
+    "value": "Architecture by",
     "group": "hero"
   },
   {
     "key": "hero_title_line1_ku",
-    "value": "مێمارى",
+    "value": "تەڵارسازی لەلایەن",
     "group": "hero"
   },
   {
     "key": "hero_title_line2_en",
-    "value": "for Kurdistan",
+    "value": "ئارام مزووری",
     "group": "hero"
   },
   {
     "key": "hero_title_line2_ku",
-    "value": "بۆ کوردستان",
+    "value": "ئارام مزووری",
     "group": "hero"
   },
   {
@@ -61,7 +61,7 @@
   },
   {
     "key": "about_heading_ku",
-    "value": "مێمارى فڕێدراو لە <em>ناسنامەی کوردی</em>",
+    "value": "تەڵارسازی فڕێدراو لە <em>ناسنامەی کوردی</em>",
     "group": "about"
   },
   {
@@ -86,32 +86,52 @@
   },
   {
     "key": "about_stat2_num",
-    "value": "12",
+    "value": "68",
     "group": "about"
   },
   {
     "key": "about_stat2_label",
-    "value": "Awards",
+    "value": "Clients",
     "group": "about"
   },
   {
     "key": "about_stat3_num",
-    "value": "15",
+    "value": "16",
     "group": "about"
   },
   {
     "key": "about_stat3_label",
-    "value": "Years",
+    "value": "Cities",
     "group": "about"
   },
   {
     "key": "about_stat4_num",
-    "value": "3",
+    "value": "5",
     "group": "about"
   },
   {
     "key": "about_stat4_label",
     "value": "Countries",
+    "group": "about"
+  },
+  {
+    "key": "about_area_num",
+    "value": "1240000",
+    "group": "about"
+  },
+  {
+    "key": "about_area_unit",
+    "value": "m²",
+    "group": "about"
+  },
+  {
+    "key": "about_area_label",
+    "value": "Total area designed",
+    "group": "about"
+  },
+  {
+    "key": "about_area_note",
+    "value": "Of the built environment shaped across Greater Kurdistan and beyond — from intimate cliffside retreats to whole-district masterplans.",
     "group": "about"
   },
   {
@@ -126,7 +146,7 @@
   },
   {
     "key": "about_portrait_img",
-    "value": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80",
+    "value": "/images/aram-portrait-sq.jpg",
     "group": "about"
   },
   {
@@ -311,7 +331,7 @@
   },
   {
     "key": "footer_kurdish",
-    "value": "مێمارى · هەولێر · کوردستان",
+    "value": "تەڵارسازی · هەولێر · کوردستان",
     "group": "footer"
   },
   {

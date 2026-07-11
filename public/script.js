@@ -93,202 +93,60 @@ function buildKurdishSun(container, opts = {}) {
     const loaderSun = document.getElementById('loaderSun');
     if (!loader || !loaderSun) return;
 
-    buildKurdishSun(loaderSun, { size: 90, color: '#F5C518', spin: true, spinSpeed: 0.03 });
+    buildKurdishSun(loaderSun, { size: 150, color: '#F5C518', spin: true, spinSpeed: 0.03 });
 
     window.addEventListener('load', () => {
-        setTimeout(() => loader.classList.add('out'), 1700);
+        setTimeout(() => {
+            loader.classList.add('out');
+            document.body.classList.add('is-loaded');   // triggers the hero reveal
+        }, 1700);
     });
+})();
+
+/* ---- Hero (kinetic) ------------------------------------ */
+(function initHero() {
+    // Safety net: reveal the hero even if the loader never fires.
+    setTimeout(function () { document.body.classList.add('is-loaded'); }, 2500);
+
+    // Live Erbil clock
+    var clock = document.getElementById('heroClock');
+    if (clock) {
+        var tick = function () {
+            try {
+                clock.textContent = new Date().toLocaleTimeString('en-GB',
+                    { timeZone: 'Asia/Baghdad', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            } catch (e) {
+                clock.textContent = new Date().toLocaleTimeString();
+            }
+        };
+        tick();
+        setInterval(tick, 1000);
+    }
+
+    // Magnetic primary CTA (pointer devices only)
+    var go = document.getElementById('heroGo');
+    if (go && window.matchMedia && window.matchMedia('(pointer:fine)').matches) {
+        go.addEventListener('pointermove', function (e) {
+            var r = go.getBoundingClientRect();
+            var mx = e.clientX - (r.left + r.width / 2);
+            var my = e.clientY - (r.top + r.height / 2);
+            go.style.transform = 'translate(' + (mx * 0.24) + 'px,' + (my * 0.4) + 'px)';
+        });
+        go.addEventListener('pointerleave', function () { go.style.transform = ''; });
+    }
 })();
 
 /* ---- Kurdistan Sun placements -------------------------- */
 (function placeSuns() {
-    // Hero — full-opacity sun + stat pills revealed on each full rotation
+    // Hero — the Kurdish sun as a slowly, continuously spinning brand mark.
+    // (The figures are now shown in the hero's glass stat chips, so the old
+    //  ray-presents-a-stat choreography is retired.)
     var heroWrap = document.getElementById('heroSun');
     if (heroWrap) {
-        // The sun sits on a single rotation layer, scaled down inside its wrap so
-        // a clear ring of space surrounds it — room for a ray to grow into. There
-        // is NO perpetual drift: the sun spins exactly one full turn, comes to a
-        // complete stop, and only then does one ray reach out to present a stat.
-        var SUN_SCALE = 0.74;                       // sun diameter ÷ wrap
-        var heroSpin  = document.createElement('div');
-        heroSpin.className = 'hs-spin';
-        heroSpin.style.cssText =
-            'position:absolute;top:50%;left:50%;' +
-            'width:' + (SUN_SCALE * 100) + '%;height:' + (SUN_SCALE * 100) + '%;' +
-            'transform-origin:50% 50%;transform:translate(-50%,-50%) rotate(0deg);';
-        heroWrap.appendChild(heroSpin);
-
-        var heroSvg = buildKurdishSun(heroSpin, { size: 520, color: '#F5C518' });
+        var heroSvg = buildKurdishSun(heroWrap, { size: 520, color: '#F5C518', spin: true, spinSpeed: 0.05 });
         heroSvg.style.width  = '100%';
         heroSvg.style.height = '100%';
-
-        // --- Sun geometry (mirrors buildKurdishSun) --------------------------
-        var SUN_RAYS = 21, SUN_C = 100, RAY_BASE = 38, RAY_BASE_WIDE = 42, RAY_TIP = 76;
-        var STEP   = (2 * Math.PI) / SUN_RAYS;
-        var rayEls = heroSvg.querySelectorAll('polygon');   // 21 ray triangles, in build order
-
-        // A ray's three points for a given tip + base radius. As a ray reaches out
-        // its base swells a little too, so it reads as a bold ray rather than a needle.
-        function rayPoints(i, tipR, baseR) {
-            if (baseR == null) baseR = RAY_BASE;
-            var aL = STEP * i         - Math.PI / 2;
-            var aM = STEP * (i + 0.5) - Math.PI / 2;
-            var aR = STEP * (i + 1)   - Math.PI / 2;
-            return (SUN_C + baseR * Math.cos(aL)) + ',' + (SUN_C + baseR * Math.sin(aL)) + ' ' +
-                   (SUN_C + tipR  * Math.cos(aM)) + ',' + (SUN_C + tipR  * Math.sin(aM)) + ' ' +
-                   (SUN_C + baseR * Math.cos(aR)) + ',' + (SUN_C + baseR * Math.sin(aR));
-        }
-        function rayMidDeg(i) { return STEP * (i + 0.5) * 180 / Math.PI - 90; }   // 0° = right, 90° = down
-        function angDiff(a, b) { return ((a - b) % 360 + 540) % 360 - 180; }
-
-        // --- Four stats, each pinned to a compass point ----------------------
-        var HERO_STATS = [
-            { num: '21',   lbl: 'Projects',    dir: 'n', angle: -90 },
-            { num: '16',   lbl: 'Cities',      dir: 'e', angle:   0 },
-            { num: '870K', lbl: 'm² Designed', dir: 's', angle:  90 },
-            { num: '34',   lbl: 'Partners',    dir: 'w', angle: 180 },
-        ];
-        // For each stat, pick the ray nearest its compass angle plus the tiny
-        // rotation that lands that ray dead on the axis, so the grown ray points
-        // straight at the pill.
-        HERO_STATS.forEach(function (st) {
-            var best = 0, bestD = 1e9;
-            for (var i = 0; i < SUN_RAYS; i++) {
-                var d = Math.abs(angDiff(rayMidDeg(i), st.angle));
-                if (d < bestD) { bestD = d; best = i; }
-            }
-            st.ray   = best;
-            st.align = angDiff(st.angle, rayMidDeg(best));
-        });
-
-        // --- Build the stat pills --------------------------------------------
-        var heroAnchors = HERO_STATS.map(function (st) {
-            var parts  = String(st.num).match(/^([\d.]+)(\D*)$/);
-            var anchor = document.createElement('div');
-            anchor.className = 'hs-anchor hs-anchor--' + st.dir;
-            anchor.innerHTML =
-                '<div class="hs-stat">' +
-                    '<span class="hs-stat__num" data-target="' + (parts ? parts[1] : '0') + '" data-suffix="' + (parts ? parts[2] : '') + '">' + st.num + '</span>' +
-                    '<span class="hs-stat__lbl">' + st.lbl + '</span>' +
-                '</div>';
-            heroWrap.appendChild(anchor);
-            return anchor;
-        });
-
-        // Distance (in the sun's own SVG units) from the centre to a pill's inner
-        // edge, so a ray can grow to meet it exactly at any screen size. The pill's
-        // sun-facing edge is its transform-origin, so this is correct even while
-        // the pill is still scaled down.
-        function pillReach(idx) {
-            var w  = heroWrap.getBoundingClientRect();
-            var cx = w.left + w.width / 2, cy = w.top + w.height / 2;
-            var half = (w.width / 2) * SUN_SCALE;            // sun's pixel radius → 100 units
-            var p  = heroAnchors[idx].querySelector('.hs-stat').getBoundingClientRect();
-            var nx = Math.max(p.left, Math.min(cx, p.right));
-            var ny = Math.max(p.top,  Math.min(cy, p.bottom));
-            var r  = Math.hypot(nx - cx, ny - cy) / half * 100 - 3;   // 3-unit breathing gap
-            return Math.max(RAY_TIP + 4, Math.min(99, r));           // always a visible grow, never poke through
-        }
-
-        // Count-up for one pill's number.
-        function heroCountUp(anchor) {
-            var el = anchor.querySelector('.hs-stat__num');
-            if (!el) return;
-            var target = parseFloat(el.getAttribute('data-target')) || 0;
-            var suffix = el.getAttribute('data-suffix') || '';
-            var dur = 850, start = null;
-            (function frame(t) {
-                if (start === null) start = t;
-                var p = Math.min((t - start) / dur, 1);
-                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))) + suffix;
-                if (p < 1) requestAnimationFrame(frame);
-                else el.textContent = target + suffix;
-            })(performance.now());
-        }
-
-        // --- Tiny promise-based tween (one rAF timeline, full easing control) ---
-        function tween(dur, ease, onUpdate) {
-            return new Promise(function (resolve) {
-                var start = null;
-                (function frame(t) {
-                    if (start === null) start = t;
-                    var p = Math.min((t - start) / dur, 1);
-                    onUpdate(ease(p));
-                    if (p < 1) requestAnimationFrame(frame);
-                    else resolve();
-                })(performance.now());
-            });
-        }
-        var easeInOut    = function (p) { return p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; };
-        var easeOutCubic = function (p) { return 1 - Math.pow(1 - p, 3); };
-        var easeInCubic  = function (p) { return p*p*p; };
-        var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
-
-        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        if (reduceMotion) {
-            // Motion-free: present every stat at once, each already on a grown ray.
-            // Re-bake after web fonts load (they shift pill widths) and on resize,
-            // so the static rays always meet their pills.
-            heroAnchors.forEach(function (a) { a.classList.add('is-active'); });
-            var bakeStatic = function () {
-                HERO_STATS.forEach(function (st, i) {
-                    rayEls[st.ray].setAttribute('points', rayPoints(st.ray, pillReach(i), RAY_BASE_WIDE));
-                });
-            };
-            bakeStatic();
-            if (document.fonts && document.fonts.ready) document.fonts.ready.then(bakeStatic);
-            var rzT;
-            window.addEventListener('resize', function () { clearTimeout(rzT); rzT = setTimeout(bakeStatic, 150); });
-        } else {
-            var heroInView = true;
-            if ('IntersectionObserver' in window) {
-                new IntersectionObserver(function (e) { heroInView = e[0].isIntersecting; }, { threshold: 0.12 }).observe(heroWrap);
-            }
-
-            var rot = 0;  // accumulated sun rotation (deg)
-            function setRot(deg) { heroSpin.style.transform = 'translate(-50%,-50%) rotate(' + deg + 'deg)'; }
-
-            // Spin one full turn forward, stopping with `align` so the next ray
-            // ends up dead on its compass axis.
-            function spinToNext(align) {
-                var from = rot;
-                var to   = from + 360 + angDiff(align, from + 360);   // ~one turn, snapped to align
-                rot = to;
-                return tween(1500, easeInOut, function (k) { setRot(from + (to - from) * k); });
-            }
-            // Grow / pull back one ray's tip + base between its normal and reaching length.
-            function growRay(i, toR)    { return tween(660, easeOutCubic, function (k) { rayEls[i].setAttribute('points', rayPoints(i, RAY_TIP + (toR - RAY_TIP) * k, RAY_BASE + (RAY_BASE_WIDE - RAY_BASE) * k)); }); }
-            function shrinkRay(i, fromR){ return tween(430, easeInCubic,  function (k) { rayEls[i].setAttribute('points', rayPoints(i, fromR - (fromR - RAY_TIP) * k, RAY_BASE_WIDE - (RAY_BASE_WIDE - RAY_BASE) * k)); }); }
-
-            // The choreography, looping forever:
-            //   spin one full turn → stop → a ray grows out to a stat → hold so it
-            //   can be read → the ray retracts → spin again → the next ray presents
-            //   the next stat.
-            (async function runHeroCycle() {
-                await wait(650);
-                var i = 0;
-                while (true) {
-                    while (!heroInView) { await wait(400); }
-                    var st = HERO_STATS[i], anchor = heroAnchors[i];
-
-                    await spinToNext(st.align);              // full turn, comes to rest
-                    var reach = pillReach(i);
-                    anchor.classList.add('is-active');        // pill begins to appear
-                    heroCountUp(anchor);
-                    await growRay(st.ray, reach);             // its ray expands out to the pill
-                    await wait(3200);                         // hold so it can be read
-
-                    anchor.classList.remove('is-active');     // pill fades away
-                    await shrinkRay(st.ray, reach);           // ray pulls back into the sun
-                    await wait(280);                          // a beat before the next spin
-
-                    i = (i + 1) % HERO_STATS.length;
-                }
-            })();
-        }
     }
-
     // Kurdish flag band (tiny)
     const bandWrap = document.getElementById('bandSun');
     if (bandWrap) {
@@ -317,21 +175,23 @@ function buildKurdishSun(container, opts = {}) {
 
     let mx = 0, my = 0, fx = 0, fy = 0;
 
+    // Record coords only — all DOM writes happen once per frame below.
+    // (Writing style on every mousemove fires layout hundreds of times a
+    // second on high-Hz mice and made the cursor lag the whole page.)
     document.addEventListener('mousemove', e => {
         mx = e.clientX; my = e.clientY;
-        cursor.style.left = mx + 'px';
-        cursor.style.top  = my + 'px';
-    });
+    }, { passive: true });
 
     (function tick() {
-        fx += (mx - fx) * 0.1;
-        fy += (my - fy) * 0.1;
-        follower.style.left = fx + 'px';
-        follower.style.top  = fy + 'px';
+        fx += (mx - fx) * 0.18;
+        fy += (my - fy) * 0.18;
+        // translate3d = compositor-only: no reflow, no fighting the WebGL loop
+        cursor.style.transform   = 'translate3d(' + mx + 'px,' + my + 'px,0) translate(-50%,-50%)';
+        follower.style.transform = 'translate3d(' + fx + 'px,' + fy + 'px,0) translate(-50%,-50%)';
         requestAnimationFrame(tick);
     })();
 
-    const hoverTargets = 'a, button, .pcard, input, textarea, .filter-btn, .lang-toggle';
+    const hoverTargets = 'a, button, .pgc, input, textarea, select, .pgf-btn, .lang-toggle, .client-logo, .clients-modal__tile';
     document.querySelectorAll(hoverTargets).forEach(el => {
         el.addEventListener('mouseenter', () => {
             cursor.classList.add('cursor--expand');
@@ -427,6 +287,7 @@ function buildKurdishSun(container, opts = {}) {
     // Mark elements for reveal
     const selectors = [
         '.about__text', '.about__side',
+        '.services__head', '.service',
         '.process__head',
         '.contact__info', '.contact__form',
     ];
@@ -449,41 +310,93 @@ function buildKurdishSun(container, opts = {}) {
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
 
-/* ---- Animated Stat Counters ---------------------------- */
-(function initCounters() {
-    const stats = document.querySelectorAll('.stat__num[data-target]');
-    if (!stats.length) return;
+/* ---- Process timeline (scroll-told) -------------------- */
+(function initProcess() {
+    const section = document.getElementById('process');
+    if (!section) return;
+    const list  = document.getElementById('procList');
+    const items = Array.from(section.querySelectorAll('.process__item'));
+    if (!list || !items.length) return;
 
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (!e.isIntersecting) return;
-            const el     = e.target;
-            const target = parseInt(el.dataset.target, 10);
-            let current  = 0;
-            const step   = target / 60;
+    const nowEl    = document.getElementById('procNow');
+    const barEl    = document.getElementById('procBar');
+    const railFill = document.getElementById('procRailFill');
+    const rail     = section.querySelector('.process__rail');
+    const total    = items.length;
+    let activeIdx  = -1;
 
-            const timer = setInterval(() => {
-                current += step;
-                if (current >= target) { current = target; clearInterval(timer); }
-                el.textContent = Math.floor(current);
-            }, 22);
+    const pad2 = n => (n < 10 ? '0' + n : '' + n);
 
-            io.unobserve(el);
+    // Grow the gold rail fill down to the active node's centre.
+    function railTo(idx) {
+        if (!railFill || !rail || !items[idx]) return;
+        const orb = items[idx].querySelector('.process__orb');
+        if (!orb) return;
+        const o = orb.getBoundingClientRect();
+        const r = rail.getBoundingClientRect();
+        railFill.style.height = Math.max(0, (o.top + o.height / 2) - r.top) + 'px';
+    }
+
+    function setActive(idx) {
+        if (idx === activeIdx) return;
+        activeIdx = idx;
+        items.forEach((it, i) => {
+            it.classList.toggle('is-active', i === idx);
+            it.classList.toggle('is-done',   i <  idx);
         });
-    }, { threshold: 0.5 });
+        if (nowEl) nowEl.textContent = pad2(idx + 1);
+        if (barEl) barEl.style.width = (((idx + 1) / total) * 100) + '%';
+        railTo(idx);
+    }
 
-    stats.forEach(el => io.observe(el));
+    // Reveal each card as it scrolls into view.
+    const revIO = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revIO.unobserve(e.target); } });
+    }, { threshold: 0.28 });
+    items.forEach(it => revIO.observe(it));
+
+    // Active step = whichever crosses the viewport's middle band.
+    const actIO = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const idx = items.indexOf(e.target);
+                if (idx >= 0) setActive(idx);
+            }
+        });
+    }, { rootMargin: '-46% 0px -46% 0px', threshold: 0 });
+    items.forEach(it => actIO.observe(it));
+
+    // Keep the rail fill aligned when layout shifts.
+    window.addEventListener('resize', () => { if (activeIdx >= 0) railTo(activeIdx); }, { passive: true });
+
+    // Pointer-tracking spotlight on each card.
+    section.querySelectorAll('.process__card').forEach(card => {
+        card.addEventListener('pointermove', e => {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+            card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+        });
+    });
+
+    setActive(0);
 })();
+
+/* ---- Hero stats -----------------------------------------
+   The figures render as 3D glass cards inside the WebGL ring — see
+   hero3d.js (count-up happens on the card textures themselves). The
+   DOM keeps only the visually-hidden #heroStatsData source list. */
 
 /* ---- Language Toggle ----------------------------------- */
 (function initLang() {
-    const btn = document.getElementById('langToggle');
-    if (!btn) return;
+    const btn     = document.getElementById('langToggle'); // nav pill (desktop)
+    const heroBtn = document.getElementById('heroLang');   // hero pill (mobile)
+    if (!btn && !heroBtn) return;
     let isKu = false;
 
-    btn.addEventListener('click', () => {
+    function toggle() {
         isKu = !isKu;
-        btn.textContent = isKu ? 'English' : 'کوردی';
+        if (btn)     btn.textContent     = isKu ? 'English' : 'کوردی';
+        if (heroBtn) heroBtn.textContent = isKu ? 'English Version' : 'وەشانی کوردی · Kurdish Version';
 
         // direction
         document.documentElement.setAttribute('dir', isKu ? 'rtl' : 'ltr');
@@ -500,6 +413,144 @@ function buildKurdishSun(container, opts = {}) {
                 el.textContent = text;
             }
         });
+
+        // swap input placeholders (data-en-ph / data-ku-ph)
+        document.querySelectorAll('[data-en-ph][data-ku-ph]').forEach(el => {
+            el.setAttribute('placeholder', isKu ? el.dataset.kuPh : el.dataset.enPh);
+        });
+
+        // let JS-rendered UI (e.g. the open project overlay) re-render its language
+        document.dispatchEvent(new Event('langchange'));
+    }
+
+    if (btn)     btn.addEventListener('click', toggle);
+    if (heroBtn) heroBtn.addEventListener('click', toggle);
+})();
+
+/* ---- Process showcase — liquid-glass design reel ---------
+   Cycles a cover photo from every project (3s crossfade), pauses
+   off-screen, and clicks through to the project overlay. Desktop
+   only — CSS hides it ≤1100px and this init bails there too. */
+(function initProcessShowcase() {
+    const box = document.getElementById('processShowcase');
+    if (!box) return;
+    if (window.matchMedia('(max-width: 1100px)').matches) return;
+    const site = window.__SITE__;
+    if (!site || !site.projects) return;
+
+    // every project that has a cover image, in site order
+    const slides = site.projects
+        .map((p, idx) => ({ idx, num: p.num, name: p.name, nameKu: p.name_ku, img: (p.imgs || [])[0] }))
+        .filter(s => s.img);
+    if (!slides.length) { box.hidden = true; return; }
+
+    const imgs   = box.querySelectorAll('.pshow__img');
+    const numEl  = document.getElementById('pshowNum');
+    const nameEl = document.getElementById('pshowName');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let cur = 0, active = 0, inView = true, timer = null;
+
+    function caption(s) {
+        const isKu = document.documentElement.getAttribute('dir') === 'rtl';
+        numEl.textContent  = s.num;
+        nameEl.textContent = (isKu && s.nameKu) ? s.nameKu : s.name;
+    }
+    function show(i, instant) {
+        const s = slides[i];
+        const next = imgs[1 - active];
+        next.onload = () => {
+            imgs[active].classList.remove('on');
+            next.classList.add('on');
+            active = 1 - active;
+            caption(s);
+        };
+        next.src = s.img;
+        if (instant && next.complete) next.onload();
+    }
+    show(0, true);
+
+    if (!reduceMotion && slides.length > 1) {
+        timer = setInterval(() => {
+            if (!inView || document.hidden) return;
+            cur = (cur + 1) % slides.length;
+            show(cur);
+        }, 3000);
+    }
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(entries => { inView = entries[0].isIntersecting; }, { threshold: 0.15 })
+            .observe(box);
+    }
+    document.addEventListener('langchange', () => caption(slides[cur]));
+
+    // the card is a door to the project itself
+    function openCurrent() {
+        if (typeof window.openProjectOverlay === 'function') window.openProjectOverlay(slides[cur].idx);
+    }
+    box.addEventListener('click', openCurrent);
+    box.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCurrent(); } });
+})();
+
+/* ---- Office locator map (Contact) -----------------------
+   A quiet dark-tile locator with a pulsing gold pin — decorative
+   context for the studio address, not a navigation tool, so all
+   interaction is off. */
+(function initOfficeMap() {
+    const el = document.getElementById('officeMapEl');
+    if (!el || typeof L === 'undefined') return;
+    const OFFICE = [36.23992, 44.04997]; // Nº 592, Italian Village 2, Erbil (36°14'23.7"N 44°02'59.9"E)
+    const map = L.map(el, {
+        zoomControl: false, attributionControl: false,
+        dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+        boxZoom: false, keyboard: false, touchZoom: false, tap: false,
+    }).setView(OFFICE, 15);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd', maxZoom: 18,
+    }).addTo(map);
+    L.marker(OFFICE, {
+        interactive: false,
+        icon: L.divIcon({
+            className: 'office-pin-wrap',
+            html: '<span class="office-pin"></span>',
+            iconSize: [16, 16], iconAnchor: [8, 8],
+        }),
+    }).addTo(map);
+    // Leaflet measures its container at init; re-measure once the section
+    // actually scrolls into view so tiles cover the full card
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries, io) => {
+            if (!entries[0].isIntersecting) return;
+            map.invalidateSize();
+            io.disconnect();
+        }, { threshold: 0.1 }).observe(el);
+    }
+})();
+
+/* ---- Clients modal — liquid-glass roster ----------------
+   The marquee is ambience; the modal is the record. Any logo click
+   opens the full clients & partners grid. */
+(function initClientsModal() {
+    const modal = document.getElementById('clientsModal');
+    if (!modal) return;
+    const closeBtn = document.getElementById('clientsModalClose');
+
+    function open() {
+        modal.classList.add('open');
+        document.documentElement.style.overflow = 'hidden'; // lock page scroll behind the dialog
+        if (closeBtn) closeBtn.focus();
+    }
+    function close() {
+        modal.classList.remove('open');
+        document.documentElement.style.overflow = '';
+    }
+
+    document.querySelectorAll('.clients__track .client-logo').forEach(logo => {
+        logo.addEventListener('click', open);
+    });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) close();
     });
 })();
 
@@ -550,6 +601,48 @@ function buildKurdishSun(container, opts = {}) {
                 success.textContent = '⚠ Something went wrong — please email us directly.';
                 success.hidden = false;
             }
+        });
+    });
+})();
+
+/* ---- Contact methods — click to copy ------------------- */
+(function initContactCopy() {
+    const rows = document.querySelectorAll('.cmethod--copy');
+    if (!rows.length) return;
+
+    rows.forEach(row => {
+        const value = row.getAttribute('data-copy');
+        const hint  = row.querySelector('.cmethod__hint');
+        if (!value) return;
+
+        function flash() {
+            row.classList.add('is-copied');
+            if (hint) hint.textContent = 'Copied';
+            setTimeout(() => {
+                row.classList.remove('is-copied');
+                if (hint) hint.textContent = 'Copy';
+            }, 1600);
+        }
+        function copy() {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(value).then(flash).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+        }
+        function fallbackCopy() {
+            const ta = document.createElement('textarea');
+            ta.value = value;
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+            flash();
+        }
+
+        row.addEventListener('click', copy);
+        row.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(); }
         });
     });
 })();
@@ -922,6 +1015,34 @@ const PROJECT_COORDS = [
     const bodyEl      = document.getElementById('overlayBody');
     const topbarEl    = overlay.querySelector('.proj-overlay__topbar');
     const ambientEls  = overlay.querySelectorAll('.od-ambient');
+    const fullResEl   = document.getElementById('overlayFullRes');
+    const downloadEl  = document.getElementById('overlayDownload');
+
+    // Derive a full-resolution URL for the currently shown image. Unsplash mock
+    // images carry sizing params (?w=1400&q=80) — stripping them serves the
+    // original native-resolution file. Real uploaded images are already full size.
+    function fullResUrl(url) {
+        if (!url) return url;
+        if (url.indexOf('images.unsplash.com') !== -1) {
+            return url.split('?')[0] + '?q=90';   // native resolution, high quality
+        }
+        return url;
+    }
+    function slugify(s) {
+        return (s || 'project').toLowerCase()
+            .replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+    }
+    // Point the "view full resolution" + download links at the current image.
+    function updateImageLinks() {
+        const proj = PROJECT_DATA[currentProjIdx];
+        if (!proj) return;
+        const url = fullResUrl(proj.imgs[currentImgIdx]);
+        if (fullResEl) fullResEl.href = url;
+        if (downloadEl) {
+            downloadEl.href = url;
+            downloadEl.setAttribute('download', slugify(proj.name) + '-' + (currentImgIdx + 1) + '.jpg');
+        }
+    }
 
     // Paint a blurred copy of the current image behind the image + info panel,
     // so both pick up the project's own colours (ambient "liquid glass").
@@ -1001,6 +1122,7 @@ const PROJECT_COORDS = [
         thumbsEl.querySelectorAll('.od-thumb').forEach((t, i) => {
             t.classList.toggle('active', i === currentImgIdx);
         });
+        updateImageLinks();
     }
 
     /* ---- Generate hashtags from project data ------------ */
@@ -1028,6 +1150,9 @@ const PROJECT_COORDS = [
         var proj = PROJECT_DATA[index];
         if (!proj) return;
 
+        var isKu = document.documentElement.getAttribute('dir') === 'rtl';
+        var STATUS_KU = { 'Completed': 'تەواوبوو', 'Under Construction': 'لەژێر بنیاتنان', 'Concept / Planning': 'بیرۆکە و پلاندانان' };
+
         var statusClass = proj.status === 'Completed'          ? 's-done'
                         : proj.status === 'Under Construction' ? 's-build'
                         : 's-concept';
@@ -1036,12 +1161,12 @@ const PROJECT_COORDS = [
         var dotEl   = document.getElementById('overlayDot');
         var badgeEl = document.getElementById('overlayStatusBadge');
         dotEl.className   = 'od-dot '    + statusClass;
-        badgeEl.textContent = proj.status;
+        badgeEl.textContent = (isKu && STATUS_KU[proj.status]) ? STATUS_KU[proj.status] : proj.status;
         badgeEl.className = 'od-status-text ' + statusClass;
 
         // Num + name
         document.getElementById('overlayNum').textContent      = proj.num;
-        document.getElementById('overlayName').textContent     = proj.name;
+        document.getElementById('overlayName').textContent     = (isKu && proj.name_ku) ? proj.name_ku : proj.name;
 
         // Spec fields
         document.getElementById('overlayLocation').textContent = proj.location;
@@ -1060,7 +1185,7 @@ const PROJECT_COORDS = [
         });
 
         // Description
-        document.getElementById('overlayDesc').textContent = proj.desc;
+        document.getElementById('overlayDesc').textContent = (isKu && proj.desc_ku) ? proj.desc_ku : proj.desc;
 
         // Counter
         counterEl.textContent = (index + 1) + ' / ' + PROJECT_DATA.length;
@@ -1088,6 +1213,7 @@ const PROJECT_COORDS = [
             heroImg.style.opacity = '';  // CSS transition handles this
             applyAmbient(proj.imgs[0]);
         }, 60);
+        updateImageLinks();
 
         if (topbarEl) topbarEl.classList.remove('bar-solid');
     }
@@ -1194,6 +1320,11 @@ const PROJECT_COORDS = [
         if (e.key === 'ArrowDown')  { e.preventDefault(); switchProject(currentProjIdx + 1); }
     });
 
+    // Re-render the open project in the new language when the site is toggled.
+    document.addEventListener('langchange', function () {
+        if (isOpen) populateOverlay(currentProjIdx);
+    });
+
     window.openProjectOverlay  = openOverlay;
     window.closeProjectOverlay = closeOverlay;
 })();
@@ -1241,6 +1372,42 @@ const PROJECT_COORDS = [
         if (prevBtn) prevBtn.disabled = x <= 4;
         if (nextBtn) nextBtn.disabled = x >= max - 4;
         if (progress) progress.style.width = (max > 4 ? (x / max) * 100 : 0) + '%';
+        // trailing-edge fade only while there is somewhere left to go
+        // (|x| copes with RTL, where scrollLeft runs negative)
+        const slider = grid.closest('.pg__slider');
+        if (slider) slider.classList.toggle('at-end', Math.abs(x) >= max - 4);
+    }
+
+    /* ---- "More to explore" affordances -------------------
+       1. chip under the rail — dismissed forever after the first real scroll
+       2. one-time peek nudge when the grid first enters the viewport:
+          the row moves, so the eye learns the axis before reading a word */
+    const moreChip = document.getElementById('pgMore');
+    let nudging = false, explored = false;
+    function dismissMore() {
+        if (explored) return;
+        explored = true;
+        if (moreChip) moreChip.classList.add('is-done');
+    }
+    grid.addEventListener('scroll', () => {
+        if (!nudging && Math.abs(grid.scrollLeft) > 60) dismissMore();
+    }, { passive: true });
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        const peekIO = new IntersectionObserver(entries => {
+            if (!entries[0].isIntersecting || explored) return;
+            peekIO.disconnect();
+            const sign = document.documentElement.getAttribute('dir') === 'rtl' ? -1 : 1;
+            nudging = true;
+            setTimeout(() => {
+                grid.scrollBy({ left: sign * 150, behavior: 'smooth' });
+                setTimeout(() => {
+                    grid.scrollBy({ left: -sign * 150, behavior: 'smooth' });
+                    setTimeout(() => { nudging = false; }, 800);
+                }, 850);
+            }, 650);
+        }, { threshold: 0.45 });
+        peekIO.observe(grid);
     }
 
     if (prevBtn) prevBtn.addEventListener('click', () => grid.scrollBy({ left: -pageStep(), behavior: 'smooth' }));

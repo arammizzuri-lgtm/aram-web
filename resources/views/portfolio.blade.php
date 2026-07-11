@@ -7,7 +7,7 @@
     <meta name="description" content="Aram Mizuri Architecture — a leading architectural practice based in Erbil, Kurdistan Region. Residential, cultural, commercial and urban design.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('style.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -28,18 +28,18 @@
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <a href="#home" class="nav__logo">
-            <div class="nav__logo-wordmark">
-                <span class="logo-name">{{ setting('brand_name') }}</span>
-                <span class="logo-sub">{{ setting('brand_sub') }}</span>
-            </div>
+            <span class="logo-name" data-en="{{ setting('brand_name') }}" data-ku="ئارام مزووری">{{ setting('brand_name') }}</span>
+            <span class="logo-sub" data-en="{{ setting('brand_sub') }}" data-ku="تەڵارسازی · هەولێر">{{ setting('brand_sub') }}</span>
         </a>
 
-        <div class="nav__links" id="navLinks">
+        <div class="nav__bar">
             <a href="#projects" class="nav__link" data-en="Projects" data-ku="پرۆژەکان">Projects</a>
             <a href="#map"      class="nav__link" data-en="Map"      data-ku="نەخشە">Map</a>
             <a href="#about"    class="nav__link" data-en="About"    data-ku="دەربارەی">About</a>
+            <a href="#services" class="nav__link" data-en="Services" data-ku="خزمەتگوزاری">Services</a>
             <a href="#process"  class="nav__link" data-en="Process"  data-ku="ڕێگا">Process</a>
             <a href="#contact"  class="nav__link" data-en="Contact"  data-ku="پەیوەندی">Contact</a>
+            <span class="nav__sep"></span>
             <button class="lang-toggle" id="langToggle" title="Switch to Kurdish / گۆڕانی زمان">کوردی</button>
         </div>
 
@@ -53,30 +53,137 @@
         <a href="#projects" class="mobile-menu__link" data-en="Projects" data-ku="پرۆژەکان">Projects</a>
         <a href="#map"      class="mobile-menu__link" data-en="Map"      data-ku="نەخشە">Map</a>
         <a href="#about"    class="mobile-menu__link" data-en="About"    data-ku="دەربارەی">About</a>
+        <a href="#services" class="mobile-menu__link" data-en="Services" data-ku="خزمەتگوزاری">Services</a>
         <a href="#process"  class="mobile-menu__link" data-en="Process"  data-ku="ڕێگا">Process</a>
         <a href="#contact"  class="mobile-menu__link" data-en="Contact"  data-ku="پەیوەندی">Contact</a>
     </div>
 
     <!-- ========== HERO ========== -->
     <section class="hero" id="home">
-        <div class="hero__bg-pattern"></div>
-        <div class="hero__sun-wrap" id="heroSun"></div>
+        <div class="hero__bg" aria-hidden="true">
+            <span class="hero__aurora"></span>
+            <span class="hero__grid"></span>
+            <canvas id="heroCanvas" class="hero__canvas"></canvas>
+            <span class="hero__grain"></span>
+        </div>
 
-        <div class="hero__content">
-            <p class="hero__eyebrow">{{ setting('hero_eyebrow') }}</p>
+        {{-- Drawing-sheet frame: hairline border + registration marks.
+             The hero is presented as a live architect's sheet the 3D
+             scene lifts out of. Purely decorative. --}}
+        <div class="hero__sheet" aria-hidden="true">
+            <span class="hero__sheet-mark hero__sheet-mark--tl"></span>
+            <span class="hero__sheet-mark hero__sheet-mark--tr"></span>
+            <span class="hero__sheet-mark hero__sheet-mark--bl"></span>
+            <span class="hero__sheet-mark hero__sheet-mark--br"></span>
+        </div>
+
+        {{-- Title block — the architect's signature corner of every sheet:
+             practice, project, scale, and the practice figures condensed.
+             (Stats are announced to screen readers via #heroStatsData.) --}}
+        <div class="hero__titleblock" aria-hidden="true">
+            <svg class="hero__seal" viewBox="0 0 100 100">
+                <defs><path id="sealPath" d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0"/></defs>
+                <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="1"/>
+                <circle cx="50" cy="50" r="26" fill="none" stroke="currentColor" stroke-width=".7"/>
+                <text><textPath href="#sealPath">ARAM MIZURI · ARCHITECTURE · EST 2009 · ERBIL ·</textPath></text>
+            </svg>
+            <div class="hero__tb">
+                <div class="hero__tb-row hero__tb-row--name">
+                    <span data-en="Aram Mizuri — Architecture" data-ku="ئارام مزووری — تەڵارسازی">Aram Mizuri — Architecture</span>
+                </div>
+                <div class="hero__tb-row">
+                    <i data-en="Project" data-ku="پرۆژە">Project</i><b data-en="Portfolio" data-ku="پۆرتفۆلیۆ">Portfolio</b>
+                    <i data-en="Scale" data-ku="پێوانە">Scale</i><b>1 : 1</b>
+                </div>
+                <div class="hero__tb-row">
+                    <i data-en="Location" data-ku="شوێن">Location</i><b data-en="Erbil, Kurdistan" data-ku="هەولێر، کوردستان">Erbil, Kurdistan</b>
+                    <i data-en="Sheet" data-ku="پەڕە">Sheet</i><b>A-01</b>
+                </div>
+                <div class="hero__tb-row hero__tb-row--stats">
+                    <b>{{ $stats['projects'] }}</b><i data-en="Projects" data-ku="پرۆژە">Projects</i>
+                    <b>{{ $stats['cities'] }}</b><i data-en="Cities" data-ku="شار">Cities</i>
+                    <b>{{ $stats['countries'] }}</b><i data-en="Countries" data-ku="وڵات">Countries</i>
+                    <b>{{ $stats['area_short'] }}</b><i>m²</i>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero__center">
+            <div class="hero__eyebrow">
+                <span data-en="{{ setting('hero_eyebrow') }}" data-ku="هەولێر · کوردستان · دامەزراوە ٢٠٠٩">{{ setting('hero_eyebrow') }}</span>
+                <span class="hero__clock"><span class="hero__clock-dot"></span> <span data-en="Erbil" data-ku="هەولێر">Erbil</span>&nbsp;<time id="heroClock">--:--:--</time></span>
+            </div>
+            @php
+                // Line 1's last word ("by" / "لەلایەن") renders as a tiny gold
+                // conjunction so the two big words sit close together. Split
+                // here so the CMS settings stay the single source of truth.
+                $splitBy = function ($s) {
+                    $w = preg_split('/\s+/u', trim((string) $s)) ?: [];
+                    $by = count($w) > 1 ? array_pop($w) : '';
+                    return [implode(' ', $w), $by];
+                };
+                [$l1MainEn, $l1ByEn] = $splitBy(setting('hero_title_line1_en'));
+                [$l1MainKu, $l1ByKu] = $splitBy(setting('hero_title_line1_ku'));
+            @endphp
             <h1 class="hero__title">
-                <span class="hero__title-line" data-en="{{ setting('hero_title_line1_en') }}" data-ku="{{ setting('hero_title_line1_ku') }}">{{ setting('hero_title_line1_en') }}</span>
-                <span class="hero__title-line hero__title-accent" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ setting('hero_title_line2_en') }}</span>
+                <span class="hero__line"><span class="hero__line-in"><span data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ $l1MainEn }}</span><span class="hero__by" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ $l1ByEn }}</span></span></span>
+                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ setting('hero_title_line2_en') }}</span></span>
             </h1>
-            <p class="hero__sub" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">
-                {{ setting('hero_sub_en') }}
+
+            {{-- Practice figures — rendered as the 3D glass card ring in
+                 hero3d.js. This hidden list is the single source of truth
+                 (and what screen readers announce); the canvas is decorative. --}}
+            @php
+                $areaNum = (int) $stats['area_short'];
+                $areaSuf = trim(preg_replace('/[\d.,]/', '', $stats['area_short']));
+            @endphp
+            <div id="heroStatsData" class="sr-only">
+                <span data-value="{{ $stats['projects'] }}" data-en="Projects" data-ku="پرۆژە">{{ $stats['projects'] }} Projects</span>
+                <span data-value="{{ (int) setting('about_stat2_num') }}" data-en="Clients" data-ku="کڕیار">{{ (int) setting('about_stat2_num') }} Clients</span>
+                <span data-value="{{ $stats['cities'] }}" data-en="Cities" data-ku="شار">{{ $stats['cities'] }} Cities</span>
+                <span data-value="{{ $stats['countries'] }}" data-en="Countries" data-ku="وڵات">{{ $stats['countries'] }} Countries</span>
+                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" data-en="m² Designed" data-ku="م² دیزاینکراو">{{ $stats['area_short'] }} m² Designed</span>
+            </div>
+        </div>
+
+        {{-- Caption + CTA + drag hint live at the sheet's bottom centre on
+             desktop (clear of the ring); on phones they stay in the flow
+             right under the headline. --}}
+        <div class="hero__foot">
+            <p class="hero__sub" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ setting('hero_sub_en') }}</p>
+            <div class="hero__actions">
+                <a href="#projects" class="hero__go" id="heroGo">
+                    <span class="hero__go-label" data-en="Explore Projects" data-ku="پرۆژەکان ببینە">Explore Projects</span>
+                    <span class="hero__go-arrow">→</span>
+                </a>
+            </div>
+            <p class="hero__hint" aria-hidden="true">
+                <span class="hero__hint-orb">⟲</span>
+                <span data-en="drag to spin the record" data-ku="ڕایبکێشە بۆ سووڕاندنی تۆمارەکە">drag to spin the record</span>
             </p>
         </div>
 
-        <div class="hero__scroll">
-            <span class="hero__scroll-label">Scroll</span>
-            <div class="hero__scroll-line"></div>
+        @php
+            $mq   = 'Residential — Cultural — Urban Design — Hospitality — Commercial — Heritage — ';
+            $mqKu = 'نیشتەجێبوون — کولتووری — دیزاینی شاری — میوانپەروەری — بازرگانی — میرات — ';
+        @endphp
+        <div class="hero__marquee" aria-hidden="true">
+            <div class="hero__marquee-track">
+                <span data-en="{{ $mq }}{{ $mq }}" data-ku="{{ $mqKu }}{{ $mqKu }}">{{ $mq }}{{ $mq }}</span>
+                <span data-en="{{ $mq }}{{ $mq }}" data-ku="{{ $mqKu }}{{ $mqKu }}">{{ $mq }}{{ $mq }}</span>
+            </div>
         </div>
+
+        <a href="#projects" class="hero__scroll" aria-label="Scroll to projects">
+            <span data-en="Scroll" data-ku="بۆ خوارەوە">Scroll</span>
+            <span class="hero__scroll-line"></span>
+        </a>
+
+        {{-- Mobile-only language switch, pinned centre-bottom above the
+             marquee: the nav bar (and its کوردی pill) is hidden below
+             768px, so without this, phone visitors have no way to reach
+             the Kurdish version. Label managed by initLang in script.js. --}}
+        <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">وەشانی کوردی · Kurdish Version</button>
     </section>
 
     <!-- ========== PROJECTS MAP ========== -->
@@ -91,7 +198,7 @@
         <!-- Section label (top-left overlay) -->
         <div class="proj-map__label">
             <p class="section-label" data-en="Where We Build" data-ku="کوێ دەبینین">Where We Build</p>
-            <h2 class="proj-map__title">Projects Across<br>Kurdistan &amp; Beyond</h2>
+            <h2 class="proj-map__title" data-en="Projects Across<br>Kurdistan & Beyond" data-ku="پرۆژەکان بەسەر<br>کوردستان و دوورتردا">Projects Across<br>Kurdistan &amp; Beyond</h2>
         </div>
 
         <!-- Floating project card — JS positions this near the clicked pin -->
@@ -106,7 +213,7 @@
                 <p class="map-card__meta" id="mapCardMeta"></p>
                 <p class="map-card__excerpt" id="mapCardExcerpt"></p>
                 <button class="map-card__cta" id="mapCardCta">
-                    <span>View Full Project</span>
+                    <span data-en="View Full Project" data-ku="بینینی پڕۆژەی تەواو">View Full Project</span>
                     <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5h12M8 1l5 4-5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
             </div>
@@ -120,234 +227,83 @@
 
         <!-- Bottom stat bar -->
         <div class="proj-map__stats">
-            <div class="map-stat"><span class="map-stat__val">{{ $projects->count() }}</span><span class="map-stat__lbl">Projects</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['projects'] }}</span><span class="map-stat__lbl" data-en="Projects" data-ku="پرۆژە">Projects</span></div>
             <div class="map-stat__div"></div>
-            <div class="map-stat"><span class="map-stat__val">{{ $projects->map(fn ($p) => $p->cityLabel())->filter()->unique()->count() }}</span><span class="map-stat__lbl">Cities</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['cities'] }}</span><span class="map-stat__lbl" data-en="Cities" data-ku="شار">Cities</span></div>
             <div class="map-stat__div"></div>
-            <div class="map-stat"><span class="map-stat__val">347K</span><span class="map-stat__lbl">m² Designed</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['area_short'] }}</span><span class="map-stat__lbl" data-en="m² Designed" data-ku="م² دیزاینکراو">m² Designed</span></div>
             <div class="map-stat__div"></div>
-            <div class="map-stat"><span class="map-stat__val">17</span><span class="map-stat__lbl">Years Active</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['countries'] }}</span><span class="map-stat__lbl" data-en="Countries" data-ku="وڵات">Countries</span></div>
         </div>
 
     </section>
 
-    <!-- ========== CLIENTS ========== -->
     <section class="clients" id="clients">
+        @php
+            // Real clients & partners. Marks are bespoke line-art monograms
+            // drawn in the site's geometric language — swap `mark` for an
+            // <image> tag when official logo files are supplied.
+            $clients = [
+                ['name' => 'Kar Group', 'sub_en' => 'Energy & Infrastructure', 'sub_ku' => 'وزە و ژێرخان',
+                 'mark' => '<polygon points="18,2 32,10 32,26 18,34 4,26 4,10" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M13 24 V12 M13 18 L23 12 M13 18 L23 24" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'],
+                ['name' => '404 Cafe', 'sub_en' => 'Café · Erbil', 'sub_ku' => 'کافێ · هەولێر',
+                 'mark' => '<path d="M8 15 h16 v7 a8 8 0 0 1 -16 0 Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M24 16 h3 a4 4 0 0 1 0 8 h-3" stroke="#fff" stroke-width="2"/><path d="M13 11 c0-2 2-2 2-4 M19 11 c0-2 2-2 2-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'],
+                ['name' => 'KRG', 'sub_en' => "Kurdistan Regional Gov't", 'sub_ku' => 'حکومەتی هەرێمی کوردستان',
+                 'mark' => '<circle cx="18" cy="18" r="5.5" fill="#fff"/><circle cx="18" cy="18" r="10" stroke="#fff" stroke-width="1.2"/><line x1="18" y1="2" x2="18" y2="6.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="29.5" x2="18" y2="34" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="18" x2="6.5" y2="18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="29.5" y1="18" x2="34" y2="18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="5.5" x2="8.8" y2="8.8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="27.2" y1="27.2" x2="30.5" y2="30.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="30.5" y1="5.5" x2="27.2" y2="8.8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="30.5" x2="8.8" y2="27.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>'],
+                ['name' => 'Rightmove', 'sub_en' => 'Real Estate', 'sub_ku' => 'خانووبەرە',
+                 'mark' => '<polyline points="4,22 13,13 22,22" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 24 v8 h12 v-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="19" x2="32" y2="8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><polyline points="26,8 32,8 32,14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'],
+                ['name' => 'Darin Group', 'sub_en' => 'Business Group', 'sub_ku' => 'گروپی بازرگانی',
+                 'mark' => '<line x1="18" y1="3" x2="18" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="18" x2="33" y2="18" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="7.2" y1="7.2" x2="28.8" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="28.8" y1="7.2" x2="7.2" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+                ['name' => "Erbil Int'l Airport", 'sub_en' => 'Aviation', 'sub_ku' => 'فڕۆکەوانی',
+                 'mark' => '<polygon points="3,21 33,7 23,30 16,23 Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><line x1="16" y1="23" x2="33" y2="7" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><line x1="6" y1="32" x2="28" y2="32" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4 4"/>'],
+                ['name' => 'Future City', 'sub_en' => 'Urban Development', 'sub_ku' => 'گەشەپێدانی شاری',
+                 'mark' => '<line x1="4" y1="32" x2="32" y2="32" stroke="#fff" stroke-width="2" stroke-linecap="round"/><rect x="7" y="18" width="6" height="14" stroke="#fff" stroke-width="1.8"/><rect x="15" y="10" width="6" height="22" stroke="#fff" stroke-width="1.8"/><rect x="23" y="14" width="6" height="18" stroke="#fff" stroke-width="1.8"/><line x1="18" y1="4" x2="18" y2="10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'],
+                ['name' => 'So Delicious', 'sub_en' => 'Café & Restaurant', 'sub_ku' => 'کافێ و چێشتخانە',
+                 'mark' => '<path d="M6 24 a12 11 0 0 1 24 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="24" x2="32" y2="24" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="10.5" r="1.8" fill="#fff"/><line x1="12" y1="30" x2="24" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
+                ['name' => 'Halat Group', 'sub_en' => 'Development', 'sub_ku' => 'گەشەپێدان',
+                 'mark' => '<polyline points="6,14 18,6 30,14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,22 18,14 30,22" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/><polyline points="6,30 18,22 30,30" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/>'],
+                ['name' => 'GK Architects', 'sub_en' => 'Architecture Studio', 'sub_ku' => 'ستۆدیۆی تەڵارسازی',
+                 'mark' => '<circle cx="18" cy="7" r="3" stroke="#fff" stroke-width="1.8"/><line x1="16.4" y1="9.8" x2="9" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="19.6" y1="9.8" x2="27" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M11.5 24.5 a13 13 0 0 0 13 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'],
+            ];
+        @endphp
+
         <div class="clients__head">
             <p class="section-label section-label--center" data-en="Trusted By" data-ku="پشتیوانیكراو">Trusted By</p>
-            <h2 class="clients__title">Clients &amp; Partners</h2>
+            <h2 class="clients__title" data-en="Clients & Partners" data-ku="کڕیار و هاوبەشەکان">Clients &amp; Partners</h2>
+            <p class="clients__hint" data-en="click a logo to see all partners" data-ku="کرتە لە لۆگۆیەک بکە بۆ بینینی هەموو هاوبەشەکان">click a logo to see all partners</p>
         </div>
         <div class="clients__track-wrap">
             <div class="clients__track">
+                {{-- two identical sets = seamless marquee loop --}}
+                @foreach ([false, true] as $dup)
+                    @foreach ($clients as $c)
+                        <div class="client-logo" @if($dup) aria-hidden="true" @endif>
+                            <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">{!! $c['mark'] !!}</svg>
+                            <span class="client-logo__name">{{ $c['name'] }}</span>
+                            <span class="client-logo__sub" data-en="{{ $c['sub_en'] }}" data-ku="{{ $c['sub_ku'] }}">{{ $c['sub_en'] }}</span>
+                        </div>
+                    @endforeach
+                @endforeach
+            </div>
+        </div>
 
-                <!-- ── Set 1 ── -->
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="5.5" fill="#fff"/>
-                        <circle cx="18" cy="18" r="10" stroke="#fff" stroke-width="1.2"/>
-                        <line x1="18" y1="2"    x2="18" y2="6.5"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="18" y1="29.5" x2="18" y2="34"   stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="2"  y1="18"   x2="6.5" y2="18"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="29.5" y1="18" x2="34" y2="18"   stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="5.5"  y1="5.5"  x2="8.8"  y2="8.8"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="27.2" y1="27.2" x2="30.5" y2="30.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="30.5" y1="5.5"  x2="27.2" y2="8.8"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="5.5"  y1="30.5" x2="8.8"  y2="27.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">KRG</span>
-                    <span class="client-logo__sub">Kurdistan Regional Gov't</span>
+        {{-- Liquid-glass roster: opens from any marquee logo and lays out
+             every client & partner at once, so the moving strip is never
+             the only way to read the list. --}}
+        <div class="clients-modal" id="clientsModal" role="dialog" aria-modal="true" aria-label="All clients and partners">
+            <div class="clients-modal__panel">
+                <button class="clients-modal__close" id="clientsModalClose" aria-label="Close">✕</button>
+                <p class="section-label section-label--center" data-en="Trusted By" data-ku="پشتیوانیكراو">Trusted By</p>
+                <h3 class="clients-modal__title" data-en="Clients & Partners" data-ku="کڕیار و هاوبەشەکان">Clients &amp; Partners</h3>
+                <div class="clients-modal__grid">
+                    @foreach ($clients as $c)
+                        <div class="clients-modal__tile" style="--i: {{ $loop->index }}">
+                            <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">{!! $c['mark'] !!}</svg>
+                            <span class="client-logo__name">{{ $c['name'] }}</span>
+                            <span class="client-logo__sub" data-en="{{ $c['sub_en'] }}" data-ku="{{ $c['sub_ku'] }}">{{ $c['sub_en'] }}</span>
+                        </div>
+                    @endforeach
                 </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 27 Q18 6 30 27" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-                        <path d="M10 31 Q18 15 26 31" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-                        <circle cx="18" cy="33.5" r="2.5" fill="#fff"/>
-                    </svg>
-                    <span class="client-logo__name">Korek</span>
-                    <span class="client-logo__sub">Telecom</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="4,30 4,6 20,30 20,6" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <line x1="26" y1="6"  x2="32" y2="6"  stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
-                        <line x1="29" y1="6"  x2="29" y2="22" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">NRT</span>
-                    <span class="client-logo__sub">Media Group</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="4,28 18,8 32,28" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <polyline points="4,22 18,2 32,22" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
-                    </svg>
-                    <span class="client-logo__name">Falcon</span>
-                    <span class="client-logo__sub">Real Estate</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="18,3 33,18 18,33 3,18" stroke="#fff" stroke-width="2"/>
-                        <polygon points="18,11 25,18 18,25 11,18" fill="#fff"/>
-                    </svg>
-                    <span class="client-logo__name">Maeen</span>
-                    <span class="client-logo__sub">Holdings Group</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 3 C22 7 28 13 28 21 C28 27.6 23.5 33 18 33 C12.5 33 8 27.6 8 21 C8 14 12 10 12 10 C13 15 15 18 18 18 C18 18 14 9 18 3Z" fill="#fff"/>
-                    </svg>
-                    <span class="client-logo__name">Dana Gas</span>
-                    <span class="client-logo__sub">Energy</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="18,2 31,9.5 31,26.5 18,34 5,26.5 5,9.5" stroke="#fff" stroke-width="2"/>
-                        <polygon points="18,9 25.5,13.5 25.5,22.5 18,27 10.5,22.5 10.5,13.5" fill="#fff" opacity="0.4"/>
-                    </svg>
-                    <span class="client-logo__name">Safeen</span>
-                    <span class="client-logo__sub">Holdings</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="3"  y1="33" x2="33" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <polyline points="3,19 18,6 33,19" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <line x1="9"  y1="19" x2="9"  y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="18" y1="19" x2="18" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="27" y1="19" x2="27" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">Kurdistan Bank</span>
-                    <span class="client-logo__sub">Financial Services</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="2,30 2,6 12,22 18,14 24,22 34,6 34,30" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="client-logo__name">Mazi Group</span>
-                    <span class="client-logo__sub">Retail &amp; Real Estate</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="18"  y1="3"   x2="18"  y2="33"  stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="3"   y1="18"  x2="33"  y2="18"  stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="7.2" y1="7.2" x2="28.8" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="28.8" y1="7.2" x2="7.2" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">Darin Hotels</span>
-                    <span class="client-logo__sub">Hospitality</span>
-                </div>
-
-                <!-- ── Set 2 (duplicate for seamless loop) ── -->
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="5.5" fill="#fff"/>
-                        <circle cx="18" cy="18" r="10" stroke="#fff" stroke-width="1.2"/>
-                        <line x1="18" y1="2"    x2="18" y2="6.5"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="18" y1="29.5" x2="18" y2="34"   stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="2"  y1="18"   x2="6.5" y2="18"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="29.5" y1="18" x2="34" y2="18"   stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="5.5"  y1="5.5"  x2="8.8"  y2="8.8"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="27.2" y1="27.2" x2="30.5" y2="30.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="30.5" y1="5.5"  x2="27.2" y2="8.8"  stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="5.5"  y1="30.5" x2="8.8"  y2="27.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">KRG</span>
-                    <span class="client-logo__sub">Kurdistan Regional Gov't</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 27 Q18 6 30 27" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-                        <path d="M10 31 Q18 15 26 31" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-                        <circle cx="18" cy="33.5" r="2.5" fill="#fff"/>
-                    </svg>
-                    <span class="client-logo__name">Korek</span>
-                    <span class="client-logo__sub">Telecom</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="4,30 4,6 20,30 20,6" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <line x1="26" y1="6"  x2="32" y2="6"  stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
-                        <line x1="29" y1="6"  x2="29" y2="22" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">NRT</span>
-                    <span class="client-logo__sub">Media Group</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="4,28 18,8 32,28" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <polyline points="4,22 18,2 32,22" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
-                    </svg>
-                    <span class="client-logo__name">Falcon</span>
-                    <span class="client-logo__sub">Real Estate</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="18,3 33,18 18,33 3,18" stroke="#fff" stroke-width="2"/>
-                        <polygon points="18,11 25,18 18,25 11,18" fill="#fff"/>
-                    </svg>
-                    <span class="client-logo__name">Maeen</span>
-                    <span class="client-logo__sub">Holdings Group</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 3 C22 7 28 13 28 21 C28 27.6 23.5 33 18 33 C12.5 33 8 27.6 8 21 C8 14 12 10 12 10 C13 15 15 18 18 18 C18 18 14 9 18 3Z" fill="#fff"/>
-                    </svg>
-                    <span class="client-logo__name">Dana Gas</span>
-                    <span class="client-logo__sub">Energy</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polygon points="18,2 31,9.5 31,26.5 18,34 5,26.5 5,9.5" stroke="#fff" stroke-width="2"/>
-                        <polygon points="18,9 25.5,13.5 25.5,22.5 18,27 10.5,22.5 10.5,13.5" fill="#fff" opacity="0.4"/>
-                    </svg>
-                    <span class="client-logo__name">Safeen</span>
-                    <span class="client-logo__sub">Holdings</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="3"  y1="33" x2="33" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <polyline points="3,19 18,6 33,19" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <line x1="9"  y1="19" x2="9"  y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="18" y1="19" x2="18" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="27" y1="19" x2="27" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">Kurdistan Bank</span>
-                    <span class="client-logo__sub">Financial Services</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <polyline points="2,30 2,6 12,22 18,14 24,22 34,6 34,30" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="client-logo__name">Mazi Group</span>
-                    <span class="client-logo__sub">Retail &amp; Real Estate</span>
-                </div>
-
-                <div class="client-logo">
-                    <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="18"  y1="3"   x2="18"  y2="33"  stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="3"   y1="18"  x2="33"  y2="18"  stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="7.2" y1="7.2" x2="28.8" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="28.8" y1="7.2" x2="7.2" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span class="client-logo__name">Darin Hotels</span>
-                    <span class="client-logo__sub">Hospitality</span>
-                </div>
-
             </div>
         </div>
     </section>
@@ -362,7 +318,7 @@
             </div>
             <div class="pg__head-right">
                 <div class="pg__search-wrap">
-                    <input class="pg__search" id="pgSearch" type="search" placeholder="Search projects…" autocomplete="off" aria-label="Search projects">
+                    <input class="pg__search" id="pgSearch" type="search" placeholder="Search projects…" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">
                     <span class="pg__search-icon" aria-hidden="true">↗</span>
                 </div>
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
@@ -392,10 +348,10 @@
                         <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ $project->statusBadge() }}</div>
                         <div class="pgc__info">
                             <div class="pgc__num">{{ $project->num }}</div>
-                            <h3 class="pgc__name">{{ $project->name }}</h3>
+                            <h3 class="pgc__name" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ $project->name }}</h3>
                             <p class="pgc__meta">{{ $project->metaLabel() }}</p>
                         </div>
-                        <span class="pgc__cta">View Project <span class="pgc__cta-arrow">↗</span></span>
+                        <span class="pgc__cta"><span data-en="View Project" data-ku="بینینی پرۆژە">View Project</span> <span class="pgc__cta-arrow">↗</span></span>
                     </div>
                 </div>
             </article>
@@ -410,111 +366,241 @@
 
         <div class="pg__progress" aria-hidden="true"><div class="pg__progress-bar" id="pgProgress"></div></div>
 
+        {{-- Horizontal-scroll affordance: tells visitors the row continues
+             sideways (and how much is there). Dismisses itself after the
+             first real scroll. On touch, where the arrows are hidden, this
+             chip + the edge fade + the peek nudge are the only cues. --}}
+        <p class="pg__more" id="pgMore" aria-hidden="true">
+            <span class="pg__more-label"
+                  data-en="slide for more — {{ $projects->count() }} projects"
+                  data-ku="ڕایبکێشە بۆ زیاتر — {{ $projects->count() }} پرۆژە">slide for more — {{ $projects->count() }} projects</span>
+            <span class="pg__more-arrow">⟶</span>
+        </p>
+
         <div class="pg__empty" id="pgEmpty" hidden>
-            <p class="pg__empty-text">No projects match your criteria.</p>
+            <p class="pg__empty-text" data-en="No projects match your criteria." data-ku="هیچ پرۆژەیەک لەگەڵ داواکارییەکەت ناگونجێت.">No projects match your criteria.</p>
         </div>
 
     </section>
 
     <!-- ========== ABOUT ========== -->
     <section class="about" id="about">
-        <div class="about__pattern"></div>
+        <div class="about__bg" aria-hidden="true">
+            <span class="about__aurora"></span>
+            <div class="about__pattern"></div>
+        </div>
+
         <div class="about__inner">
-            <div class="about__text">
-                <p class="section-label" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ setting('about_label_en') }}</p>
-                <h2 class="about__heading" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
-                    {!! setting('about_heading_en') !!}
-                </h2>
-                <p class="about__bio">
-                    {{ setting('about_bio_1') }}
-                </p>
-                <p class="about__bio">
-                    {{ setting('about_bio_2') }}
-                </p>
-                <div class="about__stats">
-                    <div class="stat">
-                        <div class="stat__num" data-target="{{ setting('about_stat1_num') }}">0</div>
-                        <div class="stat__label">{{ setting('about_stat1_label') }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat__num" data-target="{{ setting('about_stat2_num') }}">0</div>
-                        <div class="stat__label">{{ setting('about_stat2_label') }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat__num" data-target="{{ setting('about_stat3_num') }}">0</div>
-                        <div class="stat__label">{{ setting('about_stat3_label') }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat__num" data-target="{{ setting('about_stat4_num') }}">0</div>
-                        <div class="stat__label">{{ setting('about_stat4_label') }}</div>
-                    </div>
+
+            <div class="about__top">
+                <div class="about__text">
+                    <p class="section-label" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ setting('about_label_en') }}</p>
+                    <h2 class="about__heading" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
+                        {!! setting('about_heading_en') !!}
+                    </h2>
+                    <p class="about__bio" data-en="{{ setting('about_bio_1') }}" data-ku="ئارام مزووری تەڵارسازێکی پێشەنگە کە لە هەولێر، پایتەختی هەرێمی کوردستانی عێراق، نیشتەجێیە. کارەکەی پردێکە لەنێوان کۆن و هاوچەرخدا — سەرچاوە دەگرێت لە میراتی دەوڵەمەندی شوێنی بەرزاییەکانی کوردستان، لە قەڵای ٧٬٠٠٠ ساڵەی هەولێرەوە تا گوندە شاخاوییەکانی ئامێدی — بۆ دروستکردنی بینایەک کە بە ڕوونی کوردییە لە هەستەوە و لەهەمانکاتدا توند و هاوچەرخە.">
+                        {{ setting('about_bio_1') }}
+                    </p>
+                    <p class="about__bio" data-en="{{ setting('about_bio_2') }}" data-ku="بە پرۆژە تەواوکراوەکان لە سەرانسەری کوردستان، لەوانە دامەزراوە کولتوورییەکان، بورجە شارییەکان، پەناگا شاخاوییەکان و بۆشایی گشتییەکان، تەڵارسازیی مزووری بووەتە دەنگێکی دیاریکەر لە دیمەنی بنیاتنراوی خێراگۆڕی ناوچەکەدا.">
+                        {{ setting('about_bio_2') }}
+                    </p>
+                    <blockquote class="about__quote">
+                        <p data-en="{{ setting('about_quote') }}" data-ku="«تەڵارسازی ئەو پردەیە کە یادەوەریی گەلێک بە خەونەکانی داهاتوویانەوە دەبەستێتەوە.»">{{ setting('about_quote') }}</p>
+                        <cite data-en="{{ setting('about_quote_cite') }}" data-ku="— ئارام مزووری">{{ setting('about_quote_cite') }}</cite>
+                    </blockquote>
                 </div>
 
-                <blockquote class="about__quote">
-                    <p>{{ setting('about_quote') }}</p>
-                    <cite>{{ setting('about_quote_cite') }}</cite>
-                </blockquote>
+                <div class="about__side">
+                    <div class="about__portrait">
+                        <div class="portrait__sun" id="portraitSun"></div>
+                        <img class="portrait__photo" src="{{ \App\Models\Project::resolveImage(setting('about_portrait_img')) }}" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
+                        <span class="portrait__corner portrait__corner--tl"></span>
+                        <span class="portrait__corner portrait__corner--br"></span>
+                        <div class="portrait__caption" data-en="{{ setting('about_portrait_caption') }}" data-ku="ئارام مزووری · تەڵارسازی سەرەکی">{{ setting('about_portrait_caption') }}</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="about__side">
-                <div class="about__portrait">
-                    <div class="portrait__sun" id="portraitSun"></div>
-                    <img class="portrait__photo" src="{{ \App\Models\Project::resolveImage(setting('about_portrait_img')) }}" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
-                    <div class="portrait__caption">{{ setting('about_portrait_caption') }}</div>
-                </div>
+            {{-- Figures moved to the hero stat band — About now closes on the
+                 portrait + quote, keeping the section personal, not numeric. --}}
+        </div>
+    </section>
+
+    <!-- ========== SERVICES ========== -->
+    <section class="services" id="services">
+        @php
+            // stroke-based line icons in the site's drafting language
+            $services = [
+                ['en' => 'Architectural Design', 'ku' => 'دیزاینی تەڵارسازی',
+                 'den' => 'Complete building design — from first concept to approved drawings.',
+                 'dku' => 'دیزاینی تەواوی بینا — لە یەکەم بیرۆکەوە تا نەخشەی پەسەندکراو.',
+                 'icon' => '<circle cx="18" cy="7" r="3" stroke-width="1.8"/><line x1="16.4" y1="9.8" x2="9" y2="30" stroke-width="2"/><line x1="19.6" y1="9.8" x2="27" y2="30" stroke-width="2"/><path d="M11.5 24.5a13 13 0 0 0 13 0" stroke-width="1.8"/>'],
+                ['en' => 'Exterior Design', 'ku' => 'دیزاینی دەرەکی',
+                 'den' => 'Façades and outdoor environments that give a building its public face.',
+                 'dku' => 'ڕووکار و ژینگەی دەرەوە کە ڕوخساری گشتیی بینا دروستدەکەن.',
+                 'icon' => '<rect x="4" y="8" width="15" height="24" stroke-width="1.8"/><line x1="8" y1="14" x2="15" y2="14" stroke-width="1.6"/><line x1="8" y1="20" x2="15" y2="20" stroke-width="1.6"/><line x1="8" y1="26" x2="15" y2="26" stroke-width="1.6"/><circle cx="27" cy="22" r="4" stroke-width="1.8"/><line x1="27" y1="26" x2="27" y2="32" stroke-width="1.8"/><line x1="22" y1="32" x2="32" y2="32" stroke-width="1.8"/>'],
+                ['en' => 'Interior Design', 'ku' => 'دیزاینی ناوەکی',
+                 'den' => 'Spatial planning, materials and light — interiors made to be lived in.',
+                 'dku' => 'پلاندانانی بۆشایی، کەرەستە و ڕووناکی — ناوەوەیەک بۆ ژیان.',
+                 'icon' => '<path d="M8 19v-7a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v7" stroke-width="1.8"/><path d="M5 19a2.5 2.5 0 0 1 5 0v2h16v-2a2.5 2.5 0 0 1 5 0v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" stroke-width="1.8"/><line x1="9" y1="29" x2="9" y2="32" stroke-width="1.8"/><line x1="27" y1="29" x2="27" y2="32" stroke-width="1.8"/>'],
+                ['en' => 'Construction', 'ku' => 'بیناسازی',
+                 'den' => "On-site execution and supervision with Kurdistan's finest builders.",
+                 'dku' => 'جێبەجێکردن و سەرپەرشتی مەیدانی لەگەڵ باشترین بیناسازانی کوردستان.',
+                 'icon' => '<line x1="5" y1="33" x2="31" y2="33" stroke-width="2"/><line x1="11" y1="33" x2="11" y2="5" stroke-width="2"/><line x1="11" y1="5" x2="31" y2="5" stroke-width="2"/><line x1="11" y1="12" x2="18" y2="5" stroke-width="1.8"/><line x1="31" y1="5" x2="31" y2="12" stroke-width="1.8"/><rect x="28.5" y="12" width="5" height="4.5" stroke-width="1.8"/>'],
+                ['en' => 'Tendering', 'ku' => 'تەندەرکردن',
+                 'den' => 'Bid documentation, evaluation and contractor selection you can trust.',
+                 'dku' => 'ئامادەکردنی بەڵگەنامەی تەندەر، هەڵسەنگاندن و هەڵبژاردنی بەڵێندەر.',
+                 'icon' => '<path d="M9 3h13l6 6v24H9z" stroke-width="1.8"/><path d="M22 3v6h6" stroke-width="1.8"/><polyline points="14,21 17.5,24.5 23.5,16.5" stroke-width="2"/>'],
+                ['en' => 'Customized Furniture', 'ku' => 'مۆبیلیای تایبەتکراو',
+                 'den' => 'Bespoke pieces designed and crafted for each project.',
+                 'dku' => 'پارچەی تایبەت، دیزاین و دروستکراو بۆ هەر پرۆژەیەک.',
+                 'icon' => '<line x1="10" y1="4" x2="10" y2="22" stroke-width="2"/><path d="M10 15h15v7" stroke-width="1.8"/><line x1="8" y1="22" x2="27" y2="22" stroke-width="2"/><line x1="11" y1="22" x2="11" y2="32" stroke-width="1.8"/><line x1="24" y1="22" x2="24" y2="32" stroke-width="1.8"/>'],
+                ['en' => 'International Furniture Brands', 'ku' => 'براندە نێودەوڵەتییەکانی مۆبیلیا',
+                 'den' => 'Sourcing and supplying world-class furniture brands — worldwide.',
+                 'dku' => 'دابینکردنی براندە جیهانییەکانی مۆبیلیا — لە هەموو جیهاندا.',
+                 'icon' => '<circle cx="18" cy="18" r="14" stroke-width="1.8"/><ellipse cx="18" cy="18" rx="6.5" ry="14" stroke-width="1.6"/><line x1="4" y1="18" x2="32" y2="18" stroke-width="1.6"/>'],
+            ];
+        @endphp
+
+        <div class="services__inner">
+            <div class="services__head">
+                <p class="section-label section-label--center" data-en="What We Do" data-ku="ئەوەی دەیکەین">What We Do</p>
+                <h2 class="services__title" data-en="Services" data-ku="خزمەتگوزارییەکان">Services</h2>
+            </div>
+            <div class="services__grid">
+                @foreach ($services as $i => $s)
+                    <div class="service{{ $i >= 4 ? ' service--third' : '' }}">
+                        <div class="service__top">
+                            <svg class="service__icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $s['icon'] !!}</svg>
+                            <span class="service__num">0{{ $i + 1 }}</span>
+                        </div>
+                        <h3 class="service__name" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ $s['en'] }}</h3>
+                        <p class="service__desc" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ $s['den'] }}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
     </section>
 
     <!-- ========== PROCESS ========== -->
     <section class="process" id="process">
+        <div class="process__bg" aria-hidden="true">
+            <span class="process__aurora process__aurora--a"></span>
+            <span class="process__aurora process__aurora--b"></span>
+            <span class="process__grid"></span>
+        </div>
+
         <div class="process__inner">
-            <div class="process__head">
+
+            <!-- Sticky narrative rail -->
+            <aside class="process__aside">
                 <p class="section-label" data-en="{{ setting('process_label_en') }}" data-ku="{{ setting('process_label_ku') }}">{{ setting('process_label_en') }}</p>
                 <h2 class="process__title" data-en="{{ setting('process_title_en') }}" data-ku="{{ setting('process_title_ku') }}">{{ setting('process_title_en') }}</h2>
-            </div>
-            <div class="process__steps">
-                <div class="process__step reveal">
-                    <div class="step__num">01</div>
-                    <div class="step__icon">◈</div>
-                    <h3 class="step__title" data-en="{{ setting('process_step1_title_en') }}" data-ku="{{ setting('process_step1_title_ku') }}">{{ setting('process_step1_title_en') }}</h3>
-                    <p class="step__desc">{{ setting('process_step1_desc') }}</p>
+
+                <div class="process__meter">
+                    <div class="process__count">
+                        <span class="process__count-now" id="procNow">01</span>
+                        <span class="process__count-total">/ 04</span>
+                    </div>
+                    <div class="process__bar"><span class="process__bar-fill" id="procBar"></span></div>
                 </div>
-                <div class="process__step reveal reveal-delay-1">
-                    <div class="step__num">02</div>
-                    <div class="step__icon">◈</div>
-                    <h3 class="step__title" data-en="{{ setting('process_step2_title_en') }}" data-ku="{{ setting('process_step2_title_ku') }}">{{ setting('process_step2_title_en') }}</h3>
-                    <p class="step__desc">{{ setting('process_step2_desc') }}</p>
+
+                {{-- Liquid-glass design showcase — cycles through every
+                     project cover every 3s (initProcessShowcase in script.js).
+                     Desktop only: hidden ≤1100px where the aside stacks. --}}
+                <div class="process__showcase" id="processShowcase" role="button" tabindex="0" aria-label="Selected designs — open project">
+                    <p class="pshow__label" data-en="Selected Designs" data-ku="دیزاینە هەڵبژێردراوەکان">Selected Designs</p>
+                    <div class="pshow__frame">
+                        <img class="pshow__img" alt="" draggable="false">
+                        <img class="pshow__img" alt="" draggable="false">
+                    </div>
+                    <div class="pshow__foot">
+                        <span class="pshow__num" id="pshowNum"></span>
+                        <span class="pshow__name" id="pshowName"></span>
+                        <span class="pshow__go" aria-hidden="true">→</span>
+                    </div>
                 </div>
-                <div class="process__step reveal reveal-delay-2">
-                    <div class="step__num">03</div>
-                    <div class="step__icon">◈</div>
-                    <h3 class="step__title" data-en="{{ setting('process_step3_title_en') }}" data-ku="{{ setting('process_step3_title_ku') }}">{{ setting('process_step3_title_en') }}</h3>
-                    <p class="step__desc">{{ setting('process_step3_desc') }}</p>
-                </div>
-                <div class="process__step reveal reveal-delay-3">
-                    <div class="step__num">04</div>
-                    <div class="step__icon">◈</div>
-                    <h3 class="step__title" data-en="{{ setting('process_step4_title_en') }}" data-ku="{{ setting('process_step4_title_ku') }}">{{ setting('process_step4_title_en') }}</h3>
-                    <p class="step__desc">{{ setting('process_step4_desc') }}</p>
-                </div>
-            </div>
+            </aside>
+
+            <!-- Scroll-told timeline -->
+            <ol class="process__list" id="procList">
+                <span class="process__rail" aria-hidden="true"><span class="process__rail-fill" id="procRailFill"></span></span>
+
+                <li class="process__item" data-step="0">
+                    <div class="process__node"><span class="process__orb"></span></div>
+                    <article class="process__card">
+                        <span class="process__ghost" aria-hidden="true">01</span>
+                        <div class="process__card-body">
+                            <span class="process__kicker" data-en="Phase 01" data-ku="قۆناغی ٠١">Phase 01</span>
+                            <h3 class="process__card-title" data-en="{{ setting('process_step1_title_en') }}" data-ku="{{ setting('process_step1_title_ku') }}">{{ setting('process_step1_title_en') }}</h3>
+                            <p class="process__card-desc" data-en="{{ setting('process_step1_desc') }}" data-ku="گوێگرتنی قووڵ — تێگەیشتن لە بینینی کڕیار، پێکهاتەی کولتووریی شوێنەکە، و نەریتە شوێنییەکانی کوردستان.">{{ setting('process_step1_desc') }}</p>
+                        </div>
+                    </article>
+                </li>
+
+                <li class="process__item" data-step="1">
+                    <div class="process__node"><span class="process__orb"></span></div>
+                    <article class="process__card">
+                        <span class="process__ghost" aria-hidden="true">02</span>
+                        <div class="process__card-body">
+                            <span class="process__kicker" data-en="Phase 02" data-ku="قۆناغی ٠٢">Phase 02</span>
+                            <h3 class="process__card-title" data-en="{{ setting('process_step2_title_en') }}" data-ku="{{ setting('process_step2_title_ku') }}">{{ setting('process_step2_title_en') }}</h3>
+                            <p class="process__card-desc" data-en="{{ setting('process_step2_desc') }}" data-ku="دیزاینی دووبارەبووەوە کە لە نەریتە شوێنییە کوردییەکان، ستراتیژی گونجاو لەگەڵ کەشوهەوا، و گفتوگۆی تەڵارسازیی هاوچەرخەوە سەرچاوە دەگرێت.">{{ setting('process_step2_desc') }}</p>
+                        </div>
+                    </article>
+                </li>
+
+                <li class="process__item" data-step="2">
+                    <div class="process__node"><span class="process__orb"></span></div>
+                    <article class="process__card">
+                        <span class="process__ghost" aria-hidden="true">03</span>
+                        <div class="process__card-body">
+                            <span class="process__kicker" data-en="Phase 03" data-ku="قۆناغی ٠٣">Phase 03</span>
+                            <h3 class="process__card-title" data-en="{{ setting('process_step3_title_en') }}" data-ku="{{ setting('process_step3_title_ku') }}">{{ setting('process_step3_title_en') }}</h3>
+                            <p class="process__card-desc" data-en="{{ setting('process_step3_desc') }}" data-ku="وردیی تەکنیکی و توێژینەوەی کەرەستە کە دڵنیایی دەدات هەر وردەکارییەک ڕێز لە بیرۆکە و پیشەوەریی بیناسازانی کوردستان بگرێت.">{{ setting('process_step3_desc') }}</p>
+                        </div>
+                    </article>
+                </li>
+
+                <li class="process__item" data-step="3">
+                    <div class="process__node"><span class="process__orb"></span></div>
+                    <article class="process__card">
+                        <span class="process__ghost" aria-hidden="true">04</span>
+                        <div class="process__card-body">
+                            <span class="process__kicker" data-en="Phase 04" data-ku="قۆناغی ٠٤">Phase 04</span>
+                            <h3 class="process__card-title" data-en="{{ setting('process_step4_title_en') }}" data-ku="{{ setting('process_step4_title_ku') }}">{{ setting('process_step4_title_en') }}</h3>
+                            <p class="process__card-desc" data-en="{{ setting('process_step4_desc') }}" data-ku="چاودێریی بنیاتنان لە شوێن و دڵنیایی جۆرایەتی — دروستکردنی پەیوەندی لەگەڵ باشترین کۆمپانیا و پیشەوەرە خۆماڵییەکانی کوردستان.">{{ setting('process_step4_desc') }}</p>
+                        </div>
+                    </article>
+                </li>
+            </ol>
         </div>
     </section>
 
     <!-- ========== HERITAGE ========== -->
     <section class="heritage">
+        <div class="heritage__bg" aria-hidden="true">
+            <span class="heritage__aurora"></span>
+            <span class="heritage__strata"></span>
+        </div>
         <div class="heritage__inner">
             <div class="heritage__text reveal">
                 <p class="section-label section-label--light" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ setting('heritage_label_en') }}</p>
-                <h2 class="heritage__title">
+                <h2 class="heritage__title" data-en="{{ setting('heritage_title') }}" data-ku="شێوەپێدراو بە ٧٬٠٠٠ ساڵ شارستانیەتی کوردی">
                     {!! nl2br(e(setting('heritage_title'))) !!}
                 </h2>
-                <p class="heritage__desc">
+                <p class="heritage__desc" data-en="{{ setting('heritage_desc') }}" data-ku="قەڵای هەولێر — یەکێک لە کۆنترین شوێنە نیشتەجێبووە بەردەوامەکانی سەر زەوی — شایەتی ڕۆحی نەمری کوردستانە. تەڵارسازیمان لەم کانگا مێژووییە قووڵەوە سەرچاوە دەگرێت و بە بوێرییەوە بۆ داهاتوو بنیات دەنێین.">
                     {{ setting('heritage_desc') }}
                 </p>
+                <div class="heritage__age">
+                    <span class="heritage__age-num">7,000</span>
+                    <span class="heritage__age-meta">
+                        <span class="heritage__age-unit" data-en="years" data-ku="ساڵ">years</span>
+                        <span class="heritage__age-lbl" data-en="of unbroken life atop the Erbil Citadel — the world's oldest continuously inhabited settlement." data-ku="ژیانی نەبڕاوە لەسەر قەڵای هەولێر — کۆنترین شوێنی نیشتەجێبوونی بەردەوام لە جیهاندا.">of unbroken life atop the Erbil Citadel — the world's oldest continuously inhabited settlement.</span>
+                    </span>
+                </div>
                 <a href="#projects" class="heritage__cta">
-                    <span>{{ setting('heritage_cta') }}</span>
+                    <span data-en="{{ setting('heritage_cta') }}" data-ku="پرۆژەکانمان ببینە">{{ setting('heritage_cta') }}</span>
                     <span class="heritage__cta-arrow">→</span>
                 </a>
             </div>
@@ -589,53 +675,95 @@
 
     <!-- ========== CONTACT ========== -->
     <section class="contact" id="contact">
+        <div class="contact__bg" aria-hidden="true">
+            <span class="contact__aurora"></span>
+            <span class="contact__grid"></span>
+        </div>
+
         <div class="contact__inner">
+
             <div class="contact__info">
                 <p class="section-label" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ setting('contact_label_en') }}</p>
                 <h2 class="contact__title" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! setting('contact_title_en') !!}</h2>
 
-                <dl class="contact__details">
-                    <div class="contact__row">
-                        <dt>{{ setting('contact_studio_label') }}</dt>
-                        <dd>{!! setting('contact_studio_value') !!}</dd>
+                <ul class="contact__methods">
+                    <li class="cmethod">
+                        <span class="cmethod__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                        </span>
+                        <div class="cmethod__text">
+                            <span class="cmethod__label" data-en="{{ setting('contact_studio_label') }}" data-ku="ستۆدیۆ">{{ setting('contact_studio_label') }}</span>
+                            <span class="cmethod__value">{!! setting('contact_studio_value') !!}</span>
+                        </div>
+                    </li>
+                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new') }}">
+                        <span class="cmethod__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                        </span>
+                        <div class="cmethod__text">
+                            <span class="cmethod__label" data-en="{{ setting('contact_newwork_label') }}" data-ku="کاری نوێ">{{ setting('contact_newwork_label') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_email_new') }}</span>
+                        </div>
+                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                    </li>
+                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_general') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_general') }}">
+                        <span class="cmethod__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                        </span>
+                        <div class="cmethod__text">
+                            <span class="cmethod__label" data-en="{{ setting('contact_general_label') }}" data-ku="گشتی">{{ setting('contact_general_label') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_email_general') }}</span>
+                        </div>
+                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                    </li>
+                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_phone') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone') }}">
+                        <span class="cmethod__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+                        </span>
+                        <div class="cmethod__text">
+                            <span class="cmethod__label" data-en="{{ setting('contact_phone_label') }}" data-ku="تەلەفۆن">{{ setting('contact_phone_label') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_phone') }}</span>
+                        </div>
+                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                    </li>
+                </ul>
+
+                {{-- Office locator — dark map, pulsing gold pin, and the
+                     visiting policy. Initialised in script.js (initOfficeMap). --}}
+                <div class="contact__map">
+                    <div class="contact__map-canvas" id="officeMapEl" aria-label="Office location — Italian Village 2, Erbil"></div>
+                    <div class="contact__map-foot">
+                        <p class="contact__map-addr" data-en="Nº 592 (2nd Floor), Italian Village 2, Erbil, Kurdistan Region of Iraq" data-ku="ژمارە ٥٩٢ (نهۆمی ٢)، گوندی ئیتاڵی ٢، هەولێر، هەرێمی کوردستانی عێراق">Nº 592 (2nd Floor), Italian Village 2, Erbil, Kurdistan Region of Iraq</p>
+                        <p class="contact__map-note">
+                            <span class="contact__map-dot" aria-hidden="true"></span>
+                            <span data-en="Visits are by appointment only" data-ku="سەردانکردن تەنها بە ژوانی پێشوەختەیە">Visits are by appointment only</span>
+                        </p>
                     </div>
-                    <div class="contact__row">
-                        <dt>{{ setting('contact_newwork_label') }}</dt>
-                        <dd>{{ setting('contact_email_new') }}</dd>
-                    </div>
-                    <div class="contact__row">
-                        <dt>{{ setting('contact_general_label') }}</dt>
-                        <dd>{{ setting('contact_email_general') }}</dd>
-                    </div>
-                    <div class="contact__row">
-                        <dt>{{ setting('contact_phone_label') }}</dt>
-                        <dd>{{ setting('contact_phone') }}</dd>
-                    </div>
-                </dl>
+                </div>
             </div>
 
             <form class="contact__form" id="contactForm" novalidate>
-                <div class="form-group">
-                    <input type="text"  name="name"    placeholder="Your Name"       required autocomplete="off">
-                    <div class="form-line"></div>
+                <div class="form-field">
+                    <input type="text" id="cf-name" name="name" placeholder=" " required autocomplete="off">
+                    <label for="cf-name" data-en="Your Name" data-ku="ناوت">Your Name</label>
                 </div>
-                <div class="form-group">
-                    <input type="email" name="email"   placeholder="Email Address"   required autocomplete="off">
-                    <div class="form-line"></div>
+                <div class="form-field">
+                    <input type="email" id="cf-email" name="email" placeholder=" " required autocomplete="off">
+                    <label for="cf-email" data-en="Email Address" data-ku="ناونیشانی ئیمەیڵ">Email Address</label>
                 </div>
-                <div class="form-group">
-                    <input type="text"  name="project" placeholder="Project Type"              autocomplete="off">
-                    <div class="form-line"></div>
+                <div class="form-field">
+                    <input type="text" id="cf-project" name="project" placeholder=" " autocomplete="off">
+                    <label for="cf-project" data-en="Project Type" data-ku="جۆری پڕۆژە">Project Type</label>
                 </div>
-                <div class="form-group">
-                    <textarea name="message" placeholder="Tell us about your project" rows="4"></textarea>
-                    <div class="form-line"></div>
+                <div class="form-field form-field--grow">
+                    <textarea id="cf-message" name="message" placeholder=" " rows="4"></textarea>
+                    <label for="cf-message" data-en="Tell us about your project" data-ku="دەربارەی پڕۆژەکەت پێمان بڵێ">Tell us about your project</label>
                 </div>
                 <button type="submit" class="form-submit">
-                    <span class="form-submit__label">Send Message</span>
+                    <span class="form-submit__label" data-en="Send Message" data-ku="ناردنی نامە">Send Message</span>
                     <span class="form-submit__arrow">→</span>
                 </button>
-                <p class="form-success" id="formSuccess" hidden>
+                <p class="form-success" id="formSuccess" hidden data-en="✓ Message received — we'll be in touch soon." data-ku="✓ نامەکەت گەیشت — بەم زووانە پەیوەندیت پێوە دەکەین.">
                     ✓ Message received — we'll be in touch soon.
                 </p>
             </form>
@@ -646,8 +774,8 @@
     <footer class="footer">
         <div class="footer__inner">
             <div class="footer__col footer__col--brand">
-                <div class="footer__logo">{{ setting('footer_logo') }}</div>
-                <div class="footer__tagline">{{ setting('footer_tagline') }}</div>
+                <div class="footer__logo" data-en="{{ setting('footer_logo') }}" data-ku="ئارام مزووری">{{ setting('footer_logo') }}</div>
+                <div class="footer__tagline" data-en="{{ setting('footer_tagline') }}" data-ku="تەڵارسازی · هەولێر · کوردستان">{{ setting('footer_tagline') }}</div>
                 <div class="footer__kurdish">{{ setting('footer_kurdish') }}</div>
             </div>
 
@@ -683,7 +811,7 @@
 
         <!-- Fixed top bar -->
         <div class="proj-overlay__topbar">
-            <button class="proj-overlay__back" id="projOverlayClose" aria-label="Back to projects">Back to Projects</button>
+            <button class="proj-overlay__back" id="projOverlayClose" aria-label="Back to projects" data-en="Back to Projects" data-ku="گەڕانەوە بۆ پرۆژەکان">Back to Projects</button>
             <div class="proj-overlay__proj-nav">
                 <button class="proj-overlay__proj-btn" id="overlayProjPrev" aria-label="Previous project">←</button>
                 <span class="proj-overlay__counter" id="overlayCounter">1 / 10</span>
@@ -699,6 +827,21 @@
                 <div class="od-bg__ambient od-ambient"></div>
                 <img class="od-bg__img" id="overlayHeroImg" src="" alt="">
                 <div class="od-bg__veil"></div>
+
+                <!-- Full-resolution view + download controls -->
+                <div class="od-fullres">
+                    <a class="od-fullres__view" id="overlayFullRes" href="#" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M3 15v4a2 2 0 0 0 2 2h4"/>
+                        </svg>
+                        <span data-en="View Full Resolution Size" data-ku="بینین بە قەبارەی تەواو">View Full Resolution Size</span>
+                    </a>
+                    <a class="od-fullres__dl" id="overlayDownload" href="#" download title="Download image" aria-label="Download image">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>
+                        </svg>
+                    </a>
+                </div>
             </div>
 
             <!-- HUD bracket decorations (image side) -->
@@ -732,19 +875,19 @@
 
                     <dl class="od-specs">
                         <div class="od-spec">
-                            <dt>Location</dt>
+                            <dt data-en="Location" data-ku="شوێن">Location</dt>
                             <dd id="overlayLocation"></dd>
                         </div>
                         <div class="od-spec">
-                            <dt>Year</dt>
+                            <dt data-en="Year" data-ku="ساڵ">Year</dt>
                             <dd id="overlayYear"></dd>
                         </div>
                         <div class="od-spec">
-                            <dt>Typology</dt>
+                            <dt data-en="Typology" data-ku="جۆر">Typology</dt>
                             <dd id="overlayTypology"></dd>
                         </div>
                         <div class="od-spec">
-                            <dt>Plot Area</dt>
+                            <dt data-en="Plot Area" data-ku="ڕووبەری زەوی">Plot Area</dt>
                             <dd id="overlayArea"></dd>
                         </div>
                     </dl>
@@ -790,5 +933,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>window.__SITE__ = {!! \Illuminate\Support\Js::from($payload) !!};</script>
     <script src="{{ asset('script.js') }}"></script>
+    <script src="{{ asset('vendor/three.min.js') }}" defer></script>
+    <script src="{{ asset('hero3d.js') }}" defer></script>
 </body>
 </html>

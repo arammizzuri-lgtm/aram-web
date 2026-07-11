@@ -15,8 +15,8 @@ use Illuminate\Support\Str;
 class Project extends Model
 {
     protected $fillable = [
-        'num', 'name', 'category', 'status', 'size', 'area', 'typology',
-        'location', 'year', 'desc', 'narrative', 'materials',
+        'num', 'name', 'name_ku', 'category', 'status', 'size', 'area', 'typology',
+        'location', 'year', 'desc', 'desc_ku', 'narrative', 'materials',
         'related', 'imgs', 'sort_order', 'is_published',
     ];
 
