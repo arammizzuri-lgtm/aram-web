@@ -9,9 +9,9 @@ deployment:
     - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
     - test -f $DEPLOYPATH/.env || /bin/cp $DEPLOYPATH/.env.example $DEPLOYPATH/.env
     - test -f $DEPLOYPATH/database/database.sqlite || /bin/touch $DEPLOYPATH/database/database.sqlite
-    - cd $DEPLOYPATH && (grep -q '^APP_KEY=$' .env && php artisan key:generate --force || true)
-    - cd $DEPLOYPATH && php artisan migrate --force
-    - cd $DEPLOYPATH && (test -L public/storage || php artisan storage:link)
-    - cd $DEPLOYPATH && php artisan config:cache
-    - cd $DEPLOYPATH && php artisan route:cache
-    - cd $DEPLOYPATH && php artisan view:cache
+    - cd $DEPLOYPATH && (grep -q '^APP_KEY=$' .env && /usr/local/bin/ea-php84 artisan key:generate --force || true)
+    - cd $DEPLOYPATH && /usr/local/bin/ea-php84 artisan migrate --force
+    - cd $DEPLOYPATH && (test -L public/storage || /usr/local/bin/ea-php84 artisan storage:link)
+    - cd $DEPLOYPATH && /usr/local/bin/ea-php84 artisan config:cache
+    - cd $DEPLOYPATH && /usr/local/bin/ea-php84 artisan route:cache
+    - cd $DEPLOYPATH && /usr/local/bin/ea-php84 artisan view:cache
