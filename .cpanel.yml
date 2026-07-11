@@ -4,6 +4,7 @@ deployment:
     - export DEPLOYPATH=/home/qbpxqy9q9gzc/aram-web
     - /bin/mkdir -p $DEPLOYPATH
     - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp .env.example $DEPLOYPATH/.env.example
     - /bin/mkdir -p $DEPLOYPATH/storage/framework/sessions $DEPLOYPATH/storage/framework/views $DEPLOYPATH/storage/framework/cache/data $DEPLOYPATH/storage/logs $DEPLOYPATH/storage/app/public $DEPLOYPATH/storage/app/private $DEPLOYPATH/bootstrap/cache
     - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
     - test -f $DEPLOYPATH/.env || /bin/cp $DEPLOYPATH/.env.example $DEPLOYPATH/.env
