@@ -78,37 +78,6 @@
             <span class="hero__sheet-mark hero__sheet-mark--br"></span>
         </div>
 
-        {{-- Title block — the architect's signature corner of every sheet:
-             practice, project, scale, and the practice figures condensed.
-             (Stats are announced to screen readers via #heroStatsData.) --}}
-        <div class="hero__titleblock" aria-hidden="true">
-            <svg class="hero__seal" viewBox="0 0 100 100">
-                <defs><path id="sealPath" d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0"/></defs>
-                <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="1"/>
-                <circle cx="50" cy="50" r="26" fill="none" stroke="currentColor" stroke-width=".7"/>
-                <text><textPath href="#sealPath">ARAM MIZURI · ARCHITECTURE · EST 2009 · ERBIL ·</textPath></text>
-            </svg>
-            <div class="hero__tb">
-                <div class="hero__tb-row hero__tb-row--name">
-                    <span data-en="Aram Mizuri — Architecture" data-ku="ئارام مزووری — تەڵارسازی">Aram Mizuri — Architecture</span>
-                </div>
-                <div class="hero__tb-row">
-                    <i data-en="Project" data-ku="پرۆژە">Project</i><b data-en="Portfolio" data-ku="پۆرتفۆلیۆ">Portfolio</b>
-                    <i data-en="Scale" data-ku="پێوانە">Scale</i><b>1 : 1</b>
-                </div>
-                <div class="hero__tb-row">
-                    <i data-en="Location" data-ku="شوێن">Location</i><b data-en="Erbil, Kurdistan" data-ku="هەولێر، کوردستان">Erbil, Kurdistan</b>
-                    <i data-en="Sheet" data-ku="پەڕە">Sheet</i><b>A-01</b>
-                </div>
-                <div class="hero__tb-row hero__tb-row--stats">
-                    <b>{{ $stats['projects'] }}</b><i data-en="Projects" data-ku="پرۆژە">Projects</i>
-                    <b>{{ $stats['cities'] }}</b><i data-en="Cities" data-ku="شار">Cities</i>
-                    <b>{{ $stats['countries'] }}</b><i data-en="Countries" data-ku="وڵات">Countries</i>
-                    <b>{{ $stats['area_short'] }}</b><i>m²</i>
-                </div>
-            </div>
-        </div>
-
         <div class="hero__center">
             <div class="hero__eyebrow">
                 <span data-en="{{ setting('hero_eyebrow') }}" data-ku="هەولێر · کوردستان · دامەزراوە ٢٠٠٩">{{ setting('hero_eyebrow') }}</span>
@@ -162,17 +131,6 @@
                 <span class="hero__hint-orb">⟲</span>
                 <span data-en="drag to spin the record" data-ku="ڕایبکێشە بۆ سووڕاندنی تۆمارەکە">drag to spin the record</span>
             </p>
-        </div>
-
-        @php
-            $mq   = 'Residential — Cultural — Urban Design — Hospitality — Commercial — Heritage — ';
-            $mqKu = 'نیشتەجێبوون — کولتووری — دیزاینی شاری — میوانپەروەری — بازرگانی — میرات — ';
-        @endphp
-        <div class="hero__marquee" aria-hidden="true">
-            <div class="hero__marquee-track">
-                <span data-en="{{ $mq }}{{ $mq }}" data-ku="{{ $mqKu }}{{ $mqKu }}">{{ $mq }}{{ $mq }}</span>
-                <span data-en="{{ $mq }}{{ $mq }}" data-ku="{{ $mqKu }}{{ $mqKu }}">{{ $mq }}{{ $mq }}</span>
-            </div>
         </div>
 
         <a href="#projects" class="hero__scroll" aria-label="Scroll to projects">
