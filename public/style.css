@@ -1749,6 +1749,49 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 
 /* ---- Clients & Partners -------------------------------- */
+/* ---- Stats band (between hero + map) -------------------- */
+.statbar {
+    position: relative;
+    background: var(--black);
+    border-top: 1px solid rgba(245,197,24,.1);
+    border-bottom: 1px solid rgba(245,197,24,.1);
+    padding: clamp(26px, 3.4vw, 46px) 0;
+    overflow: hidden;
+}
+.statbar__track {
+    display: flex; align-items: stretch;
+    max-width: 1320px; margin: 0 auto;
+    padding: 0 clamp(20px, 6vw, 84px);
+}
+.statbar__item {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 9px;
+    text-align: center;
+    padding: 4px clamp(8px, 2vw, 20px);
+    border-right: 1px solid rgba(255,255,255,.08);
+}
+.statbar__item:last-child { border-right: 0; }
+.statbar__num {
+    font-size: clamp(30px, 4.2vw, 58px); font-weight: 200; line-height: 1;
+    letter-spacing: -.02em; color: var(--gold);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 34px rgba(245,197,24,.28);
+}
+.statbar__label {
+    font-size: clamp(9px, .95vw, 11px); letter-spacing: .22em;
+    text-transform: uppercase; color: rgba(255,255,255,.5);
+}
+/* mobile: ~2.3 cards visible, finger-drag to swipe through the rest */
+@media (max-width: 700px) {
+    .statbar__track {
+        overflow-x: auto; scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        padding-inline: 20px;
+    }
+    .statbar__track::-webkit-scrollbar { display: none; }
+    .statbar__item { flex: 0 0 auto; width: 43%; scroll-snap-align: center; }
+}
+
 .clients {
     background: var(--black);
     padding: 60px 0 72px;

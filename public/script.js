@@ -527,6 +527,38 @@ function buildKurdishSun(container, opts = {}) {
     }
 })();
 
+/* ---- Stats band — count up on reveal --------------------
+   The practice figures that used to ride the 3D hero ring now live in
+   their own band; count each up from zero the first time it scrolls in. */
+(function initStatbar() {
+    const track = document.getElementById('statbarTrack');
+    if (!track) return;
+    const nums = track.querySelectorAll('.statbar__num');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function run() {
+        nums.forEach(el => {
+            const target = parseInt(el.dataset.value, 10) || 0;
+            const suf = el.dataset.suffix || '';
+            if (reduce) { el.textContent = target.toLocaleString('en-US') + suf; return; }
+            const dur = 1500, t0 = performance.now();
+            (function tick(now) {
+                const p = Math.min(1, (now - t0) / dur);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString('en-US') + suf;
+                if (p < 1) requestAnimationFrame(tick);
+            })(t0);
+        });
+    }
+
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) { run(); io.disconnect(); }
+        }, { threshold: 0.4 });
+        io.observe(track);
+    } else run();
+})();
+
 /* ---- Clients modal — liquid-glass roster ----------------
    The marquee is ambience; the modal is the record. Any logo click
    opens the full clients & partners grid. */

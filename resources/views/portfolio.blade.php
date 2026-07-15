@@ -135,6 +135,32 @@
         <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">وەشانی کوردی · Kurdish Version</button>
     </section>
 
+    <!-- ========== STATS BAND ========== -->
+    {{-- Practice figures — lifted out of the 3D hero ring into their own
+         full-width band (matches the Clients section width). Counts up on
+         scroll via initStatbar; finger-drag to swipe on mobile. --}}
+    @php
+        $sbAreaNum = (int) $stats['area_short'];
+        $sbAreaSuf = trim(preg_replace('/[\d.,]/', '', $stats['area_short']));
+        $statbar = [
+            ['v' => (int) $stats['projects'],         's' => '',         'en' => 'Projects',    'ku' => 'پرۆژە'],
+            ['v' => (int) setting('about_stat2_num'), 's' => '',         'en' => 'Clients',     'ku' => 'کڕیار'],
+            ['v' => (int) $stats['cities'],           's' => '',         'en' => 'Cities',      'ku' => 'شار'],
+            ['v' => (int) $stats['countries'],        's' => '',         'en' => 'Countries',   'ku' => 'وڵات'],
+            ['v' => $sbAreaNum,                       's' => $sbAreaSuf, 'en' => 'm² Designed', 'ku' => 'م² دیزاینکراو'],
+        ];
+    @endphp
+    <section class="statbar" aria-label="Practice figures">
+        <div class="statbar__track" id="statbarTrack">
+            @foreach ($statbar as $st)
+                <div class="statbar__item">
+                    <span class="statbar__num" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
+                    <span class="statbar__label" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     <!-- ========== PROJECTS MAP ========== -->
     <section class="proj-map" id="map">
 
