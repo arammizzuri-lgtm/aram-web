@@ -317,6 +317,10 @@
     var DEPTH_LAYERS = 6, DEPTH_GAP = 0.055;
     var cardGeo = new THREE.PlaneGeometry(CARD_W, CARD_H); // shared by every layer
     (function buildCards() {
+        // Stat numerals removed by request — the glowing contour rings on the
+        // ground remain (they ripple from centre once uCards defaults to 0,0).
+        // Delete the next line to bring the ring of numbers back.
+        return;
         statsData.forEach(function (stat, i) {
             var cv = document.createElement('canvas');
             cv.width = 640; cv.height = 432; // wide: matches the type-plane aspect

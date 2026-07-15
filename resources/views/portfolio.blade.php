@@ -68,16 +68,6 @@
             <span class="hero__grain"></span>
         </div>
 
-        {{-- Drawing-sheet frame: hairline border + registration marks.
-             The hero is presented as a live architect's sheet the 3D
-             scene lifts out of. Purely decorative. --}}
-        <div class="hero__sheet" aria-hidden="true">
-            <span class="hero__sheet-mark hero__sheet-mark--tl"></span>
-            <span class="hero__sheet-mark hero__sheet-mark--tr"></span>
-            <span class="hero__sheet-mark hero__sheet-mark--bl"></span>
-            <span class="hero__sheet-mark hero__sheet-mark--br"></span>
-        </div>
-
         <div class="hero__center">
             <div class="hero__eyebrow">
                 <span data-en="{{ setting('hero_eyebrow') }}" data-ku="هەولێر · کوردستان · دامەزراوە ٢٠٠٩">{{ setting('hero_eyebrow') }}</span>

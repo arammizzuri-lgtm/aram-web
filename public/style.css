@@ -475,10 +475,8 @@ body.is-loaded .hero__line:nth-child(2) .hero__line-in { animation-delay: .12s; 
     padding: 0 20px; text-align: center;
 }
 @media (min-width: 769px) {
+    /* caption + CTA + hint pinned to the sheet's bottom centre on desktop */
     .hero__foot { position: absolute; left: 0; right: 0; bottom: 82px; margin: 0; }
-    /* headline rides higher so the ring's front numeral stands fully
-       visible beneath the signature, not behind it */
-    .hero__center { transform: translateY(clamp(-120px, -9vh, -60px)); }
 }
 .hero__actions {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
