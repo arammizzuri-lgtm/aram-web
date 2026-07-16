@@ -1773,56 +1773,89 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     animation: mmAurora 16s ease-in-out infinite alternate;
     pointer-events: none;
 }
-.statbar__track {
+.statbar__inner {
     position: relative;
-    display: flex; align-items: stretch; gap: clamp(10px, 1.2vw, 16px);
+    display: flex; align-items: center; gap: clamp(28px, 4.5vw, 72px);
     max-width: 1320px; margin: 0 auto;
     padding: 0 clamp(20px, 6vw, 84px);
+}
+/* the caption — the record, stated before it is counted */
+.statbar__caption { flex: 0 0 clamp(230px, 24vw, 330px); text-align: start; }
+.statbar__title {
+    margin-top: 10px;
+    font-size: clamp(24px, 2.4vw, 38px); font-weight: 200;
+    line-height: 1.18; letter-spacing: -.01em; color: #fff;
+}
+.statbar__title em { font-family: var(--serif); font-style: italic; color: var(--gold); }
+.statbar__sub {
+    margin-top: 12px;
+    font-size: 13px; font-weight: 300; line-height: 1.75;
+    color: rgba(255,255,255,.45);
+}
+.statbar__track {
+    position: relative; flex: 1; min-width: 0;
+    display: flex; align-items: stretch; gap: clamp(8px, 1vw, 14px);
     cursor: grab;
 }
 .statbar__track.dragging { cursor: grabbing; }
 .statbar__item {
     flex: 1; min-width: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px; text-align: center;
-    padding: clamp(22px, 2.4vw, 34px) clamp(10px, 1.6vw, 22px);
-    border-radius: 20px;
-    /* liquid-glass slab: glossy fill, bright top rim, sweeping sheen */
-    background-image:
-        linear-gradient(115deg, transparent 32%, rgba(255,255,255,.13) 48%, transparent 62%),
-        linear-gradient(165deg, rgba(255,255,255,.10), rgba(255,255,255,.03) 55%, rgba(245,197,24,.06));
-    background-size: 260% 100%, 100% 100%;
-    background-position: 230% 0, 0 0;
-    background-repeat: no-repeat;
-    border: 1px solid rgba(255,255,255,.16);
-    border-top-color: rgba(255,255,255,.34);
-    backdrop-filter: blur(14px) saturate(150%); -webkit-backdrop-filter: blur(14px) saturate(150%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 18px 44px rgba(0,0,0,.4);
-    animation: mmSheen 6s ease-in-out infinite;
-    animation-delay: calc(var(--i, 0) * .55s);
-    transition: border-color .3s, transform .35s var(--ease-out), box-shadow .35s;
+    gap: 13px; text-align: center;
+    padding: 8px 4px;
+    transition: transform .35s var(--ease-out);
 }
-.statbar__item:hover {
-    border-color: rgba(245,197,24,.45);
-    transform: translateY(-5px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 26px 60px rgba(0,0,0,.5), 0 0 34px rgba(245,197,24,.10);
-}
-/* glass numerals: gradient-clipped glyphs with light drifting through them */
+.statbar__item:hover { transform: translateY(-4px); }
+/* 3D liquid-glass numerals — no card, the glyph itself is the glass:
+   near-black translucent body, a bright rim where the edge catches
+   light, a dark extrusion behind for thickness, and a specular sweep
+   travelling through the glass on its own beat */
 .statbar__num {
-    font-size: clamp(38px, 4.6vw, 66px); font-weight: 200; line-height: 1;
-    letter-spacing: -.02em;
+    position: relative; z-index: 0;
+    font-size: clamp(52px, 5.4vw, 88px); font-weight: 600; line-height: 1.1;
+    letter-spacing: -.01em;
     font-variant-numeric: tabular-nums;
-    background-image: linear-gradient(115deg, #fff 18%, #ffeaa8 38%, var(--gold) 52%, #fff 72%, #ffeaa8 90%);
-    background-size: 260% 100%;
+    /* dark glass body — visible grey faces so the glyph reads as a solid
+       object, like the reference letter, not a hollow outline */
+    background-image: linear-gradient(160deg,
+        rgba(150,154,168,.92) 0%, rgba(74,76,88,.95) 26%,
+        rgba(22,22,28,.98) 52%, rgba(8,8,10,1) 72%,
+        rgba(110,112,126,.9) 100%);
     -webkit-background-clip: text; background-clip: text;
     color: transparent; -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 22px rgba(245,197,24,.30));
-    animation: statShimmer 7s ease-in-out infinite;
-    animation-delay: calc(var(--i, 0) * .55s);
-    /* reveal: each numeral settles out of blur as it counts up */
+    /* rim light: the edge of the glass catching the studio light */
+    -webkit-text-stroke: 1.5px rgba(255,255,255,.5);
+    filter: drop-shadow(0 1px 0 rgba(255,255,255,.28))
+            drop-shadow(0 16px 26px rgba(0,0,0,.7))
+            drop-shadow(0 0 30px rgba(245,197,24,.10));
+    /* reveal: each numeral settles up as it counts */
     opacity: 0; transform: translateY(16px);
 }
-@keyframes statShimmer { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+/* glass thickness: a dark offset copy behind the face */
+.statbar__num::before {
+    content: attr(data-n);
+    position: absolute; inset: 0; z-index: -1;
+    transform: translate(.028em, .04em);
+    background-image: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.95));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,.14);
+}
+/* liquid light: a specular streak sweeping through the glyph */
+.statbar__num::after {
+    content: attr(data-n);
+    position: absolute; inset: 0;
+    background-image: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.9) 46%, rgba(255,236,170,.5) 53%, transparent 66%);
+    background-size: 300% 100%; background-position: 250% 0; background-repeat: no-repeat;
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px transparent;
+    mix-blend-mode: screen;
+    animation: statGlassSweep 6.5s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * .6s);
+    pointer-events: none;
+}
+@keyframes statGlassSweep { 0%, 100% { background-position: 250% 0; } 50% { background-position: -150% 0; } }
 .statbar.counted .statbar__num,
 .statbar__num.on {
     opacity: 1; transform: none;
@@ -1844,19 +1877,21 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: clamp(9px, .95vw, 11px); letter-spacing: .24em;
     text-transform: uppercase; color: rgba(255,255,255,.55);
 }
-/* mobile: ~2 glass slabs visible, finger-drag through the rest */
+/* mobile: caption on top, ~2 glass figures visible, drag through the rest */
 @media (max-width: 700px) {
+    .statbar__inner { flex-direction: column; align-items: stretch; gap: 26px; }
+    .statbar__caption { flex: none; }
     .statbar__track {
         overflow-x: auto; scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch; scrollbar-width: none;
-        padding-inline: 20px; gap: 12px;
+        gap: 12px;
         touch-action: pan-x pan-y;
     }
     .statbar__track::-webkit-scrollbar { display: none; }
     .statbar__item { flex: 0 0 auto; width: 46%; scroll-snap-align: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .statbar::before, .statbar__item, .statbar__num { animation: none; }
+    .statbar::before, .statbar__item, .statbar__num, .statbar__num::after { animation: none; }
     .statbar__num { opacity: 1; transform: none; }
 }
 

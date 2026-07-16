@@ -151,14 +151,21 @@
         ];
     @endphp
     <section class="statbar" aria-label="Practice figures">
-        <div class="statbar__track" id="statbarTrack">
-            @foreach ($statbar as $st)
-                <div class="statbar__item" style="--i: {{ $loop->index }}">
-                    <span class="statbar__num" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
-                    <span class="statbar__rule" aria-hidden="true"></span>
-                    <span class="statbar__label" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
-                </div>
-            @endforeach
+        <div class="statbar__inner">
+            <div class="statbar__caption">
+                <p class="section-label" data-en="The Record" data-ku="تۆمارەکە">The Record</p>
+                <h2 class="statbar__title" data-en="Strength, <em>in numbers.</em>" data-ku="هێز، <em>بە ژمارە.</em>">Strength, <em>in numbers.</em></h2>
+                <p class="statbar__sub" data-en="Years of building across Kurdistan and beyond — every figure here is carried by standing architecture." data-ku="ساڵانێک لە بیناسازی لە کوردستان و دەرەوەی — هەر ژمارەیەکی ئێرە بە تەڵارسازیی وەستاو هەڵگیراوە.">Years of building across Kurdistan and beyond — every figure here is carried by standing architecture.</p>
+            </div>
+            <div class="statbar__track" id="statbarTrack">
+                @foreach ($statbar as $st)
+                    <div class="statbar__item" style="--i: {{ $loop->index }}">
+                        <span class="statbar__num" data-n="0{{ $st['s'] }}" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
+                        <span class="statbar__rule" aria-hidden="true"></span>
+                        <span class="statbar__label" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
+                    </div>
+                @endforeach
+            </div>
         </div>
     </section>
 

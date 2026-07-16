@@ -540,13 +540,16 @@ function buildKurdishSun(container, opts = {}) {
         nums.forEach(el => {
             const target = parseInt(el.dataset.value, 10) || 0;
             const suf = el.dataset.suffix || '';
+            // the glass layers (::before extrusion, ::after specular) render
+            // attr(data-n), so it must always mirror the visible text
+            const set = s => { el.textContent = s; el.dataset.n = s; };
             el.classList.add('on');                       // blur-in reveal
-            if (reduce) { el.textContent = target.toLocaleString('en-US') + suf; return; }
+            if (reduce) { set(target.toLocaleString('en-US') + suf); return; }
             const dur = 1700, t0 = performance.now();
             (function tick(now) {
                 const p = Math.min(1, (now - t0) / dur);
                 const eased = 1 - Math.pow(1 - p, 4);     // fast start, soft landing
-                el.textContent = Math.round(target * eased).toLocaleString('en-US') + suf;
+                set(Math.round(target * eased).toLocaleString('en-US') + suf);
                 if (p < 1) requestAnimationFrame(tick);
             })(t0);
         });
