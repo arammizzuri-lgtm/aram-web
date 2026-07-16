@@ -678,33 +678,33 @@
 
                 <ul class="contact__methods">
                     {{-- one email, two lines — the address itself lives on the map card below --}}
-                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new') }}">
+                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new', 'Info@arammizzuri.com') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new', 'Info@arammizzuri.com') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_newwork_label') }}" data-ku="ئیمەیڵ">{{ setting('contact_newwork_label') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_email_new') }}</span>
+                            <span class="cmethod__label" data-en="{{ setting('contact_newwork_label', 'Email') }}" data-ku="ئیمەیڵ">{{ setting('contact_newwork_label', 'Email') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_email_new', 'Info@arammizzuri.com') }}</span>
                         </div>
                         <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
                     </li>
-                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone') }}">
+                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone', '+964 (0) 782 445 4414')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone', '+964 (0) 782 445 4414') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_phone_label') }}" data-ku="تەلەفۆن ٠١">{{ setting('contact_phone_label') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_phone') }}</span>
+                            <span class="cmethod__label" data-en="{{ setting('contact_phone_label', 'Phone 01') }}" data-ku="تەلەفۆن ٠١">{{ setting('contact_phone_label', 'Phone 01') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_phone', '+964 (0) 782 445 4414') }}</span>
                         </div>
                         <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
                     </li>
-                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone2')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone2') }}">
+                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone2', '+964 (0) 750 408 6367')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone2', '+964 (0) 750 408 6367') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_phone2_label') }}" data-ku="تەلەفۆن ٠٢">{{ setting('contact_phone2_label') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_phone2') }}</span>
+                            <span class="cmethod__label" data-en="{{ setting('contact_phone2_label', 'Phone 02') }}" data-ku="تەلەفۆن ٠٢">{{ setting('contact_phone2_label', 'Phone 02') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_phone2', '+964 (0) 750 408 6367') }}</span>
                         </div>
                         <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
                     </li>
