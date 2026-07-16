@@ -540,11 +540,12 @@ function buildKurdishSun(container, opts = {}) {
         nums.forEach(el => {
             const target = parseInt(el.dataset.value, 10) || 0;
             const suf = el.dataset.suffix || '';
+            el.classList.add('on');                       // blur-in reveal
             if (reduce) { el.textContent = target.toLocaleString('en-US') + suf; return; }
-            const dur = 1500, t0 = performance.now();
+            const dur = 1700, t0 = performance.now();
             (function tick(now) {
                 const p = Math.min(1, (now - t0) / dur);
-                const eased = 1 - Math.pow(1 - p, 3);
+                const eased = 1 - Math.pow(1 - p, 4);     // fast start, soft landing
                 el.textContent = Math.round(target * eased).toLocaleString('en-US') + suf;
                 if (p < 1) requestAnimationFrame(tick);
             })(t0);
@@ -557,6 +558,76 @@ function buildKurdishSun(container, opts = {}) {
         }, { threshold: 0.4 });
         io.observe(track);
     } else run();
+
+    // drag-to-scroll with the mouse (touch already scrolls natively)
+    let down = false, sx = 0, sl = 0;
+    track.addEventListener('pointerdown', e => {
+        if (e.pointerType === 'touch') return;
+        if (track.scrollWidth <= track.clientWidth + 4) return;   // nothing to drag
+        down = true; sx = e.clientX; sl = track.scrollLeft;
+        track.classList.add('dragging');
+        track.setPointerCapture(e.pointerId);
+    });
+    track.addEventListener('pointermove', e => {
+        if (down) track.scrollLeft = sl - (e.clientX - sx);
+    });
+    ['pointerup', 'pointercancel'].forEach(ev =>
+        track.addEventListener(ev, () => { down = false; track.classList.remove('dragging'); }));
+})();
+
+/* ---- Clients marquee — drag with inertia ----------------
+   The strip drifts on its own, but a finger or mouse can grab it,
+   throw it, and the momentum decays back into the idle drift —
+   the same physics language as the hero ring. */
+(function initClientsDrag() {
+    const track = document.querySelector('.clients__track');
+    const wrap  = document.querySelector('.clients__track-wrap');
+    if (!track || !wrap) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    track.style.animation = 'none';               // JS owns the motion now
+    const DRIFT = reduce ? 0 : -28;               // idle speed, px/s
+    let x = 0, vx = DRIFT;
+    let dragging = false, lastX = 0, lastT = 0, moved = 0;
+    let half = 0;
+    const measure = () => { half = track.scrollWidth / 2; };
+    measure();
+    window.addEventListener('resize', measure);
+
+    // no pointer capture — capturing would retarget the click away from
+    // the logos, and a plain click must still open the clients modal
+    wrap.addEventListener('pointerdown', e => {
+        dragging = true; moved = 0;
+        lastX = e.clientX; lastT = performance.now();
+        wrap.classList.add('dragging');
+    });
+    window.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        const now = performance.now();
+        const dx = e.clientX - lastX;
+        moved += Math.abs(dx);
+        x += dx;
+        vx = dx / Math.max(8, now - lastT) * 1000;             // px/s
+        lastX = e.clientX; lastT = now;
+    });
+    ['pointerup', 'pointercancel'].forEach(ev =>
+        window.addEventListener(ev, () => { dragging = false; wrap.classList.remove('dragging'); }));
+    // a real drag must not also fire a logo's click (which opens the modal)
+    wrap.addEventListener('click', e => {
+        if (moved > 8) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
+    let prev = performance.now();
+    (function frame(now) {
+        const dt = Math.min(64, now - prev) / 1000; prev = now;
+        if (!dragging) {
+            vx += (DRIFT - vx) * Math.min(1, dt * 1.5);        // decay toward drift
+            x += vx * dt;
+        }
+        if (half > 0) x = ((x % half) + half) % half - half;   // seamless wrap
+        track.style.transform = 'translateX(' + x + 'px)';
+        requestAnimationFrame(frame);
+    })(prev);
 })();
 
 /* ---- Clients modal — liquid-glass roster ----------------
@@ -577,9 +648,12 @@ function buildKurdishSun(container, opts = {}) {
         document.documentElement.style.overflow = '';
     }
 
-    document.querySelectorAll('.clients__track .client-logo').forEach(logo => {
-        logo.addEventListener('click', open);
-    });
+    // Delegate to the strip, not each logo: the marquee slides under the
+    // cursor, so down/up can land on neighbouring logos and the browser
+    // retargets the click to their common ancestor. Any true click on the
+    // strip opens the roster (drags are suppressed in initClientsDrag).
+    const strip = document.querySelector('.clients__track-wrap');
+    if (strip) strip.addEventListener('click', open);
     if (closeBtn) closeBtn.addEventListener('click', close);
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => {

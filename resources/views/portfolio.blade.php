@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="{{ asset('style.css') }}">
+    <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.css">
 </head>
@@ -153,8 +153,9 @@
     <section class="statbar" aria-label="Practice figures">
         <div class="statbar__track" id="statbarTrack">
             @foreach ($statbar as $st)
-                <div class="statbar__item">
+                <div class="statbar__item" style="--i: {{ $loop->index }}">
                     <span class="statbar__num" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
+                    <span class="statbar__rule" aria-hidden="true"></span>
                     <span class="statbar__label" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
                 </div>
             @endforeach
@@ -908,8 +909,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>
     <script>window.__SITE__ = {!! \Illuminate\Support\Js::from($payload) !!};</script>
-    <script src="{{ asset('script.js') }}"></script>
+    <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
     <script src="{{ asset('vendor/three.min.js') }}" defer></script>
-    <script src="{{ asset('hero3d.js') }}" defer></script>
+    <script src="{{ asset('hero3d.js') }}?v={{ filemtime(public_path('hero3d.js')) }}" defer></script>
 </body>
 </html>
