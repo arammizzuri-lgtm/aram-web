@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Kurdish sun — same mark as the loader --}}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -70,7 +74,7 @@
 
         <div class="hero__center">
             <div class="hero__eyebrow">
-                <span data-en="{{ setting('hero_eyebrow') }}" data-ku="هەولێر · کوردستان · دامەزراوە ٢٠٠٩">{{ setting('hero_eyebrow') }}</span>
+                <span data-en="{{ setting('hero_eyebrow', 'Erbil · Kurdistan · Est. 2022') }}" data-ku="هەولێر · کوردستان · دامەزراوە ٢٠٢٢">{{ setting('hero_eyebrow', 'Erbil · Kurdistan · Est. 2022') }}</span>
                 <span class="hero__clock"><span class="hero__clock-dot"></span> <span data-en="Erbil" data-ku="هەولێر">Erbil</span>&nbsp;<time id="heroClock">--:--:--</time></span>
             </div>
             @php
@@ -128,11 +132,10 @@
             <span class="hero__scroll-line"></span>
         </a>
 
-        {{-- Mobile-only language switch, pinned centre-bottom above the
-             marquee: the nav bar (and its کوردی pill) is hidden below
-             768px, so without this, phone visitors have no way to reach
-             the Kurdish version. Label managed by initLang in script.js. --}}
-        <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">وەشانی کوردی · Kurdish Version</button>
+        {{-- Mobile-only language switch — a small fixed KU/EN badge in the
+             top-left corner (the nav bar and its کوردی pill are hidden
+             below 768px). Label managed by initLang in script.js. --}}
+        <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">KU</button>
     </section>
 
     <!-- ========== STATS BAND ========== -->

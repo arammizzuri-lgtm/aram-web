@@ -397,7 +397,7 @@ function buildKurdishSun(container, opts = {}) {
     function toggle() {
         isKu = !isKu;
         if (btn)     btn.textContent     = isKu ? 'English' : 'کوردی';
-        if (heroBtn) heroBtn.textContent = isKu ? 'English Version' : 'وەشانی کوردی · Kurdish Version';
+        if (heroBtn) heroBtn.textContent = isKu ? 'EN' : 'KU';   // compact corner badge
 
         // direction
         document.documentElement.setAttribute('dir', isKu ? 'rtl' : 'ltr');

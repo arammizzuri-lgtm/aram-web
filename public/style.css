@@ -523,24 +523,23 @@ body.is-loaded .hero__hint { animation: heroFade 1s var(--ease-out) 1.6s forward
 .hero--3d { user-select: none; -webkit-user-select: none; touch-action: pan-y; }
 
 /* mobile-only language switch — the nav pill vanishes with the nav bar
-   below 768px; this small liquid-glass pill, pinned centre-bottom just
-   above the marquee, is the phone's door to Kurdish */
+   below 768px; this small glass KU/EN badge sits fixed in the top-left
+   corner, opposite the hamburger */
 .hero__lang {
     display: none;
-    position: absolute; bottom: 68px; left: 0; right: 0; z-index: 3;
-    margin: 0 auto; width: max-content;
-    padding: 8px 18px; border-radius: 100px;
-    font-family: var(--font-ku);
-    font-size: 11px; letter-spacing: .06em;
+    position: fixed; top: 16px; left: 16px; z-index: 950;
+    padding: 8px 12px; border-radius: 9px;
+    font-family: var(--font);
+    font-size: 12px; font-weight: 600; letter-spacing: .14em;
     color: rgba(245,197,24,.95);
     background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.04) 55%, rgba(245,197,24,.09));
     border: 1px solid rgba(245,197,24,.4);
     backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%);
-    box-shadow: 0 10px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
-    opacity: 0; transform: translateY(14px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
+    opacity: 0; transform: translateY(-8px);
 }
 body.is-loaded .hero__lang { animation: heroFade .9s var(--ease-out) 1.15s forwards; }
-.hero__lang:active { transform: scale(.96); }
+.hero__lang:active { transform: scale(.94); }
 @media (max-width: 768px) { .hero__lang { display: block; } }
 @media (prefers-reduced-motion: reduce) { .hero__lang { transform: none !important; opacity: 1 !important; } }
 
@@ -1923,6 +1922,10 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
         -webkit-overflow-scrolling: touch; scrollbar-width: none;
         gap: 12px;
         touch-action: pan-x pan-y;
+        /* the scroller clips its children — give the glow room to live
+           inside the scrollport (padding), reclaimed by negative margin */
+        padding: 48px 24px; margin: -48px -24px;
+        scroll-padding-inline: 24px;
         /* trailing-edge fade: the last visible figure dissolves, saying
            "the row continues" before the hint even needs to */
         -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
