@@ -166,6 +166,13 @@
                     </div>
                 @endforeach
             </div>
+
+            {{-- mobile-only: tells the thumb there are more figures off-screen;
+                 initStatbar dismisses it after the first real swipe --}}
+            <p class="statbar__hint" id="statbarHint" aria-hidden="true">
+                <span data-en="swipe for more figures" data-ku="ڕایبکێشە بۆ ژمارەی زیاتر">swipe for more figures</span>
+                <span class="statbar__hint-arrow">→</span>
+            </p>
         </div>
     </section>
 

@@ -562,6 +562,15 @@ function buildKurdishSun(container, opts = {}) {
         io.observe(track);
     } else run();
 
+    // swipe affordance: hint dies after the first real swipe, and the
+    // trailing fade lifts once the row is scrolled to its end
+    const hint = document.getElementById('statbarHint');
+    track.addEventListener('scroll', () => {
+        if (hint && Math.abs(track.scrollLeft) > 40) hint.classList.add('gone');
+        const end = Math.abs(track.scrollLeft) + track.clientWidth >= track.scrollWidth - 8;
+        track.classList.toggle('at-end', end);
+    }, { passive: true });
+
     // drag-to-scroll with the mouse (touch already scrolls natively)
     let down = false, sx = 0, sl = 0;
     track.addEventListener('pointerdown', e => {

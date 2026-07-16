@@ -1794,7 +1794,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 .statbar__track {
     position: relative; flex: 1; min-width: 0;
-    display: flex; align-items: stretch; gap: clamp(8px, 1vw, 14px);
+    display: flex; align-items: stretch; gap: clamp(24px, 3.2vw, 60px);
     cursor: grab;
 }
 .statbar__track.dragging { cursor: grabbing; }
@@ -1815,12 +1815,20 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: clamp(52px, 5.4vw, 88px); font-weight: 600; line-height: 1.1;
     letter-spacing: -.01em;
     font-variant-numeric: tabular-nums;
-    /* dark glass body — visible grey faces so the glyph reads as a solid
-       object, like the reference letter, not a hollow outline */
-    background-image: linear-gradient(160deg,
-        rgba(150,154,168,.92) 0%, rgba(74,76,88,.95) 26%,
-        rgba(22,22,28,.98) 52%, rgba(8,8,10,1) 72%,
-        rgba(110,112,126,.9) 100%);
+    /* dark glass body — a real photographed liquid-glass material
+       (AI-generated studio macro) clipped into the glyphs; a slight
+       dark veil keeps it smoked, and each figure samples a different
+       fold of the glass via its --i offset. The gradient underneath
+       is the fallback while the photo loads. */
+    background-image:
+        linear-gradient(rgba(3,3,4,.18), rgba(3,3,4,.28)),
+        url('/images/glass-fill.jpg'),
+        linear-gradient(160deg,
+            rgba(150,154,168,.92) 0%, rgba(74,76,88,.95) 26%,
+            rgba(22,22,28,.98) 52%, rgba(8,8,10,1) 72%,
+            rgba(110,112,126,.9) 100%);
+    background-size: cover, cover, cover;
+    background-position: center, calc(var(--i, 0) * 22%) 38%, center;
     -webkit-background-clip: text; background-clip: text;
     color: transparent; -webkit-text-fill-color: transparent;
     /* rim light: the edge of the glass catching the studio light */
@@ -1877,6 +1885,20 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: clamp(9px, .95vw, 11px); letter-spacing: .24em;
     text-transform: uppercase; color: rgba(255,255,255,.55);
 }
+/* swipe hint — mobile only, dies after the first real swipe */
+.statbar__hint {
+    display: none;
+    margin: 18px 0 0; justify-content: center; align-items: center; gap: 10px;
+    font-size: 9.5px; letter-spacing: .26em; text-transform: uppercase;
+    color: rgba(245,197,24,.65);
+    transition: opacity .5s var(--ease), visibility .5s;
+}
+.statbar__hint-arrow { display: inline-block; animation: statHintNudge 1.6s ease-in-out infinite; }
+@keyframes statHintNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(7px); } }
+[dir="rtl"] .statbar__hint-arrow { transform: scaleX(-1); animation: statHintNudgeRtl 1.6s ease-in-out infinite; }
+@keyframes statHintNudgeRtl { 0%, 100% { transform: scaleX(-1) translateX(0); } 50% { transform: scaleX(-1) translateX(7px); } }
+.statbar__hint.gone { opacity: 0; visibility: hidden; }
+
 /* mobile: caption on top, ~2 glass figures visible, drag through the rest */
 @media (max-width: 700px) {
     .statbar__inner { flex-direction: column; align-items: stretch; gap: 26px; }
@@ -1886,9 +1908,19 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
         -webkit-overflow-scrolling: touch; scrollbar-width: none;
         gap: 12px;
         touch-action: pan-x pan-y;
+        /* trailing-edge fade: the last visible figure dissolves, saying
+           "the row continues" before the hint even needs to */
+        -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
+                mask-image: linear-gradient(to right, #000 82%, transparent);
+    }
+    [dir="rtl"] .statbar__track {
+        -webkit-mask-image: linear-gradient(to left, #000 82%, transparent);
+                mask-image: linear-gradient(to left, #000 82%, transparent);
     }
     .statbar__track::-webkit-scrollbar { display: none; }
+    .statbar__track.at-end { -webkit-mask-image: none; mask-image: none; }
     .statbar__item { flex: 0 0 auto; width: 46%; scroll-snap-align: center; }
+    .statbar__hint { display: flex; }
 }
 @media (prefers-reduced-motion: reduce) {
     .statbar::before, .statbar__item, .statbar__num, .statbar__num::after { animation: none; }
