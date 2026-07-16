@@ -291,32 +291,32 @@
   },
   {
     "key": "contact_newwork_label",
-    "value": "New Work",
+    "value": "Email",
     "group": "contact"
   },
   {
     "key": "contact_email_new",
-    "value": "projects@arammizuri.com",
-    "group": "contact"
-  },
-  {
-    "key": "contact_general_label",
-    "value": "General",
-    "group": "contact"
-  },
-  {
-    "key": "contact_email_general",
-    "value": "studio@arammizuri.com",
+    "value": "Info@arammizzuri.com",
     "group": "contact"
   },
   {
     "key": "contact_phone_label",
-    "value": "Phone",
+    "value": "Phone 01",
     "group": "contact"
   },
   {
     "key": "contact_phone",
-    "value": "+964 750 000 0000",
+    "value": "+964 (0) 782 445 4414",
+    "group": "contact"
+  },
+  {
+    "key": "contact_phone2_label",
+    "value": "Phone 02",
+    "group": "contact"
+  },
+  {
+    "key": "contact_phone2",
+    "value": "+964 (0) 750 408 6367",
     "group": "contact"
   },
   {

@@ -677,42 +677,34 @@
                 <h2 class="contact__title" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! setting('contact_title_en') !!}</h2>
 
                 <ul class="contact__methods">
-                    <li class="cmethod">
-                        <span class="cmethod__icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
-                        </span>
-                        <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_studio_label') }}" data-ku="ستۆدیۆ">{{ setting('contact_studio_label') }}</span>
-                            <span class="cmethod__value">{!! setting('contact_studio_value') !!}</span>
-                        </div>
-                    </li>
+                    {{-- one email, two lines — the address itself lives on the map card below --}}
                     <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_newwork_label') }}" data-ku="کاری نوێ">{{ setting('contact_newwork_label') }}</span>
+                            <span class="cmethod__label" data-en="{{ setting('contact_newwork_label') }}" data-ku="ئیمەیڵ">{{ setting('contact_newwork_label') }}</span>
                             <span class="cmethod__value">{{ setting('contact_email_new') }}</span>
                         </div>
                         <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
                     </li>
-                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_general') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_general') }}">
-                        <span class="cmethod__icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-                        </span>
-                        <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_general_label') }}" data-ku="گشتی">{{ setting('contact_general_label') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_email_general') }}</span>
-                        </div>
-                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
-                    </li>
-                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_phone') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone') }}">
+                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_phone_label') }}" data-ku="تەلەفۆن">{{ setting('contact_phone_label') }}</span>
+                            <span class="cmethod__label" data-en="{{ setting('contact_phone_label') }}" data-ku="تەلەفۆن ٠١">{{ setting('contact_phone_label') }}</span>
                             <span class="cmethod__value">{{ setting('contact_phone') }}</span>
+                        </div>
+                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                    </li>
+                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone2')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone2') }}">
+                        <span class="cmethod__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+                        </span>
+                        <div class="cmethod__text">
+                            <span class="cmethod__label" data-en="{{ setting('contact_phone2_label') }}" data-ku="تەلەفۆن ٠٢">{{ setting('contact_phone2_label') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_phone2') }}</span>
                         </div>
                         <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
                     </li>
@@ -721,7 +713,10 @@
                 {{-- Office locator — dark map, pulsing gold pin, and the
                      visiting policy. Initialised in script.js (initOfficeMap). --}}
                 <div class="contact__map">
-                    <div class="contact__map-canvas" id="officeMapEl" aria-label="Office location — Italian Village 2, Erbil"></div>
+                    <div class="contact__map-canvas" id="officeMapEl" role="link" tabindex="0" aria-label="Open office location in Google Maps — Italian Village 2, Erbil"></div>
+                    <span class="contact__map-open" aria-hidden="true">
+                        <span data-en="Open in Google Maps" data-ku="کردنەوە لە گووگڵ ماپ">Open in Google Maps</span> ↗
+                    </span>
                     <div class="contact__map-foot">
                         <p class="contact__map-addr" data-en="Nº 592 (2nd Floor), Italian Village 2, Erbil, Kurdistan Region of Iraq" data-ku="ژمارە ٥٩٢ (نهۆمی ٢)، گوندی ئیتاڵی ٢، هەولێر، هەرێمی کوردستانی عێراق">Nº 592 (2nd Floor), Italian Village 2, Erbil, Kurdistan Region of Iraq</p>
                         <p class="contact__map-note">

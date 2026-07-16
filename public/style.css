@@ -1560,16 +1560,34 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 /* desktop-only feature: gone wherever the aside stacks (tablet/mobile) */
 @media (max-width: 1100px) { .process__showcase { display: none; } }
 
-/* Office locator — dark map card + pulsing gold pin + visiting policy */
+/* Office locator — dark map card + pulsing gold pin + visiting policy.
+   The whole map is a door to Google Maps (initOfficeMap wires the click). */
 .contact__map {
+    position: relative;
     margin-top: 16px;
     border-radius: 18px; overflow: hidden;
     border: 1px solid rgba(255,255,255,.14);
     border-top-color: rgba(255,255,255,.28);
     background: rgba(255,255,255,.03);
     box-shadow: 0 18px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1);
+    transition: border-color .3s;
 }
-.contact__map-canvas { height: 230px; background: #0b0b0b; }
+.contact__map:hover { border-color: rgba(245,197,24,.4); }
+.contact__map-canvas { height: 230px; background: #0b0b0b; cursor: pointer; }
+/* the promise, printed on the glass */
+.contact__map-open {
+    position: absolute; top: 12px; inset-inline-end: 12px; z-index: 800;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 13px; border-radius: 100px;
+    font-size: 9px; letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(245,197,24,.9);
+    background: rgba(7,7,7,.72);
+    border: 1px solid rgba(245,197,24,.3);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    pointer-events: none;
+    transition: color .25s, border-color .25s;
+}
+.contact__map:hover .contact__map-open { color: var(--gold); border-color: rgba(245,197,24,.6); }
 .contact__map-canvas .leaflet-tile-pane { filter: brightness(.85) saturate(.85); }
 .office-pin {
     display: block; position: relative;

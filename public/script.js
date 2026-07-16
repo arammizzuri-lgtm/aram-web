@@ -525,6 +525,12 @@ function buildKurdishSun(container, opts = {}) {
             io.disconnect();
         }, { threshold: 0.1 }).observe(el);
     }
+
+    // the map is a door to directions: click/Enter opens Google Maps
+    const gmaps = 'https://www.google.com/maps/search/?api=1&query=' + OFFICE[0] + ',' + OFFICE[1];
+    const go = () => window.open(gmaps, '_blank', 'noopener');
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
 })();
 
 /* ---- Stats band — count up on reveal --------------------
