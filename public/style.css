@@ -1824,54 +1824,42 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     transition: transform .35s var(--ease-out);
 }
 .statbar__item:hover { transform: translateY(-4px); }
-/* 3D liquid-glass numerals — no card, the glyph itself is the glass:
-   near-black translucent body, a bright rim where the edge catches
-   light, a dark extrusion behind for thickness, and a specular sweep
-   travelling through the glass on its own beat */
+/* Molten-gold glass numerals — the figure is a slab of glowing gold
+   glass in the site's own palette: lit amber body, white gloss across
+   the top, a breathing gold halo cast by the glyph itself, and a
+   liquid light wave rolling through on its own beat. */
 .statbar__num {
     position: relative; z-index: 0;
     font-size: clamp(52px, 5.4vw, 88px); font-weight: 600; line-height: 1.1;
     letter-spacing: -.01em;
     font-variant-numeric: tabular-nums;
-    /* dark glass body — a real photographed liquid-glass material
-       (AI-generated studio macro) clipped into the glyphs; a slight
-       dark veil keeps it smoked, and each figure samples a different
-       fold of the glass via its --i offset. The gradient underneath
-       is the fallback while the photo loads. */
+    /* lit gold-glass body + top gloss (two layers, both clipped in) */
     background-image:
-        linear-gradient(rgba(3,3,4,.18), rgba(3,3,4,.28)),
-        url('/images/glass-fill.jpg'),
-        linear-gradient(160deg,
-            rgba(150,154,168,.92) 0%, rgba(74,76,88,.95) 26%,
-            rgba(22,22,28,.98) 52%, rgba(8,8,10,1) 72%,
-            rgba(110,112,126,.9) 100%);
-    background-size: cover, cover, cover;
-    background-position: center, calc(var(--i, 0) * 22%) 38%, center;
+        linear-gradient(180deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.25) 24%, rgba(255,255,255,0) 42%),
+        linear-gradient(180deg, #fff3c4 0%, #ffd75e 30%, var(--gold) 52%, #c08a06 78%, #7d5a02 100%);
     -webkit-background-clip: text; background-clip: text;
     color: transparent; -webkit-text-fill-color: transparent;
-    /* rim light: the edge of the glass catching the studio light */
-    -webkit-text-stroke: 1.5px rgba(255,255,255,.5);
-    filter: drop-shadow(0 1px 0 rgba(255,255,255,.28))
-            drop-shadow(0 16px 26px rgba(0,0,0,.7))
-            drop-shadow(0 0 30px rgba(245,197,24,.10));
+    filter: drop-shadow(0 0 14px rgba(245,197,24,.42))
+            drop-shadow(0 4px 34px rgba(245,197,24,.22))
+            drop-shadow(0 12px 22px rgba(0,0,0,.55));
     /* reveal: each numeral settles up as it counts */
     opacity: 0; transform: translateY(16px);
 }
-/* glass thickness: a dark offset copy behind the face */
+/* the halo: the number's own light, breathing behind it */
 .statbar__num::before {
     content: attr(data-n);
     position: absolute; inset: 0; z-index: -1;
-    transform: translate(.028em, .04em);
-    background-image: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.95));
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,.14);
+    color: var(--gold); -webkit-text-fill-color: var(--gold);
+    filter: blur(16px);
+    animation: statBreathe 4.5s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * .5s);
 }
-/* liquid light: a specular streak sweeping through the glyph */
+@keyframes statBreathe { 0%, 100% { opacity: .3; } 50% { opacity: .65; } }
+/* liquid light: a bright wave rolling through the glass */
 .statbar__num::after {
     content: attr(data-n);
     position: absolute; inset: 0;
-    background-image: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.9) 46%, rgba(255,236,170,.5) 53%, transparent 66%);
+    background-image: linear-gradient(115deg, transparent 34%, rgba(255,255,255,.95) 48%, rgba(255,248,220,.5) 54%, transparent 68%);
     background-size: 300% 100%; background-position: 250% 0; background-repeat: no-repeat;
     -webkit-background-clip: text; background-clip: text;
     color: transparent; -webkit-text-fill-color: transparent;
@@ -1941,8 +1929,10 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .statbar__hint { display: flex; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .statbar::before, .statbar__item, .statbar__num, .statbar__num::after { animation: none; }
+    .statbar::before, .statbar__item, .statbar__num,
+    .statbar__num::before, .statbar__num::after { animation: none; }
     .statbar__num { opacity: 1; transform: none; }
+    .statbar__num::before { opacity: .35; }
 }
 
 .clients {
