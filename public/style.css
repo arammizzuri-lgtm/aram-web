@@ -1812,12 +1812,15 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 .statbar__track {
     position: relative; flex: 1; min-width: 0;
-    display: flex; align-items: stretch; gap: clamp(24px, 3.2vw, 60px);
+    display: flex; align-items: stretch; justify-content: space-between;
+    gap: clamp(18px, 2.2vw, 40px);
     cursor: grab;
 }
 .statbar__track.dragging { cursor: grabbing; }
 .statbar__item {
-    flex: 1; min-width: 0;
+    /* size to the figure itself — flex:1 boxes were narrower than the
+       glyphs, so wide numbers overflowed into their neighbours */
+    flex: 0 0 auto;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 13px; text-align: center;
     padding: 8px 4px;
@@ -1830,7 +1833,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
    liquid light wave rolling through on its own beat. */
 .statbar__num {
     position: relative; z-index: 0;
-    font-size: clamp(52px, 5.4vw, 88px); font-weight: 600; line-height: 1.1;
+    font-size: clamp(46px, 4vw, 68px); font-weight: 600; line-height: 1.1;
     letter-spacing: -.01em;
     font-variant-numeric: tabular-nums;
     /* lit gold-glass body + top gloss (two layers, both clipped in) */
@@ -1845,16 +1848,21 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     /* reveal: each numeral settles up as it counts */
     opacity: 0; transform: translateY(16px);
 }
-/* the halo: the number's own light, breathing behind it */
+/* the halo: the number's own light, breathing behind it.
+   text-shadow (not a blur filter) — it follows the glyph shape and is
+   never boxed in by the compositor, so the glow can't get cut off */
 .statbar__num::before {
     content: attr(data-n);
     position: absolute; inset: 0; z-index: -1;
-    color: var(--gold); -webkit-text-fill-color: var(--gold);
-    filter: blur(16px);
+    color: transparent; -webkit-text-fill-color: transparent;
+    text-shadow:
+        0 0 22px rgba(245,197,24,.75),
+        0 0 52px rgba(245,197,24,.4),
+        0 0 100px rgba(245,197,24,.2);
     animation: statBreathe 4.5s ease-in-out infinite;
     animation-delay: calc(var(--i, 0) * .5s);
 }
-@keyframes statBreathe { 0%, 100% { opacity: .3; } 50% { opacity: .65; } }
+@keyframes statBreathe { 0%, 100% { opacity: .45; } 50% { opacity: .95; } }
 /* liquid light: a bright wave rolling through the glass */
 .statbar__num::after {
     content: attr(data-n);
@@ -1890,6 +1898,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 .statbar__label {
     font-size: clamp(9px, .95vw, 11px); letter-spacing: .24em;
     text-transform: uppercase; color: rgba(255,255,255,.55);
+    white-space: nowrap;   /* "M² Designed" stays on one line */
 }
 /* swipe hint — mobile only, dies after the first real swipe */
 .statbar__hint {
