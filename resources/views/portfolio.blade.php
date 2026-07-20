@@ -33,17 +33,17 @@
     <!-- Navigation -->
     <nav class="nav" id="nav">
         <a href="#home" class="nav__logo">
-            <span class="logo-name" data-en="{{ setting('brand_name') }}" data-ku="ئارام مزووری">{{ setting('brand_name') }}</span>
-            <span class="logo-sub" data-en="{{ setting('brand_sub') }}" data-ku="تەڵارسازی · هەولێر">{{ setting('brand_sub') }}</span>
+            <span class="logo-name" {!! bitext('brand_name') !!}>{{ bival('brand_name') }}</span>
+            <span class="logo-sub" {!! bitext('brand_sub') !!}>{{ bival('brand_sub') }}</span>
         </a>
 
         <div class="nav__bar">
-            <a href="#projects" class="nav__link" data-en="Projects" data-ku="پرۆژەکان">Projects</a>
-            <a href="#map"      class="nav__link" data-en="Map"      data-ku="نەخشە">Map</a>
-            <a href="#about"    class="nav__link" data-en="About"    data-ku="دەربارەی">About</a>
-            <a href="#services" class="nav__link" data-en="Services" data-ku="خزمەتگوزاری">Services</a>
-            <a href="#process"  class="nav__link" data-en="Process"  data-ku="ڕێگا">Process</a>
-            <a href="#contact"  class="nav__link" data-en="Contact"  data-ku="پەیوەندی">Contact</a>
+            <a href="#projects" class="nav__link" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
+            <a href="#map"      class="nav__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
+            <a href="#about"    class="nav__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
+            <a href="#services" class="nav__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
+            <a href="#process"  class="nav__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
+            <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
             <span class="nav__sep"></span>
             <button class="lang-toggle" id="langToggle" title="Switch to Kurdish / گۆڕانی زمان">کوردی</button>
         </div>
@@ -55,12 +55,12 @@
 
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="#projects" class="mobile-menu__link" data-en="Projects" data-ku="پرۆژەکان">Projects</a>
-        <a href="#map"      class="mobile-menu__link" data-en="Map"      data-ku="نەخشە">Map</a>
-        <a href="#about"    class="mobile-menu__link" data-en="About"    data-ku="دەربارەی">About</a>
-        <a href="#services" class="mobile-menu__link" data-en="Services" data-ku="خزمەتگوزاری">Services</a>
-        <a href="#process"  class="mobile-menu__link" data-en="Process"  data-ku="ڕێگا">Process</a>
-        <a href="#contact"  class="mobile-menu__link" data-en="Contact"  data-ku="پەیوەندی">Contact</a>
+        <a href="#projects" class="mobile-menu__link" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
+        <a href="#map"      class="mobile-menu__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
+        <a href="#about"    class="mobile-menu__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
+        <a href="#services" class="mobile-menu__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
+        <a href="#process"  class="mobile-menu__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
+        <a href="#contact"  class="mobile-menu__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
     </div>
 
     <!-- ========== HERO ========== -->
@@ -74,8 +74,8 @@
 
         <div class="hero__center">
             <div class="hero__eyebrow">
-                <span data-en="{{ setting('hero_eyebrow', 'Erbil · Kurdistan · Est. 2022') }}" data-ku="هەولێر · کوردستان · دامەزراوە ٢٠٢٢">{{ setting('hero_eyebrow', 'Erbil · Kurdistan · Est. 2022') }}</span>
-                <span class="hero__clock"><span class="hero__clock-dot"></span> <span data-en="Erbil" data-ku="هەولێر">Erbil</span>&nbsp;<time id="heroClock">--:--:--</time></span>
+                <span {!! bitext('hero_eyebrow') !!}>{{ bival('hero_eyebrow') }}</span>
+                <span class="hero__clock"><span class="hero__clock-dot"></span> <span {!! bitext('ui_clock_city') !!}>{{ bival('ui_clock_city') }}</span>&nbsp;<time id="heroClock">--:--:--</time></span>
             </div>
             @php
                 // Line 1's last word ("by" / "لەلایەن") renders as a tiny gold
@@ -117,18 +117,14 @@
             <p class="hero__sub" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ setting('hero_sub_en') }}</p>
             <div class="hero__actions">
                 <a href="#projects" class="hero__go" id="heroGo">
-                    <span class="hero__go-label" data-en="Explore Projects" data-ku="پرۆژەکان ببینە">Explore Projects</span>
+                    <span class="hero__go-label" {!! bitext('hero_cta') !!}>{{ bival('hero_cta') }}</span>
                     <span class="hero__go-arrow">→</span>
                 </a>
             </div>
-            <p class="hero__hint" aria-hidden="true">
-                <span class="hero__hint-orb">⟲</span>
-                <span data-en="drag to spin the record" data-ku="ڕایبکێشە بۆ سووڕاندنی تۆمارەکە">drag to spin the record</span>
-            </p>
         </div>
 
         <a href="#projects" class="hero__scroll" aria-label="Scroll to projects">
-            <span data-en="Scroll" data-ku="بۆ خوارەوە">Scroll</span>
+            <span {!! bitext('ui_scroll') !!}>{{ bival('ui_scroll') }}</span>
             <span class="hero__scroll-line"></span>
         </a>
 
@@ -156,9 +152,9 @@
     <section class="statbar" aria-label="Practice figures">
         <div class="statbar__inner">
             <div class="statbar__caption">
-                <p class="section-label" data-en="The Record" data-ku="تۆمارەکە">The Record</p>
-                <h2 class="statbar__title" data-en="Strength, <em>in numbers.</em>" data-ku="هێز، <em>بە ژمارە.</em>">Strength, <em>in numbers.</em></h2>
-                <p class="statbar__sub" data-en="Years of building across Kurdistan and beyond — every figure here is carried by standing architecture." data-ku="ساڵانێک لە بیناسازی لە کوردستان و دەرەوەی — هەر ژمارەیەکی ئێرە بە تەڵارسازیی وەستاو هەڵگیراوە.">Years of building across Kurdistan and beyond — every figure here is carried by standing architecture.</p>
+                <p class="section-label" {!! bitext('statbar_label') !!}>{{ bival('statbar_label') }}</p>
+                <h2 class="statbar__title" {!! bitext('statbar_title') !!}>{!! bival('statbar_title') !!}</h2>
+                <p class="statbar__sub" {!! bitext('statbar_sub') !!}>{{ bival('statbar_sub') }}</p>
             </div>
             <div class="statbar__track" id="statbarTrack">
                 @foreach ($statbar as $st)
@@ -173,7 +169,7 @@
             {{-- mobile-only: tells the thumb there are more figures off-screen;
                  initStatbar dismisses it after the first real swipe --}}
             <p class="statbar__hint" id="statbarHint" aria-hidden="true">
-                <span data-en="swipe for more figures" data-ku="ڕایبکێشە بۆ ژمارەی زیاتر">swipe for more figures</span>
+                <span {!! bitext('statbar_swipe') !!}>{{ bival('statbar_swipe') }}</span>
                 <span class="statbar__hint-arrow">→</span>
             </p>
         </div>
@@ -190,8 +186,8 @@
 
         <!-- Section label (top-left overlay) -->
         <div class="proj-map__label">
-            <p class="section-label" data-en="Where We Build" data-ku="کوێ دەبینین">Where We Build</p>
-            <h2 class="proj-map__title" data-en="Projects Across<br>Kurdistan & Beyond" data-ku="پرۆژەکان بەسەر<br>کوردستان و دوورتردا">Projects Across<br>Kurdistan &amp; Beyond</h2>
+            <p class="section-label" {!! bitext('map_label') !!}>{{ bival('map_label') }}</p>
+            <h2 class="proj-map__title" {!! bitext('map_title') !!}>{!! bival('map_title') !!}</h2>
         </div>
 
         <!-- Floating project card — JS positions this near the clicked pin -->
@@ -206,7 +202,7 @@
                 <p class="map-card__meta" id="mapCardMeta"></p>
                 <p class="map-card__excerpt" id="mapCardExcerpt"></p>
                 <button class="map-card__cta" id="mapCardCta">
-                    <span data-en="View Full Project" data-ku="بینینی پڕۆژەی تەواو">View Full Project</span>
+                    <span {!! bitext('map_view_project') !!}>{{ bival('map_view_project') }}</span>
                     <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5h12M8 1l5 4-5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
             </div>
@@ -220,13 +216,13 @@
 
         <!-- Bottom stat bar -->
         <div class="proj-map__stats">
-            <div class="map-stat"><span class="map-stat__val">{{ $stats['projects'] }}</span><span class="map-stat__lbl" data-en="Projects" data-ku="پرۆژە">Projects</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['projects'] }}</span><span class="map-stat__lbl" {!! bitext('stat_projects') !!}>{{ bival('stat_projects') }}</span></div>
             <div class="map-stat__div"></div>
-            <div class="map-stat"><span class="map-stat__val">{{ $stats['cities'] }}</span><span class="map-stat__lbl" data-en="Cities" data-ku="شار">Cities</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['cities'] }}</span><span class="map-stat__lbl" {!! bitext('stat_cities') !!}>{{ bival('stat_cities') }}</span></div>
             <div class="map-stat__div"></div>
-            <div class="map-stat"><span class="map-stat__val">{{ $stats['area_short'] }}</span><span class="map-stat__lbl" data-en="m² Designed" data-ku="م² دیزاینکراو">m² Designed</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['area_short'] }}</span><span class="map-stat__lbl" {!! bitext('stat_area') !!}>{{ bival('stat_area') }}</span></div>
             <div class="map-stat__div"></div>
-            <div class="map-stat"><span class="map-stat__val">{{ $stats['countries'] }}</span><span class="map-stat__lbl" data-en="Countries" data-ku="وڵات">Countries</span></div>
+            <div class="map-stat"><span class="map-stat__val">{{ $stats['countries'] }}</span><span class="map-stat__lbl" {!! bitext('stat_countries') !!}>{{ bival('stat_countries') }}</span></div>
         </div>
 
     </section>
@@ -261,9 +257,9 @@
         @endphp
 
         <div class="clients__head">
-            <p class="section-label section-label--center" data-en="Trusted By" data-ku="پشتیوانیكراو">Trusted By</p>
-            <h2 class="clients__title" data-en="Clients & Partners" data-ku="کڕیار و هاوبەشەکان">Clients &amp; Partners</h2>
-            <p class="clients__hint" data-en="click a logo to see all partners" data-ku="کرتە لە لۆگۆیەک بکە بۆ بینینی هەموو هاوبەشەکان">click a logo to see all partners</p>
+            <p class="section-label section-label--center" {!! bitext('clients_trusted') !!}>{{ bival('clients_trusted') }}</p>
+            <h2 class="clients__title" {!! bitext('clients_title') !!}>{!! bival('clients_title') !!}</h2>
+            <p class="clients__hint" {!! bitext('clients_hint') !!}>{{ bival('clients_hint') }}</p>
         </div>
         <div class="clients__track-wrap">
             <div class="clients__track">
@@ -286,8 +282,8 @@
         <div class="clients-modal" id="clientsModal" role="dialog" aria-modal="true" aria-label="All clients and partners">
             <div class="clients-modal__panel">
                 <button class="clients-modal__close" id="clientsModalClose" aria-label="Close">✕</button>
-                <p class="section-label section-label--center" data-en="Trusted By" data-ku="پشتیوانیكراو">Trusted By</p>
-                <h3 class="clients-modal__title" data-en="Clients & Partners" data-ku="کڕیار و هاوبەشەکان">Clients &amp; Partners</h3>
+                <p class="section-label section-label--center" {!! bitext('clients_trusted') !!}>{{ bival('clients_trusted') }}</p>
+                <h3 class="clients-modal__title" {!! bitext('clients_title') !!}>{!! bival('clients_title') !!}</h3>
                 <div class="clients-modal__grid">
                     @foreach ($clients as $c)
                         <div class="clients-modal__tile" style="--i: {{ $loop->index }}">
@@ -306,8 +302,8 @@
 
         <div class="pg__head">
             <div class="pg__head-left">
-                <p class="section-label" data-en="Selected Work" data-ku="کارە هەڵبژێردراوەکان">Selected Work</p>
-                <h2 class="pg__title" data-en="Projects" data-ku="پرۆژەکان">Projects</h2>
+                <p class="section-label" {!! bitext('pg_label') !!}>{{ bival('pg_label') }}</p>
+                <h2 class="pg__title" {!! bitext('pg_title') !!}>{{ bival('pg_title') }}</h2>
             </div>
             <div class="pg__head-right">
                 <div class="pg__search-wrap">
@@ -315,13 +311,13 @@
                     <span class="pg__search-icon" aria-hidden="true">↗</span>
                 </div>
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
-                    <button class="pgf-btn active" data-filter="all"         data-en="All"            data-ku="هەمووی">All</button>
-                    <button class="pgf-btn"        data-filter="residential" data-en="Residential"    data-ku="نیشتەجێبوون">Residential</button>
-                    <button class="pgf-btn"        data-filter="commercial"  data-en="Commercial"     data-ku="بازرگانی">Commercial</button>
-                    <button class="pgf-btn"        data-filter="hospitality" data-en="Hospitality"    data-ku="میوانپەروەری">Hospitality</button>
-                    <button class="pgf-btn"        data-filter="mixed-use"   data-en="Mixed-Use"      data-ku="تێکەڵ">Mixed-Use</button>
-                    <button class="pgf-btn"        data-filter="cultural"    data-en="Cultural"       data-ku="کولتووری">Cultural</button>
-                    <button class="pgf-btn"        data-filter="urban"       data-en="Master Planning" data-ku="شارستانی">Master Planning</button>
+                    <button class="pgf-btn active" data-filter="all"         {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
+                    <button class="pgf-btn"        data-filter="residential" {!! bitext('filter_residential') !!}>{{ bival('filter_residential') }}</button>
+                    <button class="pgf-btn"        data-filter="commercial"  {!! bitext('filter_commercial') !!}>{{ bival('filter_commercial') }}</button>
+                    <button class="pgf-btn"        data-filter="hospitality" {!! bitext('filter_hospitality') !!}>{{ bival('filter_hospitality') }}</button>
+                    <button class="pgf-btn"        data-filter="mixed-use"   {!! bitext('filter_mixeduse') !!}>{{ bival('filter_mixeduse') }}</button>
+                    <button class="pgf-btn"        data-filter="cultural"    {!! bitext('filter_cultural') !!}>{{ bival('filter_cultural') }}</button>
+                    <button class="pgf-btn"        data-filter="urban"       {!! bitext('filter_urban') !!}>{{ bival('filter_urban') }}</button>
                 </div>
             </div>
         </div>
@@ -344,7 +340,7 @@
                             <h3 class="pgc__name" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ $project->name }}</h3>
                             <p class="pgc__meta">{{ $project->metaLabel() }}</p>
                         </div>
-                        <span class="pgc__cta"><span data-en="View Project" data-ku="بینینی پرۆژە">View Project</span> <span class="pgc__cta-arrow">↗</span></span>
+                        <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗</span></span>
                     </div>
                 </div>
             </article>
@@ -371,7 +367,7 @@
         </p>
 
         <div class="pg__empty" id="pgEmpty" hidden>
-            <p class="pg__empty-text" data-en="No projects match your criteria." data-ku="هیچ پرۆژەیەک لەگەڵ داواکارییەکەت ناگونجێت.">No projects match your criteria.</p>
+            <p class="pg__empty-text" {!! bitext('pg_empty') !!}>{{ bival('pg_empty') }}</p>
         </div>
 
     </section>
@@ -391,15 +387,15 @@
                     <h2 class="about__heading" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
                         {!! setting('about_heading_en') !!}
                     </h2>
-                    <p class="about__bio" data-en="{{ setting('about_bio_1') }}" data-ku="ئارام مزووری تەڵارسازێکی پێشەنگە کە لە هەولێر، پایتەختی هەرێمی کوردستانی عێراق، نیشتەجێیە. کارەکەی پردێکە لەنێوان کۆن و هاوچەرخدا — سەرچاوە دەگرێت لە میراتی دەوڵەمەندی شوێنی بەرزاییەکانی کوردستان، لە قەڵای ٧٬٠٠٠ ساڵەی هەولێرەوە تا گوندە شاخاوییەکانی ئامێدی — بۆ دروستکردنی بینایەک کە بە ڕوونی کوردییە لە هەستەوە و لەهەمانکاتدا توند و هاوچەرخە.">
-                        {{ setting('about_bio_1') }}
+                    <p class="about__bio" {!! bitext('about_bio_1') !!}>
+                        {{ bival('about_bio_1') }}
                     </p>
-                    <p class="about__bio" data-en="{{ setting('about_bio_2') }}" data-ku="بە پرۆژە تەواوکراوەکان لە سەرانسەری کوردستان، لەوانە دامەزراوە کولتوورییەکان، بورجە شارییەکان، پەناگا شاخاوییەکان و بۆشایی گشتییەکان، تەڵارسازیی مزووری بووەتە دەنگێکی دیاریکەر لە دیمەنی بنیاتنراوی خێراگۆڕی ناوچەکەدا.">
-                        {{ setting('about_bio_2') }}
+                    <p class="about__bio" {!! bitext('about_bio_2') !!}>
+                        {{ bival('about_bio_2') }}
                     </p>
                     <blockquote class="about__quote">
-                        <p data-en="{{ setting('about_quote') }}" data-ku="«تەڵارسازی ئەو پردەیە کە یادەوەریی گەلێک بە خەونەکانی داهاتوویانەوە دەبەستێتەوە.»">{{ setting('about_quote') }}</p>
-                        <cite data-en="{{ setting('about_quote_cite') }}" data-ku="— ئارام مزووری">{{ setting('about_quote_cite') }}</cite>
+                        <p {!! bitext('about_quote') !!}>{{ bival('about_quote') }}</p>
+                        <cite {!! bitext('about_quote_cite') !!}>{{ bival('about_quote_cite') }}</cite>
                     </blockquote>
                 </div>
 
@@ -409,7 +405,7 @@
                         <img class="portrait__photo" src="{{ \App\Models\Project::resolveImage(setting('about_portrait_img')) }}" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
                         <span class="portrait__corner portrait__corner--tl"></span>
                         <span class="portrait__corner portrait__corner--br"></span>
-                        <div class="portrait__caption" data-en="{{ setting('about_portrait_caption') }}" data-ku="ئارام مزووری · تەڵارسازی سەرەکی">{{ setting('about_portrait_caption') }}</div>
+                        <div class="portrait__caption" {!! bitext('about_portrait_caption') !!}>{{ bival('about_portrait_caption') }}</div>
                     </div>
                 </div>
             </div>
@@ -457,8 +453,8 @@
 
         <div class="services__inner">
             <div class="services__head">
-                <p class="section-label section-label--center" data-en="What We Do" data-ku="ئەوەی دەیکەین">What We Do</p>
-                <h2 class="services__title" data-en="Services" data-ku="خزمەتگوزارییەکان">Services</h2>
+                <p class="section-label section-label--center" {!! bitext('services_label') !!}>{{ bival('services_label') }}</p>
+                <h2 class="services__title" {!! bitext('services_title') !!}>{{ bival('services_title') }}</h2>
             </div>
             <div class="services__grid">
                 @foreach ($services as $i => $s)
@@ -502,7 +498,7 @@
                      project cover every 3s (initProcessShowcase in script.js).
                      Desktop only: hidden ≤1100px where the aside stacks. --}}
                 <div class="process__showcase" id="processShowcase" role="button" tabindex="0" aria-label="Selected designs — open project">
-                    <p class="pshow__label" data-en="Selected Designs" data-ku="دیزاینە هەڵبژێردراوەکان">Selected Designs</p>
+                    <p class="pshow__label" {!! bitext('process_selected') !!}>{{ bival('process_selected') }}</p>
                     <div class="pshow__frame">
                         <img class="pshow__img" alt="" draggable="false">
                         <img class="pshow__img" alt="" draggable="false">
@@ -524,9 +520,9 @@
                     <article class="process__card">
                         <span class="process__ghost" aria-hidden="true">01</span>
                         <div class="process__card-body">
-                            <span class="process__kicker" data-en="Phase 01" data-ku="قۆناغی ٠١">Phase 01</span>
-                            <h3 class="process__card-title" data-en="{{ setting('process_step1_title_en') }}" data-ku="{{ setting('process_step1_title_ku') }}">{{ setting('process_step1_title_en') }}</h3>
-                            <p class="process__card-desc" data-en="{{ setting('process_step1_desc') }}" data-ku="گوێگرتنی قووڵ — تێگەیشتن لە بینینی کڕیار، پێکهاتەی کولتووریی شوێنەکە، و نەریتە شوێنییەکانی کوردستان.">{{ setting('process_step1_desc') }}</p>
+                            <span class="process__kicker" {!! bitext('process_phase1') !!}>{{ bival('process_phase1') }}</span>
+                            <h3 class="process__card-title" {!! bitext('process_step1_title') !!}>{{ bival('process_step1_title') }}</h3>
+                            <p class="process__card-desc" {!! bitext('process_step1_desc') !!}>{{ bival('process_step1_desc') }}</p>
                         </div>
                     </article>
                 </li>
@@ -536,9 +532,9 @@
                     <article class="process__card">
                         <span class="process__ghost" aria-hidden="true">02</span>
                         <div class="process__card-body">
-                            <span class="process__kicker" data-en="Phase 02" data-ku="قۆناغی ٠٢">Phase 02</span>
-                            <h3 class="process__card-title" data-en="{{ setting('process_step2_title_en') }}" data-ku="{{ setting('process_step2_title_ku') }}">{{ setting('process_step2_title_en') }}</h3>
-                            <p class="process__card-desc" data-en="{{ setting('process_step2_desc') }}" data-ku="دیزاینی دووبارەبووەوە کە لە نەریتە شوێنییە کوردییەکان، ستراتیژی گونجاو لەگەڵ کەشوهەوا، و گفتوگۆی تەڵارسازیی هاوچەرخەوە سەرچاوە دەگرێت.">{{ setting('process_step2_desc') }}</p>
+                            <span class="process__kicker" {!! bitext('process_phase2') !!}>{{ bival('process_phase2') }}</span>
+                            <h3 class="process__card-title" {!! bitext('process_step2_title') !!}>{{ bival('process_step2_title') }}</h3>
+                            <p class="process__card-desc" {!! bitext('process_step2_desc') !!}>{{ bival('process_step2_desc') }}</p>
                         </div>
                     </article>
                 </li>
@@ -548,9 +544,9 @@
                     <article class="process__card">
                         <span class="process__ghost" aria-hidden="true">03</span>
                         <div class="process__card-body">
-                            <span class="process__kicker" data-en="Phase 03" data-ku="قۆناغی ٠٣">Phase 03</span>
-                            <h3 class="process__card-title" data-en="{{ setting('process_step3_title_en') }}" data-ku="{{ setting('process_step3_title_ku') }}">{{ setting('process_step3_title_en') }}</h3>
-                            <p class="process__card-desc" data-en="{{ setting('process_step3_desc') }}" data-ku="وردیی تەکنیکی و توێژینەوەی کەرەستە کە دڵنیایی دەدات هەر وردەکارییەک ڕێز لە بیرۆکە و پیشەوەریی بیناسازانی کوردستان بگرێت.">{{ setting('process_step3_desc') }}</p>
+                            <span class="process__kicker" {!! bitext('process_phase3') !!}>{{ bival('process_phase3') }}</span>
+                            <h3 class="process__card-title" {!! bitext('process_step3_title') !!}>{{ bival('process_step3_title') }}</h3>
+                            <p class="process__card-desc" {!! bitext('process_step3_desc') !!}>{{ bival('process_step3_desc') }}</p>
                         </div>
                     </article>
                 </li>
@@ -560,9 +556,9 @@
                     <article class="process__card">
                         <span class="process__ghost" aria-hidden="true">04</span>
                         <div class="process__card-body">
-                            <span class="process__kicker" data-en="Phase 04" data-ku="قۆناغی ٠٤">Phase 04</span>
-                            <h3 class="process__card-title" data-en="{{ setting('process_step4_title_en') }}" data-ku="{{ setting('process_step4_title_ku') }}">{{ setting('process_step4_title_en') }}</h3>
-                            <p class="process__card-desc" data-en="{{ setting('process_step4_desc') }}" data-ku="چاودێریی بنیاتنان لە شوێن و دڵنیایی جۆرایەتی — دروستکردنی پەیوەندی لەگەڵ باشترین کۆمپانیا و پیشەوەرە خۆماڵییەکانی کوردستان.">{{ setting('process_step4_desc') }}</p>
+                            <span class="process__kicker" {!! bitext('process_phase4') !!}>{{ bival('process_phase4') }}</span>
+                            <h3 class="process__card-title" {!! bitext('process_step4_title') !!}>{{ bival('process_step4_title') }}</h3>
+                            <p class="process__card-desc" {!! bitext('process_step4_desc') !!}>{{ bival('process_step4_desc') }}</p>
                         </div>
                     </article>
                 </li>
@@ -579,21 +575,21 @@
         <div class="heritage__inner">
             <div class="heritage__text reveal">
                 <p class="section-label section-label--light" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ setting('heritage_label_en') }}</p>
-                <h2 class="heritage__title" data-en="{{ setting('heritage_title') }}" data-ku="شێوەپێدراو بە ٧٬٠٠٠ ساڵ شارستانیەتی کوردی">
-                    {!! nl2br(e(setting('heritage_title'))) !!}
+                <h2 class="heritage__title" {!! bitext('heritage_title') !!}>
+                    {!! nl2br(e(bival('heritage_title'))) !!}
                 </h2>
-                <p class="heritage__desc" data-en="{{ setting('heritage_desc') }}" data-ku="قەڵای هەولێر — یەکێک لە کۆنترین شوێنە نیشتەجێبووە بەردەوامەکانی سەر زەوی — شایەتی ڕۆحی نەمری کوردستانە. تەڵارسازیمان لەم کانگا مێژووییە قووڵەوە سەرچاوە دەگرێت و بە بوێرییەوە بۆ داهاتوو بنیات دەنێین.">
-                    {{ setting('heritage_desc') }}
+                <p class="heritage__desc" {!! bitext('heritage_desc') !!}>
+                    {{ bival('heritage_desc') }}
                 </p>
                 <div class="heritage__age">
                     <span class="heritage__age-num">7,000</span>
                     <span class="heritage__age-meta">
-                        <span class="heritage__age-unit" data-en="years" data-ku="ساڵ">years</span>
-                        <span class="heritage__age-lbl" data-en="of unbroken life atop the Erbil Citadel — the world's oldest continuously inhabited settlement." data-ku="ژیانی نەبڕاوە لەسەر قەڵای هەولێر — کۆنترین شوێنی نیشتەجێبوونی بەردەوام لە جیهاندا.">of unbroken life atop the Erbil Citadel — the world's oldest continuously inhabited settlement.</span>
+                        <span class="heritage__age-unit" {!! bitext('heritage_years') !!}>{{ bival('heritage_years') }}</span>
+                        <span class="heritage__age-lbl" {!! bitext('heritage_age_label') !!}>{{ bival('heritage_age_label') }}</span>
                     </span>
                 </div>
                 <a href="#projects" class="heritage__cta">
-                    <span data-en="{{ setting('heritage_cta') }}" data-ku="پرۆژەکانمان ببینە">{{ setting('heritage_cta') }}</span>
+                    <span {!! bitext('heritage_cta') !!}>{{ bival('heritage_cta') }}</span>
                     <span class="heritage__cta-arrow">→</span>
                 </a>
             </div>
@@ -686,30 +682,30 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_newwork_label', 'Email') }}" data-ku="ئیمەیڵ">{{ setting('contact_newwork_label', 'Email') }}</span>
+                            <span class="cmethod__label" {!! bitext('contact_email_lbl') !!}>{{ bival('contact_email_lbl') }}</span>
                             <span class="cmethod__value">{{ setting('contact_email_new', 'Info@arammizzuri.com') }}</span>
                         </div>
-                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                        <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </li>
                     <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone', '+964 (0) 782 445 4414')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone', '+964 (0) 782 445 4414') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_phone_label', 'Phone 01') }}" data-ku="تەلەفۆن ٠١">{{ setting('contact_phone_label', 'Phone 01') }}</span>
+                            <span class="cmethod__label" {!! bitext('contact_phone_lbl') !!}>{{ bival('contact_phone_lbl') }}</span>
                             <span class="cmethod__value">{{ setting('contact_phone', '+964 (0) 782 445 4414') }}</span>
                         </div>
-                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                        <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </li>
                     <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone2', '+964 (0) 750 408 6367')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone2', '+964 (0) 750 408 6367') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
                         <div class="cmethod__text">
-                            <span class="cmethod__label" data-en="{{ setting('contact_phone2_label', 'Phone 02') }}" data-ku="تەلەفۆن ٠٢">{{ setting('contact_phone2_label', 'Phone 02') }}</span>
+                            <span class="cmethod__label" {!! bitext('contact_phone2_lbl') !!}>{{ bival('contact_phone2_lbl') }}</span>
                             <span class="cmethod__value">{{ setting('contact_phone2', '+964 (0) 750 408 6367') }}</span>
                         </div>
-                        <span class="cmethod__hint" data-en="Copy" data-ku="کۆپی">Copy</span>
+                        <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </li>
                 </ul>
 
@@ -718,13 +714,13 @@
                 <div class="contact__map">
                     <div class="contact__map-canvas" id="officeMapEl" role="link" tabindex="0" aria-label="Open office location in Google Maps — Italian Village 2, Erbil"></div>
                     <span class="contact__map-open" aria-hidden="true">
-                        <span data-en="Open in Google Maps" data-ku="کردنەوە لە گووگڵ ماپ">Open in Google Maps</span> ↗
+                        <span {!! bitext('contact_open_maps') !!}>{{ bival('contact_open_maps') }}</span> ↗
                     </span>
                     <div class="contact__map-foot">
-                        <p class="contact__map-addr" data-en="Nº 592 (2nd Floor), Italian Village 2, Erbil, Kurdistan Region of Iraq" data-ku="ژمارە ٥٩٢ (نهۆمی ٢)، گوندی ئیتاڵی ٢، هەولێر، هەرێمی کوردستانی عێراق">Nº 592 (2nd Floor), Italian Village 2, Erbil, Kurdistan Region of Iraq</p>
+                        <p class="contact__map-addr" {!! bitext('contact_map_addr') !!}>{{ bival('contact_map_addr') }}</p>
                         <p class="contact__map-note">
                             <span class="contact__map-dot" aria-hidden="true"></span>
-                            <span data-en="Visits are by appointment only" data-ku="سەردانکردن تەنها بە ژوانی پێشوەختەیە">Visits are by appointment only</span>
+                            <span {!! bitext('contact_visits') !!}>{{ bival('contact_visits') }}</span>
                         </p>
                     </div>
                 </div>
@@ -733,26 +729,26 @@
             <form class="contact__form" id="contactForm" novalidate>
                 <div class="form-field">
                     <input type="text" id="cf-name" name="name" placeholder=" " required autocomplete="off">
-                    <label for="cf-name" data-en="Your Name" data-ku="ناوت">Your Name</label>
+                    <label for="cf-name" {!! bitext('form_name') !!}>{{ bival('form_name') }}</label>
                 </div>
                 <div class="form-field">
                     <input type="email" id="cf-email" name="email" placeholder=" " required autocomplete="off">
-                    <label for="cf-email" data-en="Email Address" data-ku="ناونیشانی ئیمەیڵ">Email Address</label>
+                    <label for="cf-email" {!! bitext('form_email') !!}>{{ bival('form_email') }}</label>
                 </div>
                 <div class="form-field">
                     <input type="text" id="cf-project" name="project" placeholder=" " autocomplete="off">
-                    <label for="cf-project" data-en="Project Type" data-ku="جۆری پڕۆژە">Project Type</label>
+                    <label for="cf-project" {!! bitext('form_project') !!}>{{ bival('form_project') }}</label>
                 </div>
                 <div class="form-field form-field--grow">
                     <textarea id="cf-message" name="message" placeholder=" " rows="4"></textarea>
-                    <label for="cf-message" data-en="Tell us about your project" data-ku="دەربارەی پڕۆژەکەت پێمان بڵێ">Tell us about your project</label>
+                    <label for="cf-message" {!! bitext('form_message') !!}>{{ bival('form_message') }}</label>
                 </div>
                 <button type="submit" class="form-submit">
-                    <span class="form-submit__label" data-en="Send Message" data-ku="ناردنی نامە">Send Message</span>
+                    <span class="form-submit__label" {!! bitext('form_send') !!}>{{ bival('form_send') }}</span>
                     <span class="form-submit__arrow">→</span>
                 </button>
-                <p class="form-success" id="formSuccess" hidden data-en="✓ Message received — we'll be in touch soon." data-ku="✓ نامەکەت گەیشت — بەم زووانە پەیوەندیت پێوە دەکەین.">
-                    ✓ Message received — we'll be in touch soon.
+                <p class="form-success" id="formSuccess" hidden {!! bitext('form_success') !!}>
+                    {{ bival('form_success') }}
                 </p>
             </form>
         </div>
@@ -762,8 +758,8 @@
     <footer class="footer">
         <div class="footer__inner">
             <div class="footer__col footer__col--brand">
-                <div class="footer__logo" data-en="{{ setting('footer_logo') }}" data-ku="ئارام مزووری">{{ setting('footer_logo') }}</div>
-                <div class="footer__tagline" data-en="{{ setting('footer_tagline') }}" data-ku="تەڵارسازی · هەولێر · کوردستان">{{ setting('footer_tagline') }}</div>
+                <div class="footer__logo" {!! bitext('footer_logo') !!}>{{ bival('footer_logo') }}</div>
+                <div class="footer__tagline" {!! bitext('footer_tagline') !!}>{{ bival('footer_tagline') }}</div>
                 <div class="footer__kurdish">{{ setting('footer_kurdish') }}</div>
             </div>
 
@@ -773,10 +769,10 @@
 
             <div class="footer__col footer__col--links">
                 <nav class="footer__social">
-                    <a href="{{ setting('footer_instagram_url') }}" class="footer__link">Instagram</a>
-                    <a href="{{ setting('footer_linkedin_url') }}" class="footer__link">LinkedIn</a>
-                    <a href="{{ setting('footer_behance_url') }}" class="footer__link">Behance</a>
-                    <a href="{{ setting('footer_archello_url') }}" class="footer__link">Archello</a>
+                    @foreach (socials() as $s)
+                        @php $u = trim($s['url']); $ext = $u !== '' && $u !== '#'; @endphp
+                        <a href="{{ $u !== '' ? $u : '#' }}" class="footer__link"@if($ext) target="_blank" rel="noopener"@endif>{{ $s['label'] }}</a>
+                    @endforeach
                 </nav>
                 <p class="footer__copy">{!! nl2br(e(setting('footer_copy'))) !!}</p>
             </div>
@@ -799,7 +795,7 @@
 
         <!-- Fixed top bar -->
         <div class="proj-overlay__topbar">
-            <button class="proj-overlay__back" id="projOverlayClose" aria-label="Back to projects" data-en="Back to Projects" data-ku="گەڕانەوە بۆ پرۆژەکان">Back to Projects</button>
+            <button class="proj-overlay__back" id="projOverlayClose" aria-label="Back to projects" {!! bitext('overlay_back') !!}>{{ bival('overlay_back') }}</button>
             <div class="proj-overlay__proj-nav">
                 <button class="proj-overlay__proj-btn" id="overlayProjPrev" aria-label="Previous project">←</button>
                 <span class="proj-overlay__counter" id="overlayCounter">1 / 10</span>
@@ -822,7 +818,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M3 15v4a2 2 0 0 0 2 2h4"/>
                         </svg>
-                        <span data-en="View Full Resolution Size" data-ku="بینین بە قەبارەی تەواو">View Full Resolution Size</span>
+                        <span {!! bitext('overlay_fullres') !!}>{{ bival('overlay_fullres') }}</span>
                     </a>
                     <a class="od-fullres__dl" id="overlayDownload" href="#" download title="Download image" aria-label="Download image">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -863,19 +859,19 @@
 
                     <dl class="od-specs">
                         <div class="od-spec">
-                            <dt data-en="Location" data-ku="شوێن">Location</dt>
+                            <dt {!! bitext('overlay_location') !!}>{{ bival('overlay_location') }}</dt>
                             <dd id="overlayLocation"></dd>
                         </div>
                         <div class="od-spec">
-                            <dt data-en="Year" data-ku="ساڵ">Year</dt>
+                            <dt {!! bitext('overlay_year') !!}>{{ bival('overlay_year') }}</dt>
                             <dd id="overlayYear"></dd>
                         </div>
                         <div class="od-spec">
-                            <dt data-en="Typology" data-ku="جۆر">Typology</dt>
+                            <dt {!! bitext('overlay_typology') !!}>{{ bival('overlay_typology') }}</dt>
                             <dd id="overlayTypology"></dd>
                         </div>
                         <div class="od-spec">
-                            <dt data-en="Plot Area" data-ku="ڕووبەری زەوی">Plot Area</dt>
+                            <dt {!! bitext('overlay_plot') !!}>{{ bival('overlay_plot') }}</dt>
                             <dd id="overlayArea"></dd>
                         </div>
                     </dl>

@@ -358,5 +358,10 @@
     "key": "footer_copy",
     "value": "© 2024 Aram Mizuri Architecture.\nAll rights reserved.",
     "group": "footer"
+  },
+  {
+    "key": "footer_socials",
+    "value": "[{\"label\": \"Instagram\", \"url\": \"#\"}, {\"label\": \"LinkedIn\", \"url\": \"#\"}, {\"label\": \"Behance\", \"url\": \"#\"}, {\"label\": \"Archello\", \"url\": \"#\"}]",
+    "group": "footer"
   }
 ]

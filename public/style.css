@@ -506,18 +506,6 @@ body.is-loaded .hero__actions { animation: heroFade .9s var(--ease-out) .68s for
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
-.hero__hint {
-    margin: 0; display: inline-flex; align-items: center; gap: 10px;
-    font-size: 9.5px; letter-spacing: .3em; text-transform: uppercase;
-    color: rgba(255,255,255,.35);
-    opacity: 0;
-}
-body.is-loaded .hero__hint { animation: heroFade 1s var(--ease-out) 1.6s forwards; }
-.hero__hint-orb {
-    font-size: 15px; color: rgba(245,197,24,.75); letter-spacing: 0;
-    animation: hintSpin 6s linear infinite;
-}
-@keyframes hintSpin { to { transform: rotate(-360deg); } }
 /* drag ergonomics: spinning the ring must not select the headline or
    fight vertical scrolling on touch */
 .hero--3d { user-select: none; -webkit-user-select: none; touch-action: pan-y; }
@@ -640,8 +628,8 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .hero__scroll { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .hero__aurora, .hero__grid, .hero__grain, .hero__marquee-track, .hero__hint-orb, .hero__seal { animation: none; }
-    .hero__line-in, .hero__sub, .hero__actions, .hero__eyebrow, .hero__hint, .hero__titleblock { transform: none !important; opacity: 1 !important; }
+    .hero__aurora, .hero__grid, .hero__grain, .hero__marquee-track, .hero__seal { animation: none; }
+    .hero__line-in, .hero__sub, .hero__actions, .hero__eyebrow, .hero__titleblock { transform: none !important; opacity: 1 !important; }
 }
 
 /* ---- Kurdish Band -------------------------------------- */
