@@ -1921,10 +1921,13 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
         -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
                 mask-image: linear-gradient(to right, #000 82%, transparent);
     }
-    [dir="rtl"] .statbar__track {
-        -webkit-mask-image: linear-gradient(to left, #000 82%, transparent);
-                mask-image: linear-gradient(to left, #000 82%, transparent);
-    }
+    /* Kurdish (RTL) mobile: lay the stat strip left-to-right so it always
+       starts at Projects → Clients → …. iOS Safari and Android Chrome
+       disagree on where an RTL scroller starts (iOS opens on the far end,
+       showing m² Designed first); forcing LTR here sidesteps that entirely
+       while the Kurdish labels inside each figure still read correctly. */
+    [dir="rtl"] .statbar__track { direction: ltr; }
+    [dir="rtl"] .statbar__hint-arrow { transform: none; animation: statHintNudge 1.6s ease-in-out infinite; }
     .statbar__track::-webkit-scrollbar { display: none; }
     .statbar__track.at-end { -webkit-mask-image: none; mask-image: none; }
     .statbar__item { flex: 0 0 auto; width: 46%; scroll-snap-align: center; }
