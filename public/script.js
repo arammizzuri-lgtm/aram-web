@@ -1166,16 +1166,97 @@ const PROJECT_COORDS = [
             .replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
     }
     // Point the "view full resolution" + download links at the current image.
+    // href stays set (right-click / no-JS fallback); the click handlers below
+    // intercept to serve a watermark-stamped copy.
     function updateImageLinks() {
         const proj = PROJECT_DATA[currentProjIdx];
         if (!proj) return;
         const url = fullResUrl(proj.imgs[currentImgIdx]);
-        if (fullResEl) fullResEl.href = url;
+        const fname = slugify(proj.name) + '-' + (currentImgIdx + 1) + '.jpg';
+        if (fullResEl) { fullResEl.href = url; fullResEl.dataset.src = url; }
         if (downloadEl) {
             downloadEl.href = url;
-            downloadEl.setAttribute('download', slugify(proj.name) + '-' + (currentImgIdx + 1) + '.jpg');
+            downloadEl.dataset.src = url;
+            downloadEl.dataset.fname = fname;
+            downloadEl.setAttribute('download', fname);
         }
     }
+
+    /* ---- Copyright watermark on full-res / download ---------
+       Burns "Designed by Architect Aram Mizuri" into the bottom-left corner
+       of the exported image so downloaded visualisations carry attribution.
+       Falls back to the raw file if the canvas can't be exported (e.g. a
+       cross-origin image without CORS headers taints the canvas). */
+    function drawWatermark(ctx, w, h) {
+        const pad = Math.max(22, Math.round(w * 0.022));
+        const fs  = Math.max(15, Math.round(w * 0.019));
+        ctx.save();
+        ctx.textBaseline = 'alphabetic';
+        ctx.textAlign = 'left';
+        if ('letterSpacing' in ctx) ctx.letterSpacing = Math.max(1, Math.round(fs * 0.06)) + 'px';
+        ctx.font = '600 ' + fs + 'px "Inter", Arial, sans-serif';
+        ctx.shadowColor = 'rgba(0,0,0,.6)';
+        ctx.shadowBlur = fs * 0.6;
+        ctx.shadowOffsetY = 1;
+        const a = 'Designed by Architect ';
+        const y = h - pad;
+        ctx.fillStyle = 'rgba(255,255,255,.92)';
+        ctx.fillText(a, pad, y);
+        const aw = ctx.measureText(a).width;
+        ctx.fillStyle = '#F5C518';                 // brand gold on the name
+        ctx.fillText('Aram Mizuri', pad + aw, y);
+        ctx.restore();
+    }
+
+    function watermarkedURL(url) {
+        return new Promise(function (resolve, reject) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';         // request CORS so canvas isn't tainted
+            img.onload = function () {
+                try {
+                    const c = document.createElement('canvas');
+                    c.width = img.naturalWidth || img.width;
+                    c.height = img.naturalHeight || img.height;
+                    const ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    drawWatermark(ctx, c.width, c.height);
+                    c.toBlob(function (blob) {
+                        blob ? resolve(URL.createObjectURL(blob)) : reject(new Error('export failed'));
+                    }, 'image/jpeg', 0.92);
+                } catch (err) { reject(err); }
+            };
+            img.onerror = function () { reject(new Error('load failed')); };
+            img.src = url;
+        });
+    }
+
+    if (fullResEl) fullResEl.addEventListener('click', function (e) {
+        const url = fullResEl.dataset.src;
+        if (!url) return;
+        e.preventDefault();
+        const win = window.open('', '_blank');     // open synchronously (popup-blocker safe)
+        watermarkedURL(url).then(function (obj) {
+            if (win) win.location = obj; else window.open(obj, '_blank');
+            setTimeout(function () { URL.revokeObjectURL(obj); }, 60000);
+        }).catch(function () {
+            if (win) win.location = url; else window.open(url, '_blank');
+        });
+    });
+
+    if (downloadEl) downloadEl.addEventListener('click', function (e) {
+        const url = downloadEl.dataset.src;
+        if (!url) return;
+        e.preventDefault();
+        const fname = downloadEl.dataset.fname || 'project.jpg';
+        const trigger = function (href, revoke) {
+            const a = document.createElement('a');
+            a.href = href; a.download = fname;
+            document.body.appendChild(a); a.click(); a.remove();
+            if (revoke) setTimeout(function () { URL.revokeObjectURL(href); }, 60000);
+        };
+        watermarkedURL(url).then(function (obj) { trigger(obj, true); })
+                           .catch(function () { trigger(url, false); });
+    });
 
     // Paint a blurred copy of the current image behind the image + info panel,
     // so both pick up the project's own colours (ambient "liquid glass").
