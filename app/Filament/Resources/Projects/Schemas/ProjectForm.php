@@ -48,7 +48,19 @@ class ProjectForm
                             'wide' => 'Wide',
                         ])->default('default')->required()->native(false),
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
-                    TextInput::make('location')->maxLength(160)->placeholder('Erbil, Kurdistan Region'),
+                    TextInput::make('location')->maxLength(160)->placeholder('Erbil, Kurdistan Region')
+                        ->columnSpanFull(),
+                    TextInput::make('lat')
+                        ->label('Latitude')
+                        ->numeric()->step('any')
+                        ->minValue(-90)->maxValue(90)
+                        ->placeholder('36.1912')
+                        ->helperText('Map pin position. In Google Maps, right-click the location → click the coordinates to copy, then paste latitude here and longitude beside it.'),
+                    TextInput::make('lng')
+                        ->label('Longitude')
+                        ->numeric()->step('any')
+                        ->minValue(-180)->maxValue(180)
+                        ->placeholder('44.0092'),
                     TextInput::make('year')->maxLength(40)->placeholder('2022 – 2024'),
                     TextInput::make('area')->maxLength(40)->placeholder('8,400 m²'),
                 ]),

@@ -16,7 +16,7 @@ class Project extends Model
 {
     protected $fillable = [
         'num', 'name', 'name_ku', 'category', 'status', 'size', 'area', 'typology',
-        'location', 'year', 'desc', 'desc_ku', 'narrative', 'materials',
+        'location', 'lat', 'lng', 'year', 'desc', 'desc_ku', 'narrative', 'materials',
         'related', 'imgs', 'sort_order', 'is_published',
     ];
 
@@ -26,6 +26,8 @@ class Project extends Model
         'imgs' => 'array',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'lat' => 'float',
+        'lng' => 'float',
     ];
 
     /** Human label per category — mirrors the public filter buttons. */

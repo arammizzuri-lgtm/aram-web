@@ -27,6 +27,8 @@ class PortfolioController extends Controller
                 'area' => $p->area,
                 'typology' => $p->typology,
                 'location' => $p->location,
+                'lat' => $p->lat,
+                'lng' => $p->lng,
                 'year' => $p->year,
                 'desc' => $p->desc,
                 'desc_ku' => $p->desc_ku,

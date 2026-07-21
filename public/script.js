@@ -1095,11 +1095,19 @@ const PROJECT_DATA = (window.__SITE__ && Array.isArray(window.__SITE__.projects)
   },
 ];
 
-/* ---- Project coordinates (shared) ---------------------- */
-/* Accurate [lat, lng] for each project, aligned by index with PROJECT_DATA.
-   Single source of truth — used by both the section map and the overlay
-   mini-map. NOTE: index-aligned, so reordering projects in the admin would
-   desync these; revisit by storing coordinates on the project record. */
+/* ---- Project coordinates ------------------------------- */
+/* Coordinates now live on each project record (lat/lng, editable in the
+   admin). projCoords() reads them per project and only falls back to the
+   legacy index-aligned array below for any record left without coordinates. */
+function projCoords(proj, i) {
+    if (proj && proj.lat != null && proj.lng != null && proj.lat !== '' && proj.lng !== '') {
+        const la = Number(proj.lat), ln = Number(proj.lng);
+        if (!Number.isNaN(la) && !Number.isNaN(ln) && (la !== 0 || ln !== 0)) return [la, ln];
+    }
+    return (typeof PROJECT_COORDS !== 'undefined' && PROJECT_COORDS[i]) ? PROJECT_COORDS[i] : null;
+}
+
+/* Legacy fallback [lat, lng], index-aligned with the original project order. */
 const PROJECT_COORDS = [
     [36.1912, 44.0092],  // 01 Kurdish Cultural Center — Erbil centre
     [36.2018, 44.0278],  // 02 Erbil Tower Residences
@@ -1205,7 +1213,7 @@ const PROJECT_COORDS = [
 
     // Recentre the mini-map on the given project's location and drop the pin.
     function updateMiniMap(index, proj) {
-        var coords = PROJECT_COORDS[index];
+        var coords = projCoords(proj, index);
         if (!miniWrap) return;
         if (!coords || typeof L === 'undefined' || !miniCanvas) {
             miniWrap.style.display = 'none';      // no location → no map
@@ -1634,8 +1642,6 @@ const PROJECT_COORDS = [
     const cardCta     = document.getElementById('mapCardCta');
     const cardClose   = document.getElementById('mapCardClose');
 
-    // Accurate coordinates for each project (shared single source of truth)
-    const COORDS = PROJECT_COORDS;
 
     // On touch devices a single-finger swipe must scroll the page, not pan the
     // map (otherwise the user gets trapped in this section). The gesture-handling
@@ -1725,10 +1731,10 @@ const PROJECT_COORDS = [
 
     let activeIdx = null;
 
-    // Build markers
-    COORDS.forEach((coords, i) => {
-        const proj = PROJECT_DATA[i];
-        if (!proj) return; // project unpublished or removed — skip its map pin gracefully
+    // Build markers — one per project, positioned by its own coordinates
+    PROJECT_DATA.forEach((proj, i) => {
+        const coords = projCoords(proj, i);
+        if (!proj || !coords) return; // no coordinates set → skip its pin gracefully
         const icon = L.divIcon({
             className: '',
             html: `<div class="map-pin" id="mapPin${i}">
