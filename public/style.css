@@ -1315,7 +1315,9 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 
 .process__ghost {
-    position: absolute; top: -18px; right: 6px; z-index: 0;
+    /* inset-inline-end = right in English, left in Kurdish (RTL): the ghost
+       numeral sits on the opposite side of the card when the site flips */
+    position: absolute; top: -18px; inset-inline-end: 6px; z-index: 0;
     font-size: clamp(120px, 13vw, 190px); font-weight: 200; line-height: 1;
     letter-spacing: -.04em;
     color: rgba(255,255,255,.04);

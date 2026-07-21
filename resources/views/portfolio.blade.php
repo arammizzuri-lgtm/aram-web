@@ -518,7 +518,7 @@
                 <li class="process__item" data-step="0">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true">01</span>
+                        <span class="process__ghost" aria-hidden="true" data-en="01" data-ku="٠١">01</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase1') !!}>{{ bival('process_phase1') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step1_title') !!}>{{ bival('process_step1_title') }}</h3>
@@ -530,7 +530,7 @@
                 <li class="process__item" data-step="1">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true">02</span>
+                        <span class="process__ghost" aria-hidden="true" data-en="02" data-ku="٠٢">02</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase2') !!}>{{ bival('process_phase2') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step2_title') !!}>{{ bival('process_step2_title') }}</h3>
@@ -542,7 +542,7 @@
                 <li class="process__item" data-step="2">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true">03</span>
+                        <span class="process__ghost" aria-hidden="true" data-en="03" data-ku="٠٣">03</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase3') !!}>{{ bival('process_phase3') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step3_title') !!}>{{ bival('process_step3_title') }}</h3>
@@ -554,7 +554,7 @@
                 <li class="process__item" data-step="3">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true">04</span>
+                        <span class="process__ghost" aria-hidden="true" data-en="04" data-ku="٠٤">04</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase4') !!}>{{ bival('process_phase4') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step4_title') !!}>{{ bival('process_step4_title') }}</h3>
