@@ -256,32 +256,21 @@
     </section>
 
     <section class="clients" id="clients">
+        {{-- Clients & Partners come from the database (managed in the admin).
+             Each shows either an uploaded logo auto-converted to a one-colour
+             mask (client-logo__mark--img, painted by CSS) or a built-in
+             line-art SVG mark. --}}
         @php
-            // Real clients & partners. Marks are bespoke line-art monograms
-            // drawn in the site's geometric language — swap `mark` for an
-            // <image> tag when official logo files are supplied.
-            $clients = [
-                ['name' => 'Kar Group', 'sub_en' => 'Energy & Infrastructure', 'sub_ku' => 'وزە و ژێرخان',
-                 'mark' => '<polygon points="18,2 32,10 32,26 18,34 4,26 4,10" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M13 24 V12 M13 18 L23 12 M13 18 L23 24" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'],
-                ['name' => '404 Cafe', 'sub_en' => 'Café · Erbil', 'sub_ku' => 'کافێ · هەولێر',
-                 'mark' => '<path d="M8 15 h16 v7 a8 8 0 0 1 -16 0 Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M24 16 h3 a4 4 0 0 1 0 8 h-3" stroke="#fff" stroke-width="2"/><path d="M13 11 c0-2 2-2 2-4 M19 11 c0-2 2-2 2-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'],
-                ['name' => 'KRG', 'sub_en' => "Kurdistan Regional Gov't", 'sub_ku' => 'حکومەتی هەرێمی کوردستان',
-                 'mark' => '<circle cx="18" cy="18" r="5.5" fill="#fff"/><circle cx="18" cy="18" r="10" stroke="#fff" stroke-width="1.2"/><line x1="18" y1="2" x2="18" y2="6.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="18" y1="29.5" x2="18" y2="34" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="18" x2="6.5" y2="18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="29.5" y1="18" x2="34" y2="18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="5.5" x2="8.8" y2="8.8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="27.2" y1="27.2" x2="30.5" y2="30.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="30.5" y1="5.5" x2="27.2" y2="8.8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="5.5" y1="30.5" x2="8.8" y2="27.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>'],
-                ['name' => 'Rightmove', 'sub_en' => 'Real Estate', 'sub_ku' => 'خانووبەرە',
-                 'mark' => '<polyline points="4,22 13,13 22,22" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 24 v8 h12 v-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="19" x2="32" y2="8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><polyline points="26,8 32,8 32,14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'],
-                ['name' => 'Darin Group', 'sub_en' => 'Business Group', 'sub_ku' => 'گروپی بازرگانی',
-                 'mark' => '<line x1="18" y1="3" x2="18" y2="33" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="18" x2="33" y2="18" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="7.2" y1="7.2" x2="28.8" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="28.8" y1="7.2" x2="7.2" y2="28.8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
-                ['name' => "Erbil Int'l Airport", 'sub_en' => 'Aviation', 'sub_ku' => 'فڕۆکەوانی',
-                 'mark' => '<polygon points="3,21 33,7 23,30 16,23 Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><line x1="16" y1="23" x2="33" y2="7" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><line x1="6" y1="32" x2="28" y2="32" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4 4"/>'],
-                ['name' => 'Future City', 'sub_en' => 'Urban Development', 'sub_ku' => 'گەشەپێدانی شاری',
-                 'mark' => '<line x1="4" y1="32" x2="32" y2="32" stroke="#fff" stroke-width="2" stroke-linecap="round"/><rect x="7" y="18" width="6" height="14" stroke="#fff" stroke-width="1.8"/><rect x="15" y="10" width="6" height="22" stroke="#fff" stroke-width="1.8"/><rect x="23" y="14" width="6" height="18" stroke="#fff" stroke-width="1.8"/><line x1="18" y1="4" x2="18" y2="10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'],
-                ['name' => 'So Delicious', 'sub_en' => 'Café & Restaurant', 'sub_ku' => 'کافێ و چێشتخانە',
-                 'mark' => '<path d="M6 24 a12 11 0 0 1 24 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="24" x2="32" y2="24" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="10.5" r="1.8" fill="#fff"/><line x1="12" y1="30" x2="24" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'],
-                ['name' => 'Halat Group', 'sub_en' => 'Development', 'sub_ku' => 'گەشەپێدان',
-                 'mark' => '<polyline points="6,14 18,6 30,14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,22 18,14 30,22" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/><polyline points="6,30 18,22 30,30" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/>'],
-                ['name' => 'GK Architects', 'sub_en' => 'Architecture Studio', 'sub_ku' => 'ستۆدیۆی تەڵارسازی',
-                 'mark' => '<circle cx="18" cy="7" r="3" stroke="#fff" stroke-width="1.8"/><line x1="16.4" y1="9.8" x2="9" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="19.6" y1="9.8" x2="27" y2="30" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M11.5 24.5 a13 13 0 0 0 13 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'],
-            ];
+            $clientMark = function ($c) {
+                if ($c->monoUrl()) {
+                    return '<span class="client-logo__mark client-logo__mark--img" role="img" aria-label="'
+                        .e($c->name).' logo" style="--logo:url(\''.e($c->monoUrl()).'\')"></span>';
+                }
+                if ($c->mark) {
+                    return '<svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">'.$c->mark.'</svg>';
+                }
+                return '<span class="client-logo__mark client-logo__mark--text" aria-hidden="true">'.e(mb_substr($c->name, 0, 1)).'</span>';
+            };
         @endphp
 
         <div class="clients__head">
@@ -295,9 +284,9 @@
                 @foreach ([false, true] as $dup)
                     @foreach ($clients as $c)
                         <div class="client-logo" @if($dup) aria-hidden="true" @endif>
-                            <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">{!! $c['mark'] !!}</svg>
-                            <span class="client-logo__name">{{ $c['name'] }}</span>
-                            <span class="client-logo__sub" data-en="{{ $c['sub_en'] }}" data-ku="{{ $c['sub_ku'] }}">{{ $c['sub_en'] }}</span>
+                            {!! $clientMark($c) !!}
+                            <span class="client-logo__name">{{ $c->name }}</span>
+                            <span class="client-logo__sub" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
                         </div>
                     @endforeach
                 @endforeach
@@ -315,9 +304,9 @@
                 <div class="clients-modal__grid">
                     @foreach ($clients as $c)
                         <div class="clients-modal__tile" style="--i: {{ $loop->index }}">
-                            <svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">{!! $c['mark'] !!}</svg>
-                            <span class="client-logo__name">{{ $c['name'] }}</span>
-                            <span class="client-logo__sub" data-en="{{ $c['sub_en'] }}" data-ku="{{ $c['sub_ku'] }}">{{ $c['sub_en'] }}</span>
+                            {!! $clientMark($c) !!}
+                            <span class="client-logo__name">{{ $c->name }}</span>
+                            <span class="client-logo__sub" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
                         </div>
                     @endforeach
                 </div>

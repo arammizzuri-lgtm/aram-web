@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Project;
 use App\Models\SiteSetting;
 
@@ -14,6 +15,7 @@ class PortfolioController extends Controller
     public function index()
     {
         $projects = Project::publishedOrdered()->get();
+        $clients = Client::publishedOrdered()->get();
         $content = SiteSetting::allKeyed();
         $stats = $this->portfolioStats($projects);
 
@@ -42,7 +44,7 @@ class PortfolioController extends Controller
             'stats' => $stats,
         ];
 
-        return view('portfolio', compact('projects', 'content', 'payload', 'stats'));
+        return view('portfolio', compact('projects', 'clients', 'content', 'payload', 'stats'));
     }
 
     /**
