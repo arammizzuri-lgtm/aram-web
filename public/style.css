@@ -2001,23 +2001,17 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     min-width: 190px; cursor: none;
 }
 .client-logo:hover { opacity: .88; }
-.client-logo__mark { width: 34px; height: 34px; }
-/* uploaded logo, auto-converted to a one-colour mask: painted white (gold on
-   hover) so any client logo reads in the same minimal one-colour language */
+.client-logo__mark { width: 48px; height: 48px; }
+/* uploaded logo, auto-converted to a faithful white monochrome: shown as an
+   image so its internal detail survives, height-normalised so every client
+   logo sits at a consistent visual weight (wordmarks wider, icons square) */
 .client-logo__mark--img {
-    display: block;
-    background-color: #fff;
-    -webkit-mask-image: var(--logo); mask-image: var(--logo);
-    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-position: center; mask-position: center;
-    -webkit-mask-size: contain; mask-size: contain;
-    transition: background-color .35s var(--ease);
+    width: auto; height: 48px; max-width: 152px;
+    object-fit: contain; object-position: center;
 }
-.client-logo:hover .client-logo__mark--img,
-.clients-modal__tile:hover .client-logo__mark--img { background-color: var(--gold); }
 .client-logo__mark--text {
     display: flex; align-items: center; justify-content: center;
-    font-size: 21px; font-weight: 300; color: #fff;
+    font-size: 27px; font-weight: 300; color: #fff;
 }
 .client-logo__name {
     font-size: 10px; letter-spacing: .22em;

@@ -263,8 +263,8 @@
         @php
             $clientMark = function ($c) {
                 if ($c->monoUrl()) {
-                    return '<span class="client-logo__mark client-logo__mark--img" role="img" aria-label="'
-                        .e($c->name).' logo" style="--logo:url(\''.e($c->monoUrl()).'\')"></span>';
+                    return '<img class="client-logo__mark client-logo__mark--img" src="'
+                        .e($c->monoUrl()).'" alt="'.e($c->name).' logo" loading="lazy" decoding="async">';
                 }
                 if ($c->mark) {
                     return '<svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">'.$c->mark.'</svg>';

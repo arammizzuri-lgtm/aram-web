@@ -3,25 +3,22 @@
 namespace App\Support;
 
 /**
- * Converts an uploaded client logo into a single-colour "mono" mask that keeps
- * the logo's exact shape but flattens it to one colour on a transparent
- * background. The site paints it white (and gold on hover) via a CSS mask, so
- * every logo reads as a minimal one-colour mark in the same visual language.
+ * Converts an uploaded client logo into a faithful monochrome version: the
+ * background is knocked out and the artwork is rendered white-on-transparent,
+ * but internal tone/detail is preserved (via a luminance map) rather than
+ * flattened to a solid silhouette — so detailed, multi-colour logos still read
+ * like themselves, just in one tone. Displayed white on the dark glass.
  *
- * Two paths, chosen automatically:
- *  - transparent source  → recolour every visible pixel, keeping its alpha
- *    (preserves anti-aliasing and any interior holes exactly);
- *  - opaque source       → knock out the flat background (sampled from the
- *    corners) and keep the "ink" as the mask.
- *
- * Output is white-on-transparent PNG; only the alpha channel matters when it
- * is used as a CSS mask, so the ink colour is decided in CSS.
+ * Pipeline: knock out the flat background → keep each pixel's coverage → map
+ * its luminance to a light tone (polarity-aware, so dark-ink and light-ink
+ * logos both come out light) → trim + pad. Output is a normalised-height PNG so
+ * every logo sits at a consistent visual weight.
  */
 class LogoMono
 {
-    private const MAX = 512;   // cap the working/output size — logos render small
+    private const MAX = 640;            // working cap
+    private const OUT_HEIGHT = 200;     // normalise every mono to this height
 
-    /** Generate a mono PNG at $destAbs from the image at $srcAbs. Returns success. */
     public static function generate(string $srcAbs, string $destAbs): bool
     {
         if (! is_file($srcAbs) || ! function_exists('imagecreatefromstring')) {
@@ -39,7 +36,6 @@ class LogoMono
         $w = max(1, (int) round($sw * $scale));
         $h = max(1, (int) round($sh * $scale));
 
-        // work on a scaled, alpha-aware copy
         $img = imagecreatetruecolor($w, $h);
         imagealphablending($img, false);
         imagesavealpha($img, true);
@@ -50,6 +46,39 @@ class LogoMono
         $transparentSource = self::cornersAreTransparent($img, $w, $h);
         [$bgR, $bgG, $bgB] = self::cornerAverage($img, $w, $h);
 
+        // ---- pass 1: coverage + luminance, and decide polarity ----
+        $cov = [];   // 0..1 how much this pixel belongs to the artwork
+        $lum = [];   // 0..255 luminance
+        $inkLumSum = 0.0; $inkCount = 0;
+
+        for ($y = 0; $y < $h; $y++) {
+            for ($x = 0; $x < $w; $x++) {
+                $rgba = imagecolorat($img, $x, $y);
+                $a = ($rgba >> 24) & 0x7F;
+                $r = ($rgba >> 16) & 0xFF;
+                $g = ($rgba >> 8) & 0xFF;
+                $b = $rgba & 0xFF;
+                $opacity = 1 - $a / 127;
+
+                if ($transparentSource) {
+                    $c = $opacity;
+                } else {
+                    $dist = sqrt((($r - $bgR) ** 2) + (($g - $bgG) ** 2) + (($b - $bgB) ** 2)) / 441.673;
+                    $c = self::smooth(0.06, 0.28, $dist) * $opacity;
+                }
+
+                $i = $y * $w + $x;
+                $cov[$i] = $c;
+                $l = 0.299 * $r + 0.587 * $g + 0.114 * $b;
+                $lum[$i] = $l;
+                if ($c > 0.5) { $inkLumSum += $l; $inkCount++; }
+            }
+        }
+
+        $inkAvg = $inkCount ? $inkLumSum / $inkCount : (($bgR + $bgG + $bgB) / 3 < 128 ? 200 : 60);
+        $invert = $inkAvg < 128;   // dark artwork → invert so it renders light
+
+        // ---- pass 2: paint white, alpha carries coverage × tone ----
         $out = imagecreatetruecolor($w, $h);
         imagealphablending($out, false);
         imagesavealpha($out, true);
@@ -57,34 +86,24 @@ class LogoMono
 
         for ($y = 0; $y < $h; $y++) {
             for ($x = 0; $x < $w; $x++) {
-                $rgba = imagecolorat($img, $x, $y);
-                $a = ($rgba >> 24) & 0x7F;          // 0 opaque … 127 transparent
-                $r = ($rgba >> 16) & 0xFF;
-                $g = ($rgba >> 8) & 0xFF;
-                $b = $rgba & 0xFF;
-
-                if ($transparentSource) {
-                    // keep original coverage, just paint it white
-                    $outA = $a;
-                } else {
-                    if ($a > 110) {                 // already transparent
-                        $outA = 127;
-                    } else {
-                        // ink = how far this pixel is from the flat background
-                        $dist = sqrt((($r - $bgR) ** 2) + (($g - $bgG) ** 2) + (($b - $bgB) ** 2)) / 441.673;
-                        $ink = self::smooth(0.10, 0.32, $dist);
-                        $outA = (int) round(127 * (1 - $ink));
-                    }
+                $i = $y * $w + $x;
+                $c = $cov[$i];
+                if ($c < 0.03) {
+                    continue;
                 }
-
-                if ($outA < 127) {
-                    imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, 255, 255, 255, $outA));
+                $ink = $invert ? (255 - $lum[$i]) : $lum[$i];      // "strength" of the ink
+                $tone = self::smooth(0.06, 0.9, $ink / 255);        // 0..1, keeps mid detail
+                $alpha01 = $c * (0.32 + 0.68 * $tone);              // floor so faint detail survives
+                $gdA = (int) round(127 * (1 - min(1.0, $alpha01)));
+                if ($gdA < 127) {
+                    imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, 255, 255, 255, $gdA));
                 }
             }
         }
         imagedestroy($img);
 
         [$out, $w, $h] = self::trim($out, $w, $h);
+        [$out, $w, $h] = self::normaliseHeight($out, $w, $h);
 
         @mkdir(dirname($destAbs), 0775, true);
         $ok = imagepng($out, $destAbs);
@@ -93,7 +112,6 @@ class LogoMono
         return (bool) $ok;
     }
 
-    /** True if the four corners are (near-)transparent → source already has alpha. */
     private static function cornersAreTransparent($img, int $w, int $h): bool
     {
         $pts = [[0, 0], [$w - 1, 0], [0, $h - 1], [$w - 1, $h - 1]];
@@ -107,7 +125,6 @@ class LogoMono
         return $clear >= 3;
     }
 
-    /** Average RGB of the four corners — the presumed flat background colour. */
     private static function cornerAverage($img, int $w, int $h): array
     {
         $pts = [[0, 0], [$w - 1, 0], [0, $h - 1], [$w - 1, $h - 1]];
@@ -122,7 +139,6 @@ class LogoMono
         return [$r / 4, $g / 4, $b / 4];
     }
 
-    /** Smoothstep between edges e0 and e1. */
     private static function smooth(float $e0, float $e1, float $x): float
     {
         $t = max(0.0, min(1.0, ($x - $e0) / max(1e-6, $e1 - $e0)));
@@ -130,13 +146,13 @@ class LogoMono
         return $t * $t * (3 - 2 * $t);
     }
 
-    /** Crop transparent margins and add ~7% breathing room. Returns [img, w, h]. */
+    /** Crop transparent margins and add ~8% breathing room. */
     private static function trim($img, int $w, int $h): array
     {
         $minX = $w; $minY = $h; $maxX = -1; $maxY = -1;
         for ($y = 0; $y < $h; $y++) {
             for ($x = 0; $x < $w; $x++) {
-                if ((((imagecolorat($img, $x, $y) >> 24) & 0x7F)) < 120) {
+                if ((((imagecolorat($img, $x, $y) >> 24) & 0x7F)) < 122) {
                     if ($x < $minX) $minX = $x;
                     if ($x > $maxX) $maxX = $x;
                     if ($y < $minY) $minY = $y;
@@ -145,12 +161,12 @@ class LogoMono
             }
         }
         if ($maxX < 0) {
-            return [$img, $w, $h];   // nothing found — leave as-is
+            return [$img, $w, $h];
         }
 
         $cw = $maxX - $minX + 1;
         $ch = $maxY - $minY + 1;
-        $pad = (int) round(max($cw, $ch) * 0.07);
+        $pad = (int) round(max($cw, $ch) * 0.08);
         $nw = $cw + $pad * 2;
         $nh = $ch + $pad * 2;
 
@@ -159,6 +175,25 @@ class LogoMono
         imagesavealpha($dst, true);
         imagefill($dst, 0, 0, imagecolorallocatealpha($dst, 0, 0, 0, 127));
         imagecopy($dst, $img, $pad, $pad, $minX, $minY, $cw, $ch);
+        imagedestroy($img);
+
+        return [$dst, $nw, $nh];
+    }
+
+    /** Scale to a fixed output height so every logo has consistent visual weight. */
+    private static function normaliseHeight($img, int $w, int $h): array
+    {
+        if ($h === self::OUT_HEIGHT) {
+            return [$img, $w, $h];
+        }
+        $nh = self::OUT_HEIGHT;
+        $nw = max(1, (int) round($w * ($nh / $h)));
+
+        $dst = imagecreatetruecolor($nw, $nh);
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        imagefill($dst, 0, 0, imagecolorallocatealpha($dst, 0, 0, 0, 127));
+        imagecopyresampled($dst, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);
         imagedestroy($img);
 
         return [$dst, $nw, $nh];

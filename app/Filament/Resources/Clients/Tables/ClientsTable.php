@@ -22,10 +22,16 @@ class ClientsTable
             ->defaultSort('sort_order')
             ->columns([
                 ImageColumn::make('logo')
-                    ->label('Logo')
+                    ->label('Original')
                     ->state(fn (Client $record) => $record->logo ? Client::resolveImage($record->logo) : null)
                     ->height(40)
                     ->extraImgAttributes(['style' => 'width:56px;object-fit:contain;'])
+                    ->default(null),
+                ImageColumn::make('mono_preview')
+                    ->label('Monochrome')
+                    ->state(fn (Client $record) => $record->monoUrl())
+                    ->height(40)
+                    ->extraImgAttributes(['style' => 'width:60px;object-fit:contain;background:#141416;padding:6px;border-radius:6px;'])
                     ->default(null),
                 TextColumn::make('name')
                     ->searchable()->sortable()
