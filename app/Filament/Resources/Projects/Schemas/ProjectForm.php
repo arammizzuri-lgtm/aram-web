@@ -62,7 +62,15 @@ class ProjectForm
                         ->minValue(-180)->maxValue(180)
                         ->placeholder('44.0092'),
                     TextInput::make('year')->maxLength(40)->placeholder('2022 – 2024'),
-                    TextInput::make('area')->maxLength(40)->placeholder('8,400 m²'),
+                    TextInput::make('area')
+                        ->label('Plot area')
+                        ->maxLength(40)
+                        ->suffix('m²')
+                        ->placeholder('8,400')
+                        ->helperText('Enter the number only — “m²” is added automatically.')
+                        // show the bare number while editing; store it with the unit
+                        ->formatStateUsing(fn (?string $state): ?string => self::stripAreaUnit($state))
+                        ->dehydrateStateUsing(fn (?string $state): ?string => self::formatArea($state)),
                 ]),
 
             Section::make('Story')
@@ -95,5 +103,33 @@ class ProjectForm
                         ->reorderable()->collapsible()->defaultItems(0),
                 ]),
         ]);
+    }
+
+    /** Drop a trailing m² / m2 / m^2 unit so the field edits the bare number. */
+    private static function stripAreaUnit(?string $state): ?string
+    {
+        if ($state === null) {
+            return null;
+        }
+
+        $out = preg_replace('/\s*(m²|m2|m\^2)\s*$/iu', '', $state);
+
+        return trim($out ?? $state);
+    }
+
+    /** Store the area with the unit appended, thousands-separating a plain number. */
+    private static function formatArea(?string $state): ?string
+    {
+        $n = self::stripAreaUnit($state);
+        if ($n === null || $n === '') {
+            return null;
+        }
+
+        $bare = str_replace(',', '', $n);
+        if (preg_match('/^\d+$/', $bare)) {
+            $n = number_format((int) $bare);
+        }
+
+        return $n.' m²';
     }
 }
