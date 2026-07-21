@@ -17,7 +17,7 @@ class Project extends Model
     protected $fillable = [
         'num', 'name', 'name_ku', 'category', 'status', 'size', 'area', 'typology',
         'location', 'lat', 'lng', 'year', 'desc', 'desc_ku', 'narrative', 'materials',
-        'related', 'imgs', 'sort_order', 'is_published',
+        'related', 'imgs', 'sort_order', 'is_published', 'map_only',
     ];
 
     protected $casts = [
@@ -25,6 +25,7 @@ class Project extends Model
         'related' => 'array',
         'imgs' => 'array',
         'is_published' => 'boolean',
+        'map_only' => 'boolean',
         'sort_order' => 'integer',
         'lat' => 'float',
         'lng' => 'float',

@@ -32,6 +32,10 @@ class ProjectForm
                         ->label('Display number')->maxLength(10)->placeholder('01'),
                     Toggle::make('is_published')
                         ->label('Published (visible on site)')->default(true),
+                    Toggle::make('map_only')
+                        ->label('Map-only (pin + statistics, no gallery card)')
+                        ->helperText('For projects with no photos: shows a pin on the map and counts in the statistics, but never appears in Selected Works and needs no images. The pin card shows title, type, year, plot area and location.')
+                        ->default(false),
                     Select::make('category')
                         ->options(Project::CATEGORY_LABELS)->required()->native(false),
                     Select::make('status')

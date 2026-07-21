@@ -1641,6 +1641,11 @@ const PROJECT_COORDS = [
     const cardExcerpt = document.getElementById('mapCardExcerpt');
     const cardCta     = document.getElementById('mapCardCta');
     const cardClose   = document.getElementById('mapCardClose');
+    const cardBadge   = document.getElementById('mapCardBadge');
+    const specType    = document.getElementById('mcSpecType');
+    const specYear    = document.getElementById('mcSpecYear');
+    const specArea    = document.getElementById('mcSpecArea');
+    const specLoc     = document.getElementById('mcSpecLoc');
 
 
     // On touch devices a single-finger swipe must scroll the page, not pan the
@@ -1767,18 +1772,36 @@ const PROJECT_COORDS = [
         const pinEl = document.getElementById('mapPin' + idx);
         if (pinEl) pinEl.classList.add('active');
 
-        // Populate card
-        cardImg.src          = proj.imgs[0];
-        cardImg.alt          = proj.name;
-        cardNum.textContent  = proj.num;
-        cardName.textContent = proj.name;
-        cardMeta.textContent = proj.location + '  ·  ' + proj.year + '  ·  ' + proj.typology;
-        cardExcerpt.textContent = proj.desc;
-        cardCta.onclick = () => {
-            if (typeof window.openProjectOverlay === 'function') {
-                window.openProjectOverlay(idx);
-            }
-        };
+        // Populate card — spec variant for map-only (image-less) projects
+        const isKu    = document.documentElement.getAttribute('dir') === 'rtl';
+        const dash     = '—';
+        const specs   = proj.map_only || !proj.imgs || !proj.imgs.length;
+        card.classList.toggle('map-card--specs', specs);
+
+        cardNum.textContent  = proj.num || '';
+        cardName.textContent = (isKu && proj.name_ku) ? proj.name_ku : proj.name;
+
+        if (specs) {
+            // title, type, year, plot area, location — no photo, no overlay
+            cardBadge.textContent = proj.status || '';
+            cardBadge.hidden = !proj.status;
+            cardMeta.textContent = proj.category ? proj.category.toUpperCase() : '';
+            specType.textContent = proj.typology || dash;
+            specYear.textContent = proj.year || dash;
+            specArea.textContent = proj.area || dash;
+            specLoc.textContent  = proj.location || dash;
+        } else {
+            cardBadge.hidden = true;
+            cardImg.src          = proj.imgs[0];
+            cardImg.alt          = proj.name;
+            cardMeta.textContent = [proj.location, proj.year, proj.typology].filter(Boolean).join('  ·  ');
+            cardExcerpt.textContent = (isKu && proj.desc_ku) ? proj.desc_ku : proj.desc;
+            cardCta.onclick = () => {
+                if (typeof window.openProjectOverlay === 'function') {
+                    window.openProjectOverlay(idx);
+                }
+            };
+        }
 
         // Smart positioning — card appears to the right of pin,
         // flips left if too close to right edge, clamps top/bottom

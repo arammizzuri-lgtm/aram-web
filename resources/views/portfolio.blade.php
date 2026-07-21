@@ -190,17 +190,45 @@
             <h2 class="proj-map__title" {!! bitext('map_title') !!}>{!! bival('map_title') !!}</h2>
         </div>
 
-        <!-- Floating project card — JS positions this near the clicked pin -->
+        <!-- Floating project card — liquid glass; JS positions it near the pin.
+             Two modes: a photo card, or (for map-only projects) a spec card
+             with no image, toggled via .map-card--specs. -->
         <div class="map-card" id="mapCard" role="dialog" aria-label="Project preview">
+            <span class="map-card__glow" aria-hidden="true"></span>
+            <span class="map-card__sheen" aria-hidden="true"></span>
             <button class="map-card__close" id="mapCardClose" aria-label="Close">✕</button>
+
             <div class="map-card__img-wrap">
                 <img class="map-card__img" id="mapCardImg" src="" alt="">
                 <span class="map-card__num" id="mapCardNum"></span>
             </div>
+
             <div class="map-card__body">
+                <span class="map-card__badge" id="mapCardBadge" hidden></span>
                 <h3 class="map-card__name" id="mapCardName"></h3>
                 <p class="map-card__meta" id="mapCardMeta"></p>
                 <p class="map-card__excerpt" id="mapCardExcerpt"></p>
+
+                {{-- spec grid shown only for map-only (image-less) projects --}}
+                <dl class="map-card__specs" id="mapCardSpecs">
+                    <div class="map-card__spec">
+                        <dt data-en="Type" data-ku="جۆر">Type</dt>
+                        <dd id="mcSpecType"></dd>
+                    </div>
+                    <div class="map-card__spec">
+                        <dt data-en="Year" data-ku="ساڵ">Year</dt>
+                        <dd id="mcSpecYear"></dd>
+                    </div>
+                    <div class="map-card__spec">
+                        <dt data-en="Plot Area" data-ku="ڕووبەری زەوی">Plot Area</dt>
+                        <dd id="mcSpecArea"></dd>
+                    </div>
+                    <div class="map-card__spec">
+                        <dt data-en="Location" data-ku="شوێن">Location</dt>
+                        <dd id="mcSpecLoc"></dd>
+                    </div>
+                </dl>
+
                 <button class="map-card__cta" id="mapCardCta">
                     <span {!! bitext('map_view_project') !!}>{{ bival('map_view_project') }}</span>
                     <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5h12M8 1l5 4-5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -308,7 +336,7 @@
             <div class="pg__head-right">
                 <div class="pg__search-wrap">
                     <input class="pg__search" id="pgSearch" type="search" placeholder="Search projects…" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">
-                    <span class="pg__search-icon" aria-hidden="true">↗</span>
+                    <span class="pg__search-icon" aria-hidden="true">↗&#xFE0E;</span>
                 </div>
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
                     <button class="pgf-btn active" data-filter="all"         {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
@@ -330,6 +358,7 @@
             <div class="pg__grid" id="pgGrid">
 
             @foreach ($projects as $i => $project)
+            @if ($project->map_only) @continue @endif {{-- map-only projects: no gallery card (index kept aligned with the map data) --}}
             <article class="pgc{{ $project->size === 'large' ? ' pgc--large' : ($project->size === 'wide' ? ' pgc--wide' : '') }}" data-index="{{ $i }}" data-category="{{ $project->category }}" data-name="{{ $project->name }}">
                 <div class="pgc__inner">
                     <img class="pgc__img" data-src="{{ $project->coverUrl() }}" src="" alt="{{ $project->name }}">
@@ -340,7 +369,7 @@
                             <h3 class="pgc__name" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ $project->name }}</h3>
                             <p class="pgc__meta">{{ $project->metaLabel() }}</p>
                         </div>
-                        <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗</span></span>
+                        <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗&#xFE0E;</span></span>
                     </div>
                 </div>
             </article>
@@ -359,10 +388,11 @@
              sideways (and how much is there). Dismisses itself after the
              first real scroll. On touch, where the arrows are hidden, this
              chip + the edge fade + the peek nudge are the only cues. --}}
+        @php $galleryCount = $projects->where('map_only', false)->count(); @endphp
         <p class="pg__more" id="pgMore" aria-hidden="true">
             <span class="pg__more-label"
-                  data-en="slide for more — {{ $projects->count() }} projects"
-                  data-ku="ڕایبکێشە بۆ زیاتر — {{ $projects->count() }} پرۆژە">slide for more — {{ $projects->count() }} projects</span>
+                  data-en="slide for more — {{ $galleryCount }} projects"
+                  data-ku="ڕایبکێشە بۆ زیاتر — {{ $galleryCount }} پرۆژە">slide for more — {{ $galleryCount }} projects</span>
             <span class="pg__more-arrow">⟶</span>
         </p>
 
@@ -714,7 +744,7 @@
                 <div class="contact__map">
                     <div class="contact__map-canvas" id="officeMapEl" role="link" tabindex="0" aria-label="Open office location in Google Maps — Italian Village 2, Erbil"></div>
                     <span class="contact__map-open" aria-hidden="true">
-                        <span {!! bitext('contact_open_maps') !!}>{{ bival('contact_open_maps') }}</span> ↗
+                        <span {!! bitext('contact_open_maps') !!}>{{ bival('contact_open_maps') }}</span> ↗&#xFE0E;
                     </span>
                     <div class="contact__map-foot">
                         <p class="contact__map-addr" {!! bitext('contact_map_addr') !!}>{{ bival('contact_map_addr') }}</p>
