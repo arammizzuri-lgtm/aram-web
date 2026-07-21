@@ -22,7 +22,12 @@ class ProjectForm
                 ->columns(2)
                 ->schema([
                     TextInput::make('name')
-                        ->required()->maxLength(160)->columnSpanFull(),
+                        ->label('Name (English)')
+                        ->required()->maxLength(160),
+                    TextInput::make('name_ku')
+                        ->label('Name (Kurdish)')
+                        ->maxLength(160)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
                     TextInput::make('num')
                         ->label('Display number')->maxLength(10)->placeholder('01'),
                     Toggle::make('is_published')
@@ -49,8 +54,11 @@ class ProjectForm
                 ]),
 
             Section::make('Story')
+                ->columns(2)
                 ->schema([
-                    Textarea::make('desc')->label('Description')->rows(5)->columnSpanFull(),
+                    Textarea::make('desc')->label('Description (English)')->rows(5),
+                    Textarea::make('desc_ku')->label('Description (Kurdish)')->rows(5)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
                     Textarea::make('narrative')->label('Architect’s narrative')->rows(4)->columnSpanFull(),
                     TagsInput::make('materials')->placeholder('Add a material and press Enter')->columnSpanFull(),
                 ]),
