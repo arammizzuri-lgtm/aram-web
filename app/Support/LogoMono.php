@@ -3,22 +3,23 @@
 namespace App\Support;
 
 /**
- * Converts an uploaded client logo into a faithful monochrome version: the
- * background is knocked out and the artwork is rendered white-on-transparent.
+ * Converts an uploaded client logo into a faithful monochrome version for the
+ * dark glass UI: the flat background is knocked out and the artwork is rendered
+ * white-on-transparent.
  *
- * Crucially, distinct colours are mapped to distinct opacities, so a
- * multi-colour logo keeps its regions visually separated in monochrome instead
- * of merging (two colours with the same brightness no longer collapse). The
- * artwork's palette is quantised, the distinct colours are ranked by lightness
- * and spread evenly across the opacity range (polarity-aware, so both dark-ink
- * and light-ink logos come out light). Output is a height-normalised PNG so
- * every logo sits at a consistent visual weight; the site paints it white.
+ * Detail is preserved by working per-pixel and continuously (every edge,
+ * gradient and thin line survives — no posterising), while colours are kept
+ * apart by folding chroma into the tone: two colours with the same brightness
+ * still land at different opacities. Contrast is stretched to the artwork's own
+ * range so faint internal detail reads, and the result is polarity-aware — a
+ * dark-ink logo is inverted so it, too, comes out light; a light badge keeps
+ * its dark interior as a see-through cut-out. Output is height-normalised so
+ * every logo carries a consistent visual weight.
  */
 class LogoMono
 {
-    private const MAX = 640;            // working cap
-    private const OUT_HEIGHT = 200;     // normalise every mono to this height
-    private const FLOOR = 0.40;         // faintest colour still shows at this opacity
+    private const MAX = 640;
+    private const OUT_HEIGHT = 220;
 
     public static function generate(string $srcAbs, string $destAbs): bool
     {
@@ -47,11 +48,11 @@ class LogoMono
         $transparentSource = self::cornersAreTransparent($img, $w, $h);
         [$bgR, $bgG, $bgB] = self::cornerAverage($img, $w, $h);
 
-        // ---- pass 1: coverage, luminance, and the artwork's colour palette ----
+        // ---- pass 1: coverage, luminance, chroma; gather ink stats ----
         $cov = [];
         $lum = [];
-        $bucketOf = [];
-        $bucketLum = [];              // bucket key => representative luminance
+        $chr = [];
+        $hist = array_fill(0, 256, 0);   // luminance histogram of ink pixels
         $inkLumSum = 0.0; $inkCount = 0;
 
         for ($y = 0; $y < $h; $y++) {
@@ -67,43 +68,31 @@ class LogoMono
                     $c = $opacity;
                 } else {
                     $dist = sqrt((($r - $bgR) ** 2) + (($g - $bgG) ** 2) + (($b - $bgB) ** 2)) / 441.673;
-                    $c = self::smooth(0.06, 0.28, $dist) * $opacity;
+                    $c = self::smooth(0.05, 0.26, $dist) * $opacity;
                 }
 
                 $i = $y * $w + $x;
                 $cov[$i] = $c;
                 $l = 0.299 * $r + 0.587 * $g + 0.114 * $b;
                 $lum[$i] = $l;
+                $mx = max($r, $g, $b); $mn = min($r, $g, $b);
+                $chr[$i] = ($mx - $mn) / 255;
 
-                // 5-bit-per-channel bucket merges near-identical colours / AA noise
-                $bucket = (($r >> 3) << 10) | (($g >> 3) << 5) | ($b >> 3);
-                $bucketOf[$i] = $bucket;
-                if ($c >= 0.35) {
-                    $bucketLum[$bucket] = $l;
+                if ($c >= 0.45) {
+                    $hist[(int) round($l)]++;
                     $inkLumSum += $l; $inkCount++;
                 }
             }
         }
 
         $meanInk = $inkCount ? $inkLumSum / $inkCount : (($bgR + $bgG + $bgB) / 3 < 128 ? 200 : 60);
-        $invert = $meanInk < 128;     // dark artwork → invert so it renders light
+        $invert = $meanInk < 128;   // dark-dominant artwork → render inverted (light)
 
-        // ---- rank distinct colours by lightness, spread across the opacity range ----
-        // Sort by luminance (ties broken by bucket key), then assign each a unique
-        // evenly-spaced opacity — guaranteeing different colours ⇒ different opacity.
-        uksort($bucketLum, function ($k1, $k2) use ($bucketLum) {
-            return ($bucketLum[$k1] <=> $bucketLum[$k2]) ?: ($k1 <=> $k2);
-        });
-        $keys = array_keys($bucketLum);
-        $n = count($keys);
-        $bucketOpacity = [];
-        foreach ($keys as $idx => $key) {
-            $norm = $n > 1 ? $idx / ($n - 1) : 1.0;   // 0 = darkest … 1 = lightest
-            $shade = $invert ? (1 - $norm) : $norm;   // dominant ink → most opaque
-            $bucketOpacity[$key] = self::FLOOR + (1 - self::FLOOR) * $shade;
-        }
+        // contrast-stretch endpoints: 2nd / 98th percentile of ink luminance
+        [$loL, $hiL] = self::percentiles($hist, $inkCount, 0.02, 0.98);
+        $span = max(1.0, $hiL - $loL);
 
-        // ---- pass 2: paint white; alpha = coverage × the colour's shade ----
+        // ---- pass 2: continuous tone (detail) + chroma (colour separation) ----
         $out = imagecreatetruecolor($w, $h);
         imagealphablending($out, false);
         imagesavealpha($out, true);
@@ -116,8 +105,12 @@ class LogoMono
                 if ($c < 0.03) {
                     continue;
                 }
-                $op = $bucketOpacity[$bucketOf[$i]] ?? self::fallbackShade($lum[$i], $invert);
-                $alpha01 = min(1.0, $c * $op);
+                $ln = min(1.0, max(0.0, ($lum[$i] - $loL) / $span));   // stretched 0..1
+                $base = $invert ? (1 - $ln) : $ln;                     // light-biased ink
+                // chroma lifts saturated colours so they don't collapse into an
+                // equally-bright grey, and keeps mid-tone colours visible
+                $tone = min(1.0, $base * 0.86 + $chr[$i] * 0.42);
+                $alpha01 = min(1.0, $c * $tone);
                 $gdA = (int) round(127 * (1 - $alpha01));
                 if ($gdA < 127) {
                     imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, 255, 255, 255, $gdA));
@@ -136,12 +129,22 @@ class LogoMono
         return (bool) $ok;
     }
 
-    /** Shade for edge/AA pixels whose colour never made the ink palette. */
-    private static function fallbackShade(float $lum, bool $invert): float
+    /** Return [lowLum, highLum] at the given cumulative fractions of an ink histogram. */
+    private static function percentiles(array $hist, int $total, float $lowF, float $highF): array
     {
-        $s = $invert ? (1 - $lum / 255) : ($lum / 255);
+        if ($total < 1) {
+            return [0.0, 255.0];
+        }
+        $lowTarget = $total * $lowF;
+        $highTarget = $total * $highF;
+        $cum = 0; $lo = 0; $hi = 255; $gotLo = false;
+        for ($l = 0; $l < 256; $l++) {
+            $cum += $hist[$l];
+            if (! $gotLo && $cum >= $lowTarget) { $lo = $l; $gotLo = true; }
+            if ($cum >= $highTarget) { $hi = $l; break; }
+        }
 
-        return self::FLOOR + (1 - self::FLOOR) * $s;
+        return [(float) $lo, (float) max($lo + 1, $hi)];
     }
 
     private static function cornersAreTransparent($img, int $w, int $h): bool
@@ -178,7 +181,6 @@ class LogoMono
         return $t * $t * (3 - 2 * $t);
     }
 
-    /** Crop transparent margins and add ~8% breathing room. */
     private static function trim($img, int $w, int $h): array
     {
         $minX = $w; $minY = $h; $maxX = -1; $maxY = -1;
@@ -212,7 +214,6 @@ class LogoMono
         return [$dst, $nw, $nh];
     }
 
-    /** Scale to a fixed output height so every logo has consistent visual weight. */
     private static function normaliseHeight($img, int $w, int $h): array
     {
         if ($h === self::OUT_HEIGHT) {
