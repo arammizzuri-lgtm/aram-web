@@ -350,7 +350,7 @@
             @if ($project->map_only) @continue @endif {{-- map-only projects: no gallery card (index kept aligned with the map data) --}}
             <article class="pgc{{ $project->size === 'large' ? ' pgc--large' : ($project->size === 'wide' ? ' pgc--wide' : '') }}" data-index="{{ $i }}" data-category="{{ $project->category }}" data-name="{{ $project->name }}">
                 <div class="pgc__inner">
-                    <img class="pgc__img" data-src="{{ $project->coverUrl() }}" src="" alt="{{ $project->name }}">
+                    <img class="pgc__img" data-src="{{ $project->coverThumbUrl() }}" src="" alt="{{ $project->name }}" loading="lazy" decoding="async">
                     <div class="pgc__overlay">
                         <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ $project->statusBadge() }}</div>
                         <div class="pgc__info">

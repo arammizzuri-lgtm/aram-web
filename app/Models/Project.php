@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\ProjectImage;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -31,12 +33,61 @@ class Project extends Model
         'lng' => 'float',
     ];
 
+    protected static function booted(): void
+    {
+        // Keep a light WebP thumbnail for every uploaded image so the grid
+        // never has to download the multi-MB originals.
+        static::saved(fn (Project $p) => $p->generateThumbnails());
+    }
+
     /** Only published projects, in display order — used by the public site. */
     public function scopePublishedOrdered($query)
     {
         return $query->where('is_published', true)
             ->orderBy('sort_order')
             ->orderBy('id');
+    }
+
+    /** True for a stored upload (a bare disk path, not an external URL). */
+    private static function isUpload(?string $img): bool
+    {
+        return is_string($img) && $img !== ''
+            && ! preg_match('#^(https?:)?//#', $img)
+            && ! str_starts_with($img, '/');
+    }
+
+    /** Relative disk path of an upload's thumbnail (projects/thumb/<name>.webp), or null. */
+    public static function thumbRel(?string $img): ?string
+    {
+        if (! self::isUpload($img)) {
+            return null;
+        }
+
+        return 'projects/thumb/'.pathinfo($img, PATHINFO_FILENAME).'.webp';
+    }
+
+    /** Build any missing thumbnails for this project's uploaded images. */
+    public function generateThumbnails(): void
+    {
+        $disk = Storage::disk('public');
+        foreach ((array) $this->imgs as $img) {
+            $rel = self::thumbRel($img);
+            if ($rel === null || $disk->exists($rel) || ! $disk->exists($img)) {
+                continue;
+            }
+            ProjectImage::thumbnail($disk->path($img), $disk->path($rel));
+        }
+    }
+
+    /** Grid/preview URL for one image — the small thumbnail when we have one. */
+    public function thumbUrl(?string $img): ?string
+    {
+        $rel = self::thumbRel($img);
+        if ($rel !== null && Storage::disk('public')->exists($rel)) {
+            return self::resolveImage($rel);
+        }
+
+        return self::resolveImage($img);
     }
 
     public function categoryLabel(): string
@@ -103,9 +154,17 @@ class Project extends Model
             ->all();
     }
 
-    /** First image — the grid card cover. */
+    /** First image — the grid card cover, full resolution. */
     public function coverUrl(): ?string
     {
         return $this->imageUrls()[0] ?? null;
+    }
+
+    /** First image as a light thumbnail — used on the projects grid. */
+    public function coverThumbUrl(): ?string
+    {
+        $first = collect($this->imgs ?? [])->first();
+
+        return $first ? $this->thumbUrl($first) : null;
     }
 }
