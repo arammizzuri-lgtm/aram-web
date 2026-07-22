@@ -95,8 +95,14 @@ class ProjectForm
                         ->multiple()->image()
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                         ->reorderable()->appendFiles()
-                        ->directory('projects')->disk('public')
-                        ->imageEditor(),
+                        ->directory('projects')->disk('public')->visibility('public')
+                        // Small thumbnails in a grid so every image is visible at
+                        // a glance and can be drag-reordered to set the order.
+                        ->panelLayout('grid')
+                        ->imagePreviewHeight('110')
+                        ->openable()
+                        ->imageEditor()
+                        ->helperText('Drag thumbnails to reorder — the first image is the card cover.'),
                     Repeater::make('image_links')
                         ->label('Image URLs')
                         ->schema([
