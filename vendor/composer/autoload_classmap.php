@@ -15,6 +15,7 @@ return array(
     'App\\Console\\Commands\\GenerateProjectThumbs' => $baseDir . '/app/Console/Commands/GenerateProjectThumbs.php',
     'App\\Console\\Commands\\RegenerateClientLogos' => $baseDir . '/app/Console/Commands/RegenerateClientLogos.php',
     'App\\Filament\\Auth\\Login' => $baseDir . '/app/Filament/Auth/Login.php',
+    'App\\Filament\\Forms\\Components\\CoverPicker' => $baseDir . '/app/Filament/Forms/Components/CoverPicker.php',
     'App\\Filament\\Forms\\Components\\MapPicker' => $baseDir . '/app/Filament/Forms/Components/MapPicker.php',
     'App\\Filament\\Pages\\Dashboard' => $baseDir . '/app/Filament/Pages/Dashboard.php',
     'App\\Filament\\Pages\\ManageSiteContent' => $baseDir . '/app/Filament/Pages/ManageSiteContent.php',

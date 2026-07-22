@@ -32,6 +32,9 @@ class PortfolioController extends Controller
                 'area' => $p->area,
                 'typology' => $p->typology,
                 'location' => $p->location,
+                'neighbourhood' => $p->neighbourhood,
+                'city' => $p->city,
+                'country' => $p->country,
                 'lat' => $p->lat,
                 'lng' => $p->lng,
                 'year' => $p->year,
@@ -40,7 +43,7 @@ class PortfolioController extends Controller
                 'narrative' => $p->narrative,
                 'materials' => $p->materials ?? [],
                 'related' => $p->related ?? [],
-                'imgs' => $p->map_only ? [] : $p->imageUrls(),
+                'imgs' => $p->map_only ? [] : $p->orderedImageUrls(),
                 'map_only' => (bool) $p->map_only,
             ])->values()->all(),
             'content' => $content,
@@ -62,17 +65,16 @@ class PortfolioController extends Controller
      */
     private function portfolioStats($projects): array
     {
-        // City = first word of the location's first segment, so "Erbil Old City"
-        // and "Erbil City Centre" collapse into one city ("Erbil").
-        $city = fn (Project $p) => trim(explode(' ', $p->cityLabel())[0] ?? '');
+        // City = the structured city field (falls back to the location string).
+        $city = fn (Project $p) => $p->cityLabel();
 
-        // Country = last location segment, with the Kurdistan Region mapped to Iraq.
+        // Country = the structured country field, with the Kurdistan Region
+        // counted under Iraq so the tally stays a count of sovereign states.
         $countryMap = ['Kurdistan Region' => 'Iraq'];
         $country = function (Project $p) use ($countryMap) {
-            $parts = explode(',', (string) $p->location);
-            $seg = trim(end($parts) ?: '');
+            $c = $p->country ?: trim((string) (array_reverse(explode(',', (string) $p->location))[0] ?? ''));
 
-            return $countryMap[$seg] ?? $seg;
+            return $countryMap[$c] ?? $c;
         };
 
         // Total area = sum of each project's numeric area (strip "m²", commas…).

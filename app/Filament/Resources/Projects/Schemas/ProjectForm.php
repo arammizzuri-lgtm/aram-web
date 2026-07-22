@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Projects\Schemas;
 
+use App\Filament\Forms\Components\CoverPicker;
 use App\Filament\Forms\Components\MapPicker;
 use App\Models\Category;
 use App\Models\Status;
@@ -53,7 +54,16 @@ class ProjectForm
                             'wide' => 'Wide',
                         ])->default('default')->required()->native(false),
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
-                    TextInput::make('location')->maxLength(160)->placeholder('Erbil, Kurdistan Region')
+                    TextInput::make('neighbourhood')
+                        ->label('Neighbourhood / area')
+                        ->maxLength(120)->placeholder('Kawrgusk')
+                        ->helperText('Shown on the map when the project is opened.'),
+                    TextInput::make('city')
+                        ->maxLength(120)->placeholder('Erbil')
+                        ->helperText('Counts toward the “Cities” statistic.'),
+                    TextInput::make('country')
+                        ->maxLength(120)->placeholder('Kurdistan Region')
+                        ->helperText('Counts toward the “Countries” statistic.')
                         ->columnSpanFull(),
                     // The map picker below writes to these; kept as hidden fields
                     // so they still persist to the lat/lng columns and drive the
@@ -87,7 +97,7 @@ class ProjectForm
                 ]),
 
             Section::make('Images')
-                ->description('The first image is the card cover. Upload photos and/or paste image URLs — both work.')
+                ->description('Upload photos and/or paste image URLs — both work. Choose the card cover and its focal point below.')
                 ->schema([
                     FileUpload::make('uploads')
                         ->label('Upload images')
@@ -96,12 +106,12 @@ class ProjectForm
                         ->reorderable()->appendFiles()
                         ->directory('projects')->disk('public')->visibility('public')
                         // Small thumbnails in a grid so every image is visible at
-                        // a glance and can be drag-reordered to set the order.
+                        // a glance and can be drag-reordered to set the gallery order.
                         ->panelLayout('grid')
                         ->imagePreviewHeight('110')
                         ->openable()
                         ->imageEditor()
-                        ->helperText('Drag thumbnails to reorder — the first image is the card cover.'),
+                        ->helperText('Drag thumbnails to set the gallery order.'),
                     Repeater::make('image_links')
                         ->label('Image URLs')
                         ->schema([
@@ -110,6 +120,13 @@ class ProjectForm
                         ])
                         ->addActionLabel('Add image URL')
                         ->reorderable()->collapsible()->defaultItems(0),
+                    // The picker below writes to these; kept as hidden so they persist.
+                    Hidden::make('cover'),
+                    Hidden::make('cover_x'),
+                    Hidden::make('cover_y'),
+                    CoverPicker::make('cover_picker')
+                        ->label('Card cover & focal point')
+                        ->columnSpanFull(),
                 ]),
         ]);
     }

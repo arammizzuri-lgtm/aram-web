@@ -34,5 +34,11 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::HEAD_END,
             fn (): string => view('filament.leaflet-assets')->render(),
         );
+
+        // Cover / focal-point picker for the project images.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => view('filament.cover-picker-assets')->render(),
+        );
     }
 }

@@ -1338,7 +1338,9 @@ const PROJECT_COORDS = [
         miniMap.setView(coords, 12, { animate: false });   // city scale
         miniMarker.setLatLng(coords);
         if (miniCityEl) {
-            miniCityEl.textContent = (proj.location || '').split(',')[0].trim() || proj.location || '';
+            // Show the neighbourhood on the map, falling back to the city.
+            miniCityEl.textContent = proj.neighbourhood || proj.city
+                || (proj.location || '').split(',')[0].trim() || proj.location || '';
         }
         // The canvas may have rendered at the wrong size while the modal was
         // scaling in; recompute tile layout once it has settled.

@@ -687,6 +687,7 @@ class ComposerStaticInit295f23e6b17577ab3a3375a9f47caa1b
         'App\\Console\\Commands\\GenerateProjectThumbs' => __DIR__ . '/../..' . '/app/Console/Commands/GenerateProjectThumbs.php',
         'App\\Console\\Commands\\RegenerateClientLogos' => __DIR__ . '/../..' . '/app/Console/Commands/RegenerateClientLogos.php',
         'App\\Filament\\Auth\\Login' => __DIR__ . '/../..' . '/app/Filament/Auth/Login.php',
+        'App\\Filament\\Forms\\Components\\CoverPicker' => __DIR__ . '/../..' . '/app/Filament/Forms/Components/CoverPicker.php',
         'App\\Filament\\Forms\\Components\\MapPicker' => __DIR__ . '/../..' . '/app/Filament/Forms/Components/MapPicker.php',
         'App\\Filament\\Pages\\Dashboard' => __DIR__ . '/../..' . '/app/Filament/Pages/Dashboard.php',
         'App\\Filament\\Pages\\ManageSiteContent' => __DIR__ . '/../..' . '/app/Filament/Pages/ManageSiteContent.php',

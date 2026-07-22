@@ -18,8 +18,10 @@ class Project extends Model
 {
     protected $fillable = [
         'num', 'name', 'name_ku', 'category', 'status', 'size', 'area', 'typology',
-        'location', 'lat', 'lng', 'year', 'desc', 'desc_ku', 'narrative', 'materials',
-        'related', 'imgs', 'sort_order', 'is_published', 'map_only',
+        'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
+        'desc', 'desc_ku', 'narrative', 'materials',
+        'related', 'imgs', 'cover', 'cover_x', 'cover_y',
+        'sort_order', 'is_published', 'map_only',
     ];
 
     protected $casts = [
@@ -31,10 +33,21 @@ class Project extends Model
         'sort_order' => 'integer',
         'lat' => 'float',
         'lng' => 'float',
+        'cover_x' => 'integer',
+        'cover_y' => 'integer',
     ];
 
     protected static function booted(): void
     {
+        // Keep the display `location` string composed from the structured parts.
+        static::saving(function (Project $p) {
+            $composed = collect([$p->neighbourhood, $p->city, $p->country])
+                ->filter(fn ($v) => filled($v))->implode(', ');
+            if ($composed !== '') {
+                $p->location = $composed;
+            }
+        });
+
         // Keep a light WebP thumbnail for every uploaded image so the grid
         // never has to download the multi-MB originals.
         static::saved(fn (Project $p) => $p->generateThumbnails());
@@ -96,10 +109,10 @@ class Project extends Model
             ?? Str::title(str_replace('-', ' ', (string) $this->category));
     }
 
-    /** City = first segment of the location string. */
+    /** City name — the structured field, falling back to the location string. */
     public function cityLabel(): string
     {
-        return trim(explode(',', (string) $this->location)[0] ?? '');
+        return $this->city ?: trim(explode(',', (string) $this->location)[0] ?? '');
     }
 
     /** End year = last 4-digit number found in the year string. */
@@ -154,17 +167,48 @@ class Project extends Model
             ->all();
     }
 
-    /** First image — the grid card cover, full resolution. */
-    public function coverUrl(): ?string
+    /** Images with the chosen cover first — the order the overlay shows them in. */
+    public function orderedImageUrls(): array
     {
-        return $this->imageUrls()[0] ?? null;
+        $imgs = collect($this->imgs ?? []);
+        $cover = $this->coverImage();
+        if ($cover !== null) {
+            $imgs = $imgs->reject(fn ($i) => $i === $cover)->prepend($cover);
+        }
+
+        return $imgs->map(fn ($img) => self::resolveImage($img))->filter()->values()->all();
     }
 
-    /** First image as a light thumbnail — used on the projects grid. */
+    /** The chosen cover image reference, or the first image if none is set / valid. */
+    public function coverImage(): ?string
+    {
+        $imgs = (array) ($this->imgs ?? []);
+        if ($this->cover && in_array($this->cover, $imgs, true)) {
+            return $this->cover;
+        }
+
+        return $imgs[0] ?? null;
+    }
+
+    /** Grid card cover, full resolution. */
+    public function coverUrl(): ?string
+    {
+        $cover = $this->coverImage();
+
+        return $cover ? self::resolveImage($cover) : null;
+    }
+
+    /** Grid card cover as a light thumbnail. */
     public function coverThumbUrl(): ?string
     {
-        $first = collect($this->imgs ?? [])->first();
+        $cover = $this->coverImage();
 
-        return $first ? $this->thumbUrl($first) : null;
+        return $cover ? $this->thumbUrl($cover) : null;
+    }
+
+    /** CSS object-position for the cover's focal point, e.g. "50% 30%". */
+    public function coverPosition(): string
+    {
+        return ($this->cover_x ?? 50).'% '.($this->cover_y ?? 50).'%';
     }
 }
