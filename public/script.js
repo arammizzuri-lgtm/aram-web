@@ -1222,16 +1222,19 @@ const PROJECT_COORDS = [
         const x = Math.round((w - logoW) / 2);     // horizontally centred
         const y = Math.round(h - logoH - h * 0.035); // a little above the bottom
         ctx.save();
-        // pass 1: paint the logo with a soft black shadow cast by its shape
-        ctx.shadowColor = 'rgba(0,0,0,.55)';
-        ctx.shadowBlur = Math.max(6, Math.round(logoW * 0.03));
-        ctx.shadowOffsetY = Math.max(1, Math.round(logoH * 0.08));
-        ctx.globalAlpha = 0.96;
+        // passes 1–2: build a deep, soft black shadow cast by the logo's shape,
+        // so the white mark stays legible even over bright photos. Two passes
+        // deepen the shadow without brightening the white strokes.
+        ctx.shadowColor = 'rgba(0,0,0,.65)';
+        ctx.shadowBlur = Math.max(8, Math.round(logoW * 0.045));
+        ctx.shadowOffsetY = Math.max(2, Math.round(logoH * 0.1));
         ctx.drawImage(WM_LOGO, x, y, logoW, logoH);
-        // pass 2: redraw crisp on top of its own shadow for a clean edge
+        ctx.drawImage(WM_LOGO, x, y, logoW, logoH);
+        // pass 3: redraw crisp on top of its own shadow for a clean edge
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
         ctx.shadowOffsetY = 0;
+        ctx.globalAlpha = 0.97;
         ctx.drawImage(WM_LOGO, x, y, logoW, logoH);
         ctx.restore();
     }
