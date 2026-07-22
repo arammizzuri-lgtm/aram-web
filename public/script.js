@@ -1183,28 +1183,56 @@ const PROJECT_COORDS = [
     }
 
     /* ---- Copyright watermark on full-res / download ---------
-       Burns "Designed by Architect Aram Mizuri" into the bottom-left corner
-       of the exported image so downloaded visualisations carry attribution.
-       Falls back to the raw file if the canvas can't be exported (e.g. a
-       cross-origin image without CORS headers taints the canvas). */
-    function drawWatermark(ctx, w, h) {
-        const pad = Math.max(22, Math.round(w * 0.022));
+       Stamps the Aram Mizuri logo across the bottom-centre of the exported
+       image, with a soft black shadow so it stays legible on any background,
+       so downloaded visualisations carry attribution. Falls back to a text
+       credit if the logo asset is missing, and to the raw file if the canvas
+       can't be exported (e.g. a cross-origin image without CORS headers taints
+       the canvas). Replace /watermark-logo.png with a white, transparent-
+       background PNG of the studio logo to change the mark. */
+    const WM_LOGO = new Image();
+    const wmLogoReady = new Promise(function (resolve) {
+        WM_LOGO.onload = function () { resolve(WM_LOGO.naturalWidth > 0); };
+        WM_LOGO.onerror = function () { resolve(false); };
+    });
+    WM_LOGO.src = '/watermark-logo.png';           // white wordmark on transparency
+
+    // Fallback used only when the logo image can't be loaded.
+    function drawTextWatermark(ctx, w, h) {
+        const pad = Math.max(22, Math.round(w * 0.03));
         const fs  = Math.max(15, Math.round(w * 0.019));
         ctx.save();
         ctx.textBaseline = 'alphabetic';
-        ctx.textAlign = 'left';
+        ctx.textAlign = 'center';
         if ('letterSpacing' in ctx) ctx.letterSpacing = Math.max(1, Math.round(fs * 0.06)) + 'px';
         ctx.font = '600 ' + fs + 'px "Inter", Arial, sans-serif';
         ctx.shadowColor = 'rgba(0,0,0,.6)';
         ctx.shadowBlur = fs * 0.6;
         ctx.shadowOffsetY = 1;
-        const a = 'Designed by Architect ';
-        const y = h - pad;
         ctx.fillStyle = 'rgba(255,255,255,.92)';
-        ctx.fillText(a, pad, y);
-        const aw = ctx.measureText(a).width;
-        ctx.fillStyle = '#F5C518';                 // brand gold on the name
-        ctx.fillText('Aram Mizuri', pad + aw, y);
+        ctx.fillText('Designed by Architect Aram Mizuri', w / 2, h - pad);
+        ctx.restore();
+    }
+
+    function drawWatermark(ctx, w, h) {
+        if (!WM_LOGO.naturalWidth) { drawTextWatermark(ctx, w, h); return; }
+        const ratio = WM_LOGO.naturalHeight / WM_LOGO.naturalWidth;
+        const logoW = Math.round(w * 0.24);        // ~24% of the image width
+        const logoH = Math.round(logoW * ratio);
+        const x = Math.round((w - logoW) / 2);     // horizontally centred
+        const y = Math.round(h - logoH - h * 0.035); // a little above the bottom
+        ctx.save();
+        // pass 1: paint the logo with a soft black shadow cast by its shape
+        ctx.shadowColor = 'rgba(0,0,0,.55)';
+        ctx.shadowBlur = Math.max(6, Math.round(logoW * 0.03));
+        ctx.shadowOffsetY = Math.max(1, Math.round(logoH * 0.08));
+        ctx.globalAlpha = 0.96;
+        ctx.drawImage(WM_LOGO, x, y, logoW, logoH);
+        // pass 2: redraw crisp on top of its own shadow for a clean edge
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.drawImage(WM_LOGO, x, y, logoW, logoH);
         ctx.restore();
     }
 
@@ -1213,17 +1241,19 @@ const PROJECT_COORDS = [
             const img = new Image();
             img.crossOrigin = 'anonymous';         // request CORS so canvas isn't tainted
             img.onload = function () {
-                try {
-                    const c = document.createElement('canvas');
-                    c.width = img.naturalWidth || img.width;
-                    c.height = img.naturalHeight || img.height;
-                    const ctx = c.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    drawWatermark(ctx, c.width, c.height);
-                    c.toBlob(function (blob) {
-                        blob ? resolve(URL.createObjectURL(blob)) : reject(new Error('export failed'));
-                    }, 'image/jpeg', 0.92);
-                } catch (err) { reject(err); }
+                wmLogoReady.then(function () {     // ensure the logo is ready to stamp
+                    try {
+                        const c = document.createElement('canvas');
+                        c.width = img.naturalWidth || img.width;
+                        c.height = img.naturalHeight || img.height;
+                        const ctx = c.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        drawWatermark(ctx, c.width, c.height);
+                        c.toBlob(function (blob) {
+                            blob ? resolve(URL.createObjectURL(blob)) : reject(new Error('export failed'));
+                        }, 'image/jpeg', 0.92);
+                    } catch (err) { reject(err); }
+                });
             };
             img.onerror = function () { reject(new Error('load failed')); };
             img.src = url;
