@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Projects\Schemas;
 
+use App\Filament\Forms\Components\MapPicker;
 use App\Models\Project;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
@@ -54,17 +56,15 @@ class ProjectForm
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
                     TextInput::make('location')->maxLength(160)->placeholder('Erbil, Kurdistan Region')
                         ->columnSpanFull(),
-                    TextInput::make('lat')
-                        ->label('Latitude')
-                        ->numeric()->step('any')
-                        ->minValue(-90)->maxValue(90)
-                        ->placeholder('36.1912')
-                        ->helperText('Map pin position. In Google Maps, right-click the location → click the coordinates to copy, then paste latitude here and longitude beside it.'),
-                    TextInput::make('lng')
-                        ->label('Longitude')
-                        ->numeric()->step('any')
-                        ->minValue(-180)->maxValue(180)
-                        ->placeholder('44.0092'),
+                    // The map picker below writes to these; kept as hidden fields
+                    // so they still persist to the lat/lng columns and drive the
+                    // public site map.
+                    Hidden::make('lat'),
+                    Hidden::make('lng'),
+                    MapPicker::make('map_picker')
+                        ->label('Map pin position')
+                        ->helperText('Click the map where the project sits to drop a pin — drag it to fine-tune, or search a place name. This is the exact pin shown on the public map. Leave empty for no pin.')
+                        ->columnSpanFull(),
                     TextInput::make('year')->maxLength(40)->placeholder('2022 – 2024'),
                     TextInput::make('area')
                         ->label('Plot area')

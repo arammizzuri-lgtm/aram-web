@@ -28,5 +28,11 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::HEAD_END,
             fn (): string => view('filament.brand-css')->render(),
         );
+
+        // Leaflet + the map-picker Alpine component, for the project location field.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => view('filament.leaflet-assets')->render(),
+        );
     }
 }
