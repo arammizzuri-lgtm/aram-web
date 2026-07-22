@@ -22,7 +22,7 @@ class MapPickerRenderTest extends TestCase
 
         $project = Project::create([
             'name' => 'Test Project',
-            'category' => array_key_first(Project::CATEGORY_LABELS),
+            'category' => 'cultural',
             'status' => 'Completed',
             'size' => 'default',
             'lat' => 36.32,

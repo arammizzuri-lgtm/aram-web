@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\Projects\Schemas;
 
 use App\Filament\Forms\Components\MapPicker;
-use App\Models\Project;
+use App\Models\Category;
+use App\Models\Status;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -39,13 +40,11 @@ class ProjectForm
                         ->helperText('For projects with no photos: shows a pin on the map and counts in the statistics, but never appears in Selected Works and needs no images. The pin card shows title, type, year, plot area and location.')
                         ->default(false),
                     Select::make('category')
-                        ->options(Project::CATEGORY_LABELS)->required()->native(false),
+                        ->options(fn () => Category::options())->required()->native(false)
+                        ->helperText('Manage the list under Manage → Project Categories.'),
                     Select::make('status')
-                        ->options([
-                            'Completed' => 'Completed',
-                            'Under Construction' => 'Under Construction',
-                            'Concept / Planning' => 'Concept / Planning',
-                        ])->required()->native(false),
+                        ->options(fn () => Status::options())->required()->native(false)
+                        ->helperText('Manage the list under Manage → Project Statuses.'),
                     Select::make('size')
                         ->label('Card size on grid')
                         ->options([

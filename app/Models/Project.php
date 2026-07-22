@@ -31,23 +31,6 @@ class Project extends Model
         'lng' => 'float',
     ];
 
-    /** Human label per category — mirrors the public filter buttons. */
-    public const CATEGORY_LABELS = [
-        'cultural' => 'Cultural',
-        'mixed-use' => 'Mixed-Use',
-        'hospitality' => 'Hospitality',
-        'commercial' => 'Commercial',
-        'residential' => 'Residential',
-        'urban' => 'Master Planning',
-    ];
-
-    /** status text => [css modifier, short badge label] used on the grid card. */
-    public const STATUS_BADGES = [
-        'Completed' => ['done', 'Completed'],
-        'Under Construction' => ['build', 'Under Construction'],
-        'Concept / Planning' => ['concept', 'Concept'],
-    ];
-
     /** Only published projects, in display order — used by the public site. */
     public function scopePublishedOrdered($query)
     {
@@ -58,7 +41,7 @@ class Project extends Model
 
     public function categoryLabel(): string
     {
-        return self::CATEGORY_LABELS[$this->category]
+        return Category::map()[$this->category]
             ?? Str::title(str_replace('-', ' ', (string) $this->category));
     }
 
@@ -85,12 +68,12 @@ class Project extends Model
 
     public function statusClass(): string
     {
-        return self::STATUS_BADGES[$this->status][0] ?? 'done';
+        return Status::meta()[$this->status]['tone'] ?? 'done';
     }
 
     public function statusBadge(): string
     {
-        return self::STATUS_BADGES[$this->status][1] ?? (string) $this->status;
+        return Status::meta()[$this->status]['badge'] ?? (string) $this->status;
     }
 
     /**

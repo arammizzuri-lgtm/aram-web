@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\SiteSetting;
+use App\Models\Status;
 
 /**
  * Serves the public portfolio page, now powered by the database. Builds the
@@ -16,6 +18,7 @@ class PortfolioController extends Controller
     {
         $projects = Project::publishedOrdered()->get();
         $clients = Client::publishedOrdered()->get();
+        $categories = Category::ordered()->get();
         $content = SiteSetting::allKeyed();
         $stats = $this->portfolioStats($projects);
 
@@ -42,9 +45,11 @@ class PortfolioController extends Controller
             ])->values()->all(),
             'content' => $content,
             'stats' => $stats,
+            // name => tone, so the map overlay can colour any status' dot.
+            'statusTones' => Status::ordered()->pluck('tone', 'name')->all(),
         ];
 
-        return view('portfolio', compact('projects', 'clients', 'content', 'payload', 'stats'));
+        return view('portfolio', compact('projects', 'clients', 'categories', 'content', 'payload', 'stats'));
     }
 
     /**

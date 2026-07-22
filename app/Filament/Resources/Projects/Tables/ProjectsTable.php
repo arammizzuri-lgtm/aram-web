@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Projects\Tables;
 
+use App\Models\Category;
 use App\Models\Project;
+use App\Models\Status;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -33,20 +35,20 @@ class ProjectsTable
                     ->description(fn (Project $record) => $record->location),
                 TextColumn::make('category')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => Project::CATEGORY_LABELS[$state] ?? $state)
+                    ->formatStateUsing(fn ($state) => Category::map()[$state] ?? $state)
                     ->color('primary'),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
-                        'Completed' => 'success',
-                        'Under Construction' => 'warning',
+                    ->color(fn ($state) => match (Status::meta()[$state]['tone'] ?? null) {
+                        'done' => 'success',
+                        'build' => 'warning',
                         default => 'gray',
                     }),
                 TextColumn::make('year')->alignEnd()->toggleable(),
                 ToggleColumn::make('is_published')->label('Live'),
             ])
             ->filters([
-                SelectFilter::make('category')->options(Project::CATEGORY_LABELS),
+                SelectFilter::make('category')->options(fn () => Category::options()),
                 TernaryFilter::make('is_published')->label('Published'),
             ])
             ->recordActions([

@@ -327,14 +327,14 @@
                     <input class="pg__search" id="pgSearch" type="search" placeholder="Search projects…" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">
                     <span class="pg__search-icon" aria-hidden="true">↗&#xFE0E;</span>
                 </div>
+                {{-- Filter row is generated from the database-managed categories
+                     (Manage → Project Categories), so add / remove / reorder there
+                     is reflected here. "All" stays put. --}}
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
-                    <button class="pgf-btn active" data-filter="all"         {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
-                    <button class="pgf-btn"        data-filter="residential" {!! bitext('filter_residential') !!}>{{ bival('filter_residential') }}</button>
-                    <button class="pgf-btn"        data-filter="commercial"  {!! bitext('filter_commercial') !!}>{{ bival('filter_commercial') }}</button>
-                    <button class="pgf-btn"        data-filter="hospitality" {!! bitext('filter_hospitality') !!}>{{ bival('filter_hospitality') }}</button>
-                    <button class="pgf-btn"        data-filter="mixed-use"   {!! bitext('filter_mixeduse') !!}>{{ bival('filter_mixeduse') }}</button>
-                    <button class="pgf-btn"        data-filter="cultural"    {!! bitext('filter_cultural') !!}>{{ bival('filter_cultural') }}</button>
-                    <button class="pgf-btn"        data-filter="urban"       {!! bitext('filter_urban') !!}>{{ bival('filter_urban') }}</button>
+                    <button class="pgf-btn active" data-filter="all" {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
+                    @foreach($categories as $cat)
+                    <button class="pgf-btn" data-filter="{{ $cat->key }}" data-en="{{ $cat->name }}" data-ku="{{ $cat->name_ku ?: $cat->name }}">{{ $cat->name }}</button>
+                    @endforeach
                 </div>
             </div>
         </div>

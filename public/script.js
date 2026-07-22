@@ -1400,9 +1400,14 @@ const PROJECT_COORDS = [
         var isKu = document.documentElement.getAttribute('dir') === 'rtl';
         var STATUS_KU = { 'Completed': 'تەواوبوو', 'Under Construction': 'لەژێر بنیاتنان', 'Concept / Planning': 'بیرۆکە و پلاندانان' };
 
-        var statusClass = proj.status === 'Completed'          ? 's-done'
-                        : proj.status === 'Under Construction' ? 's-build'
-                        : 's-concept';
+        // tone comes from the DB-managed statuses (name => done|build|concept),
+        // with a sensible fallback for the three original statuses.
+        var tones = (window.__SITE__ && window.__SITE__.statusTones) || {};
+        var tone  = tones[proj.status]
+                 || (proj.status === 'Completed'          ? 'done'
+                  :  proj.status === 'Under Construction' ? 'build'
+                  :  'concept');
+        var statusClass = tone === 'done' ? 's-done' : tone === 'build' ? 's-build' : 's-concept';
 
         // Status dot + badge
         var dotEl   = document.getElementById('overlayDot');
