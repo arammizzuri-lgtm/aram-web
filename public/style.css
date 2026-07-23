@@ -2700,18 +2700,15 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .od-hud { display: none; }
     .od-img-btn { display: none; }        /* switch images via the thumbnails */
 
-    /* Location map — script.js moves it inside the body on phones, so it sits
-       under the top bar as a small banner: place first, then the photos, then
-       the details. `order` has to be reset because the ≤1600px rule above
-       parks it last. */
-    .proj-overlay__body > .od-sidemap {
+    /* Location map — its own card at the very top, above the detail window, so
+       a project reads place, then photos, then details. `order` is flipped
+       because the ≤1600px rule above parks the map after the modal. */
+    .od-sidemap {
         order: -1;
-        width: auto; height: clamp(112px, 17vh, 164px);
-        margin: 12px 14px 0;
-        border-radius: 14px;
-        opacity: 1; transform: none;
+        height: clamp(120px, 18vh, 180px);
+        border-radius: 18px;
     }
-    .proj-overlay__body > .od-sidemap .od-sidemap__bar { padding: 12px 14px 20px; }
+    .od-sidemap__bar { padding: 13px 15px 22px; }
 
     /* Thumbnails — a normal-flow strip under the image */
     .od-thumbs {
@@ -2739,7 +2736,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .od-thumbs { margin: 10px 10px 0; }
     .od-panel { margin: 10px; }
     .od-panel__scroll { padding: 22px 18px 26px; }
-    .proj-overlay__body > .od-sidemap { margin: 10px 10px 0; height: clamp(104px, 15vh, 148px); }
+    .od-sidemap { height: clamp(110px, 16vh, 158px); border-radius: 16px; }
 
     /* Icon-only on small screens to avoid crowding the photo */
     .od-fullres { top: 12px; right: 12px; }

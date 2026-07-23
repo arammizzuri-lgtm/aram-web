@@ -1304,17 +1304,6 @@ const PROJECT_COORDS = [
     var miniCityEl = document.getElementById('overlayMapCity');
     var miniWrap   = document.getElementById('overlayMap');
 
-    // Where the map lives depends on the screen. On a wide screen it is its own
-    // window next to (or below) the detail window. On a phone it belongs INSIDE
-    // the detail window, directly under the top bar, so the project reads
-    // place → photos → details. The top bar is a child of the modal, so no
-    // amount of CSS ordering can slot a sibling between it and the photo —
-    // the node itself has to move.
-    var miniMq      = window.matchMedia('(max-width: 840px)');
-    var overlayRoot = document.getElementById('projOverlay');
-    var overlayBody = document.getElementById('overlayBody');
-    var odModalEl   = overlayRoot ? overlayRoot.querySelector('.od-modal') : null;
-
     function ensureMiniMap() {
         if (miniMap || typeof L === 'undefined' || !miniCanvas) return;
         miniMap = L.map(miniCanvas, {
@@ -1336,42 +1325,10 @@ const PROJECT_COORDS = [
         }).addTo(miniMap);
     }
 
-    /**
-     * Park the map in the right place for the current screen width: first child
-     * of the detail body on phones, back beside the modal on wider screens.
-     * Leaflet lays tiles out for the size it had when it rendered, so any move
-     * is followed by invalidateSize once the new box has been laid out.
-     */
-    function placeMiniMap() {
-        if (!miniWrap || !overlayRoot || !overlayBody || !odModalEl) return;
-
-        // Bail out when it is already in the right slot: re-inserting the node
-        // detaches Leaflet's container and makes the tiles blink on every call,
-        // and this runs on each project change.
-        if (miniMq.matches) {
-            if (overlayBody.firstElementChild === miniWrap) return;
-            overlayBody.insertBefore(miniWrap, overlayBody.firstElementChild);
-        } else {
-            if (miniWrap.parentNode === overlayRoot && miniWrap.nextElementSibling === odModalEl) return;
-            overlayRoot.insertBefore(miniWrap, odModalEl);
-        }
-
-        if (miniMap) {
-            setTimeout(function () { miniMap.invalidateSize(false); }, 60);
-        }
-    }
-
-    if (miniMq.addEventListener) {
-        miniMq.addEventListener('change', placeMiniMap);
-    } else if (miniMq.addListener) {
-        miniMq.addListener(placeMiniMap);            // older WebKit
-    }
-
     // Recentre the mini-map on the given project's location and drop the pin.
     function updateMiniMap(index, proj) {
         var coords = projCoords(proj, index);
         if (!miniWrap) return;
-        placeMiniMap();
         if (!coords || typeof L === 'undefined' || !miniCanvas) {
             miniWrap.style.display = 'none';      // no location → no map
             return;
