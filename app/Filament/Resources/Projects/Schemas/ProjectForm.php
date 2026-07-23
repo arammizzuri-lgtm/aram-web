@@ -121,9 +121,12 @@ class ProjectForm
                         ->addActionLabel('Add image URL')
                         ->reorderable()->collapsible()->defaultItems(0),
                     // The picker below writes to these; kept as hidden so they persist.
+                    // The focal point defaults to the centre — on create there are
+                    // no images yet, so the picker never runs and would otherwise
+                    // leave these null against their NOT NULL columns.
                     Hidden::make('cover'),
-                    Hidden::make('cover_x'),
-                    Hidden::make('cover_y'),
+                    Hidden::make('cover_x')->default(50),
+                    Hidden::make('cover_y')->default(50),
                     CoverPicker::make('cover_picker')
                         ->label('Card cover & focal point')
                         ->columnSpanFull(),

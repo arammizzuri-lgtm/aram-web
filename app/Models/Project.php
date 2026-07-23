@@ -24,6 +24,12 @@ class Project extends Model
         'sort_order', 'is_published', 'map_only',
     ];
 
+    /** Focal point defaults to the centre of the cover image. */
+    protected $attributes = [
+        'cover_x' => 50,
+        'cover_y' => 50,
+    ];
+
     protected $casts = [
         'materials' => 'array',
         'related' => 'array',
@@ -46,6 +52,11 @@ class Project extends Model
             if ($composed !== '') {
                 $p->location = $composed;
             }
+
+            // A form that never opened the cover picker sends these as null,
+            // which would override the column default and break the insert.
+            $p->cover_x ??= 50;
+            $p->cover_y ??= 50;
         });
 
         // Keep a light WebP thumbnail for every uploaded image so the grid

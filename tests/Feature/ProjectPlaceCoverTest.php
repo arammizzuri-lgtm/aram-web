@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProjectPlaceCoverTest extends TestCase
@@ -41,6 +43,40 @@ class ProjectPlaceCoverTest extends TestCase
         // an invalid/removed cover falls back to the first image
         $p->update(['cover' => 'https://ex.com/gone.jpg']);
         $this->assertSame('https://ex.com/a.jpg', $p->coverImage());
+    }
+
+    public function test_a_new_project_saves_without_a_focal_point(): void
+    {
+        // The cover picker only appears once a project has images, so creating
+        // one sends cover_x / cover_y as null — they must fall back to centre
+        // instead of hitting the columns' NOT NULL constraint.
+        $p = Project::create([
+            'name' => 'MZ07', 'category' => 'residential', 'status' => 'Completed', 'size' => 'default',
+            'cover' => null, 'cover_x' => null, 'cover_y' => null,
+        ]);
+
+        $this->assertSame(50, $p->fresh()->cover_x);
+        $this->assertSame(50, $p->fresh()->cover_y);
+        $this->assertSame('50% 50%', $p->coverPosition());
+    }
+
+    public function test_the_create_form_submits_with_the_cover_picker_untouched(): void
+    {
+        $admin = User::create(['name' => 'A', 'email' => 'create@b.test', 'password' => 'secret-password']);
+
+        $this->actingAs($admin);
+        Livewire::test(CreateProject::class)
+            ->fillForm([
+                'name' => 'MZ07',
+                'category' => 'residential',
+                'status' => 'Completed',
+                'size' => 'default',
+                'city' => 'Erbil',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(50, Project::where('name', 'MZ07')->sole()->cover_x);
     }
 
     public function test_project_edit_page_renders_location_fields_and_cover_picker(): void
