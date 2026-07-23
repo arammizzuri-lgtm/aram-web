@@ -613,70 +613,10 @@
                 </a>
             </div>
             <div class="heritage__visual reveal reveal-delay-2">
-                <svg class="citadel-svg" viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">
-                    <!-- ground -->
-                    <rect x="0" y="270" width="420" height="50" fill="#1a1008" rx="0"/>
-                    <!-- hill/mound -->
-                    <ellipse cx="210" cy="275" rx="200" ry="30" fill="#1f1508"/>
-                    <!-- level 4 base -->
-                    <rect x="50"  y="220" width="320" height="58" fill="#2a1c0a" rx="1"/>
-                    <!-- level 3 -->
-                    <rect x="80"  y="168" width="260" height="56" fill="#362311" rx="1"/>
-                    <!-- level 2 -->
-                    <rect x="110" y="118" width="200" height="54" fill="#422b14" rx="1"/>
-                    <!-- level 1 top -->
-                    <rect x="140" y="76"  width="140" height="46" fill="#503416" rx="1"/>
-                    <!-- battlements level 4 -->
-                    <rect x="55"  y="212" width="14" height="12" fill="#1f1508" rx="1"/>
-                    <rect x="80"  y="212" width="14" height="12" fill="#1f1508" rx="1"/>
-                    <rect x="105" y="212" width="14" height="12" fill="#1f1508" rx="1"/>
-                    <rect x="300" y="212" width="14" height="12" fill="#1f1508" rx="1"/>
-                    <rect x="325" y="212" width="14" height="12" fill="#1f1508" rx="1"/>
-                    <rect x="350" y="212" width="14" height="12" fill="#1f1508" rx="1"/>
-                    <!-- windows level 4 -->
-                    <rect x="95"  y="233" width="14" height="22" fill="#F5C518" rx="1" opacity="0.55"/>
-                    <rect x="122" y="233" width="14" height="22" fill="#F5C518" rx="1" opacity="0.55"/>
-                    <rect x="150" y="233" width="14" height="22" fill="#F5C518" rx="1" opacity="0.55"/>
-                    <rect x="200" y="233" width="20" height="22" fill="#F5C518" rx="1" opacity="0.7"/>
-                    <rect x="256" y="233" width="14" height="22" fill="#F5C518" rx="1" opacity="0.55"/>
-                    <rect x="283" y="233" width="14" height="22" fill="#F5C518" rx="1" opacity="0.55"/>
-                    <rect x="310" y="233" width="14" height="22" fill="#F5C518" rx="1" opacity="0.55"/>
-                    <!-- windows level 3 -->
-                    <rect x="100" y="180" width="12" height="18" fill="#F5C518" rx="1" opacity="0.6"/>
-                    <rect x="126" y="180" width="12" height="18" fill="#F5C518" rx="1" opacity="0.6"/>
-                    <rect x="202" y="180" width="16" height="18" fill="#F5C518" rx="1" opacity="0.75"/>
-                    <rect x="280" y="180" width="12" height="18" fill="#F5C518" rx="1" opacity="0.6"/>
-                    <rect x="306" y="180" width="12" height="18" fill="#F5C518" rx="1" opacity="0.6"/>
-                    <!-- windows level 2 -->
-                    <rect x="128" y="130" width="11" height="16" fill="#F5C518" rx="1" opacity="0.65"/>
-                    <rect x="153" y="130" width="11" height="16" fill="#F5C518" rx="1" opacity="0.65"/>
-                    <rect x="204" y="130" width="14" height="16" fill="#F5C518" rx="1" opacity="0.8"/>
-                    <rect x="256" y="130" width="11" height="16" fill="#F5C518" rx="1" opacity="0.65"/>
-                    <rect x="281" y="130" width="11" height="16" fill="#F5C518" rx="1" opacity="0.65"/>
-                    <!-- windows level 1 -->
-                    <rect x="158" y="88"  width="10" height="14" fill="#F5C518" rx="1" opacity="0.7"/>
-                    <rect x="205" y="88"  width="12" height="14" fill="#F5C518" rx="1" opacity="0.9"/>
-                    <rect x="252" y="88"  width="10" height="14" fill="#F5C518" rx="1" opacity="0.7"/>
-                    <!-- sun above citadel -->
-                    <circle cx="210" cy="38" r="22" fill="#F5C518" opacity="0.9"/>
-                    <circle cx="210" cy="38" r="14" fill="#1a0800" opacity="0.25"/>
-                    <!-- sun glow -->
-                    <circle cx="210" cy="38" r="30" fill="none" stroke="#F5C518" stroke-width="1" opacity="0.3"/>
-                    <circle cx="210" cy="38" r="40" fill="none" stroke="#F5C518" stroke-width="0.5" opacity="0.15"/>
-                    <!-- simple rays -->
-                    <line x1="210" y1="10" x2="210" y2="3"  stroke="#F5C518" stroke-width="1.5" opacity="0.7"/>
-                    <line x1="210" y1="66" x2="210" y2="73" stroke="#F5C518" stroke-width="1.5" opacity="0.7"/>
-                    <line x1="182" y1="38" x2="175" y2="38" stroke="#F5C518" stroke-width="1.5" opacity="0.7"/>
-                    <line x1="238" y1="38" x2="245" y2="38" stroke="#F5C518" stroke-width="1.5" opacity="0.7"/>
-                    <line x1="190" y1="18" x2="185" y2="12" stroke="#F5C518" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="230" y1="18" x2="235" y2="12" stroke="#F5C518" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="190" y1="58" x2="185" y2="64" stroke="#F5C518" stroke-width="1.5" opacity="0.5"/>
-                    <line x1="230" y1="58" x2="235" y2="64" stroke="#F5C518" stroke-width="1.5" opacity="0.5"/>
-                </svg>
-                <div class="heritage__geo-pattern">
-                    <div class="geo-cell"></div><div class="geo-cell"></div>
-                    <div class="geo-cell"></div><div class="geo-cell"></div>
-                </div>
+                <img class="citadel-img"
+                     src="{{ asset('heritage-citadel.webp') }}?v={{ filemtime(public_path('heritage-citadel.webp')) }}"
+                     alt="Illustration of the Erbil Citadel crowned by the Kurdish sun"
+                     loading="lazy" decoding="async">
             </div>
         </div>
     </section>

@@ -1430,31 +1430,19 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     background: radial-gradient(circle, rgba(245,197,24,.2), transparent 64%);
     filter: blur(34px); pointer-events: none; z-index: 0;
 }
-.citadel-svg {
+.citadel-img {
     position: relative; z-index: 1;
-    width: 100%; max-width: 440px; display: block; margin: 0 auto;
+    width: 100%; max-width: 500px; display: block; margin: 0 auto;
+    /* the illustration's dark ground matches the section, and this radial
+       feather melts its square edge into the page so it reads as native art */
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 66%, transparent 90%);
+            mask-image: radial-gradient(circle at 50% 50%, #000 66%, transparent 90%);
     animation: citadelGlow 5.5s ease-in-out infinite;
 }
 @keyframes citadelGlow {
-    0%, 100% { filter: drop-shadow(0 30px 60px rgba(245,197,24,.14)); }
-    50%      { filter: drop-shadow(0 30px 78px rgba(245,197,24,.26)); }
+    0%, 100% { filter: drop-shadow(0 24px 60px rgba(245,197,24,.16)); }
+    50%      { filter: drop-shadow(0 24px 80px rgba(245,197,24,.30)); }
 }
-.heritage__geo-pattern {
-    display: grid; grid-template-columns: repeat(2,1fr);
-    gap: 2px; margin-top: 16px; max-width: 420px; margin-left: auto; margin-right: auto;
-}
-.geo-cell {
-    height: 52px; background: rgba(245,197,24,.04); position: relative; overflow: hidden;
-}
-.geo-cell::before {
-    content: '';
-    position: absolute; inset: -100%;
-    background: repeating-linear-gradient(45deg, transparent, transparent 9px, rgba(245,197,24,.1) 9px, rgba(245,197,24,.1) 10px);
-    animation: geoPan 10s linear infinite;
-}
-.geo-cell:nth-child(even)::before { animation-delay: -5s; }
-@keyframes geoPan { to { transform: translateX(80px); } }
-
 /* ---- Contact ------------------------------------------- */
 /* ═══════════════════════════════════════════════════════════
    CONTACT  —  glass form card + interactive contact methods
