@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Support\ProjectImage;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -83,6 +84,50 @@ class Project extends Model
         return $query->where('is_published', true)
             ->orderBy('sort_order')
             ->orderBy('id');
+    }
+
+    /** Send this project to the front of the public grid. */
+    public function moveToTop(): void
+    {
+        $this->moveToEdge(toTop: true);
+    }
+
+    /** Send this project to the end of the public grid. */
+    public function moveToBottom(): void
+    {
+        $this->moveToEdge(toTop: false);
+    }
+
+    /**
+     * Pull this project to one end of the display order.
+     *
+     * `sort_order` is unsigned, so "one below the current minimum" is not
+     * always a legal value. Instead the whole list is renumbered 1..N with
+     * this project moved to the chosen end, which also tidies up any gaps or
+     * duplicate positions left behind by earlier edits. The writes go through
+     * the base query on purpose: a reorder must not re-run the save hooks
+     * (thumbnail generation, location composition) for every project.
+     */
+    private function moveToEdge(bool $toTop): void
+    {
+        DB::transaction(function () use ($toTop) {
+            $ids = static::query()
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->pluck('id')
+                ->reject(fn ($id) => (int) $id === (int) $this->getKey())
+                ->values();
+
+            $ids = $toTop
+                ? $ids->prepend($this->getKey())
+                : $ids->push($this->getKey());
+
+            foreach ($ids as $position => $id) {
+                static::query()->whereKey($id)->toBase()->update(['sort_order' => $position + 1]);
+            }
+        });
+
+        $this->refresh();
     }
 
     /** True for a stored upload (a bare disk path, not an external URL). */

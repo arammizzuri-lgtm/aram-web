@@ -58,8 +58,19 @@ Press `Ctrl + C` in the terminal to stop the server.
 
 ## What you can do in the admin
 
-- **Projects** — add, edit, drag-to-reorder, publish/unpublish, and delete projects.
+- **Projects** — add, edit, reorder, publish/unpublish, and delete projects.
   Upload images or paste image URLs. Changes appear on the live site immediately.
+- **Ordering the grid** — the order here is the order visitors see. Two ways to
+  change it:
+  - the **⌃⌄ arrows** button above the table turns on drag mode; grab a row and
+    drop it anywhere. Drag mode lists every project on one page, so you can pull
+    one from the bottom all the way to the top in a single drag.
+  - the **⌃⌃ / ⌄⌄ buttons on each row** send that project straight to the start
+    or the end of the grid — handy when the two ends are far apart, and they
+    still work while the list is filtered or searched.
+
+  Turn on the **Order** column (the "toggle columns" button) if you want to see
+  each project's exact position number.
 - **Site Content** — edit the hero, about, process, heritage, contact and footer text
   in English **and** Kurdish, from one screen.
 - **Messages** — every submission from the public contact form lands here.
