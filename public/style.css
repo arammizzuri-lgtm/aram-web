@@ -998,10 +998,14 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 @media (max-width: 600px) {
     .pg__head { padding: 44px 20px 28px; }
     .pg__title { font-size: 52px; }
-    .pg__grid { grid-template-rows: repeat(2, 1fr); grid-auto-columns: 62vw; height: 66vh; gap: 10px; padding: 14px 18px; }
+    /* Phones keep the desktop bento: the same three rows and the same tile
+       footprints (wide = 2 columns, large = 2x2), so the row reads as one
+       layout everywhere and what the admin's Project Grid shows is true on
+       every screen. Columns sit just under half the viewport so a two-column
+       tile still fits with the side padding, and the row is given more height
+       because it now has three rows to divide instead of two. */
+    .pg__grid { grid-auto-columns: 42vw; height: clamp(400px, 74vh, 640px); gap: 10px; padding: 14px 18px; }
     .pg__progress { margin: 0 18px; }
-    .pgc--large { grid-column: span 1; grid-row: span 2; }
-    .pgc--wide  { grid-column: span 1; }
     .pgc__overlay { padding: 20px; }
 }
 
