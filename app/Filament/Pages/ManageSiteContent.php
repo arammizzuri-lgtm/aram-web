@@ -33,7 +33,7 @@ class ManageSiteContent extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Manage';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Site Content';
 

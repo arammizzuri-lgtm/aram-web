@@ -17,6 +17,12 @@ use Illuminate\Support\Str;
  */
 class Project extends Model
 {
+    /**
+     * Tile footprints on the public bento grid, which flows into three rows:
+     * default = 1x1, wide = two columns, large = two columns by two rows.
+     */
+    public const SIZES = ['default', 'wide', 'large'];
+
     protected $fillable = [
         'num', 'name', 'name_ku', 'category', 'categories', 'status', 'size', 'area', 'typology',
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
@@ -98,36 +104,58 @@ class Project extends Model
         $this->moveToEdge(toTop: false);
     }
 
+    /** Pull this project to one end of the display order. */
+    private function moveToEdge(bool $toTop): void
+    {
+        $others = static::orderedIds()
+            ->reject(fn ($id) => $id === (int) $this->getKey())
+            ->values();
+
+        $ids = $toTop
+            ? $others->prepend((int) $this->getKey())
+            : $others->push((int) $this->getKey());
+
+        static::applyOrder($ids->all());
+
+        $this->refresh();
+    }
+
+    /** Every project id in current display order. */
+    private static function orderedIds(): \Illuminate\Support\Collection
+    {
+        return static::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id);
+    }
+
     /**
-     * Pull this project to one end of the display order.
+     * Persist an explicit display order.
      *
-     * `sort_order` is unsigned, so "one below the current minimum" is not
-     * always a legal value. Instead the whole list is renumbered 1..N with
-     * this project moved to the chosen end, which also tidies up any gaps or
+     * The given ids are numbered first, in the order supplied; every project
+     * left out keeps its relative order behind them, so rearranging the
+     * visible grid never disturbs the projects hidden from it (unpublished,
+     * map-only, or still without a photo).
+     *
+     * `sort_order` is unsigned, so positions are rewritten as a clean 1..N run
+     * rather than nudged up and down — that also tidies away any gaps or
      * duplicate positions left behind by earlier edits. The writes go through
      * the base query on purpose: a reorder must not re-run the save hooks
      * (thumbnail generation, location composition) for every project.
+     *
+     * @param  array<int, int|string>  $orderedIds
      */
-    private function moveToEdge(bool $toTop): void
+    public static function applyOrder(array $orderedIds): void
     {
-        DB::transaction(function () use ($toTop) {
-            $ids = static::query()
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->pluck('id')
-                ->reject(fn ($id) => (int) $id === (int) $this->getKey())
-                ->values();
+        DB::transaction(function () use ($orderedIds) {
+            $ids = collect($orderedIds)->map(fn ($id) => (int) $id)->unique()->values();
+            $rest = static::orderedIds()->reject(fn ($id) => $ids->contains($id));
 
-            $ids = $toTop
-                ? $ids->prepend($this->getKey())
-                : $ids->push($this->getKey());
-
-            foreach ($ids as $position => $id) {
+            foreach ($ids->concat($rest)->values() as $position => $id) {
                 static::query()->whereKey($id)->toBase()->update(['sort_order' => $position + 1]);
             }
         });
-
-        $this->refresh();
     }
 
     /** True for a stored upload (a bare disk path, not an external URL). */

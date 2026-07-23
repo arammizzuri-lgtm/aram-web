@@ -60,17 +60,27 @@ Press `Ctrl + C` in the terminal to stop the server.
 
 - **Projects** — add, edit, reorder, publish/unpublish, and delete projects.
   Upload images or paste image URLs. Changes appear on the live site immediately.
-- **Ordering the grid** — the order here is the order visitors see. Two ways to
-  change it:
-  - the **⌃⌄ arrows** button above the table turns on drag mode; grab a row and
-    drop it anywhere. Drag mode lists every project on one page, so you can pull
-    one from the bottom all the way to the top in a single drag.
-  - the **⌃⌃ / ⌄⌄ buttons on each row** send that project straight to the start
-    or the end of the grid — handy when the two ends are far apart, and they
-    still work while the list is filtered or searched.
+- **Project Grid** — the main way to arrange the *Selected Work* row. It draws
+  the real grid, with your covers, in the same three-row bento layout visitors
+  see, so what you arrange is what ships.
+  - **Drag any tile** to move it along the row. Tile **1** is the first thing a
+    visitor sees; the row then flows top-to-bottom, left-to-right and scrolls
+    sideways.
+  - **1×1 / 2×1 / 2×2** on each tile sets how much room that project takes:
+    one cell, two columns, or the big two-by-two feature tile. Because the grid
+    packs tiles densely, resizing one can reflow its neighbours — the preview
+    shows that happening straight away.
+  - **⇤ ⇥** send a project to the very start or the very end.
+  - Nothing is written until you press **Save layout**, and **Reset** puts back
+    whatever was last saved.
+  - Projects the public grid can't show are listed underneath with the reason
+    (not published, map-only pin, or no image yet). Click one to go and fix it.
 
-  Turn on the **Order** column (the "toggle columns" button) if you want to see
-  each project's exact position number.
+  The Projects table can still reorder too — the **⌃⌄** button turns on drag
+  mode, the **⌃⌃ / ⌄⌄** row buttons jump a project to either end, and the
+  **Order** column (via "toggle columns") shows exact positions. That is the
+  quicker route when the list is filtered or searched; the Project Grid page is
+  the one to use when you care how the row actually looks.
 - **Site Content** — edit the hero, about, process, heritage, contact and footer text
   in English **and** Kurdish, from one screen.
 - **Messages** — every submission from the public contact form lands here.

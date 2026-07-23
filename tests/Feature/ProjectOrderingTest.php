@@ -92,4 +92,31 @@ class ProjectOrderingTest extends TestCase
             collect($payload['projects'])->pluck('name')->all(),
         );
     }
+
+    public function test_an_explicit_order_can_be_applied_in_one_go(): void
+    {
+        // What the Project Grid page sends when tiles have been dragged around.
+        $ids = $this->projects()->pluck('id')->all();
+        Project::applyOrder([$ids[2], $ids[0], $ids[3], $ids[1]]);
+
+        $this->assertSame(
+            ['Project 3', 'Project 1', 'Project 4', 'Project 2'],
+            $this->order(),
+        );
+    }
+
+    public function test_projects_left_out_of_the_layout_keep_their_order_behind_it(): void
+    {
+        // The grid editor only posts the tiles it can draw, so anything hidden
+        // from it must not be shuffled — only pushed behind the visible ones.
+        $projects = $this->projects();
+        $hidden = $projects->get(1);
+        $hidden->update(['is_published' => false]);
+
+        Project::applyOrder([$projects->get(3)->id, $projects->get(0)->id, $projects->get(2)->id]);
+
+        $this->assertSame(['Project 4', 'Project 1', 'Project 3'], $this->order());
+        // the hidden one is renumbered last, not lost or interleaved
+        $this->assertSame(4, $hidden->fresh()->sort_order);
+    }
 }
