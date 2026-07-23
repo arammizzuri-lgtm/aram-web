@@ -1356,6 +1356,21 @@ const PROJECT_COORDS = [
     let isOpen         = false;
     let allCards       = [];
 
+    /* ---- Which projects the overlay walks through ----------
+       Map-only projects (a pin + a line in the statistics, no photos) have no
+       gallery card, so they must not turn up when stepping to the next / previous
+       project either — the overlay would show an empty frame. Same for anything
+       that ended up with no images. PROJECT_DATA keeps every project so the map
+       and the statistics stay complete; these are the indices into it that the
+       overlay is allowed to show. */
+    function isGalleryProject(proj) {
+        return !!proj && !proj.map_only && Array.isArray(proj.imgs) && proj.imgs.length > 0;
+    }
+
+    const galleryIdx = PROJECT_DATA
+        .map(function (proj, i) { return isGalleryProject(proj) ? i : -1; })
+        .filter(function (i) { return i !== -1; });
+
     /* ---- Image switcher ---------------------------------- */
     function setImg(idx) {
         const proj = PROJECT_DATA[currentProjIdx];
@@ -1446,8 +1461,9 @@ const PROJECT_COORDS = [
         // Description
         document.getElementById('overlayDesc').textContent = (isKu && proj.desc_ku) ? proj.desc_ku : proj.desc;
 
-        // Counter
-        counterEl.textContent = (index + 1) + ' / ' + PROJECT_DATA.length;
+        // Counter — position among the projects the overlay can actually show
+        var pos = galleryIdx.indexOf(index);
+        counterEl.textContent = (pos === -1 ? 1 : pos + 1) + ' / ' + (galleryIdx.length || 1);
 
         // Location mini-map
         updateMiniMap(index, proj);
@@ -1481,7 +1497,7 @@ const PROJECT_COORDS = [
     function staggerCards(selectedIdx) {
         allCards.forEach((card, i) => {
             card.classList.remove('proj-fall', 'proj-selected');
-            if (i === selectedIdx) {
+            if (parseInt(card.dataset.index, 10) === selectedIdx) {
                 card.classList.add('proj-selected');
             } else {
                 card.style.transitionDelay = (i * 35) + 'ms';
@@ -1501,6 +1517,8 @@ const PROJECT_COORDS = [
 
     /* ---- Open -------------------------------------------- */
     function openOverlay(index) {
+        // Nothing to show for a map-only / image-less project.
+        if (!isGalleryProject(PROJECT_DATA[index])) return;
         currentProjIdx = index;
         isOpen = true;
         populateOverlay(index);
@@ -1524,8 +1542,7 @@ const PROJECT_COORDS = [
 
     /* ---- Switch project ---------------------------------- */
     function switchProject(newIndex) {
-        const total = PROJECT_DATA.length;
-        newIndex = ((newIndex % total) + total) % total;
+        if (!isGalleryProject(PROJECT_DATA[newIndex])) return;
         currentProjIdx = newIndex;
         // Briefly collapse open state so CSS stagger animations replay
         overlay.classList.remove('open');
@@ -1535,10 +1552,22 @@ const PROJECT_COORDS = [
                 overlay.classList.add('open');
             });
         });
-        allCards.forEach((card, i) => {
-            card.classList.toggle('proj-selected', i === newIndex);
-            card.classList.toggle('proj-fall',     i !== newIndex);
+        // Cards carry their PROJECT_DATA index, which is not their position in
+        // the grid once map-only projects are left out of the markup.
+        allCards.forEach(card => {
+            const selected = parseInt(card.dataset.index, 10) === newIndex;
+            card.classList.toggle('proj-selected', selected);
+            card.classList.toggle('proj-fall',    !selected);
         });
+    }
+
+    /* Next / previous, walking only the projects that have a gallery. */
+    function stepProject(delta) {
+        const total = galleryIdx.length;
+        if (!total) return;
+        let pos = galleryIdx.indexOf(currentProjIdx);
+        if (pos === -1) pos = delta > 0 ? -1 : 0;   // off-list: enter from the edge
+        switchProject(galleryIdx[((pos + delta) % total + total) % total]);
     }
 
     /* ---- Wire grid cards --------------------------------- */
@@ -1565,8 +1594,8 @@ const PROJECT_COORDS = [
     closeBtn && closeBtn.addEventListener('click', closeOverlay);
     // click the blurred backdrop (outside the card) to dismiss
     overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
-    projPrevBtn && projPrevBtn.addEventListener('click', e => { e.stopPropagation(); switchProject(currentProjIdx - 1); });
-    projNextBtn && projNextBtn.addEventListener('click', e => { e.stopPropagation(); switchProject(currentProjIdx + 1); });
+    projPrevBtn && projPrevBtn.addEventListener('click', e => { e.stopPropagation(); stepProject(-1); });
+    projNextBtn && projNextBtn.addEventListener('click', e => { e.stopPropagation(); stepProject(1); });
     imgPrevBtn  && imgPrevBtn.addEventListener('click',  e => { e.stopPropagation(); setImg(currentImgIdx - 1); });
     imgNextBtn  && imgNextBtn.addEventListener('click',  e => { e.stopPropagation(); setImg(currentImgIdx + 1); });
 
@@ -1575,8 +1604,8 @@ const PROJECT_COORDS = [
         if (e.key === 'Escape')     closeOverlay();
         if (e.key === 'ArrowLeft')  setImg(currentImgIdx - 1);
         if (e.key === 'ArrowRight') setImg(currentImgIdx + 1);
-        if (e.key === 'ArrowUp')    { e.preventDefault(); switchProject(currentProjIdx - 1); }
-        if (e.key === 'ArrowDown')  { e.preventDefault(); switchProject(currentProjIdx + 1); }
+        if (e.key === 'ArrowUp')    { e.preventDefault(); stepProject(-1); }
+        if (e.key === 'ArrowDown')  { e.preventDefault(); stepProject(1); }
     });
 
     // Re-render the open project in the new language when the site is toggled.

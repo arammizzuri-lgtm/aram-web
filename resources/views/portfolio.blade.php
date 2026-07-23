@@ -347,7 +347,11 @@
             <div class="pg__grid" id="pgGrid">
 
             @foreach ($projects as $i => $project)
-            @if ($project->map_only) @continue @endif {{-- map-only projects: no gallery card (index kept aligned with the map data) --}}
+            {{-- Map-only projects — and anything still without a photo — get a pin and
+                 a line in the statistics but no gallery card. The overlay skips them
+                 too, so "next project" never lands on an empty frame. The loop index
+                 is kept so data-index still lines up with the map data. --}}
+            @if ($project->map_only || ! $project->coverThumbUrl()) @continue @endif
             {{-- data-categories holds every category key (a project can be e.g. residential
                  *and* exterior); data-search is the haystack for the search box. --}}
             <article class="pgc{{ $project->size === 'large' ? ' pgc--large' : ($project->size === 'wide' ? ' pgc--wide' : '') }}" data-index="{{ $i }}" data-category="{{ $project->category }}" data-categories="{{ implode(' ', $project->categoryKeys()) }}" data-name="{{ $project->name }}" data-search="{{ $project->searchText() }}">
