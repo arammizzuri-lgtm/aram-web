@@ -348,7 +348,9 @@
 
             @foreach ($projects as $i => $project)
             @if ($project->map_only) @continue @endif {{-- map-only projects: no gallery card (index kept aligned with the map data) --}}
-            <article class="pgc{{ $project->size === 'large' ? ' pgc--large' : ($project->size === 'wide' ? ' pgc--wide' : '') }}" data-index="{{ $i }}" data-category="{{ $project->category }}" data-name="{{ $project->name }}">
+            {{-- data-categories holds every category key (a project can be e.g. residential
+                 *and* exterior); data-search is the haystack for the search box. --}}
+            <article class="pgc{{ $project->size === 'large' ? ' pgc--large' : ($project->size === 'wide' ? ' pgc--wide' : '') }}" data-index="{{ $i }}" data-category="{{ $project->category }}" data-categories="{{ implode(' ', $project->categoryKeys()) }}" data-name="{{ $project->name }}" data-search="{{ $project->searchText() }}">
                 <div class="pgc__inner">
                     <img class="pgc__img" data-src="{{ $project->coverThumbUrl() }}" src="" alt="{{ $project->name }}" loading="lazy" decoding="async" style="object-position: {{ $project->coverPosition() }}">
                     <div class="pgc__overlay">

@@ -1377,8 +1377,13 @@ const PROJECT_COORDS = [
     /* ---- Generate hashtags from project data ------------ */
     function buildTags(proj) {
         var tags = [];
-        // Category
-        tags.push('#' + proj.category.replace(/[\s-]+/g, ''));
+        // Categories — a project can carry several
+        var cats = (proj.categories && proj.categories.length) ? proj.categories : [proj.category];
+        cats.forEach(function(c) {
+            if (!c) return;
+            var tag = '#' + String(c).replace(/[\s-]+/g, '');
+            if (tags.indexOf(tag) === -1) tags.push(tag);
+        });
         // Typology parts (e.g. "Cultural / Civic" → #cultural #civic)
         proj.typology.split('/').forEach(function(t) {
             var slug = t.trim().toLowerCase().replace(/\s+/g, '');
@@ -1711,10 +1716,13 @@ const PROJECT_COORDS = [
 
         let visibleCount = 0;
         cards.forEach(card => {
-            const cat     = card.dataset.category || '';
-            const name    = (card.dataset.name || '').toLowerCase();
-            const catMatch  = activeFilter === 'all' || cat === activeFilter;
-            const textMatch = !searchQuery || name.includes(searchQuery);
+            // A project can sit in several categories — match any of them.
+            const cats = (card.dataset.categories || card.dataset.category || '').split(/\s+/);
+            // The haystack covers name, categories, typology, place and year;
+            // data-name is the fallback for a card rendered before that existed.
+            const hay  = (card.dataset.search || card.dataset.name || '').toLowerCase();
+            const catMatch  = activeFilter === 'all' || cats.indexOf(activeFilter) !== -1;
+            const textMatch = !searchQuery || hay.includes(searchQuery);
             const show = catMatch && textMatch;
 
             card.classList.toggle('pg-hidden', !show);
@@ -1906,7 +1914,10 @@ const PROJECT_COORDS = [
             // title, type, year, plot area, location — no photo, no overlay
             cardBadge.textContent = proj.status || '';
             cardBadge.hidden = !proj.status;
-            cardMeta.textContent = proj.category ? proj.category.toUpperCase() : '';
+            var labels = (proj.category_labels && proj.category_labels.length)
+                ? proj.category_labels
+                : [proj.category].filter(Boolean);
+            cardMeta.textContent = labels.join('  ·  ').toUpperCase();
             specType.textContent = proj.typology || dash;
             specYear.textContent = proj.year || dash;
             specArea.textContent = proj.area || dash;

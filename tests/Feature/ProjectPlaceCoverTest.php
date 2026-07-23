@@ -68,7 +68,7 @@ class ProjectPlaceCoverTest extends TestCase
         Livewire::test(CreateProject::class)
             ->fillForm([
                 'name' => 'MZ07',
-                'category' => 'residential',
+                'categories' => ['residential'],
                 'status' => 'Completed',
                 'size' => 'default',
                 'city' => 'Erbil',

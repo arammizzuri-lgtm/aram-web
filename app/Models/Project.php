@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 class Project extends Model
 {
     protected $fillable = [
-        'num', 'name', 'name_ku', 'category', 'status', 'size', 'area', 'typology',
+        'num', 'name', 'name_ku', 'category', 'categories', 'status', 'size', 'area', 'typology',
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
         'desc', 'desc_ku', 'narrative', 'materials',
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
@@ -31,6 +31,7 @@ class Project extends Model
     ];
 
     protected $casts = [
+        'categories' => 'array',
         'materials' => 'array',
         'related' => 'array',
         'imgs' => 'array',
@@ -57,6 +58,18 @@ class Project extends Model
             // which would override the column default and break the insert.
             $p->cover_x ??= 50;
             $p->cover_y ??= 50;
+
+            // Keep the category list and the primary `category` key in step:
+            // the list is authoritative, its first entry is the primary.
+            $keys = collect((array) $p->categories)
+                ->map(fn ($k) => (string) $k)->filter()->unique()->values();
+            if ($keys->isEmpty() && filled($p->category)) {
+                $keys = collect([(string) $p->category]);
+            }
+            $p->categories = $keys->all();
+            if ($keys->isNotEmpty()) {
+                $p->category = $keys->first();
+            }
         });
 
         // Keep a light WebP thumbnail for every uploaded image so the grid
@@ -114,10 +127,42 @@ class Project extends Model
         return self::resolveImage($img);
     }
 
+    /**
+     * Every category key on the project, primary first. Falls back to the
+     * single `category` column for rows saved before the list existed.
+     *
+     * @return array<int, string>
+     */
+    public function categoryKeys(): array
+    {
+        $keys = collect((array) $this->categories)->filter()->values();
+
+        return $keys->isNotEmpty()
+            ? $keys->all()
+            : array_values(array_filter([$this->category]));
+    }
+
+    /** Human label for one category key ("mixed-use" -> "Mixed-Use"). */
+    public static function categoryKeyLabel(?string $key): string
+    {
+        return Category::map()[$key]
+            ?? Str::title(str_replace('-', ' ', (string) $key));
+    }
+
+    /** Label of the primary category — the one shown where space allows one. */
     public function categoryLabel(): string
     {
-        return Category::map()[$this->category]
-            ?? Str::title(str_replace('-', ' ', (string) $this->category));
+        return self::categoryKeyLabel($this->category);
+    }
+
+    /**
+     * Labels of every category, primary first.
+     *
+     * @return array<int, string>
+     */
+    public function categoryLabels(): array
+    {
+        return array_map(fn ($k) => self::categoryKeyLabel($k), $this->categoryKeys());
     }
 
     /** City name — the structured field, falling back to the location string. */
@@ -134,11 +179,29 @@ class Project extends Model
         return end($m[0]) ?: (string) $this->year;
     }
 
-    /** "Cultural · Erbil · 2024" — the small meta line on each card. */
+    /** "Residential · Exterior · Erbil · 2024" — the meta line on each card. */
     public function metaLabel(): string
     {
-        return collect([$this->categoryLabel(), $this->cityLabel(), $this->endYear()])
+        return collect([...$this->categoryLabels(), $this->cityLabel(), $this->endYear()])
             ->filter()->implode(' · ');
+    }
+
+    /**
+     * Everything the grid's search box should match on: the name in both
+     * languages, every category label (English and Kurdish), the typology,
+     * place and year. Lower-cased and space-separated for a substring test.
+     */
+    public function searchText(): string
+    {
+        $categories = collect($this->categoryKeys())
+            ->flatMap(fn ($k) => [self::categoryKeyLabel($k), Category::kurdishMap()[$k] ?? null, $k]);
+
+        return collect([$this->name, $this->name_ku, $this->typology, $this->location, $this->year])
+            ->merge($categories)
+            ->filter()
+            ->map(fn ($v) => mb_strtolower((string) $v))
+            ->unique()
+            ->implode(' ');
     }
 
     public function statusClass(): string

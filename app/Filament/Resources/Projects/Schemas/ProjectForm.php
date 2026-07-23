@@ -40,9 +40,14 @@ class ProjectForm
                         ->label('Map-only (pin + statistics, no gallery card)')
                         ->helperText('For projects with no photos: shows a pin on the map and counts in the statistics, but never appears in Selected Works and needs no images. The pin card shows title, type, year, plot area and location.')
                         ->default(false),
-                    Select::make('category')
-                        ->options(fn () => Category::options())->required()->native(false)
-                        ->helperText('Manage the list under Manage → Project Categories.'),
+                    Select::make('categories')
+                        ->label('Categories')
+                        ->multiple()
+                        ->options(fn () => Category::options())
+                        ->required()->native(false)
+                        ->helperText('Pick every category that fits — e.g. Residential and Exterior. '
+                            .'The first one is the project’s main label on the card. '
+                            .'Manage the list under Manage → Project Categories.'),
                     Select::make('status')
                         ->options(fn () => Status::options())->required()->native(false)
                         ->helperText('Manage the list under Manage → Project Statuses.'),

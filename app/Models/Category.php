@@ -18,9 +18,15 @@ class Category extends Model
     /** @var array<string, string>|null */
     private static ?array $mapCache = null;
 
+    /** @var array<string, string>|null */
+    private static ?array $kuMapCache = null;
+
     protected static function booted(): void
     {
-        $forget = fn () => self::$mapCache = null;
+        $forget = function () {
+            self::$mapCache = null;
+            self::$kuMapCache = null;
+        };
         static::saved($forget);
         static::deleted($forget);
     }
@@ -40,5 +46,13 @@ class Category extends Model
     public static function map(): array
     {
         return self::$mapCache ??= static::query()->ordered()->pluck('name', 'key')->all();
+    }
+
+    /** key => Kurdish name, for the ones that have one — used by grid search. */
+    public static function kurdishMap(): array
+    {
+        return self::$kuMapCache ??= array_filter(
+            static::query()->ordered()->pluck('name_ku', 'key')->all()
+        );
     }
 }

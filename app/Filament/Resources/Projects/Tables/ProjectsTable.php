@@ -15,6 +15,7 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProjectsTable
 {
@@ -33,9 +34,10 @@ class ProjectsTable
                 TextColumn::make('name')
                     ->searchable()->sortable()
                     ->description(fn (Project $record) => $record->location),
-                TextColumn::make('category')
+                TextColumn::make('categories')
+                    ->label('Categories')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => Category::map()[$state] ?? $state)
+                    ->state(fn (Project $record) => $record->categoryLabels())
                     ->color('primary'),
                 TextColumn::make('status')
                     ->badge()
@@ -48,7 +50,23 @@ class ProjectsTable
                 ToggleColumn::make('is_published')->label('Live'),
             ])
             ->filters([
-                SelectFilter::make('category')->options(fn () => Category::options()),
+                // Matches a project that carries any of the selected categories.
+                SelectFilter::make('categories')
+                    ->label('Category')
+                    ->multiple()
+                    ->options(fn () => Category::options())
+                    ->query(function (Builder $query, array $data) {
+                        $keys = array_filter((array) ($data['values'] ?? []));
+                        if (! $keys) {
+                            return $query;
+                        }
+
+                        return $query->where(function (Builder $q) use ($keys) {
+                            foreach ($keys as $key) {
+                                $q->orWhereJsonContains('categories', $key);
+                            }
+                        });
+                    }),
                 TernaryFilter::make('is_published')->label('Published'),
             ])
             ->recordActions([

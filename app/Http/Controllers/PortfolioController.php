@@ -27,7 +27,9 @@ class PortfolioController extends Controller
                 'num' => $p->num,
                 'name' => $p->name,
                 'name_ku' => $p->name_ku,
-                'category' => $p->category,
+                'category' => $p->category,          // primary — kept for the map card
+                'categories' => $p->categoryKeys(),  // every category, primary first
+                'category_labels' => $p->categoryLabels(),
                 'status' => $p->status,
                 'area' => $p->area,
                 'typology' => $p->typology,
