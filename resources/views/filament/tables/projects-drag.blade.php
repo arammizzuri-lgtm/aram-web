@@ -18,10 +18,10 @@
 --}}
 <style>
     /* Handle column: narrow and quiet. */
-    .am-reorder-cell { width: 2.75rem; padding-inline-end: 0 !important; text-align: center; }
+    .am-reorder-cell { width: 2rem; padding-inline: .25rem !important; text-align: center; }
     .am-drag-handle {
         display: inline-flex; align-items: center; justify-content: center;
-        width: 1.9rem; height: 1.9rem; border: 0; border-radius: .5rem;
+        width: 1.6rem; height: 1.6rem; border: 0; border-radius: .5rem;
         background: transparent; color: rgba(255, 255, 255, .28);
         cursor: grab; touch-action: none;
         transition: color .15s ease, background-color .15s ease, transform .15s ease;
@@ -54,6 +54,18 @@
     .am-reorder-off .am-drag-handle { opacity: .25; cursor: not-allowed; pointer-events: none; }
 
     @media (hover: none) { .am-drag-handle:hover { background: transparent; color: rgba(255, 255, 255, .45); } }
+
+    /* ── Fit every column on screen without a horizontal scrollbar ──
+       Trim the generous default cell padding so the columns pack in. */
+    .fi-ta-table .fi-ta-cell,
+    .fi-ta-table .fi-ta-header-cell { padding-inline: 0.3rem; }
+    .fi-ta-table .fi-ta-cell:first-child,
+    .fi-ta-table .fi-ta-header-cell:first-child { padding-inline-start: 0.5rem; }
+    /* Where a project carries several category badges, let them wrap onto a
+       second line instead of widening the column — but keep each badge, and
+       the year range, intact on one line. */
+    .fi-ta-table td .fi-ta-col-wrp { flex-wrap: wrap; row-gap: .25rem; }
+    .fi-ta-table td .fi-badge { white-space: nowrap; }
 </style>
 <script>
     (() => {

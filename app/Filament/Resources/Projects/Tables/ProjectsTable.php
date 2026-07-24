@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\Status;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -43,8 +44,8 @@ class ProjectsTable
                 ImageColumn::make('cover')
                     ->label('')
                     ->state(fn (Project $record) => $record->coverUrl())
-                    ->height(44)
-                    ->extraImgAttributes(['style' => 'width:64px;object-fit:cover;border-radius:6px;']),
+                    ->height(38)
+                    ->extraImgAttributes(['style' => 'width:40px;object-fit:cover;border-radius:6px;']),
                 // Position in the public grid. Hidden by default — the row
                 // order already shows it — but handy while reorganising.
                 TextColumn::make('sort_order')
@@ -68,7 +69,8 @@ class ProjectsTable
                         'build' => 'warning',
                         default => 'gray',
                     }),
-                TextColumn::make('year')->alignEnd()->toggleable(),
+                TextColumn::make('year')->alignEnd()->toggleable()
+                    ->extraCellAttributes(['style' => 'white-space:nowrap']),
                 ToggleColumn::make('is_published')->label('Live'),
             ])
             ->filters([
@@ -92,35 +94,33 @@ class ProjectsTable
                 TernaryFilter::make('is_published')->label('Published'),
             ])
             ->recordActions([
-                // Jump a project straight to either end of the grid. Dragging
-                // handles small nudges; these handle "put this one first" —
-                // and they keep working when the list is filtered or searched.
-                Action::make('moveToTop')
-                    ->label('Move to start')
-                    ->tooltip('Move to the start of the grid')
-                    ->icon(Heroicon::OutlinedChevronDoubleUp)
-                    ->iconButton()
-                    ->color('gray')
-                    ->action(function (Project $record) {
-                        $record->moveToTop();
-                        Notification::make()->success()
-                            ->title($record->name.' moved to the start')
-                            ->send();
-                    }),
-                Action::make('moveToBottom')
-                    ->label('Move to end')
-                    ->tooltip('Move to the end of the grid')
-                    ->icon(Heroicon::OutlinedChevronDoubleDown)
-                    ->iconButton()
-                    ->color('gray')
-                    ->action(function (Project $record) {
-                        $record->moveToBottom();
-                        Notification::make()->success()
-                            ->title($record->name.' moved to the end')
-                            ->send();
-                    }),
-                EditAction::make(),
-                DeleteAction::make(),
+                // Edit stays one click; the rest live in a compact "⋮" menu so
+                // every data column fits on screen without sideways scrolling.
+                EditAction::make()->iconButton(),
+                ActionGroup::make([
+                    // Jump a project straight to either end of the running
+                    // order. Dragging handles the nudges; these are for "put
+                    // this one first/last" and still work while filtered.
+                    Action::make('moveToTop')
+                        ->label('Move to start')
+                        ->icon(Heroicon::OutlinedChevronDoubleUp)
+                        ->action(function (Project $record) {
+                            $record->moveToTop();
+                            Notification::make()->success()
+                                ->title($record->name.' moved to the start')
+                                ->send();
+                        }),
+                    Action::make('moveToBottom')
+                        ->label('Move to end')
+                        ->icon(Heroicon::OutlinedChevronDoubleDown)
+                        ->action(function (Project $record) {
+                            $record->moveToBottom();
+                            Notification::make()->success()
+                                ->title($record->name.' moved to the end')
+                                ->send();
+                        }),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
