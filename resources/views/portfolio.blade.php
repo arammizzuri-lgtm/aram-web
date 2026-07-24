@@ -10,7 +10,7 @@
          The image is the studio's hero mark; ?v busts the aggressive caches
          these platforms keep, whenever the file is re-generated. Absolute URLs
          come from APP_URL, so that must be the live domain in production. --}}
-    @php $ogImage = asset('og-image.png').'?v='.filemtime(public_path('og-image.png')); @endphp
+    @php $ogImage = asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg')); @endphp
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Aram Mizuri Architecture">
     <meta property="og:title" content="Aram Mizuri Architecture | Erbil, Kurdistan">
@@ -18,7 +18,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:image" content="{{ $ogImage }}">
     <meta property="og:image:secure_url" content="{{ $ogImage }}">
-    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Aram Mizuri Architecture — Erbil, Kurdistan">
