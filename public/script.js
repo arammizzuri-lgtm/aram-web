@@ -1833,6 +1833,28 @@ const PROJECT_COORDS = [
         maxZoom: 18,
     }).addTo(map);
 
+    // The Kurdistan outline is drawn with an SVG feMorphology filter that scans a
+    // pixel neighbourhood across the whole shape. Recomputing it every frame of a
+    // pinch-zoom is what makes the map stutter on phones. Zooming is touch-only
+    // here (desktop has no scroll/dblclick/control zoom), so on touch we drop the
+    // border out while a gesture is in flight and bring the clean outline back the
+    // moment the map settles — the filter then rasterises once, not per frame.
+    if (isTouchDevice) {
+        const mapContainer = map.getContainer();
+        let settleTimer = null;
+        map.on('movestart zoomstart', function () {
+            clearTimeout(settleTimer);
+            mapContainer.classList.add('map-interacting');
+        });
+        map.on('moveend zoomend', function () {
+            clearTimeout(settleTimer);
+            // A short settle avoids the outline flickering back mid-inertia.
+            settleTimer = setTimeout(function () {
+                mapContainer.classList.remove('map-interacting');
+            }, 90);
+        });
+    }
+
     // Render the Kurdistan border from already-loaded GeoJSON data.
     let mapBorderLayer = null;
     function renderKurdistanBorder() {
@@ -1844,7 +1866,10 @@ const PROJECT_COORDS = [
                 fillOpacity: 1,
                 stroke:      false,
             },
-            smoothFactor: 1.5,
+            // Touch devices render the 1.5 MB outline more coarsely: fewer path
+            // points means less to paint and a cheaper one-off filter pass, and
+            // at country scale the simplification is not visible.
+            smoothFactor: isTouchDevice ? 3 : 1.5,
         }).addTo(map);
 
         // Wrap all border paths in a <g> so the SVG filter applies to the group,

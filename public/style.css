@@ -2765,6 +2765,12 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 #projectMapEl .leaflet-overlay-pane .kurdistan-border {
     filter: url(#kurdOutline);
 }
+/* While a touch gesture is moving the map, drop the filtered outline so its
+   feMorphology pass doesn't run every frame (script.js toggles the class). The
+   clean outline returns the instant the map settles. */
+#projectMapEl.map-interacting .leaflet-overlay-pane .kurdistan-border {
+    display: none;
+}
 
 /* Edge-darkening gradient veil */
 .proj-map__veil {
@@ -3021,6 +3027,21 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .map-stat__val { font-size: 15px; }
     .map-card { width: calc(100vw - 32px); left: 16px !important; top: auto !important; bottom: 76px; }
     .map-card::before { display: none; }
+
+    /* The stat bar sits over the moving map, so its backdrop-blur re-samples and
+       re-blurs the map every frame of a pan — a heavy per-frame cost on phones.
+       The bar is already 92% opaque, so dropping the blur is invisible. */
+    .proj-map__stats {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(6,6,6,.96);
+    }
+
+    /* Every pin runs two never-ending pulse animations; with a pin per project
+       that is dozens of layers the compositor keeps repainting behind the map.
+       On phones the pins hold still — the gold dot is enough. */
+    .map-pin .pin__ring { animation: none; opacity: .5; }
+    .map-pin .pin__ring:nth-child(2) { display: none; }
 }
 
 /* ---- Responsive ---------------------------------------- */
