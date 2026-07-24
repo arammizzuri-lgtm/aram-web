@@ -57,17 +57,13 @@
 </style>
 <script>
     (() => {
-        const MARKER = '.table.records.';
-        const keyOf = (row) => {
-            const key = row.getAttribute('wire:key') || '';
-            const at = key.indexOf(MARKER);
-            return at === -1 ? null : key.slice(at + MARKER.length);
-        };
-
-        // The projects table is the one whose rows carry record keys.
+        // Each row's project id is stamped on its handle by the reorder-handle
+        // column. Reading that is version-proof — unlike parsing Livewire's
+        // wire:key, whose format is not ours to depend on and which, when it
+        // failed to match, sent an empty order and broke reorderTable.
         const findTable = () => {
-            const row = document.querySelector(`tr.fi-ta-row[wire\\:key*="${MARKER}"]`);
-            return row ? row.closest('table') : null;
+            const handle = document.querySelector('.am-drag-handle[data-record-key]');
+            return handle ? handle.closest('table') : null;
         };
 
         // Reordering is only honest while the list shows the saved order.
@@ -80,7 +76,15 @@
         };
 
         const persist = (tbody) => {
-            const keys = Array.from(tbody.querySelectorAll('tr.fi-ta-row')).map(keyOf).filter(Boolean);
+            const keys = Array.from(tbody.querySelectorAll('.am-drag-handle[data-record-key]'))
+                .map((handle) => handle.dataset.recordKey)
+                .filter((key) => key !== undefined && key !== '');
+
+            // Never post an empty order: reorderTable would build `case end`
+            // and fail with a SQL syntax error. If we cannot read the keys,
+            // do nothing rather than corrupt the order.
+            if (keys.length === 0) return;
+
             const root = tbody.closest('[wire\\:id]');
             if (root && window.Livewire) {
                 window.Livewire.find(root.getAttribute('wire:id'))?.call('reorderTable', keys);
@@ -120,6 +124,14 @@
                     if (event.oldIndex !== event.newIndex) persist(tbody);
                 },
             });
+
+            // Because the table is `reorderable`, Filament wraps it in its own
+            // x-sortable with an `x-on:end` that also calls reorderTable — with
+            // an empty payload, since its items aren't present outside reorder
+            // mode. Keep our SortableJS events from bubbling up to it, so ours
+            // is the only reorderTable that ever fires.
+            ['start', 'end', 'add', 'remove', 'update', 'sort', 'choose', 'unchoose', 'clone']
+                .forEach((type) => tbody.addEventListener(type, (event) => event.stopPropagation()));
         };
 
         // Re-arm after every Livewire round-trip (save, search, sort, toggle).

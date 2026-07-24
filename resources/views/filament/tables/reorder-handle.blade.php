@@ -5,6 +5,7 @@
     class="am-drag-handle"
     title="Drag to reorder"
     aria-label="Drag to reorder"
+    data-record-key="{{ $getRecord()?->getKey() }}"
 >
     <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true">
         <circle cx="5.5" cy="3" r="1.35" /><circle cx="10.5" cy="3" r="1.35" />
