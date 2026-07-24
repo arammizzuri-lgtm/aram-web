@@ -15,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -31,6 +32,14 @@ class ProjectsTable
             // works when every project is on one page — so no pagination.
             ->paginated(false)
             ->columns([
+                // Drag handle. Server-rendered so it survives Livewire's
+                // re-render after a drop; the dragging itself is wired up in
+                // resources/views/filament/tables/projects-drag.blade.php.
+                ViewColumn::make('reorder')
+                    ->label('')
+                    ->view('filament.tables.reorder-handle')
+                    ->extraCellAttributes(['class' => 'am-reorder-cell'])
+                    ->extraHeaderAttributes(['class' => 'am-reorder-cell']),
                 ImageColumn::make('cover')
                     ->label('')
                     ->state(fn (Project $record) => $record->coverUrl())

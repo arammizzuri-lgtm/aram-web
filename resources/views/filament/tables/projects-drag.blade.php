@@ -1,141 +1,135 @@
 {{--
-    Always-on drag reordering for the Projects table.
+    Smooth drag-to-reorder for the Projects table.
 
-    Filament's own reorder mode works, but it hides the row actions, the
-    checkboxes and the New Project button while it is active — a modal edit
-    the studio found unusable. Instead every row carries a permanent handle,
-    and dropping a row calls the same public `reorderTable()` endpoint the
-    native mode uses, so the persistence path is Filament's own.
+    Dragging is powered by SortableJS, which Filament already bundles and
+    exposes as `window.Sortable` — the same engine its own reorder mode uses.
+    Doing it ourselves (rather than turning on that mode) keeps the row
+    actions, checkboxes and New Project button visible while you drag.
 
-    Dragging is only honest while the list shows the saved order: with a
-    column sort or a search active the visible order is not `sort_order`,
-    and renumbering from it would scramble the curated order — so the
-    handles hide themselves until the sort or search is cleared. Touch
-    devices keep using the native reorder toggle (HTML5 drag events do not
-    fire on touch), so the handles hide there too.
+    On drop we hand the new order to Filament's own `reorderTable`, so the
+    save path is unchanged. The handle is a real column (reorder-handle.blade),
+    so it survives Livewire's re-render after a save; this file only wires the
+    dragging and re-arms it after each Livewire update.
+
+    Dragging is disabled while a column sort or a search is active — the
+    visible order isn't the saved order then, and renumbering from it would
+    scramble the sequence. SortableJS also carries the interaction to touch,
+    so this works on a tablet as well as a mouse.
 --}}
 <style>
+    /* Handle column: narrow and quiet. */
+    .am-reorder-cell { width: 2.75rem; padding-inline-end: 0 !important; text-align: center; }
     .am-drag-handle {
         display: inline-flex; align-items: center; justify-content: center;
-        width: 1.75rem; height: 1.75rem; flex: none;
-        margin-inline-end: .25rem; border: none; border-radius: .5rem;
-        background: transparent; color: rgba(255, 255, 255, .3);
-        cursor: grab; vertical-align: middle;
+        width: 1.9rem; height: 1.9rem; border: 0; border-radius: .5rem;
+        background: transparent; color: rgba(255, 255, 255, .28);
+        cursor: grab; touch-action: none;
+        transition: color .15s ease, background-color .15s ease, transform .15s ease;
     }
-    .am-drag-handle:hover { background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .8); }
-    .am-drag-handle:active { cursor: grabbing; }
-    tr.fi-ta-row td.fi-ta-selection-cell { white-space: nowrap; }
-    tr.fi-ta-row[draggable="true"] { user-select: none; }
-    tr.am-dragging { opacity: .35; }
-    @media (hover: none) { .am-drag-handle { display: none; } }
+    .am-drag-handle:hover { color: rgba(245, 197, 24, .95); background: rgba(245, 197, 24, .1); }
+    .am-drag-handle:active { cursor: grabbing; transform: scale(.94); }
+
+    /* The row you have picked up — lifts off the table. */
+    tr.fi-ta-row.am-chosen {
+        position: relative; z-index: 20;
+        background: rgba(245, 197, 24, .06) !important;
+        box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(245, 197, 24, .35);
+        border-radius: .6rem;
+    }
+    tr.fi-ta-row.am-chosen .am-drag-handle { color: #f5c518; }
+
+    /* The gap that opens where the row will land. */
+    tr.fi-ta-row.am-ghost { opacity: 0; }
+    tr.fi-ta-row.am-ghost td {
+        background:
+            linear-gradient(rgba(245, 197, 24, .12), rgba(245, 197, 24, .12));
+        box-shadow: inset 0 0 0 1px rgba(245, 197, 24, .35);
+    }
+
+    /* While a drag is in flight, mute the rest so the eye follows the row. */
+    .am-reordering tbody tr.fi-ta-row:not(.am-chosen):not(.am-ghost) { opacity: .55; transition: opacity .2s ease; }
+    .am-reordering .fi-ta-row { cursor: grabbing; }
+
+    /* Sort/search active → reordering paused. */
+    .am-reorder-off .am-drag-handle { opacity: .25; cursor: not-allowed; pointer-events: none; }
+
+    @media (hover: none) { .am-drag-handle:hover { background: transparent; color: rgba(255, 255, 255, .45); } }
 </style>
 <script>
     (() => {
-        const ROW = 'tr.fi-ta-row';
         const MARKER = '.table.records.';
-        let dragged = null;
-        let startOrder = '';
-
         const keyOf = (row) => {
             const key = row.getAttribute('wire:key') || '';
             const at = key.indexOf(MARKER);
             return at === -1 ? null : key.slice(at + MARKER.length);
         };
-        const rows = () => Array.from(document.querySelectorAll(ROW)).filter(keyOf);
 
-        const blocked = () => {
-            if (document.querySelector('.fi-ta-header-cell-sorted')) return true;
-            return Array.from(document.querySelectorAll('input')).some((input) => {
-                for (const attr of input.attributes) {
-                    if (attr.name.startsWith('wire:model') && attr.value === 'tableSearch') {
-                        return input.value.trim() !== '';
-                    }
-                }
-                return false;
-            });
+        // The projects table is the one whose rows carry record keys.
+        const findTable = () => {
+            const row = document.querySelector(`tr.fi-ta-row[wire\\:key*="${MARKER}"]`);
+            return row ? row.closest('table') : null;
         };
 
-        const HANDLE =
-            '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">'
-            + '<circle cx="5.5" cy="3" r="1.3"/><circle cx="10.5" cy="3" r="1.3"/>'
-            + '<circle cx="5.5" cy="8" r="1.3"/><circle cx="10.5" cy="8" r="1.3"/>'
-            + '<circle cx="5.5" cy="13" r="1.3"/><circle cx="10.5" cy="13" r="1.3"/>'
-            + '</svg>';
-
-        const ensureHandles = () => {
-            const off = blocked();
-            rows().forEach((row) => {
-                const existing = row.querySelector('.am-drag-handle');
-                if (off) { existing?.remove(); return; }
-                if (existing) return;
-                const cell = row.querySelector('td');
-                if (!cell) return;
-                const handle = document.createElement('button');
-                handle.type = 'button';
-                handle.className = 'am-drag-handle';
-                handle.title = 'Drag to reorder';
-                handle.innerHTML = HANDLE;
-                // The row only becomes draggable while the pointer is on the
-                // handle, so text selection and row clicks stay normal.
-                handle.addEventListener('mousedown', () => row.setAttribute('draggable', 'true'));
-                cell.insertBefore(handle, cell.firstChild);
-            });
+        // Reordering is only honest while the list shows the saved order.
+        const isPaused = (table) => {
+            if (table.querySelector('.fi-ta-header-cell-sorted')) return true;
+            return Array.from(document.querySelectorAll('input')).some((input) =>
+                Array.from(input.attributes).some(
+                    (attr) => attr.name.startsWith('wire:model') && attr.value === 'tableSearch',
+                ) && input.value.trim() !== '');
         };
 
-        document.addEventListener('mouseup', () => {
-            if (dragged) return;
-            document.querySelectorAll(`${ROW}[draggable]`).forEach((row) => row.removeAttribute('draggable'));
-        });
-
-        document.addEventListener('dragstart', (event) => {
-            const row = event.target.closest?.(ROW);
-            if (!row || row.getAttribute('draggable') !== 'true') return;
-            dragged = row;
-            startOrder = rows().map(keyOf).join();
-            row.classList.add('am-dragging');
-            event.dataTransfer.effectAllowed = 'move';
-            event.dataTransfer.setData('text/plain', '');
-        });
-
-        document.addEventListener('dragover', (event) => {
-            if (!dragged) return;
-            const row = event.target.closest?.(ROW);
-            if (!row || row === dragged || row.parentNode !== dragged.parentNode) return;
-            event.preventDefault();
-            const box = row.getBoundingClientRect();
-            row.parentNode.insertBefore(dragged, event.clientY - box.top < box.height / 2 ? row : row.nextSibling);
-        });
-
-        document.addEventListener('drop', (event) => {
-            if (dragged) event.preventDefault();
-        });
-
-        document.addEventListener('dragend', () => {
-            if (!dragged) return;
-            const row = dragged;
-            dragged = null;
-            row.classList.remove('am-dragging');
-            row.removeAttribute('draggable');
-
-            const keys = rows().map(keyOf);
-            if (keys.join() === startOrder) return;
-
-            const root = row.closest('[wire\\:id]');
+        const persist = (tbody) => {
+            const keys = Array.from(tbody.querySelectorAll('tr.fi-ta-row')).map(keyOf).filter(Boolean);
+            const root = tbody.closest('[wire\\:id]');
             if (root && window.Livewire) {
-                window.Livewire.find(root.getAttribute('wire:id')).call('reorderTable', keys);
+                window.Livewire.find(root.getAttribute('wire:id'))?.call('reorderTable', keys);
             }
-        });
-
-        // Livewire re-renders the table after every save, search or toggle,
-        // which discards the injected handles — put them back when it does.
-        const observer = new MutationObserver(() => {
-            clearTimeout(observer._debounce);
-            observer._debounce = setTimeout(ensureHandles, 150);
-        });
-        const boot = () => {
-            ensureHandles();
-            observer.observe(document.body, { childList: true, subtree: true });
         };
-        document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot();
+
+        const setup = () => {
+            if (!window.Sortable) return;
+            const table = findTable();
+            const tbody = table?.querySelector('tbody');
+            if (!tbody) return;
+
+            const paused = isPaused(table);
+            table.classList.toggle('am-reorder-off', paused);
+
+            // Already wired (Livewire morphs the tbody in place) — just refresh
+            // the paused state and stop; re-creating would fight the animation.
+            if (tbody._amSortable) {
+                tbody._amSortable.option('disabled', paused);
+                return;
+            }
+
+            tbody._amSortable = window.Sortable.create(tbody, {
+                draggable: 'tr.fi-ta-row',
+                handle: '.am-drag-handle',
+                disabled: paused,
+                animation: 200,
+                easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                delay: 40,                       // a hair of intent, so a click never starts a drag
+                delayOnTouchOnly: true,
+                chosenClass: 'am-chosen',
+                ghostClass: 'am-ghost',
+                fallbackTolerance: 4,
+                onStart: () => table.classList.add('am-reordering'),
+                onEnd: (event) => {
+                    table.classList.remove('am-reordering');
+                    if (event.oldIndex !== event.newIndex) persist(tbody);
+                },
+            });
+        };
+
+        // Re-arm after every Livewire round-trip (save, search, sort, toggle).
+        const hook = () => window.Livewire?.hook('commit', ({ succeed }) => succeed(() => queueMicrotask(setup)));
+        if (window.Livewire) hook();
+        document.addEventListener('livewire:init', hook);
+        document.addEventListener('livewire:navigated', setup);
+
+        document.readyState === 'loading'
+            ? document.addEventListener('DOMContentLoaded', setup)
+            : setup();
     })();
 </script>
