@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aram Mizuri Architecture | Erbil, Kurdistan</title>
     <meta name="description" content="Aram Mizuri Architecture — a leading architectural practice based in Erbil, Kurdistan Region. Residential, cultural, commercial and urban design.">
+
+    {{-- Social link preview (Facebook / WhatsApp / iMessage / LinkedIn / X).
+         The image is the studio's hero mark; ?v busts the aggressive caches
+         these platforms keep, whenever the file is re-generated. Absolute URLs
+         come from APP_URL, so that must be the live domain in production. --}}
+    @php $ogImage = asset('og-image.png').'?v='.filemtime(public_path('og-image.png')); @endphp
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Aram Mizuri Architecture">
+    <meta property="og:title" content="Aram Mizuri Architecture | Erbil, Kurdistan">
+    <meta property="og:description" content="A leading architectural practice based in Erbil, Kurdistan Region — residential, cultural, commercial and urban design.">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:image:secure_url" content="{{ $ogImage }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Aram Mizuri Architecture — Erbil, Kurdistan">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Aram Mizuri Architecture | Erbil, Kurdistan">
+    <meta name="twitter:description" content="A leading architectural practice based in Erbil, Kurdistan Region — residential, cultural, commercial and urban design.">
+    <meta name="twitter:image" content="{{ $ogImage }}">
+    <meta name="twitter:image:alt" content="Aram Mizuri Architecture — Erbil, Kurdistan">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
