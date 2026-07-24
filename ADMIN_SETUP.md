@@ -76,11 +76,15 @@ Press `Ctrl + C` in the terminal to stop the server.
   - Projects the public grid can't show are listed underneath with the reason
     (not published, map-only pin, or no image yet). Click one to go and fix it.
 
-  The Projects table can still reorder too — the **⌃⌄** button turns on drag
-  mode, the **⌃⌃ / ⌄⌄** row buttons jump a project to either end, and the
-  **Order** column (via "toggle columns") shows exact positions. That is the
-  quicker route when the list is filtered or searched; the Project Grid page is
-  the one to use when you care how the row actually looks.
+  The **Projects** table reorders too: every project is on one page (no
+  paging), and each row has a **grip handle** on the left — grab it and drag
+  the row up or down to set the order, which saves as you drop. The **⌃⌃ / ⌄⌄**
+  row buttons still jump a project straight to the start or end, and the
+  **Order** column (via "toggle columns") shows exact positions. Handles hide
+  while a column sort or a search is active (the visible order isn't the real
+  one then) — clear the sort/search to drag again. The Project Grid page is the
+  one to use when you care how the row actually *looks*; the table is quicker
+  for a straight top-to-bottom running order.
 - **Site Content** — edit the hero, about, process, heritage, contact and footer text
   in English **and** Kurdish, from one screen.
 - **Messages** — every submission from the public contact form lands here.

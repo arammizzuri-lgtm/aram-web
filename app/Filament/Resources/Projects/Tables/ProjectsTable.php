@@ -27,10 +27,9 @@ class ProjectsTable
         return $table
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
-            // Drag-to-reorder is only useful if every project is reachable in
-            // one drag: while reordering, show the whole list on a single page
-            // so a project can be dragged from the last page to the first.
-            ->paginatedWhileReordering(false)
+            // The studio curates the public order by dragging rows, which only
+            // works when every project is on one page — so no pagination.
+            ->paginated(false)
             ->columns([
                 ImageColumn::make('cover')
                     ->label('')
