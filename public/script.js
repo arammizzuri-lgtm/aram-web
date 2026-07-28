@@ -1883,11 +1883,111 @@ const PROJECT_COORDS = [
         return world * (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI));
     }
 
+    /* ── Seam bridging ──────────────────────────────────────────────────
+       The source outline carries a lot of degenerate boundary: long, hair-thin
+       excursions that run out and straight back on themselves. Some point
+       inward — gaps where the polygons this region was stitched together from
+       failed to meet, one of them 34km long and 450m wide — and some are
+       outward spurs, down to a dead-straight line of no width at all. They are
+       nothing as shapes but very loud as lines, which is exactly why the
+       original SVG filter ran a closing pass over the whole map to bridge them.
+       Drawing the outline honestly brought them all back into view, so bridge
+       them here instead: once, in the geometry, at load.
+
+       A seam is long and hair-thin — at least 2km of path, mean width (twice
+       its area over its length) under 800m, and at least fifteen times longer
+       than it is wide. A real bay or headland is nowhere near that slender and
+       is kept untouched. On this dataset it drops about a tenth of the
+       perimeter while moving the enclosed area by 0.02%, which is the
+       signature of boundary that encloses nothing. */
+    const SEAM_MAX_WIDTH  = 800;     // m — anything fatter is a real feature
+    const SEAM_MIN_LENGTH = 2000;    // m — anything shorter is ordinary wiggle
+    const SEAM_MIN_ASPECT = 15;      // length : width
+    const SEAM_MAX_MOUTH  = 2500;    // m — how far apart the two ends may sit
+    const SEAM_MAX_SPAN   = 25000;   // vertices
+
+    function cleanRing(coords) {
+        const n = coords.length;
+        if (n < 500) return coords;          // the small islands have no seams
+
+        // Local metric coordinates, plus prefix sums for the shoelace area and
+        // the path length, so testing one candidate is O(1) instead of O(span).
+        const X = new Float64Array(n), Y = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+            const lat = coords[i][1];
+            X[i] = coords[i][0] * 111320 * Math.cos(lat * DEG);
+            Y[i] = lat * 110540;
+        }
+        const csum = new Float64Array(n), lsum = new Float64Array(n);
+        for (let i = 1; i < n; i++) {
+            csum[i] = csum[i - 1] + (X[i - 1] * Y[i] - X[i] * Y[i - 1]);
+            lsum[i] = lsum[i - 1] + Math.hypot(X[i] - X[i - 1], Y[i] - Y[i - 1]);
+        }
+
+        // Bucket the vertices so each one only looks at its own neighbourhood.
+        const grid = new Map();
+        const key = (x, y) => Math.floor(x / SEAM_MAX_MOUTH) + ',' + Math.floor(y / SEAM_MAX_MOUTH);
+        for (let i = 0; i < n; i++) {
+            const k = key(X[i], Y[i]);
+            const cell = grid.get(k);
+            if (cell) cell.push(i); else grid.set(k, [i]);
+        }
+
+        // For each vertex, the nearest vertex that is far away along the path:
+        // the far side of a seam, if there is one. Sampled every third vertex —
+        // a seam mouth spans far more than three, so this still finds every one
+        // of them, and it keeps the whole pass down to a few tens of
+        // milliseconds on a phone. It runs once, when the map scrolls in.
+        const cands = [];
+        for (let i = 0; i < n; i += 3) {
+            const gx = Math.floor(X[i] / SEAM_MAX_MOUTH), gy = Math.floor(Y[i] / SEAM_MAX_MOUTH);
+            let best = -1, bestD = Infinity, looked = 0;
+            for (let dx = -1; dx <= 1 && looked < 600; dx++)
+            for (let dy = -1; dy <= 1 && looked < 600; dy++) {
+                const cell = grid.get((gx + dx) + ',' + (gy + dy));
+                if (!cell) continue;
+                // The marsh channels pack thousands of vertices into one cell;
+                // cap the scan so load time stays linear in the worst case.
+                for (let t = 0; t < cell.length && looked < 600; t++) {
+                    looked++;
+                    const j = cell[t], span = j - i;
+                    if (span < 40 || span > SEAM_MAX_SPAN) continue;
+                    const d = Math.hypot(X[j] - X[i], Y[j] - Y[i]);
+                    if (d <= SEAM_MAX_MOUTH && d < bestD) { bestD = d; best = j; }
+                }
+            }
+            if (best >= 0) cands.push(i * 100000 + (best - i));
+        }
+        // Longest first, so a seam is taken out in one piece rather than in bits.
+        cands.sort((a, b) => (b % 100000) - (a % 100000));
+
+        const drop = new Uint8Array(n);
+        for (let c = 0; c < cands.length; c++) {
+            const i = Math.floor(cands[c] / 100000), j = i + (cands[c] % 100000);
+            if (drop[i] || drop[j]) continue;
+            const length = lsum[j] - lsum[i];
+            if (length < SEAM_MIN_LENGTH) continue;
+            const area  = Math.abs(csum[j] - csum[i] + (X[j] * Y[i] - X[i] * Y[j])) / 2;
+            const width = 2 * area / length;
+            if (width > SEAM_MAX_WIDTH) continue;                  // a real feature
+            if (length / Math.max(width, 1) < SEAM_MIN_ASPECT) continue;
+            for (let k = i + 1; k <= j; k++) drop[k] = 1;
+        }
+
+        const out = [];
+        for (let i = 0; i < n; i++) if (!drop[i]) out.push(coords[i]);
+        if (out.length < 4) return coords;
+        const first = out[0], last = out[out.length - 1];
+        if (first[0] !== last[0] || first[1] !== last[1]) out.push(first);
+        return out;
+    }
+
     // Flatten the GeoJSON into typed arrays carrying their own lat/lng bbox, so a
     // redraw is a tight numeric loop and an off-screen ring costs one comparison.
     function buildRings(geojson) {
         const rings = [];
-        const addRing = coords => {
+        const addRing = raw => {
+            const coords = cleanRing(raw);
             const n = coords.length;
             if (n < 4) return;
             const pts = new Float64Array(n * 2);
