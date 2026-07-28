@@ -1853,15 +1853,26 @@ const PROJECT_COORDS = [
        of pixels across, once per gesture. That is what made the map crawl on
        iPad and iPhone.
 
-       This layer paints the same picture into a canvas the size of the viewport.
-       Stroke a wide gold band down every edge, then erase the union's interior
-       grown by 4px — the same 4px the old filter used to bridge gaps in the
-       source data. The band's inner half and every internal seam go with it,
-       leaving the 2px outer border alone. The work is bounded by screen pixels,
-       so it no longer grows with zoom, and a pinch just scales the finished
-       canvas on the GPU instead of repainting it. */
+       This layer paints the border into a canvas the size of the viewport, so
+       the work is bounded by screen pixels rather than by zoom, and a pinch just
+       scales the finished canvas on the GPU instead of repainting it.
+
+       It draws the ring plainly, at the coordinates the data actually gives.
+       There is nothing to dissolve: this GeoJSON is one 44,424-point outline
+       plus eleven small islands out in the marshes, with no shared province
+       edges anywhere in it. Growing the shape to hide seams that do not exist
+       cost real accuracy — a dilation rounds off every convex feature narrower
+       than its own radius, which at the zoomed-out view meant losing about
+       11km of border detail on average and 66km at the worst headlands. If a
+       future dataset ever does arrive split into provinces, bridge the seams in
+       the data, not by inflating it here at paint time. */
     const GOLD = '#F5C518';
     const DEG  = Math.PI / 180;
+
+    // Drop points closer together than this (Manhattan, CSS px) while building
+    // the path. Measured at the zoomed-out view: no effect on fidelity, and it
+    // cuts the 44k-point ring to a few thousand segments.
+    const DECIMATE = 1;
 
     // Web-Mercator world-pixel coordinates at a given zoom (Leaflet's EPSG3857).
     // The canvas origin is derived with these same two functions, so any constant
@@ -2029,7 +2040,7 @@ const PROJECT_COORDS = [
                         continue;
                     }
                     // Sub-pixel detail is invisible but not free — drop it.
-                    if (i !== n - 1 && Math.abs(x - lastX) + Math.abs(y - lastY) < 1) continue;
+                    if (i !== n - 1 && Math.abs(x - lastX) + Math.abs(y - lastY) < DECIMATE) continue;
                     ctx.lineTo(x, y);
                     lastX = x; lastY = y;
                 }
@@ -2037,27 +2048,15 @@ const PROJECT_COORDS = [
             }
             if (!drawn) return;
 
-            ctx.lineJoin = 'round';
-            ctx.lineCap  = 'round';
-
-            // 1 — a 12px gold band straddling every edge, internal seams included
-            ctx.strokeStyle = GOLD;
-            ctx.lineWidth = 12;
-            ctx.stroke();
-
-            // 2 — erase the interior plus 4px of margin: the band's inner half
-            //     goes, and with it every internal seam (and any gap up to 8px
-            //     wide between two provinces in the source data)
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = '#000';
-            ctx.lineWidth = 8;
-            ctx.stroke();
-            ctx.fill('evenodd');
-
-            // 3 — what survives is the 2px outer border; add the faint interior wash
-            ctx.globalCompositeOperation = 'source-over';
+            // Wash, then the border stroked exactly where the data puts it.
             ctx.fillStyle = 'rgba(245,197,24,.06)';
             ctx.fill('evenodd');
+
+            ctx.strokeStyle = GOLD;
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap  = 'round';
+            ctx.stroke();
         },
     });
 
