@@ -876,31 +876,11 @@
 
     </div>
 
-    <!-- SVG filter: extracts only the outer border of all Kurdistan polygons,
-         hiding internal province seam lines and producing one united outline -->
-    <svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <filter id="kurdOutline" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
-                <!-- Closing (dilate 4 → erode 4) bridges data-source seams ≤8px wide.
-                     Radius 4 is ~12× cheaper than radius 14 (cost scales as radius²). -->
-                <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="expanded"/>
-                <feMorphology in="expanded"    operator="erode"  radius="4" result="closed"/>
-                <!-- Extract 2px outer ring -->
-                <feMorphology in="closed" operator="dilate" radius="2" result="bordered"/>
-                <feComposite in="bordered" in2="closed" operator="out" result="ring"/>
-                <!-- Yellow border -->
-                <feFlood flood-color="#F5C518" flood-opacity="1" result="yellow"/>
-                <feComposite in="yellow" in2="ring" operator="in" result="yellowBorder"/>
-                <!-- Subtle fill -->
-                <feFlood flood-color="#F5C518" flood-opacity="0.06" result="subtleFill"/>
-                <feComposite in="subtleFill" in2="closed" operator="in" result="fill"/>
-                <feMerge>
-                    <feMergeNode in="fill"/>
-                    <feMergeNode in="yellowBorder"/>
-                </feMerge>
-            </filter>
-        </defs>
-    </svg>
+    {{-- The #kurdOutline SVG filter that used to live here (dilate/erode to
+         dissolve the province seams into one united border) is gone: its work
+         area scaled with the geometry, not the screen, so it froze pinch-zoom on
+         iPad and iPhone. The same outline is now composited on a viewport-sized
+         canvas — see KurdistanOutline in script.js. --}}
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>

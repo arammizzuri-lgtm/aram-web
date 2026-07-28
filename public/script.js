@@ -1826,78 +1826,276 @@ const PROJECT_COORDS = [
         gestureHandling: hasGestureHandling,
     }).setView([36.30, 43.80], 7); // centered on Erbil/Kurdistan region
 
-    // CartoDB light nolabels — inverted in CSS to give black land, white roads
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    // CARTO's own dark basemap. This used to be the *light* basemap with
+    // `filter: grayscale() invert() brightness()` on the tile pane, but a CSS
+    // filter forces the browser to re-run that pixel chain every single frame
+    // the pane is transformed — so a pinch-zoom re-filtered the whole map at
+    // 60fps. Tiles that are already dark cost nothing; `opacity` over the black
+    // container keeps them as deep as the filter did and is a compositor
+    // property, not a repaint.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 18,
+        opacity: 0.92,
+        // Don't churn through tile requests mid-gesture; settle first, then load.
+        updateWhenZooming: false,
+        updateWhenIdle: isTouchDevice,
+        keepBuffer: 2,
     }).addTo(map);
 
-    // The Kurdistan outline is drawn with an SVG feMorphology filter that scans a
-    // pixel neighbourhood across the whole shape. Recomputing it every frame of a
-    // pinch-zoom is what makes the map stutter on phones. Zooming is touch-only
-    // here (desktop has no scroll/dblclick/control zoom), so on touch we drop the
-    // border out while a gesture is in flight and bring the clean outline back the
-    // moment the map settles — the filter then rasterises once, not per frame.
-    if (isTouchDevice) {
-        const mapContainer = map.getContainer();
-        let settleTimer = null;
-        map.on('movestart zoomstart', function () {
-            clearTimeout(settleTimer);
-            mapContainer.classList.add('map-interacting');
-        });
-        map.on('moveend zoomend', function () {
-            clearTimeout(settleTimer);
-            // A short settle avoids the outline flickering back mid-inertia.
-            settleTimer = setTimeout(function () {
-                mapContainer.classList.remove('map-interacting');
-            }, 90);
-        });
+    /* ── Kurdistan outline ──────────────────────────────────────────────
+       The border used to be SVG paths with an feMorphology filter over them,
+       dilating and eroding the shape to dissolve the province seams into a
+       single outer line. An SVG filter's work area is the *geometry's* bounding
+       box, not the screen's, so zooming in grew that buffer without limit — at
+       city zoom the browser was being asked to erode a region tens of thousands
+       of pixels across, once per gesture. That is what made the map crawl on
+       iPad and iPhone.
+
+       This layer paints the same picture into a canvas the size of the viewport.
+       Stroke a wide gold band down every edge, then erase the union's interior
+       grown by 4px — the same 4px the old filter used to bridge gaps in the
+       source data. The band's inner half and every internal seam go with it,
+       leaving the 2px outer border alone. The work is bounded by screen pixels,
+       so it no longer grows with zoom, and a pinch just scales the finished
+       canvas on the GPU instead of repainting it. */
+    const GOLD = '#F5C518';
+    const DEG  = Math.PI / 180;
+
+    // Web-Mercator world-pixel coordinates at a given zoom (Leaflet's EPSG3857).
+    // The canvas origin is derived with these same two functions, so any constant
+    // offset cancels out and only the scale has to agree with Leaflet.
+    function mercX(lng, world) { return world * (0.5 + lng / 360); }
+    function mercY(lat, world) {
+        const s = Math.max(-0.9999, Math.min(0.9999, Math.sin(lat * DEG)));
+        return world * (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI));
     }
+
+    // Flatten the GeoJSON into typed arrays carrying their own lat/lng bbox, so a
+    // redraw is a tight numeric loop and an off-screen ring costs one comparison.
+    function buildRings(geojson) {
+        const rings = [];
+        const addRing = coords => {
+            const n = coords.length;
+            if (n < 4) return;
+            const pts = new Float64Array(n * 2);
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (let i = 0; i < n; i++) {
+                const lng = coords[i][0], lat = coords[i][1];
+                pts[i * 2] = lng; pts[i * 2 + 1] = lat;
+                if (lng < minX) minX = lng;
+                if (lng > maxX) maxX = lng;
+                if (lat < minY) minY = lat;
+                if (lat > maxY) maxY = lat;
+            }
+            rings.push({ pts, n, minX, minY, maxX, maxY });
+        };
+        const geom  = geojson.geometry || geojson;
+        const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
+        polys.forEach(poly => poly.forEach(addRing));
+        return rings;
+    }
+
+    const KurdistanOutline = L.Layer.extend({
+        // Slack around the viewport, so a two-finger pan doesn't run off the
+        // painted area before the map settles and we redraw.
+        options: { padding: 0.15 },
+
+        initialize(rings) {
+            this._rings  = rings;
+            this._bounds = rings.reduce(
+                (b, r) => b.extend([[r.minY, r.minX], [r.maxY, r.maxX]]),
+                L.latLngBounds([[rings[0].minY, rings[0].minX], [rings[0].maxY, rings[0].maxX]])
+            );
+        },
+
+        getBounds() { return this._bounds; },
+
+        getEvents() {
+            const events = {
+                viewreset: this._schedule,
+                moveend:   this._schedule,
+                zoomend:   this._schedule,
+                resize:    this._schedule,
+                zoom:      this._onZoom,      // fires per frame of a pinch
+            };
+            if (this._zoomAnimated) events.zoomanim = this._onAnimZoom;
+            return events;
+        },
+
+        onAdd(map) {
+            const canvas = this._canvas = L.DomUtil.create('canvas', 'kurd-outline');
+            if (this._zoomAnimated) L.DomUtil.addClass(canvas, 'leaflet-zoom-animated');
+            this._ctx = canvas.getContext('2d');
+            map.getPanes().overlayPane.appendChild(canvas);
+            this._reset();
+        },
+
+        onRemove() {
+            if (this._frame) { L.Util.cancelAnimFrame(this._frame); this._frame = null; }
+            L.DomUtil.remove(this._canvas);
+        },
+
+        // moveend and zoomend both fire at the end of a zoom — coalesce them.
+        _schedule() {
+            if (this._frame) return;
+            this._frame = L.Util.requestAnimFrame(function () {
+                this._frame = null;
+                this._reset();
+            }, this);
+        },
+
+        _reset() {
+            const map = this._map;
+            if (!map) return;
+            const size = map.getSize();
+            const padX = Math.round(size.x * this.options.padding);
+            const padY = Math.round(size.y * this.options.padding);
+            const w = size.x + padX * 2, h = size.y + padY * 2;
+            // Cap the backing store at 2× — beyond that the extra pixels cost
+            // real milliseconds and buy nothing on a 2px line.
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const canvas = this._canvas;
+
+            // Anchor the canvas, and remember that corner in lat/lng so the zoom
+            // transform can re-derive where it belongs at any other scale.
+            this._zoom0 = map.getZoom();
+            this._nw0   = map.containerPointToLatLng([-padX, -padY]);
+            L.DomUtil.setPosition(canvas, map.containerPointToLayerPoint([-padX, -padY]));
+
+            const pxW = Math.round(w * dpr), pxH = Math.round(h * dpr);
+            if (canvas.width  !== pxW) canvas.width  = pxW;
+            if (canvas.height !== pxH) canvas.height = pxH;
+            canvas.style.width  = w + 'px';
+            canvas.style.height = h + 'px';
+
+            this._draw(dpr);
+        },
+
+        _onZoom()      { this._transform(this._map.getCenter(), this._map.getZoom()); },
+        _onAnimZoom(e) { this._transform(e.center, e.zoom); },
+
+        // Scale the already-painted canvas along with the map rather than
+        // repainting it — this is what makes a pinch pure GPU compositing.
+        _transform(center, zoom) {
+            const map = this._map;
+            if (!map || !map._latLngToNewLayerPoint) return;
+            const scale  = map.getZoomScale(zoom, this._zoom0);
+            const offset = map._latLngToNewLayerPoint(this._nw0, zoom, center);
+            L.DomUtil.setTransform(this._canvas, offset, scale);
+        },
+
+        _draw(dpr) {
+            const map = this._map, ctx = this._ctx, canvas = this._canvas;
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);   // draw in CSS pixels
+
+            // Take the origin from Leaflet's own pixel origin plus wherever it
+            // just placed this canvas, rather than re-deriving it from the map
+            // centre. Leaflet rounds that origin; deriving it independently
+            // leaves the paint up to half a pixel out of step with the tiles,
+            // which a mid-pinch scale then multiplies into visible drift.
+            const world  = 256 * Math.pow(2, this._zoom0);
+            const origin = map.getPixelOrigin();
+            const pos    = L.DomUtil.getPosition(canvas) || L.point(0, 0);
+            const originX = origin.x + pos.x;
+            const originY = origin.y + pos.y;
+
+            const view  = map.getBounds().pad(this.options.padding + 0.05);
+            const west  = view.getWest(),  east  = view.getEast();
+            const south = view.getSouth(), north = view.getNorth();
+            const degToPx = world / 360;
+
+            let drawn = 0;
+            ctx.beginPath();
+            for (let r = 0; r < this._rings.length; r++) {
+                const ring = this._rings[r];
+                if (ring.maxX < west  || ring.minX > east ||
+                    ring.maxY < south || ring.minY > north) continue;
+                // Islands and enclaves smaller than a pixel: nothing to see.
+                if ((ring.maxX - ring.minX) * degToPx < 1.5 &&
+                    (ring.maxY - ring.minY) * degToPx < 1.5) continue;
+
+                const pts = ring.pts, n = ring.n;
+                let lastX = 0, lastY = 0, started = false;
+                for (let i = 0; i < n; i++) {
+                    const x = mercX(pts[i * 2],     world) - originX;
+                    const y = mercY(pts[i * 2 + 1], world) - originY;
+                    if (!started) {
+                        ctx.moveTo(x, y);
+                        lastX = x; lastY = y; started = true;
+                        continue;
+                    }
+                    // Sub-pixel detail is invisible but not free — drop it.
+                    if (i !== n - 1 && Math.abs(x - lastX) + Math.abs(y - lastY) < 1) continue;
+                    ctx.lineTo(x, y);
+                    lastX = x; lastY = y;
+                }
+                if (started) { ctx.closePath(); drawn++; }
+            }
+            if (!drawn) return;
+
+            ctx.lineJoin = 'round';
+            ctx.lineCap  = 'round';
+
+            // 1 — a 12px gold band straddling every edge, internal seams included
+            ctx.strokeStyle = GOLD;
+            ctx.lineWidth = 12;
+            ctx.stroke();
+
+            // 2 — erase the interior plus 4px of margin: the band's inner half
+            //     goes, and with it every internal seam (and any gap up to 8px
+            //     wide between two provinces in the source data)
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = '#000';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            ctx.fill('evenodd');
+
+            // 3 — what survives is the 2px outer border; add the faint interior wash
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = 'rgba(245,197,24,.06)';
+            ctx.fill('evenodd');
+        },
+    });
 
     // Render the Kurdistan border from already-loaded GeoJSON data.
     let mapBorderLayer = null;
     function renderKurdistanBorder() {
         if (typeof KURDISTAN_GEOJSON === 'undefined') return;
-
-        const borderLayer = L.geoJSON(KURDISTAN_GEOJSON, {
-            style: {
-                fillColor:   '#F5C518',
-                fillOpacity: 1,
-                stroke:      false,
-            },
-            // Touch devices render the 1.5 MB outline more coarsely: fewer path
-            // points means less to paint and a cheaper one-off filter pass, and
-            // at country scale the simplification is not visible.
-            smoothFactor: isTouchDevice ? 3 : 1.5,
-        }).addTo(map);
-
-        // Wrap all border paths in a <g> so the SVG filter applies to the group,
-        // processing only border pixels rather than the whole overlay pane.
-        const overlayPane = map.getPanes().overlayPane;
-        const svg = overlayPane && overlayPane.querySelector('svg');
-        if (svg) {
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            g.setAttribute('class', 'kurdistan-border');
-            borderLayer.eachLayer(l => { if (l._path) g.appendChild(l._path); });
-            svg.appendChild(g);
-        }
-
-        mapBorderLayer = borderLayer;
+        const rings = buildRings(KURDISTAN_GEOJSON);
+        if (!rings.length) return;
+        mapBorderLayer = new KurdistanOutline(rings).addTo(map);
         fitMap();
     }
 
     // Frame Kurdistan tightly — and keep it framed when the window resizes
-    // (e.g. dev-tools opening) instead of drifting zoomed-out.
+    // (e.g. dev-tools opening) instead of drifting zoomed-out. Once the visitor
+    // has touched the map the framing is theirs, not ours: on iOS the address
+    // bar collapsing counts as a resize, and re-fitting there would yank the map
+    // back out of whatever they had just zoomed into.
     let mapFitTimer = null;
+    let userMoved   = false;
     function fitMap() {
         if (!mapBorderLayer) return;
         map.invalidateSize();
         map.fitBounds(mapBorderLayer.getBounds(), { padding: [40, 30], maxZoom: 8 });
     }
+    ['pointerdown', 'touchstart', 'wheel'].forEach(function (evt) {
+        mapEl.addEventListener(evt, function () { userMoved = true; }, { passive: true });
+    });
+
+    let mapLastWidth = window.innerWidth;
     window.addEventListener('resize', function () {
+        const widthChanged = window.innerWidth !== mapLastWidth;
+        mapLastWidth = window.innerWidth;
         clearTimeout(mapFitTimer);
-        mapFitTimer = setTimeout(fitMap, 180);
+        mapFitTimer = setTimeout(function () {
+            map.invalidateSize();
+            if (widthChanged && !userMoved) fitMap();
+        }, 180);
     });
 
     // Lazy-load the 1.5 MB border data only when the map section enters the viewport.
@@ -2031,8 +2229,8 @@ const PROJECT_COORDS = [
     // Zoom buttons
     const zoomInBtn  = document.getElementById('mapZoomIn');
     const zoomOutBtn = document.getElementById('mapZoomOut');
-    if (zoomInBtn)  zoomInBtn.addEventListener('click',  e => { e.stopPropagation(); map.zoomIn();  });
-    if (zoomOutBtn) zoomOutBtn.addEventListener('click', e => { e.stopPropagation(); map.zoomOut(); });
+    if (zoomInBtn)  zoomInBtn.addEventListener('click',  e => { e.stopPropagation(); userMoved = true; map.zoomIn();  });
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', e => { e.stopPropagation(); userMoved = true; map.zoomOut(); });
 })();
 
 /* ---- Smooth active nav link on scroll ------------------ */
