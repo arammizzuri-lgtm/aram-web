@@ -3091,3 +3091,29 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .footer__copy, .footer__social { text-align: left; align-items: flex-start; }
     .hero__scroll { display: none; }
 }
+
+/* ---- Kurdish: let the letters join --------------------- */
+/* Kurdish is written in a joining script: each letter fuses to the next, and
+   the shape a letter takes depends on what it is joined to. `letter-spacing`
+   forces a gap between every glyph, which pulls those joins apart and leaves a
+   word looking like a row of loose characters. This stylesheet sets tracking on
+   86 rules — all of them written for the Latin version, none with an RTL
+   override — so every tracked label came apart the moment the site switched to
+   Kurdish.
+
+   Flagged !important deliberately. This is not a style preference to be
+   outranked: tracking must never reach a cursive script, and the rule has to
+   beat both the existing declarations and any added later, whatever their
+   specificity. Digits and Latin do not join, so the handful of elements that
+   only ever carry those keep their tracking, listed below. */
+[dir="rtl"], [dir="rtl"] * { letter-spacing: normal !important; }
+
+/* Non-joining content — numerals, and the Latin wordmark on the loader. */
+[dir="rtl"] .loader__text        { letter-spacing: .45em !important; }
+[dir="rtl"] .od-num              { letter-spacing: .38em !important; }
+[dir="rtl"] .pgc__num            { letter-spacing: .34em !important; }
+[dir="rtl"] .map-card__num       { letter-spacing: .3em  !important; }
+[dir="rtl"] .service__num        { letter-spacing: .24em !important; }
+[dir="rtl"] .hero__clock time    { letter-spacing: .14em !important; }
+[dir="rtl"] .process__count-now,
+[dir="rtl"] .process__count-total { letter-spacing: .12em !important; }
