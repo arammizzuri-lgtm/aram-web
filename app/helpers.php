@@ -34,10 +34,20 @@ if (! function_exists('bitext')) {
      * HTML-escaped so the values are safe inside the attribute (the browser
      * decodes entities back, so intended <em>/<br> still render on swap).
      * Echo with {!! !!}.
+     *
+     * dir="auto" comes along with them. The page direction is set once, on
+     * <html>, but these elements change language underneath it, and some of
+     * them hold Kurdish even while the page is in English — the studio's
+     * Kurdish signature on the English hero, for one. Left to inherit, Kurdish
+     * sitting in an English page is laid out left-to-right, and a string that
+     * mixes the two has its halves reordered to match the page rather than the
+     * author. "auto" asks the browser to take the direction from the text
+     * itself, so each string reads the way it was written whichever language
+     * is showing. It is a no-op for plain English.
      */
     function bitext(string $key): string
     {
-        return 'data-en="'.e(SiteText::en($key)).'" data-ku="'.e(SiteText::ku($key)).'"';
+        return 'dir="auto" data-en="'.e(SiteText::en($key)).'" data-ku="'.e(SiteText::ku($key)).'"';
     }
 }
 

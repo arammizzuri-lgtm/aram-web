@@ -68,7 +68,8 @@
             <a href="#process"  class="nav__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
             <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
             <span class="nav__sep"></span>
-            <button class="lang-toggle" id="langToggle" title="Switch to Kurdish / گۆڕانی زمان">کوردی</button>
+            {{-- label flips between "کوردی" and "English", so it needs its own direction --}}
+            <button class="lang-toggle" id="langToggle" dir="auto" title="Switch to Kurdish / گۆڕانی زمان">کوردی</button>
         </div>
 
         <button class="nav__hamburger" id="hamburger" aria-label="Menu">
@@ -113,8 +114,8 @@
                 [$l1MainKu, $l1ByKu] = $splitBy(setting('hero_title_line1_ku'));
             @endphp
             <h1 class="hero__title">
-                <span class="hero__line"><span class="hero__line-in"><span data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ $l1MainEn }}</span><span class="hero__by" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ $l1ByEn }}</span></span></span>
-                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ setting('hero_title_line2_en') }}</span></span>
+                <span class="hero__line"><span class="hero__line-in"><span dir="auto" data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ $l1MainEn }}</span><span class="hero__by" dir="auto" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ $l1ByEn }}</span></span></span>
+                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" dir="auto" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ setting('hero_title_line2_en') }}</span></span>
             </h1>
 
             {{-- Practice figures — rendered as the 3D glass card ring in
@@ -125,11 +126,11 @@
                 $areaSuf = trim(preg_replace('/[\d.,]/', '', $stats['area_short']));
             @endphp
             <div id="heroStatsData" class="sr-only">
-                <span data-value="{{ $stats['projects'] }}" data-en="Projects" data-ku="پرۆژە">{{ $stats['projects'] }} Projects</span>
-                <span data-value="{{ (int) setting('about_stat2_num') }}" data-en="Clients" data-ku="کڕیار">{{ (int) setting('about_stat2_num') }} Clients</span>
-                <span data-value="{{ $stats['cities'] }}" data-en="Cities" data-ku="شار">{{ $stats['cities'] }} Cities</span>
-                <span data-value="{{ $stats['countries'] }}" data-en="Countries" data-ku="وڵات">{{ $stats['countries'] }} Countries</span>
-                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" data-en="m² Designed" data-ku="م² دیزاینکراو">{{ $stats['area_short'] }} m² Designed</span>
+                <span data-value="{{ $stats['projects'] }}" dir="auto" data-en="Projects" data-ku="پرۆژە">{{ $stats['projects'] }} Projects</span>
+                <span data-value="{{ (int) setting('about_stat2_num') }}" dir="auto" data-en="Clients" data-ku="کڕیار">{{ (int) setting('about_stat2_num') }} Clients</span>
+                <span data-value="{{ $stats['cities'] }}" dir="auto" data-en="Cities" data-ku="شار">{{ $stats['cities'] }} Cities</span>
+                <span data-value="{{ $stats['countries'] }}" dir="auto" data-en="Countries" data-ku="وڵات">{{ $stats['countries'] }} Countries</span>
+                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" dir="auto" data-en="m² Designed" data-ku="م² دیزاینکراو">{{ $stats['area_short'] }} m² Designed</span>
             </div>
         </div>
 
@@ -137,7 +138,7 @@
              desktop (clear of the ring); on phones they stay in the flow
              right under the headline. --}}
         <div class="hero__foot">
-            <p class="hero__sub" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ setting('hero_sub_en') }}</p>
+            <p class="hero__sub" dir="auto" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ setting('hero_sub_en') }}</p>
             <div class="hero__actions">
                 <a href="#projects" class="hero__go" id="heroGo">
                     <span class="hero__go-label" {!! bitext('hero_cta') !!}>{{ bival('hero_cta') }}</span>
@@ -184,7 +185,7 @@
                     <div class="statbar__item" style="--i: {{ $loop->index }}">
                         <span class="statbar__num" data-n="0{{ $st['s'] }}" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
                         <span class="statbar__rule" aria-hidden="true"></span>
-                        <span class="statbar__label" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
+                        <span class="statbar__label" dir="auto" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
                     </div>
                 @endforeach
             </div>
@@ -235,19 +236,19 @@
                 {{-- spec grid shown only for map-only (image-less) projects --}}
                 <dl class="map-card__specs" id="mapCardSpecs">
                     <div class="map-card__spec">
-                        <dt data-en="Type" data-ku="جۆر">Type</dt>
+                        <dt dir="auto" data-en="Type" data-ku="جۆر">Type</dt>
                         <dd id="mcSpecType"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt data-en="Year" data-ku="ساڵ">Year</dt>
+                        <dt dir="auto" data-en="Year" data-ku="ساڵ">Year</dt>
                         <dd id="mcSpecYear"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt data-en="Plot Area" data-ku="ڕووبەری زەوی">Plot Area</dt>
+                        <dt dir="auto" data-en="Plot Area" data-ku="ڕووبەری زەوی">Plot Area</dt>
                         <dd id="mcSpecArea"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt data-en="Location" data-ku="شوێن">Location</dt>
+                        <dt dir="auto" data-en="Location" data-ku="شوێن">Location</dt>
                         <dd id="mcSpecLoc"></dd>
                     </div>
                 </dl>
@@ -309,7 +310,7 @@
                         <div class="client-logo" @if($dup) aria-hidden="true" @endif>
                             {!! $clientMark($c) !!}
                             <span class="client-logo__name">{{ $c->name }}</span>
-                            <span class="client-logo__sub" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
+                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
                         </div>
                     @endforeach
                 @endforeach
@@ -329,7 +330,7 @@
                         <div class="clients-modal__tile" style="--i: {{ $loop->index }}">
                             {!! $clientMark($c) !!}
                             <span class="client-logo__name">{{ $c->name }}</span>
-                            <span class="client-logo__sub" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
+                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -356,7 +357,7 @@
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
                     <button class="pgf-btn active" data-filter="all" {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
                     @foreach($categories as $cat)
-                    <button class="pgf-btn" data-filter="{{ $cat->key }}" data-en="{{ $cat->name }}" data-ku="{{ $cat->name_ku ?: $cat->name }}">{{ $cat->name }}</button>
+                    <button class="pgf-btn" data-filter="{{ $cat->key }}" dir="auto" data-en="{{ $cat->name }}" data-ku="{{ $cat->name_ku ?: $cat->name }}">{{ $cat->name }}</button>
                     @endforeach
                 </div>
             </div>
@@ -384,7 +385,7 @@
                         <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ $project->statusBadge() }}</div>
                         <div class="pgc__info">
                             <div class="pgc__num">{{ $project->num }}</div>
-                            <h3 class="pgc__name" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ $project->name }}</h3>
+                            <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ $project->name }}</h3>
                             <p class="pgc__meta">{{ $project->metaLabel() }}</p>
                         </div>
                         <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗&#xFE0E;</span></span>
@@ -409,7 +410,7 @@
         @php $galleryCount = $projects->where('map_only', false)->count(); @endphp
         <p class="pg__more" id="pgMore" aria-hidden="true">
             <span class="pg__more-label"
-                  data-en="slide for more — {{ $galleryCount }} projects"
+                  dir="auto" data-en="slide for more — {{ $galleryCount }} projects"
                   data-ku="ڕایبکێشە بۆ زیاتر — {{ $galleryCount }} پرۆژە">slide for more — {{ $galleryCount }} projects</span>
             <span class="pg__more-arrow">⟶</span>
         </p>
@@ -431,8 +432,8 @@
 
             <div class="about__top">
                 <div class="about__text">
-                    <p class="section-label" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ setting('about_label_en') }}</p>
-                    <h2 class="about__heading" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
+                    <p class="section-label" dir="auto" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ setting('about_label_en') }}</p>
+                    <h2 class="about__heading" dir="auto" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
                         {!! setting('about_heading_en') !!}
                     </h2>
                     <p class="about__bio" {!! bitext('about_bio_1') !!}>
@@ -511,8 +512,8 @@
                             <svg class="service__icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $s['icon'] !!}</svg>
                             <span class="service__num">0{{ $i + 1 }}</span>
                         </div>
-                        <h3 class="service__name" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ $s['en'] }}</h3>
-                        <p class="service__desc" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ $s['den'] }}</p>
+                        <h3 class="service__name" dir="auto" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ $s['en'] }}</h3>
+                        <p class="service__desc" dir="auto" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ $s['den'] }}</p>
                     </div>
                 @endforeach
             </div>
@@ -531,8 +532,8 @@
 
             <!-- Sticky narrative rail -->
             <aside class="process__aside">
-                <p class="section-label" data-en="{{ setting('process_label_en') }}" data-ku="{{ setting('process_label_ku') }}">{{ setting('process_label_en') }}</p>
-                <h2 class="process__title" data-en="{{ setting('process_title_en') }}" data-ku="{{ setting('process_title_ku') }}">{{ setting('process_title_en') }}</h2>
+                <p class="section-label" dir="auto" data-en="{{ setting('process_label_en') }}" data-ku="{{ setting('process_label_ku') }}">{{ setting('process_label_en') }}</p>
+                <h2 class="process__title" dir="auto" data-en="{{ setting('process_title_en') }}" data-ku="{{ setting('process_title_ku') }}">{{ setting('process_title_en') }}</h2>
 
                 <div class="process__meter">
                     <div class="process__count">
@@ -566,7 +567,7 @@
                 <li class="process__item" data-step="0">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" data-en="01" data-ku="٠١">01</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="01" data-ku="٠١">01</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase1') !!}>{{ bival('process_phase1') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step1_title') !!}>{{ bival('process_step1_title') }}</h3>
@@ -578,7 +579,7 @@
                 <li class="process__item" data-step="1">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" data-en="02" data-ku="٠٢">02</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="02" data-ku="٠٢">02</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase2') !!}>{{ bival('process_phase2') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step2_title') !!}>{{ bival('process_step2_title') }}</h3>
@@ -590,7 +591,7 @@
                 <li class="process__item" data-step="2">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" data-en="03" data-ku="٠٣">03</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="03" data-ku="٠٣">03</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase3') !!}>{{ bival('process_phase3') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step3_title') !!}>{{ bival('process_step3_title') }}</h3>
@@ -602,7 +603,7 @@
                 <li class="process__item" data-step="3">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" data-en="04" data-ku="٠٤">04</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="04" data-ku="٠٤">04</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase4') !!}>{{ bival('process_phase4') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step4_title') !!}>{{ bival('process_step4_title') }}</h3>
@@ -622,7 +623,7 @@
         </div>
         <div class="heritage__inner">
             <div class="heritage__text reveal">
-                <p class="section-label section-label--light" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ setting('heritage_label_en') }}</p>
+                <p class="section-label section-label--light" dir="auto" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ setting('heritage_label_en') }}</p>
                 <h2 class="heritage__title" {!! bitext('heritage_title') !!}>
                     {!! nl2br(e(bival('heritage_title'))) !!}
                 </h2>
@@ -660,8 +661,8 @@
         <div class="contact__inner">
 
             <div class="contact__info">
-                <p class="section-label" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ setting('contact_label_en') }}</p>
-                <h2 class="contact__title" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! setting('contact_title_en') !!}</h2>
+                <p class="section-label" dir="auto" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ setting('contact_label_en') }}</p>
+                <h2 class="contact__title" dir="auto" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! setting('contact_title_en') !!}</h2>
 
                 <ul class="contact__methods">
                     {{-- one email, two lines — the address itself lives on the map card below --}}
@@ -748,7 +749,8 @@
             <div class="footer__col footer__col--brand">
                 <div class="footer__logo" {!! bitext('footer_logo') !!}>{{ bival('footer_logo') }}</div>
                 <div class="footer__tagline" {!! bitext('footer_tagline') !!}>{{ bival('footer_tagline') }}</div>
-                <div class="footer__kurdish">{{ setting('footer_kurdish') }}</div>
+                {{-- always Kurdish, in both versions of the site, so it is always RTL --}}
+                <div class="footer__kurdish" dir="rtl">{{ setting('footer_kurdish') }}</div>
             </div>
 
             <div class="footer__col footer__col--sun">

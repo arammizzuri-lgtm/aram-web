@@ -1923,6 +1923,10 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
        showing m² Designed first); forcing LTR here sidesteps that entirely
        while the Kurdish labels inside each figure still read correctly. */
     [dir="rtl"] .statbar__track { direction: ltr; }
+    /* …but direction is inherited, so that LTR reached the Kurdish labels
+       inside each figure and laid them out left-to-right too. Only the track
+       wants LTR — for the scroll order. Hand the text its own back. */
+    [dir="rtl"] .statbar__item { direction: rtl; }
     [dir="rtl"] .statbar__hint-arrow { transform: none; animation: statHintNudge 1.6s ease-in-out infinite; }
     .statbar__track::-webkit-scrollbar { display: none; }
     .statbar__track.at-end { -webkit-mask-image: none; mask-image: none; }
