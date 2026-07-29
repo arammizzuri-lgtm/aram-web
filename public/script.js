@@ -604,13 +604,44 @@ function buildKurdishSun(container, opts = {}) {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     track.style.animation = 'none';               // JS owns the motion now
-    const DRIFT = reduce ? 0 : -28;               // idle speed, px/s
-    let x = 0, vx = DRIFT;
+
+    // Which side the second copy of the strip spills out on. Left-to-right, the
+    // browser pins the track's left edge to the window and the spare copy hangs
+    // off to the right, so the strip has to travel left to bring it in. Under
+    // dir="rtl" the right edge is pinned instead and the spill is on the left —
+    // travel left there and the whole strip is dragged off the window, leaving
+    // blank where the logos should be. So the direction of travel follows the
+    // writing direction.
+    let sign = 1;                                 // +1 spills right, -1 spills left
+    const syncDir = () => {
+        sign = document.documentElement.getAttribute('dir') === 'rtl' ? -1 : 1;
+    };
+    syncDir();
+
+    const SPEED = reduce ? 0 : 28;                // idle speed, px/s
+    let drift = -SPEED * sign;
+    let x = 0, vx = drift;
     let dragging = false, lastX = 0, lastT = 0, moved = 0;
     let half = 0;
     const measure = () => { half = track.scrollWidth / 2; };
     measure();
     window.addEventListener('resize', measure);
+
+    // Half the strip's width is where the loop seams, so it has to be re-taken
+    // whenever the strip's length changes. It changes twice: the Kurdish copy
+    // is not the same width as the English, and the Kurdish webfont lands after
+    // first paint. Measuring only once left the seam in the wrong place.
+    document.addEventListener('langchange', () => {
+        syncDir();
+        drift = -SPEED * sign;
+        measure();
+    });
+    if (document.fonts) {
+        if (document.fonts.ready) document.fonts.ready.then(measure);
+        if (document.fonts.addEventListener) {
+            document.fonts.addEventListener('loadingdone', measure);
+        }
+    }
 
     // no pointer capture — capturing would retarget the click away from
     // the logos, and a plain click must still open the clients modal
@@ -639,10 +670,15 @@ function buildKurdishSun(container, opts = {}) {
     (function frame(now) {
         const dt = Math.min(64, now - prev) / 1000; prev = now;
         if (!dragging) {
-            vx += (DRIFT - vx) * Math.min(1, dt * 1.5);        // decay toward drift
+            vx += (drift - vx) * Math.min(1, dt * 1.5);        // decay toward drift
             x += vx * dt;
         }
-        if (half > 0) x = ((x % half) + half) % half - half;   // seamless wrap
+        // Seamless wrap, into whichever half the spare copy occupies:
+        // −half…0 when it hangs off the right, 0…+half when it hangs off the left.
+        if (half > 0) {
+            const m = ((x % half) + half) % half;
+            x = sign > 0 ? m - half : m;
+        }
         track.style.transform = 'translateX(' + x + 'px)';
         requestAnimationFrame(frame);
     })(prev);
