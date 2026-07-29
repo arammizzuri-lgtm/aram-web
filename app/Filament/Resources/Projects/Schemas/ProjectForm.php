@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Projects\Schemas;
 use App\Filament\Forms\Components\CoverPicker;
 use App\Filament\Forms\Components\MapPicker;
 use App\Models\Category;
+use App\Models\Project;
 use App\Models\Status;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -33,7 +34,13 @@ class ProjectForm
                         ->maxLength(160)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
                     TextInput::make('num')
-                        ->label('Display number')->maxLength(10)->placeholder('01'),
+                        ->label('Display number')->maxLength(10)
+                        // Pre-filled with the next number in upload order, so the
+                        // sequence keeps itself. Clearing it hands the job back to
+                        // the model; typing your own number overrides both.
+                        ->default(fn (): string => Project::nextNum())
+                        ->placeholder(fn (): string => Project::nextNum())
+                        ->helperText('Set automatically in the order projects are added. Change it only to force a specific number.'),
                     Toggle::make('is_published')
                         ->label('Published (visible on site)')->default(true),
                     Toggle::make('map_only')

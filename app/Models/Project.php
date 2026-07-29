@@ -53,6 +53,17 @@ class Project extends Model
 
     protected static function booted(): void
     {
+        // A new project takes the next display number in upload order, so the
+        // numbering runs 01, 02, 03… without anyone having to keep track. This
+        // sits on the model rather than in the admin form so a project created
+        // by a seeder or a console command is numbered too. Typing a number in
+        // the admin still wins — this only fills a blank.
+        static::creating(function (Project $p) {
+            if (blank($p->num)) {
+                $p->num = static::nextNum();
+            }
+        });
+
         // Keep the display `location` string composed from the structured parts.
         static::saving(function (Project $p) {
             $composed = collect([$p->neighbourhood, $p->city, $p->country])
@@ -82,6 +93,28 @@ class Project extends Model
         // Keep a light WebP thumbnail for every uploaded image so the grid
         // never has to download the multi-MB originals.
         static::saved(fn (Project $p) => $p->generateThumbnails());
+    }
+
+    /**
+     * The display number a project created right now would take: one past the
+     * highest already in use. Compared numerically, so "09" and "9" count as
+     * the same, and anything non-numeric is read as 0 rather than blocking the
+     * sequence. Done in PHP because `num` is a string column and the cast
+     * needed to sort it in SQL differs between SQLite and MySQL.
+     */
+    public static function nextNum(): string
+    {
+        $highest = static::query()->pluck('num')
+            ->map(fn ($n) => (int) preg_replace('/\D+/', '', (string) $n))
+            ->max() ?? 0;
+
+        return static::formatNum($highest + 1);
+    }
+
+    /** Display numbers are two-digit: 1 becomes "01", 100 stays "100". */
+    public static function formatNum(int $n): string
+    {
+        return str_pad((string) $n, 2, '0', STR_PAD_LEFT);
     }
 
     /** Only published projects, in display order — used by the public site. */
