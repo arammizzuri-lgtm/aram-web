@@ -1635,6 +1635,47 @@ const PROJECT_COORDS = [
     imgPrevBtn  && imgPrevBtn.addEventListener('click',  e => { e.stopPropagation(); setImg(currentImgIdx - 1); });
     imgNextBtn  && imgNextBtn.addEventListener('click',  e => { e.stopPropagation(); setImg(currentImgIdx + 1); });
 
+    /* ---- Swipe the photo, on touch ----------------------------
+       A phone or tablet has no hover, so the prev/next arrows sitting over the
+       image only surface on a tap — and dragging the photo sideways is what
+       people reach for instead. A mostly-horizontal drag past the threshold
+       steps one photo: dragging left brings the next one in, dragging right
+       goes back, the same way the photo would move if it were being pushed.
+
+       Touch and pen only. A mouse keeps the arrows, and making the cursor drag
+       too would fight the full-resolution controls layered over the image. */
+    (function initImageSwipe() {
+        const stage = overlay.querySelector('.od-bg');
+        if (!stage) return;
+
+        const THRESHOLD = 45;                  // px of travel before it counts
+        let id = null, startX = 0, startY = 0, done = false;
+
+        stage.addEventListener('pointerdown', e => {
+            if (e.pointerType === 'mouse') return;
+            // the controls layered over the photo keep their own taps
+            if (e.target.closest('button, a')) return;
+            id = e.pointerId; startX = e.clientX; startY = e.clientY; done = false;
+        });
+
+        stage.addEventListener('pointermove', e => {
+            if (e.pointerId !== id || done) return;
+            const proj = PROJECT_DATA[currentProjIdx];
+            if (!proj || !proj.imgs || proj.imgs.length < 2) return;
+
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            // must be past the threshold and more sideways than up-and-down,
+            // so scrolling the page never trips it
+            if (Math.abs(dx) < THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
+
+            done = true;                       // one photo per gesture
+            setImg(currentImgIdx + (dx < 0 ? 1 : -1));
+        });
+
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
+            stage.addEventListener(ev, e => { if (e.pointerId === id) id = null; }));
+    })();
+
     document.addEventListener('keydown', e => {
         if (!isOpen) return;
         if (e.key === 'Escape')     closeOverlay();

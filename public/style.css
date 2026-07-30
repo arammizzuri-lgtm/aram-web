@@ -2287,7 +2287,9 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
    ═══════════════════════════════════════════════════════════ */
 
 /* Image column — takes all the space left of the info panel */
-.od-bg { position: relative; flex: 1 1 auto; min-width: 0; z-index: 0; }
+/* pan-y: vertical stays the page's to scroll, horizontal is ours to read as a
+   swipe between the project's photos (see initImageSwipe in script.js) */
+.od-bg { position: relative; flex: 1 1 auto; min-width: 0; z-index: 0; touch-action: pan-y; }
 /* Ambient backdrops — blurred, darkened copies of the project image so the full
    image (and the info panel) sit on the project's own colour, not flat black. */
 .od-ambient {
