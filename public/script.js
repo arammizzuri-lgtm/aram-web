@@ -1408,6 +1408,44 @@ const PROJECT_COORDS = [
         .filter(function (i) { return i !== -1; });
 
     /* ---- Image switcher ---------------------------------- */
+    /* Slide the reel so the current thumb sits in the middle of its window, and
+       grade the rest by how far they are from it. Strictly centred, with no
+       clamping at the ends: the reel is allowed to run past its first and last
+       thumb so the current photo is always in the same place, which is the
+       whole point of it — and the window's mask fades those ends out, so the
+       space beyond reads as intended rather than as a gap.
+
+       `instant` skips the animation, for opening a project or a resize, where
+       there is no previous position worth travelling from. */
+    function centreThumbs(instant) {
+        const reel = thumbsEl.querySelector('.od-thumbs__reel');
+        if (!reel || !reel.children.length) return;
+        const viewport = reel.parentElement;
+        const active   = reel.children[currentImgIdx];
+        if (!active || !viewport.clientWidth) return;
+
+        let x;
+        if (reel.scrollWidth <= viewport.clientWidth) {
+            // the whole reel fits: centre the reel itself, not one thumb
+            x = -(viewport.clientWidth - reel.scrollWidth) / 2;
+        } else {
+            x = active.offsetLeft + active.offsetWidth / 2 - viewport.clientWidth / 2;
+        }
+
+        if (instant) reel.style.transition = 'none';
+        reel.style.transform = 'translate3d(' + (-Math.round(x)) + 'px,0,0)';
+        if (instant) {
+            void reel.offsetWidth;              // flush, so the next move animates
+            reel.style.transition = '';
+        }
+
+        Array.from(reel.children).forEach((t, i) => {
+            const d = Math.abs(i - currentImgIdx);
+            t.classList.toggle('active', d === 0);
+            t.classList.toggle('od-thumb--near', d === 1);
+        });
+    }
+
     function setImg(idx) {
         const proj = PROJECT_DATA[currentProjIdx];
         if (!proj) return;
@@ -1419,9 +1457,7 @@ const PROJECT_COORDS = [
             heroImg.style.opacity = '1';
             applyAmbient(proj.imgs[currentImgIdx]);
         }, 200);
-        thumbsEl.querySelectorAll('.od-thumb').forEach((t, i) => {
-            t.classList.toggle('active', i === currentImgIdx);
-        });
+        centreThumbs();
         updateImageLinks();
     }
 
@@ -1504,19 +1540,29 @@ const PROJECT_COORDS = [
         // Location mini-map
         updateMiniMap(index, proj);
 
-        // Thumbstrip
+        // Thumbstrip — a reel inside a fixed window, slid to keep the current
+        // photo centred (see centreThumbs)
         thumbsEl.innerHTML = '';
+        var viewport = document.createElement('div');
+        viewport.className = 'od-thumbs__viewport';
+        var reel = document.createElement('div');
+        reel.className = 'od-thumbs__reel';
         proj.imgs.forEach(function(src, i) {
             var img     = document.createElement('img');
             img.src       = src;
-            img.className = 'od-thumb' + (i === 0 ? ' active' : '');
+            img.className = 'od-thumb';
             img.alt       = proj.name + ' — photo ' + (i + 1);
             img.addEventListener('click', function() { setImg(i); });
-            thumbsEl.appendChild(img);
+            reel.appendChild(img);
         });
+        viewport.appendChild(reel);
+        thumbsEl.appendChild(viewport);
 
         // Hero image — crossfade
         currentImgIdx = 0;
+        // place the reel before the overlay is revealed, so it opens already
+        // centred rather than being seen to slide into position
+        centreThumbs(true);
         heroImg.style.opacity = '0';
         setTimeout(function() {
             heroImg.src = proj.imgs[0];
@@ -1683,6 +1729,12 @@ const PROJECT_COORDS = [
         if (e.key === 'ArrowRight') setImg(currentImgIdx + 1);
         if (e.key === 'ArrowUp')    { e.preventDefault(); stepProject(-1); }
         if (e.key === 'ArrowDown')  { e.preventDefault(); stepProject(1); }
+    });
+
+    // The window's width decides where the middle is, so re-place the reel when
+    // it changes — a rotated tablet otherwise leaves the current thumb off-centre.
+    window.addEventListener('resize', function () {
+        if (isOpen) centreThumbs(true);
     });
 
     // Re-render the open project in the new language when the site is toggled.

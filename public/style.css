@@ -2376,10 +2376,15 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 .od-fullres svg { width: 14px; height: 14px; flex: none; }
 
 /* Thumbstrip — liquid glass bar at bottom-left */
+/* Thumbstrip — a reel that slides so the current photo sits dead centre.
+   The thumbs used to be flex: 1 inside an overflow:hidden shell, so a project
+   with thirty photos squashed them all to their minimum and clipped everything
+   past the right edge — unreachable, and the current photo pinned to the end.
+   Now the shell is a fixed window and the reel travels behind it. */
 .od-thumbs {
     position: absolute; bottom: 20px; left: 20px;
     right: calc(var(--odpw) + 28px);
-    display: flex; gap: 4px; height: 52px;
+    display: flex; height: 52px;
     background: rgba(8,8,14,.44);
     backdrop-filter: blur(18px) saturate(150%);
     -webkit-backdrop-filter: blur(18px) saturate(150%);
@@ -2389,15 +2394,40 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     overflow: hidden; z-index: 4;
     padding: 4px;
 }
-.od-thumbs::-webkit-scrollbar { height: 0; }
-.od-thumb {
-    flex: 1; min-width: 44px; max-width: 80px; height: 100%;
-    object-fit: cover; cursor: none; border-radius: 8px;
-    opacity: .32; outline: 2px solid transparent; outline-offset: 1px;
-    transition: opacity .2s, outline-color .2s;
+/* The window the reel moves behind. The mask dissolves both ends so thumbs
+   arrive and leave rather than being sliced off by the glass edge. */
+.od-thumbs__viewport {
+    position: relative; flex: 1 1 auto; min-width: 0; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
 }
-.od-thumb.active  { opacity: 1; outline-color: var(--gold); }
-.od-thumb:hover   { opacity: .72; }
+.od-thumbs__reel {
+    display: flex; gap: 4px; height: 100%; width: max-content;
+    will-change: transform;
+    /* a soft, slightly overshooting ease so the strip feels thrown, not stepped */
+    transition: transform .58s cubic-bezier(.22, .68, .28, 1);
+}
+.od-thumb {
+    flex: 0 0 auto; width: 72px; height: 100%;
+    object-fit: cover; cursor: none; border-radius: 8px;
+    opacity: .26; transform: scale(.9);
+    outline: 2px solid transparent; outline-offset: 1px;
+    transition: opacity .4s var(--ease), transform .4s var(--ease),
+                outline-color .3s, box-shadow .4s;
+}
+/* the two either side read brighter, so the eye is led along the reel */
+.od-thumb--near   { opacity: .52; transform: scale(.94); }
+.od-thumb:hover   { opacity: .8;  transform: scale(.96); }
+.od-thumb.active  {
+    opacity: 1; transform: scale(1);
+    outline-color: var(--gold);
+    box-shadow: 0 0 0 1px rgba(8,8,14,.9), 0 6px 20px rgba(245,197,24,.28);
+}
+@media (prefers-reduced-motion: reduce) {
+    .od-thumbs__reel { transition: none; }
+    .od-thumb { transition: opacity .2s; transform: none; }
+    .od-thumb--near, .od-thumb.active, .od-thumb:hover { transform: none; }
+}
 
 /* ── LOCATION MAP — a separate window beside the detail window ── */
 .od-sidemap {
