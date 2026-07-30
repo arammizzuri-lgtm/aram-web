@@ -2342,8 +2342,11 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 .proj-overlay__body:hover .od-img-btn { opacity: 1; }
 .od-img-btn:hover { background: rgba(255,255,255,.16); color: #fff; }
+/* One to each edge of the photo, rather than a pair in the left corner. These
+   sit in the body, which spans the info panel too, so `next` clears the panel
+   by the same margin the thumbstrip uses instead of hiding behind it. */
 .od-img-btn--prev { left: 20px; }
-.od-img-btn--next { left: 70px; }
+.od-img-btn--next { right: calc(var(--odpw) + 28px); }
 
 /* Full-resolution view + download controls (top-right of the image) */
 .od-fullres {
