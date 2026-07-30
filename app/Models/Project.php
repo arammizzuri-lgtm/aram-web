@@ -199,38 +199,70 @@ class Project extends Model
             && ! str_starts_with($img, '/');
     }
 
-    /** Relative disk path of an upload's thumbnail (projects/thumb/<name>.webp), or null. */
-    public static function thumbRel(?string $img): ?string
+    /**
+     * Relative disk path of one derivative of an upload
+     * (projects/<size>/<name>.webp), or null for anything we can't resize —
+     * external URLs and absolute paths aren't ours to process.
+     */
+    public static function variantRel(?string $img, string $size): ?string
     {
-        if (! self::isUpload($img)) {
+        if (! self::isUpload($img) || ! isset(ProjectImage::SIZES[$size])) {
             return null;
         }
 
-        return 'projects/thumb/'.pathinfo($img, PATHINFO_FILENAME).'.webp';
+        return 'projects/'.$size.'/'.pathinfo($img, PATHINFO_FILENAME).'.webp';
     }
 
-    /** Build any missing thumbnails for this project's uploaded images. */
+    /** Relative disk path of an upload's grid thumbnail, or null. */
+    public static function thumbRel(?string $img): ?string
+    {
+        return self::variantRel($img, 'thumb');
+    }
+
+    /** Build any missing derivatives for this project's uploaded images. */
     public function generateThumbnails(): void
     {
         $disk = Storage::disk('public');
         foreach ((array) $this->imgs as $img) {
-            $rel = self::thumbRel($img);
-            if ($rel === null || $disk->exists($rel) || ! $disk->exists($img)) {
+            if (! self::isUpload($img) || ! $disk->exists($img)) {
                 continue;
             }
-            ProjectImage::thumbnail($disk->path($img), $disk->path($rel));
+            // Collect every size still missing, then build them all from a
+            // single decode of the original — decoding is the slow part.
+            $targets = [];
+            foreach (ProjectImage::SIZES as $size => [$max, $quality]) {
+                $rel = self::variantRel($img, $size);
+                if ($rel === null || $disk->exists($rel)) {
+                    continue;
+                }
+                $targets[] = [$disk->path($rel), $max, $quality];
+            }
+
+            if ($targets !== []) {
+                ProjectImage::derivatives($disk->path($img), $targets);
+            }
         }
     }
 
-    /** Grid/preview URL for one image — the small thumbnail when we have one. */
-    public function thumbUrl(?string $img): ?string
+    /**
+     * Public URL of one derivative, falling back to the original when that
+     * derivative hasn't been generated yet — a missing file then degrades to a
+     * slow-but-correct image rather than a broken one.
+     */
+    public function variantUrl(?string $img, string $size): ?string
     {
-        $rel = self::thumbRel($img);
+        $rel = self::variantRel($img, $size);
         if ($rel !== null && Storage::disk('public')->exists($rel)) {
             return self::resolveImage($rel);
         }
 
         return self::resolveImage($img);
+    }
+
+    /** Grid/preview URL for one image — the small thumbnail when we have one. */
+    public function thumbUrl(?string $img): ?string
+    {
+        return $this->variantUrl($img, 'thumb');
     }
 
     /**
@@ -347,8 +379,13 @@ class Project extends Model
             ->all();
     }
 
-    /** Images with the chosen cover first — the order the overlay shows them in. */
-    public function orderedImageUrls(): array
+    /**
+     * The stored image references with the chosen cover first — the order the
+     * overlay steps through them in.
+     *
+     * @return \Illuminate\Support\Collection<int, string>
+     */
+    private function orderedImageRefs()
     {
         $imgs = collect($this->imgs ?? []);
         $cover = $this->coverImage();
@@ -356,7 +393,27 @@ class Project extends Model
             $imgs = $imgs->reject(fn ($i) => $i === $cover)->prepend($cover);
         }
 
-        return $imgs->map(fn ($img) => self::resolveImage($img))->filter()->values()->all();
+        return $imgs;
+    }
+
+    /** Full-resolution image URLs, cover first — the source for zoom/download. */
+    public function orderedImageUrls(): array
+    {
+        return $this->orderedImageRefs()
+            ->map(fn ($img) => self::resolveImage($img))
+            ->filter()->values()->all();
+    }
+
+    /**
+     * One derivative size of every image, cover first and index-aligned with
+     * orderedImageUrls() so the front end can pair a light preview with its
+     * full-resolution original by position.
+     */
+    public function orderedVariantUrls(string $size): array
+    {
+        return $this->orderedImageRefs()
+            ->map(fn ($img) => $this->variantUrl($img, $size))
+            ->filter()->values()->all();
     }
 
     /** The chosen cover image reference, or the first image if none is set / valid. */

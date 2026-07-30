@@ -12,6 +12,18 @@ deployment:
     - cd $DEPLOYPATH && (grep -q '^APP_KEY=$' .env && php artisan key:generate --force || true)
     - cd $DEPLOYPATH && php artisan migrate --force
     - cd $DEPLOYPATH && (test -L public/storage || php artisan storage:link)
+    # Backfill WebP derivatives for images uploaded before the resizing feature.
+    # This is a one-off catch-up: new uploads build their own on save.
+    #
+    # Runs to completion because there is no shell access on this host to finish
+    # the job by hand. It is safe to let it run long: the command skips images
+    # that already have their derivatives, so if the host cuts it off partway,
+    # simply deploying again continues from where it stopped.
+    #
+    # Non-fatal on purpose — a failed backfill still leaves the site correct (it
+    # falls back to the originals) and must not block the rest of the deploy.
+    # Its output stays visible in the cPanel deploy log.
+    - cd $DEPLOYPATH && (php artisan projects:thumbs || true)
     - cd $DEPLOYPATH && php artisan config:cache
     - cd $DEPLOYPATH && php artisan route:cache
     - cd $DEPLOYPATH && php artisan view:cache

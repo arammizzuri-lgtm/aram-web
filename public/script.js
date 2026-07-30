@@ -432,6 +432,23 @@ function buildKurdishSun(container, opts = {}) {
    Cycles a cover photo from every project (3s crossfade), pauses
    off-screen, and clicks through to the project overlay. Desktop
    only — CSS hides it ≤1100px and this init bails there too. */
+/* ---- Photo variants -------------------------------------
+   Every project carries three index-aligned photo lists:
+     imgs_sm  the thumb strip and the blurred ambient wash
+     imgs_lg  the overlay hero, generated at 2x its CSS frame so it stays sharp
+              on retina screens
+     imgs     the untouched original, kept for zoom, "view full resolution"
+              and the watermarked download
+   Serving originals as previews is what made opening a project pull tens of
+   megabytes. Anything with no derivative — an external URL, or an upload whose
+   variants haven't been generated yet — falls back to the original, so a
+   missing file is merely slow rather than broken. */
+function imgVariant(proj, size, i) {
+    if (!proj) return undefined;
+    const list = proj['imgs_' + size];
+    return (Array.isArray(list) && list[i]) || (proj.imgs || [])[i];
+}
+
 (function initProcessShowcase() {
     const box = document.getElementById('processShowcase');
     if (!box) return;
@@ -441,7 +458,7 @@ function buildKurdishSun(container, opts = {}) {
 
     // every project that has a cover image, in site order
     const slides = site.projects
-        .map((p, idx) => ({ idx, num: p.num, name: p.name, nameKu: p.name_ku, img: (p.imgs || [])[0] }))
+        .map((p, idx) => ({ idx, num: p.num, name: p.name, nameKu: p.name_ku, img: imgVariant(p, 'lg', 0) }))
         .filter(s => s.img);
     if (!slides.length) { box.hidden = true; return; }
 
@@ -1446,16 +1463,78 @@ const PROJECT_COORDS = [
         });
     }
 
+    /* ---- Hero painting and full-resolution upgrade -------
+       The hero shows `imgs_lg`, generated at twice the CSS size of its frame,
+       so it already looks native on a retina screen while costing roughly a
+       tenth of the original. The original only becomes the better image once
+       someone zooms past that, so we fetch it at that point rather than making
+       every visitor pay for it up front — which is the whole reason opening a
+       project is fast now.
+
+       Two rules keep the swap invisible:
+       - the original is decoded in a detached Image and only assigned once the
+         browser reports it finished, so the hero never shows a half-painted file
+       - we re-check that the same photo is still on screen before assigning, so
+         a slow download can't overwrite a photo the visitor has moved on to */
+    let heroFullPending = null;
+
+    // True when the hero is being painted across more device pixels than the
+    // copy we loaded actually contains — i.e. zoom has out-resolved it.
+    function heroOutResolved() {
+        if (!heroImg.naturalWidth || !heroImg.clientWidth) return false;
+        const pinch = (window.visualViewport && window.visualViewport.scale) || 1;
+        const wanted = heroImg.clientWidth * (window.devicePixelRatio || 1) * pinch;
+        return wanted > heroImg.naturalWidth * 1.02;   // 2% slack for rounding
+    }
+
+    function upgradeHeroToFullRes() {
+        const proj = PROJECT_DATA[currentProjIdx];
+        if (!proj || !isOpen) return;
+        const full = (proj.imgs || [])[currentImgIdx];
+        if (!full || full === heroFullPending) return;
+        // already showing it (or there was no lighter derivative to begin with)
+        if (heroImg.currentSrc && heroImg.currentSrc.indexOf(full) !== -1) return;
+
+        heroFullPending = full;
+        const loader = new Image();
+        loader.onload = function () {
+            heroFullPending = null;
+            const now = PROJECT_DATA[currentProjIdx];
+            if (!isOpen || !now || (now.imgs || [])[currentImgIdx] !== full) return;
+            heroImg.src = full;          // decoded already, so this swaps in one frame
+        };
+        loader.onerror = function () { heroFullPending = null; };
+        loader.src = full;
+    }
+
+    function paintHero(proj, i) {
+        heroImg.src = imgVariant(proj, 'lg', i);
+        heroImg.alt = proj.name;
+        applyAmbient(imgVariant(proj, 'sm', i));
+    }
+
+    // Checked after every hero load: someone who was already zoomed in when they
+    // stepped to the next photo needs its original straight away.
+    heroImg.addEventListener('load', function () {
+        if (isOpen && heroOutResolved()) upgradeHeroToFullRes();
+    });
+
+    // visualViewport reports pinch-zoom; the window resize covers desktop
+    // browser zoom, which moves devicePixelRatio.
+    function onViewportZoom() {
+        if (isOpen && heroOutResolved()) upgradeHeroToFullRes();
+    }
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', onViewportZoom);
+    window.addEventListener('resize', onViewportZoom);
+
     function setImg(idx) {
         const proj = PROJECT_DATA[currentProjIdx];
         if (!proj) return;
         currentImgIdx = ((idx % proj.imgs.length) + proj.imgs.length) % proj.imgs.length;
         heroImg.style.opacity = '0';
         setTimeout(() => {
-            heroImg.src = proj.imgs[currentImgIdx];
-            heroImg.alt = proj.name;
+            paintHero(proj, currentImgIdx);
             heroImg.style.opacity = '1';
-            applyAmbient(proj.imgs[currentImgIdx]);
         }, 200);
         centreThumbs();
         updateImageLinks();
@@ -1549,7 +1628,9 @@ const PROJECT_COORDS = [
         reel.className = 'od-thumbs__reel';
         proj.imgs.forEach(function(src, i) {
             var img     = document.createElement('img');
-            img.src       = src;
+            // the strip renders at ~90px — the small derivative, never the original
+            img.src       = imgVariant(proj, 'sm', i);
+            img.decoding  = 'async';
             img.className = 'od-thumb';
             img.alt       = proj.name + ' — photo ' + (i + 1);
             img.addEventListener('click', function() { setImg(i); });
@@ -1565,10 +1646,8 @@ const PROJECT_COORDS = [
         centreThumbs(true);
         heroImg.style.opacity = '0';
         setTimeout(function() {
-            heroImg.src = proj.imgs[0];
-            heroImg.alt = proj.name;
+            paintHero(proj, 0);
             heroImg.style.opacity = '';  // CSS transition handles this
-            applyAmbient(proj.imgs[0]);
         }, 60);
         updateImageLinks();
 
@@ -2404,7 +2483,8 @@ const PROJECT_COORDS = [
             specLoc.textContent  = proj.location || dash;
         } else {
             cardBadge.hidden = true;
-            cardImg.src          = proj.imgs[0];
+            // hover card is a ~280px tile — the grid derivative covers it at 2x
+            cardImg.src          = imgVariant(proj, 'thumb', 0);
             cardImg.alt          = proj.name;
             cardMeta.textContent = [proj.location, proj.year, proj.typology].filter(Boolean).join('  ·  ');
             cardExcerpt.textContent = (isKu && proj.desc_ku) ? proj.desc_ku : proj.desc;

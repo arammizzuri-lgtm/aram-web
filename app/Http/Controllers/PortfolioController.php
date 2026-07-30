@@ -45,7 +45,14 @@ class PortfolioController extends Controller
                 'narrative' => $p->narrative,
                 'materials' => $p->materials ?? [],
                 'related' => $p->related ?? [],
+                // Three index-aligned lists of the same photos: `imgs` is the
+                // untouched original (zoom, full-resolution view, download),
+                // `imgs_lg` the display-sized hero and `imgs_sm` the strip
+                // thumbnail. Sending originals for previews is what used to make
+                // opening a project download tens of megabytes.
                 'imgs' => $p->map_only ? [] : $p->orderedImageUrls(),
+                'imgs_lg' => $p->map_only ? [] : $p->orderedVariantUrls('lg'),
+                'imgs_sm' => $p->map_only ? [] : $p->orderedVariantUrls('sm'),
                 'map_only' => (bool) $p->map_only,
             ])->values()->all(),
             'content' => $content,
