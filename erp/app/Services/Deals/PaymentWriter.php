@@ -78,10 +78,12 @@ class PaymentWriter
         ?float $exchangeRate = null,
         ?string $paidAt = null,
         ?string $notes = null,
+        string $method = 'cash',
+        ?string $reference = null,
     ): CustomerPayment {
         $payment = $this->receive(
             $customer, $amount, $currency, $exchangeRate, $paidAt,
-            method: 'cash', notes: $notes, direction: 'refund',
+            method: $method, reference: $reference, notes: $notes, direction: 'refund',
         );
 
         $payment->update([
@@ -90,6 +92,53 @@ class PaymentWriter
         ]);
 
         return $payment->refresh();
+    }
+
+    /**
+     * Correct a payment that has already been recorded.
+     *
+     * The base amount is recomputed rather than carried across, because it is
+     * derived from the amount, the currency and the rate — so an edit to any of
+     * the three leaves it stale. It is also the figure every balance in this
+     * system is measured in, which makes a stale one wrong money everywhere at
+     * once, and quietly: nothing fails, the totals are simply not true.
+     *
+     * The amount is taken as a magnitude and the direction decides its sign,
+     * which is the same bargain the form makes with whoever fills it in.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function amend(CustomerPayment $payment, array $data): CustomerPayment
+    {
+        $currency = $data['currency'] ?? $payment->currency;
+        $rate = $this->rate($data['exchange_rate'] ?? $payment->exchange_rate);
+        $direction = $data['direction'] ?? $payment->direction;
+
+        $money = Money::of(abs((float) ($data['amount'] ?? $payment->amount)), $currency);
+        $base = $this->toBase($money, $rate);
+
+        if ($direction === 'refund') {
+            $money = $money->negated();
+            $base = $base->negated();
+        }
+
+        $payment->update([
+            ...$data,
+            'exchange_rate' => $rate,
+            'amount' => $money->amount,
+            'base_amount' => $base->amount,
+        ]);
+
+        return $payment->refresh();
+    }
+
+    /**
+     * A rate of zero, or an empty box where the form hid the field because the
+     * payment was in dollars, means "no rate" rather than a rate of nothing.
+     */
+    public function rate(mixed $value): ?float
+    {
+        return ((float) $value) ?: null;
     }
 
     /**

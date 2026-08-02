@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\CustomerPayments\Pages\ManageCustomerPayments;
 use App\Models\Customer;
+use App\Models\CustomerPayment;
 use App\Models\Deal;
 use App\Models\DealLine;
 use App\Models\Supplier;
@@ -396,5 +397,99 @@ class CustomerPaymentTest extends TestCase
         $this->assertSame('1000.0000', $allocation->base_amount, 'matched in dollars');
         $this->assertSame('1470000.0000', $allocation->amount, 'shown against the invoice in dinars');
         $this->assertTrue($invoice->fresh()->isPaid());
+    }
+
+    // -------------------------------------------------- recording on screen
+
+    /*
+     * The tests above all record money by calling PaymentWriter, which is not
+     * how anyone using this system records money. The screen was saving its
+     * form straight to the table instead, so a payment arrived with no receipt
+     * number and no dollar amount — and the database refused it outright.
+     *
+     * These drive the buttons rather than the service, because that failure
+     * could not have been caught anywhere else.
+     */
+
+    /** @param array<string, mixed> $overrides */
+    private function recordOnScreen(array $overrides = []): CustomerPayment
+    {
+        Livewire::test(ManageCustomerPayments::class)
+            ->callAction('create', array_merge([
+                'customer_id' => $this->customer->id,
+                'direction' => 'in',
+                'amount' => 13100,
+                'currency' => 'IQD',
+                'exchange_rate' => 1310,
+                'method' => 'transfer',
+                'paid_at' => '2026-08-02',
+                'reference' => 'slip 41',
+            ], $overrides))
+            ->assertHasNoActionErrors();
+
+        return $this->customer->payments()->latest('id')->firstOrFail();
+    }
+
+    #[Test]
+    public function a_payment_recorded_on_the_screen_is_given_a_receipt_number(): void
+    {
+        $payment = $this->recordOnScreen();
+
+        $this->assertNotEmpty($payment->number, 'the receipt number the database demands');
+        $this->assertSame(10.0, (float) $payment->base_amount, '13,100 dinars at 1,310 is $10');
+        $this->assertSame('transfer', $payment->method);
+        $this->assertSame('slip 41', $payment->reference);
+        $this->assertNotNull($payment->recorded_by, 'who took the money');
+    }
+
+    /** Dollars need no rate, and the form hides the box that would ask for one. */
+    #[Test]
+    public function a_dollar_payment_recorded_on_the_screen_needs_no_rate(): void
+    {
+        $payment = $this->recordOnScreen(['amount' => 500, 'currency' => 'USD', 'exchange_rate' => null]);
+
+        $this->assertSame(500.0, (float) $payment->base_amount);
+        $this->assertNull($payment->exchange_rate);
+    }
+
+    /** Direction alone decides the sign; the amount is only ever a magnitude. */
+    #[Test]
+    public function a_refund_recorded_on_the_screen_moves_the_balance_the_other_way(): void
+    {
+        $this->payments->receive($this->customer, 1000, 'USD');
+
+        $refund = $this->recordOnScreen([
+            'amount' => 250, 'currency' => 'USD', 'exchange_rate' => null, 'direction' => 'refund',
+        ]);
+
+        $this->assertSame('refund', $refund->direction);
+        $this->assertSame(-250.0, (float) $refund->base_amount);
+        $this->assertSame('transfer', $refund->method, 'a refund keeps how it was paid');
+        $this->assertSame(750.0, $this->customer->fresh()->unallocatedCredit());
+    }
+
+    /**
+     * Editing is the same trap as recording: the dollar amount is derived, so
+     * changing what was received without recomputing it leaves every balance in
+     * the system quietly wrong.
+     */
+    #[Test]
+    public function correcting_a_payment_recomputes_what_it_was_worth_in_dollars(): void
+    {
+        $payment = $this->recordOnScreen();
+
+        Livewire::test(ManageCustomerPayments::class)
+            ->callTableAction('edit', $payment, [
+                'customer_id' => $this->customer->id,
+                'direction' => 'in',
+                'amount' => 26200,
+                'currency' => 'IQD',
+                'exchange_rate' => 1310,
+                'method' => 'transfer',
+                'paid_at' => '2026-08-02',
+            ])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(20.0, (float) $payment->fresh()->base_amount, 'twice the dinars is twice the dollars');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CustomerPayments\Pages;
 
 use App\Filament\Resources\CustomerPayments\CustomerPaymentResource;
+use App\Models\Customer;
 use App\Models\CustomerPayment;
 use App\Services\Deals\PaymentWriter;
 use Filament\Actions\Action;
@@ -24,6 +25,7 @@ class ManageCustomerPayments extends ManageRecords
         return [
             CreateAction::make()
                 ->label('Record a payment')
+                ->using(fn (array $data) => $this->record($data))
                 // The money is safe the moment it is saved; matching it to
                 // invoices is offered straight afterwards, not demanded.
                 ->after(fn (CustomerPayment $record) => $this->offerToMatch($record)),
@@ -34,8 +36,48 @@ class ManageCustomerPayments extends ManageRecords
     {
         return [
             $this->matchAction(),
-            EditAction::make(),
+            EditAction::make()
+                ->using(fn (CustomerPayment $record, array $data) => app(PaymentWriter::class)->amend($record, $data)),
         ];
+    }
+
+    /**
+     * Saving the form is delegated to PaymentWriter rather than written
+     * straight to the table.
+     *
+     * A payment is not only the fields on the screen: it needs its receipt
+     * number, and the amount converted to the currency the business measures
+     * itself in. Neither is asked of whoever records it, and neither has a
+     * default — so a form saved directly is rejected by the database for the
+     * missing number, which is exactly what it did.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function record(array $data): CustomerPayment
+    {
+        $payments = app(PaymentWriter::class);
+
+        $customer = Customer::findOrFail($data['customer_id']);
+        $rate = $payments->rate($data['exchange_rate'] ?? null);
+
+        // How much, and which way, are separate questions on this form, so the
+        // amount is a magnitude and Direction alone decides the sign.
+        $amount = abs((float) $data['amount']);
+
+        $arguments = [
+            'customer' => $customer,
+            'amount' => $amount,
+            'currency' => $data['currency'],
+            'exchangeRate' => $rate,
+            'paidAt' => $data['paid_at'] ?? null,
+            'method' => $data['method'] ?? 'cash',
+            'reference' => $data['reference'] ?? null,
+            'notes' => $data['notes'] ?? null,
+        ];
+
+        return ($data['direction'] ?? 'in') === 'refund'
+            ? $payments->refund(...$arguments)
+            : $payments->receive(...$arguments);
     }
 
     private function offerToMatch(CustomerPayment $record): void
