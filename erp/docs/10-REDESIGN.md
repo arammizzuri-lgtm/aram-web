@@ -5,7 +5,7 @@
 > does not.
 
 > **Build status — 2026-08-02.** Every module below is built.
-> **288 tests · 846 assertions · Pint clean · 20 screens verified in a browser.**
+> **314 tests · 985 assertions · Pint clean · 20 screens verified in a browser.**
 >
 > | Module | State |
 > |---|---|
@@ -13,7 +13,8 @@
 > | Deal lines picked from the price lists, both sides filled | ✅ |
 > | Deal stage — moves itself as you buy and ship, settable by hand | ✅ |
 > | Deal screen carries its quotations, purchases, shipping and invoices | ✅ |
-> | Deleting a deal — soft, restorable, from the list or the deal | ✅ |
+> | Deleting anything — soft, restorable, on every screen | ✅ |
+> | Recently deleted — one place to find and restore from | ✅ |
 > | Quotations — photos + frozen approval snapshot | ✅ |
 > | Purchases + supplier payments with real transfer cost | ✅ |
 > | Consignments — 3 modes, freight split across deals | ✅ |
@@ -358,6 +359,52 @@ you record it; matching can happen whenever.
 
 Purchases can be paid in **instalments** (deposit then balance) or **in full**.
 Each payment records the supplier amount *and* what the transfer really cost you.
+
+---
+
+## 9b. Deleting, and taking it back
+
+Everything can be deleted, on every screen, and **nothing that is deleted is
+gone**. That combination is the whole design: what makes a delete button
+frightening is that it is final, and once it is not, you can tidy without
+thinking twice.
+
+Before this there were three screens that could delete anything at all. A
+tracking number typed wrong, a supplier created twice, a payment recorded that
+never arrived — all permanent. The only way to blunt a wrong payment was to edit
+the amount, which rewrites history rather than correcting it.
+
+### The dialog tells you what it costs
+
+"Are you sure?" is not a question — it asks you to confirm something you have
+not been told. So the confirmation names what hangs off *this* record: how many
+deals, how much has been paid, and for a payment, whose balance moves and by how
+much. Where there is a gentler move it offers that instead — **deactivate** a
+supplier you still have history with, **cancel** an invoice the customer is
+holding a copy of.
+
+None of it is a wall. It is the difference between a decision and a reflex.
+
+### Three ways back
+
+| | |
+|---|---|
+| **Undo**, in the notification | For the second of regret, before you have moved |
+| **Deleted records** filter, on each screen | For when you know where you left it |
+| **Settings › Recently deleted** | Everything, newest first, when you do not |
+
+### Erasing for good
+
+Separate, owner-only, and offered only where nothing points at the record —
+which is also where the foreign keys would refuse. A button that exists and then
+fails is worse than one that is absent.
+
+### One consequence worth knowing
+
+A deleted record gives up its code, so "SUP-A" can be used again immediately.
+The price is that restoring the original then fails, because something else
+holds its code. The restore says so plainly rather than showing a database
+error.
 
 ---
 

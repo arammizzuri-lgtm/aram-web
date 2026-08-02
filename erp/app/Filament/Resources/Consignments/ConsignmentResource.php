@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Consignments;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Consignments\Pages\ManageConsignments;
 use App\Models\CollectionPoint;
 use App\Models\Consignment;
@@ -19,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 /**
@@ -30,6 +33,8 @@ use UnitEnum;
  */
 class ConsignmentResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = Consignment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
@@ -50,7 +55,7 @@ class ConsignmentResource extends Resource
                     TextInput::make('tracking_number')
                         ->label('Tracking no.')
                         ->required()
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->whereNull('deleted_at'))
                         ->maxLength(64),
 
                     Select::make('mode')
@@ -222,6 +227,8 @@ class ConsignmentResource extends Resource
             ->filters([
                 SelectFilter::make('mode')->options(Consignment::MODES),
                 SelectFilter::make('status')->options(Consignment::STATUSES)->multiple(),
+
+                RecordDeletion::filter(),
             ]);
     }
 

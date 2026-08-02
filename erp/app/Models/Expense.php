@@ -6,10 +6,12 @@ use App\Models\Concerns\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model
 {
     use HasDocumentNumber;
+    use SoftDeletes;
 
     protected $fillable = [
         'number', 'expense_category_id', 'expense_date', 'description', 'supplier_id',

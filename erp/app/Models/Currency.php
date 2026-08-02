@@ -6,10 +6,13 @@ use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 
 class Currency extends Model
 {
+    use SoftDeletes;
+
     protected $primaryKey = 'code';
 
     protected $keyType = 'string';

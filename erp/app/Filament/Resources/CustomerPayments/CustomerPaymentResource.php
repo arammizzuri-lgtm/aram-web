@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\CustomerPayments;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\CustomerPayments\Pages\ManageCustomerPayments;
 use App\Models\CustomerPayment;
 use BackedEnum;
@@ -30,6 +32,8 @@ use UnitEnum;
  */
 class CustomerPaymentResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = CustomerPayment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
@@ -161,6 +165,8 @@ class CustomerPaymentResource extends Resource
                         .'where customer_payment_allocations.customer_payment_id = customer_payments.id)'
                     ))
                     ->toggle(),
+
+                RecordDeletion::filter(),
             ]);
     }
 

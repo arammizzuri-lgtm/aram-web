@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Consignments\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\Consignments\ConsignmentResource;
 use App\Models\Consignment;
 use App\Services\Shipping\ConsignmentWriter;
@@ -28,6 +29,7 @@ class ManageConsignments extends ManageRecords
         return [
             EditAction::make()->after(fn ($record) => $this->settle($record)),
             $this->splitAction(),
+            ...RecordDeletion::actions(),
         ];
     }
 

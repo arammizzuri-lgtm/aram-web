@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Your forwarder's warehouses in China.
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CollectionPoint extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name', 'city', 'address', 'address_zh', 'contact_name', 'phone',
         'is_active', 'display_order',

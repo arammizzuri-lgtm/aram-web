@@ -6,6 +6,7 @@ use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Money in from a customer.
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CustomerPayment extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'customer_id', 'number', 'amount', 'currency', 'exchange_rate',
         'base_amount', 'direction', 'method', 'reference', 'paid_at',

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\CollectionPoints;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\CollectionPoints\Pages\ManageCollectionPoints;
 use App\Models\CollectionPoint;
 use BackedEnum;
@@ -26,6 +28,8 @@ use UnitEnum;
  */
 class CollectionPointResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = CollectionPoint::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
@@ -88,7 +92,8 @@ class CollectionPointResource extends Resource
                     ->counts('consignments')
                     ->alignEnd(),
             ])
-            ->defaultSort('city');
+            ->defaultSort('city')
+            ->filters([RecordDeletion::filter()]);
     }
 
     public static function getPages(): array

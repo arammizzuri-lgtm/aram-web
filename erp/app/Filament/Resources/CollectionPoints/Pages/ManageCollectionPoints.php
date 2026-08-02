@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CollectionPoints\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\CollectionPoints\CollectionPointResource;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -19,6 +20,9 @@ class ManageCollectionPoints extends ManageRecords
     /** Reference data is corrected in place; nothing here derives from it. */
     protected function getTableActions(): array
     {
-        return [EditAction::make()];
+        return [
+            EditAction::make(),
+            ...RecordDeletion::actions(),
+        ];
     }
 }

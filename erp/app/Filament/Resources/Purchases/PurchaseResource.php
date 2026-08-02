@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Purchases;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Resources\Purchases\Pages\ManagePurchases;
 use App\Models\DealPurchase;
@@ -34,6 +36,8 @@ use UnitEnum;
  */
 class PurchaseResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = DealPurchase::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxArrowDown;
@@ -193,6 +197,8 @@ class PurchaseResource extends Resource
                     ->label('Still owed')
                     ->query(fn (Builder $q) => $q->whereNotIn('status', ['paid', 'cancelled']))
                     ->toggle(),
+
+                RecordDeletion::filter(),
             ]);
     }
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * What the customer receives. Never carries a cost, in print or in the row.
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CustomerInvoice extends Model
 {
+    use SoftDeletes;
+
     public const TYPES = [
         'goods' => 'Goods',
         'shipping' => 'Shipping',

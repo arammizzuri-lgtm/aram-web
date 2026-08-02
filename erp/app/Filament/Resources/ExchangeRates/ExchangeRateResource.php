@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ExchangeRates;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\ExchangeRates\Pages\ManageExchangeRates;
 use App\Models\Currency;
 use App\Models\ExchangeRate;
@@ -25,6 +27,8 @@ use UnitEnum;
  */
 class ExchangeRateResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = ExchangeRate::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
@@ -86,6 +90,8 @@ class ExchangeRateResource extends Resource
                 SelectFilter::make('to_currency')
                     ->label('To currency')
                     ->options(fn () => Currency::query()->pluck('name', 'code')),
+
+                RecordDeletion::filter(),
             ]);
     }
 

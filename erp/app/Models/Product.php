@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'sku', 'slug', 'barcode', 'name', 'name_ar', 'name_ku', 'name_zh', 'description',
         'product_category_id', 'brand_id', 'product_group_id', 'default_supplier_id',

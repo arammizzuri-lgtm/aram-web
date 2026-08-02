@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Currencies\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\Currencies\CurrencyResource;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -21,6 +22,9 @@ class ManageCurrencies extends ManageRecords
     /** Reference data is corrected in place; nothing here derives from it. */
     protected function getTableActions(): array
     {
-        return [EditAction::make()];
+        return [
+            EditAction::make(),
+            ...RecordDeletion::actions(),
+        ];
     }
 }

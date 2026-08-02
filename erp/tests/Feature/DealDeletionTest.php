@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Resources\Deals\Pages\EditDeal;
 use App\Filament\Resources\Deals\Pages\ListDeals;
 use App\Models\Customer;
@@ -14,6 +13,7 @@ use App\Models\User;
 use App\Services\Deals\DealWriter;
 use App\Services\Deals\InvoiceWriter;
 use App\Services\Deals\PaymentWriter;
+use App\Services\Deletion\DeletionImpact;
 use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -290,21 +290,25 @@ class DealDeletionTest extends TestCase
     #[Test]
     public function an_untouched_deal_says_plainly_that_nothing_is_at_stake(): void
     {
-        $warning = DealResource::deletionConsequences($this->deal());
+        $warning = app(DeletionImpact::class)->describe($this->deal());
 
-        $this->assertStringContainsString('Nothing has been billed or paid', $warning);
+        $this->assertStringContainsString('Nothing else depends on this', $warning);
+        $this->assertStringContainsString('Recently deleted', $warning);
     }
 
     /** The figures are named, because "are you sure?" is not a question. */
     #[Test]
     public function a_deal_with_money_on_it_says_exactly_what_is_at_stake(): void
     {
-        $warning = DealResource::deletionConsequences($this->billedDeal());
+        $deal = $this->billedDeal();
+        $impact = app(DeletionImpact::class);
 
-        $this->assertStringContainsString('1 invoice issued', $warning);
+        $warning = $impact->describe($deal);
+
+        $this->assertStringContainsString('1 invoice issued to the customer', $warning);
         $this->assertStringContainsString('$100.00 received', $warning);
 
         // And points at the alternative rather than only refusing.
-        $this->assertStringContainsString('cancel it instead', $warning);
+        $this->assertStringContainsString('Cancelling it instead', $impact->alternative($deal));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CustomerPayments\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\CustomerPayments\CustomerPaymentResource;
 use App\Models\Customer;
 use App\Models\CustomerPayment;
@@ -38,6 +39,7 @@ class ManageCustomerPayments extends ManageRecords
             $this->matchAction(),
             EditAction::make()
                 ->using(fn (CustomerPayment $record, array $data) => app(PaymentWriter::class)->amend($record, $data)),
+            ...RecordDeletion::actions(),
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Money out to a supplier — in instalments or in one go.
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SupplierPayment extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'supplier_id', 'deal_purchase_id', 'number',
         'amount', 'currency', 'exchange_rate', 'base_amount', 'actual_cost_base',

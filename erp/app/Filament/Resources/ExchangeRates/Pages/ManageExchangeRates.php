@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ExchangeRates\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\ExchangeRates\ExchangeRateResource;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -33,6 +34,9 @@ class ManageExchangeRates extends ManageRecords
      */
     protected function getTableActions(): array
     {
-        return [EditAction::make()];
+        return [
+            EditAction::make(),
+            ...RecordDeletion::actions(),
+        ];
     }
 }

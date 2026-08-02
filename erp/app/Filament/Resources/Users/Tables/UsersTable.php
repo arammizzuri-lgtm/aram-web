@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Actions\RecordDeletion;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -65,9 +66,12 @@ class UsersTable
                 TernaryFilter::make('is_active')
                     ->label('Active')
                     ->default(true),
+
+                RecordDeletion::filter(),
             ])
             ->recordActions([
                 EditAction::make(),
+                ...RecordDeletion::actions(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

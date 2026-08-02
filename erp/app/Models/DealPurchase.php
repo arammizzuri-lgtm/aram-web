@@ -6,6 +6,7 @@ use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * One supplier's side of one deal — the internal purchase invoice.
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class DealPurchase extends Model
 {
+    use SoftDeletes;
+
     public const STATUSES = [
         'draft' => 'Draft',
         'ordered' => 'Ordered',

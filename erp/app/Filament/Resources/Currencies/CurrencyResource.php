@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Currencies;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Currencies\Pages\ManageCurrencies;
 use App\Models\Currency;
 use BackedEnum;
@@ -13,10 +15,13 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class CurrencyResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = Currency::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCurrencyDollar;
@@ -37,7 +42,7 @@ class CurrencyResource extends Resource
                 ->alpha()
                 ->helperText('Three letters, e.g. USD.')
                 ->disabledOn('edit')
-                ->unique(ignoreRecord: true),
+                ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->whereNull('deleted_at')),
 
             TextInput::make('name')->required()->maxLength(64),
 
@@ -87,7 +92,8 @@ class CurrencyResource extends Resource
                     ->formatStateUsing(fn (bool $state) => $state ? 'Active' : 'Inactive')
                     ->color(fn (bool $state) => $state ? 'success' : 'danger'),
             ])
-            ->defaultSort('sort_order');
+            ->defaultSort('sort_order')
+            ->filters([RecordDeletion::filter()]);
     }
 
     public static function getPages(): array

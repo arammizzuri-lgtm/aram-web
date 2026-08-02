@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Expenses;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Resources\Expenses\Pages\ManageExpenses;
 use App\Models\Deal;
@@ -24,6 +26,8 @@ use UnitEnum;
 
 class ExpenseResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = Expense::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
@@ -157,6 +161,8 @@ class ExpenseResource extends Resource
                 SelectFilter::make('status')->options([
                     'draft' => 'Draft', 'approved' => 'Approved', 'paid' => 'Paid',
                 ]),
+
+                RecordDeletion::filter(),
             ]);
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\CustomerInvoices;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\CustomerInvoices\Pages\ManageCustomerInvoices;
 use App\Models\CustomerInvoice;
 use BackedEnum;
@@ -29,6 +31,8 @@ use UnitEnum;
  */
 class CustomerInvoiceResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = CustomerInvoice::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCurrencyDollar;
@@ -137,6 +141,8 @@ class CustomerInvoiceResource extends Resource
                     ->label('Still owed')
                     ->query(fn (Builder $q) => $q->outstanding())
                     ->toggle(),
+
+                RecordDeletion::filter(),
             ]);
     }
 

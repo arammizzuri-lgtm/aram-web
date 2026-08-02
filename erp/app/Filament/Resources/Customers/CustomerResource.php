@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Customers;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Customers\Pages\ManageCustomers;
 use App\Models\Customer;
 use BackedEnum;
@@ -17,10 +19,13 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class CustomerResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = Customer::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
@@ -37,7 +42,7 @@ class CustomerResource extends Resource
             Section::make('Company')
                 ->columns(2)
                 ->schema([
-                    TextInput::make('code')->label('Customer code')->required()->unique(ignoreRecord: true)->maxLength(32),
+                    TextInput::make('code')->label('Customer code')->required()->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->whereNull('deleted_at'))->maxLength(32),
                     TextInput::make('name')->required()->maxLength(255),
                     TextInput::make('name_ar')->label('Arabic name')->maxLength(255),
                     TextInput::make('name_ku')->label('Kurdish name')->maxLength(255),
@@ -151,6 +156,8 @@ class CustomerResource extends Resource
                 SelectFilter::make('city')
                     ->options(fn () => Customer::query()->whereNotNull('city')->distinct()->pluck('city', 'city')),
                 TernaryFilter::make('is_active')->label('Active')->default(true),
+
+                RecordDeletion::filter(),
             ]);
     }
 

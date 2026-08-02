@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Expenses\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\Expenses\ExpenseResource;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -26,6 +27,9 @@ class ManageExpenses extends ManageRecords
      */
     protected function getTableActions(): array
     {
-        return [EditAction::make()];
+        return [
+            EditAction::make(),
+            ...RecordDeletion::actions(),
+        ];
     }
 }

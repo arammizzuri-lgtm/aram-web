@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Purchases\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Actions\RecordSupplierPayment;
 use App\Filament\Resources\Purchases\PurchaseResource;
 use Filament\Actions\EditAction;
@@ -16,6 +17,7 @@ class ManagePurchases extends ManageRecords
         return [
             RecordSupplierPayment::make(),
             EditAction::make(),
+            ...RecordDeletion::actions(),
         ];
     }
 }

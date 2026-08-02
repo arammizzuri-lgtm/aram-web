@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Suppliers;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Suppliers\Pages\ManageSuppliers;
 use App\Models\Supplier;
 use BackedEnum;
@@ -16,10 +18,13 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class SupplierResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = Supplier::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
@@ -36,7 +41,7 @@ class SupplierResource extends Resource
             Section::make('Company')
                 ->columns(2)
                 ->schema([
-                    TextInput::make('code')->label('Supplier code')->required()->unique(ignoreRecord: true)->maxLength(32),
+                    TextInput::make('code')->label('Supplier code')->required()->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->whereNull('deleted_at'))->maxLength(32),
                     TextInput::make('name')->required()->maxLength(255),
                     TextInput::make('name_zh')->label('Chinese name 中文名')->maxLength(255),
                     TextInput::make('contact_person')->maxLength(255),
@@ -134,6 +139,8 @@ class SupplierResource extends Resource
             ->defaultSort('name')
             ->filters([
                 TernaryFilter::make('is_active')->label('Active')->default(true),
+
+                RecordDeletion::filter(),
             ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CustomerInvoices\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\CustomerInvoices\CustomerInvoiceResource;
 use App\Models\CustomerInvoice;
 use App\Services\Deals\InvoiceWriter;
@@ -22,6 +23,7 @@ class ManageCustomerInvoices extends ManageRecords
             $this->printAction(),
             EditAction::make(),
             $this->cancelAction(),
+            ...RecordDeletion::actions(),
         ];
     }
 

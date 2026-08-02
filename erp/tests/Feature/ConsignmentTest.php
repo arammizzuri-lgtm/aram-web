@@ -349,7 +349,10 @@ class ConsignmentTest extends TestCase
         $ali->lines()->first()->update(['contains_battery' => true]);
 
         foreach (['sea', 'air_battery'] as $mode) {
-            Consignment::query()->delete();
+            // forceDelete, because consignments soft-delete now: an ordinary
+            // delete would leave the row behind holding its tracking number,
+            // and the second pass reuses it.
+            Consignment::query()->forceDelete();
             $consignment = $this->consignment($mode, 900, [$ali->fresh()->id]);
 
             $this->assertSame([], $this->writer->warnings($consignment), $mode);

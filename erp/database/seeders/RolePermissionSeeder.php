@@ -41,14 +41,14 @@ class RolePermissionSeeder extends Seeder
         'record_supplier_payment',
 
         /*
-         * Erasing a deal for good, as opposed to deleting it.
+         * Erasing a record for good, as opposed to deleting it.
          *
-         * An ordinary delete is soft and restorable, so both people can do it —
-         * an assistant can already empty a deal line by line, and pretending
-         * otherwise would be a lock on the door of a room with no wall. This is
-         * the one that cannot be taken back.
+         * An ordinary delete is soft and restorable everywhere, so both people
+         * can do it — an assistant can already empty a deal line by line, and
+         * pretending otherwise would be a lock on the door of a room with no
+         * wall. This is the one that cannot be taken back.
          */
-        'delete_deal',
+        'delete_record',
         'manage_products',
         'manage_partners',
         'manage_settings',

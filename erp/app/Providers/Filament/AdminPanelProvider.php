@@ -13,11 +13,13 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -82,6 +84,18 @@ class AdminPanelProvider extends PanelProvider
             ->routes(fn () => Route::get('invoices/{invoice}/print', CustomerInvoicePrintController::class)
                 ->middleware(Authenticate::class)
                 ->name('invoices.print'))
+            /*
+             * The listener behind every Undo button.
+             *
+             * Mounted on every page because a notification can be raised on any
+             * of them, and a notification cannot carry a closure — it is
+             * serialised and rebuilt, so what it dispatches has to be caught by
+             * a component that is already there. See App\Livewire\UndoDelete.
+             */
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => Blade::render('@livewire(\'undo-delete\')'),
+            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

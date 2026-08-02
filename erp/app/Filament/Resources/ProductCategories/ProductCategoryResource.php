@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ProductCategories;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\ProductCategories\Pages\ManageProductCategories;
 use App\Models\ProductCategory;
 use BackedEnum;
@@ -15,6 +17,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 /**
@@ -26,6 +29,8 @@ use UnitEnum;
  */
 class ProductCategoryResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = ProductCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;
@@ -47,7 +52,7 @@ class ProductCategoryResource extends Resource
                 ->live(onBlur: true)
                 ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug((string) $state))),
 
-            TextInput::make('slug')->required()->unique(ignoreRecord: true)->maxLength(255),
+            TextInput::make('slug')->required()->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->whereNull('deleted_at'))->maxLength(255),
 
             Select::make('parent_id')
                 ->label('Parent category')
@@ -108,7 +113,8 @@ class ProductCategoryResource extends Resource
                     ->formatStateUsing(fn (bool $state) => $state ? 'Active' : 'Inactive')
                     ->color(fn (bool $state) => $state ? 'success' : 'danger'),
             ])
-            ->defaultSort('sort_order');
+            ->defaultSort('sort_order')
+            ->filters([RecordDeletion::filter()]);
     }
 
     public static function getPages(): array

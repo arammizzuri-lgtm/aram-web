@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Products;
 
+use App\Filament\Actions\RecordDeletion;
+use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Models\Product;
 use BackedEnum;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -24,10 +27,13 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 use UnitEnum;
 
 class ProductResource extends Resource
 {
+    use KeepsDeletedRecords;
+
     protected static ?string $model = Product::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
@@ -47,7 +53,7 @@ class ProductResource extends Resource
                     TextInput::make('sku')
                         ->label('SKU')
                         ->required()
-                        ->unique(ignoreRecord: true)
+                        ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->whereNull('deleted_at'))
                         ->maxLength(64),
 
                     TextInput::make('barcode')->maxLength(64),
@@ -285,6 +291,12 @@ class ProductResource extends Resource
                     ->label('Battery goods only')
                     ->query(fn (Builder $query) => $query->where('contains_battery', true))
                     ->toggle(),
+
+                RecordDeletion::filter(),
+            ])
+            ->recordActions([
+                EditAction::make(),
+                ...RecordDeletion::actions(),
             ]);
     }
 

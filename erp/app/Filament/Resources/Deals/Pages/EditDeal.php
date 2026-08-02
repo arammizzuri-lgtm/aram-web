@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Deals\Pages;
 
+use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\Deals\DealResource;
 use App\Models\Quotation;
 use App\Services\Deals\DealWriter;
@@ -10,7 +11,6 @@ use App\Services\Deals\QuotationWriter;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -43,10 +43,7 @@ class EditDeal extends EditRecord
                  * left where it belongs. The delete is soft and the deals list
                  * has a Deleted filter to bring it back from.
                  */
-                DeleteAction::make()
-                    ->modalHeading(fn () => "Delete {$this->record->number}?")
-                    ->modalDescription(fn () => DealResource::deletionConsequences($this->record))
-                    ->modalSubmitActionLabel('Delete it'),
+                RecordDeletion::delete(),
             ])->hiddenLabel(),
         ];
     }
