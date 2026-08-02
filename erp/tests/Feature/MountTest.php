@@ -2,7 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
+use App\Models\Deal;
+use App\Models\DealLine;
+use App\Models\Supplier;
 use App\Models\User;
+use App\Services\Deals\DealWriter;
+use App\Services\Reporting\BusinessMetrics;
 use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -77,6 +83,69 @@ class MountTest extends TestCase
             ->values();
 
         $this->assertSame([], $stranded->all());
+    }
+
+    /**
+     * The dashboard's alerts are links, and a link written out by hand is wrong
+     * the moment the panel moves — silently, because a string cannot fail until
+     * somebody clicks it. Every one of these pointed at /admin, and every one
+     * of them was a 404.
+     */
+    #[Test]
+    public function the_dashboard_alerts_link_inside_the_mount(): void
+    {
+        $this->seed([FoundationSeeder::class, ReferenceDataSeeder::class, RolePermissionSeeder::class]);
+
+        $owner = User::create([
+            'name' => 'Owner', 'email' => 'owner@test.local',
+            'password' => 'password', 'is_active' => true,
+        ]);
+        $owner->assignRole('owner');
+        $this->actingAs($owner);
+
+        /*
+         * An empty dashboard raises no alerts and would assert nothing, so the
+         * state that raises one is built: goods ordered from a supplier on a
+         * deal nobody has approved. That is money spent at your own risk, and
+         * it is the first card on the screen.
+         */
+        $customer = Customer::create([
+            'code' => 'C-001', 'name' => 'Ali Trading',
+            'default_currency' => 'USD', 'is_active' => true,
+        ]);
+        $supplier = Supplier::create(['code' => 'SUP-A', 'name' => 'Yiwu', 'default_currency' => 'CNY']);
+
+        $deal = Deal::create([
+            'number' => 'D-2026-0001',
+            'customer_id' => $customer->id,
+            'deal_date' => today(),
+            'sell_currency' => 'USD',
+            'rmb_usd_rate' => 7.2,
+        ]);
+
+        DealLine::create([
+            'deal_id' => $deal->id,
+            'supplier_id' => $supplier->id,
+            'description' => 'Crystal P07',
+            'quantity' => 10,
+            'unit_cost' => 12.5,
+            'cost_currency' => 'CNY',
+            'unit_price' => 3,
+        ]);
+
+        app(DealWriter::class)->sync($deal);
+
+        $urls = app(BusinessMetrics::class)->needsAttention()->pluck('url');
+
+        $this->assertNotEmpty($urls, 'expected a deal bought without approval to raise an alert');
+
+        foreach ($urls as $url) {
+            $this->assertStringStartsWith(
+                $this->mount.'/',
+                parse_url((string) $url, PHP_URL_PATH) ?? '',
+                "alert link {$url} points outside the mount"
+            );
+        }
     }
 
     /** The URL Livewire hands the browser for every interaction on every page. */

@@ -2,6 +2,8 @@
 
 namespace App\Services\Reporting;
 
+use App\Filament\Resources\CustomerPayments\CustomerPaymentResource;
+use App\Filament\Resources\Deals\DealResource;
 use App\Models\Consignment;
 use App\Models\CustomerInvoice;
 use App\Models\CustomerPayment;
@@ -192,6 +194,13 @@ class BusinessMetrics
     /** Deals that are waiting on you rather than on someone else. */
     public function needsAttention(): Collection
     {
+        /*
+         * Each alert carries a link, and the link is asked of the resource
+         * rather than written out. These were strings beginning "/admin", which
+         * is where the panel used to live — every one of them became a 404 the
+         * day it moved to /erp, and silently, because a hardcoded path cannot
+         * be wrong until somebody clicks it.
+         */
         $items = collect();
 
         $unapproved = Deal::query()
@@ -205,7 +214,7 @@ class BusinessMetrics
                 'title' => "{$unapproved} ".str('deal')->plural($unapproved).' bought without approval',
                 'body' => 'Goods are on order that nobody has committed to. '
                     .$this->boughtAtRisk()->display().' at your own risk.',
-                'url' => '/admin/deals',
+                'url' => DealResource::getUrl(),
                 'tone' => 'warning',
             ]);
         }
@@ -219,7 +228,7 @@ class BusinessMetrics
             $items->push([
                 'title' => "{$arrivedUnbilled} ".str('deal')->plural($arrivedUnbilled).' delivered but not invoiced',
                 'body' => 'The goods are with the customer and nothing has been billed.',
-                'url' => '/admin/deals',
+                'url' => DealResource::getUrl(),
                 'tone' => 'danger',
             ]);
         }
@@ -240,7 +249,7 @@ class BusinessMetrics
             $items->push([
                 'title' => "{$unbilledShipping} ".str('deal')->plural($unbilledShipping).' with shipping not billed',
                 'body' => 'The freight cost is known but has not been invoiced to the customer.',
-                'url' => '/admin/deals',
+                'url' => DealResource::getUrl(),
                 'tone' => 'warning',
             ]);
         }
@@ -255,7 +264,7 @@ class BusinessMetrics
             $items->push([
                 'title' => "{$unmatched} ".str('payment')->plural($unmatched).' not matched to an invoice',
                 'body' => 'Money is on account. Matching it keeps the balances readable.',
-                'url' => '/admin/customer-payments',
+                'url' => CustomerPaymentResource::getUrl(),
                 'tone' => 'info',
             ]);
         }

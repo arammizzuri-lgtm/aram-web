@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Purchases;
 
+use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Resources\Purchases\Pages\ManagePurchases;
 use App\Models\DealPurchase;
 use BackedEnum;
@@ -105,7 +106,7 @@ class PurchaseResource extends Resource
                 TextColumn::make('deal.number')
                     ->label('For deal')
                     ->description(fn (DealPurchase $r) => $r->deal?->customer?->name)
-                    ->url(fn (DealPurchase $r) => url("/admin/deals/{$r->deal_id}/edit"))
+                    ->url(fn (DealPurchase $r) => DealResource::getUrl('edit', ['record' => $r->deal_id]))
                     ->color('primary'),
 
                 /*

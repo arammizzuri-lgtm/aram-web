@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Expenses;
 
+use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Resources\Expenses\Pages\ManageExpenses;
 use App\Models\Deal;
 use App\Models\Expense;
@@ -126,8 +127,11 @@ class ExpenseResource extends Resource
                     ->placeholder('Overhead')
                     ->badge()
                     ->color('info')
+                    // Asked of the resource: a written-out path is wrong the
+                    // moment the panel moves, and this one was wrong already —
+                    // a deal is opened at /edit, and /deals/{id} is no route.
                     ->url(fn (Expense $record) => $record->deal_id
-                        ? url("/admin/deals/{$record->deal_id}")
+                        ? DealResource::getUrl('edit', ['record' => $record->deal_id])
                         : null),
 
                 TextColumn::make('base_amount')->label('Amount')->money('USD')->alignEnd()->sortable()->summarize(
