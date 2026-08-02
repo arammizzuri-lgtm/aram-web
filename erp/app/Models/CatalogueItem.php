@@ -21,12 +21,15 @@ class CatalogueItem extends Model
         'price_list_section_id', 'supplier_id', 'code', 'name', 'name_zh',
         'attributes', 'unit_id', 'moq', 'pack_size', 'lead_time_days',
         'product_id', 'display_order', 'notes', 'is_active',
+        // See Product: the shipping warning reads this, so it has to be settable.
+        'contains_battery',
     ];
 
     protected function casts(): array
     {
         return [
             'attributes' => 'array',
+            'contains_battery' => 'boolean',
             'moq' => 'decimal:4',
             'pack_size' => 'decimal:4',
             'display_order' => 'integer',
@@ -58,6 +61,27 @@ class CatalogueItem extends Model
     public function prices(): HasMany
     {
         return $this->hasMany(CatalogueItemPrice::class);
+    }
+
+    /** What you charge for it, per customer type. Cost lives on prices(). */
+    public function sellPrices(): HasMany
+    {
+        return $this->hasMany(CatalogueItemSellPrice::class);
+    }
+
+    /**
+     * The selling price for a customer type, falling back to the shared one.
+     *
+     * An exact match on the type beats the default, which is what makes a
+     * wholesale price possible without repeating every other price under it.
+     */
+    public function sellPriceFor(?int $customerTypeId = null): ?CatalogueItemSellPrice
+    {
+        return $this->sellPrices
+            ->filter(fn (CatalogueItemSellPrice $p) => $p->customer_type_id === $customerTypeId
+                || $p->customer_type_id === null)
+            ->sortByDesc(fn (CatalogueItemSellPrice $p) => $p->customer_type_id === $customerTypeId ? 1 : 0)
+            ->first();
     }
 
     public function isStocked(): bool

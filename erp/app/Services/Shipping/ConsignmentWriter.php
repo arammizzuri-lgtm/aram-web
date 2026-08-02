@@ -4,6 +4,7 @@ namespace App\Services\Shipping;
 
 use App\Models\Consignment;
 use App\Models\Deal;
+use App\Services\Deals\DealProgress;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 
@@ -18,6 +19,35 @@ use Illuminate\Support\Facades\DB;
  */
 class ConsignmentWriter
 {
+    public function __construct(private readonly DealProgress $progress) {}
+
+    /**
+     * Carry the consignment's own status through to the deals riding on it.
+     *
+     * The forwarder's status is the only news anyone gets about where goods
+     * are, so it is what the deal's stage should follow. Doing it by hand would
+     * mean updating the tracking number and then remembering to update every
+     * deal attached to it — and the deals you forgot would be the ones that
+     * looked settled while the customer was still waiting.
+     *
+     * Forward-only, through DealProgress: a consignment logged late cannot pull
+     * a delivered deal back into transit.
+     */
+    public function syncDealStatuses(Consignment $consignment): void
+    {
+        $status = $this->progress->statusForConsignment((string) $consignment->status);
+
+        if ($status === null) {
+            return;
+        }
+
+        $consignment->loadMissing('deals');
+
+        foreach ($consignment->deals as $deal) {
+            $this->progress->advanceTo($deal, $status);
+        }
+    }
+
     /**
      * Suggest how the freight should divide, before the operator adjusts it.
      *

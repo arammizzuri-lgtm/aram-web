@@ -5,21 +5,28 @@ namespace App\Filament\Resources\Deals;
 use App\Filament\Resources\Deals\Pages\CreateDeal;
 use App\Filament\Resources\Deals\Pages\EditDeal;
 use App\Filament\Resources\Deals\Pages\ListDeals;
+use App\Filament\Resources\Deals\RelationManagers\ConsignmentsRelationManager;
+use App\Filament\Resources\Deals\RelationManagers\InvoicesRelationManager;
+use App\Filament\Resources\Deals\RelationManagers\PurchasesRelationManager;
+use App\Filament\Resources\Deals\RelationManagers\QuotationsRelationManager;
 use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\DealLine;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Services\Deals\CatalogueLookup;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -60,7 +67,7 @@ class DealResource extends Resource
     {
         return $schema->components([
             Section::make('Customer & dates')
-                ->columns(4)
+                ->columns(5)
                 ->schema([
                     Select::make('customer_id')
                         ->label('Customer')
@@ -83,6 +90,24 @@ class DealResource extends Resource
                             }
                         })
                         ->columnSpan(2),
+
+                    /*
+                     * Where the deal has got to.
+                     *
+                     * It moves on its own where the system can be sure — naming
+                     * a supplier means purchasing, a consignment in transfer
+                     * means shipping — but it has to be settable, because the
+                     * system does not see the phone call telling you the goods
+                     * were handed over, and a deal that can never be closed is
+                     * a deal that stays on your list forever.
+                     */
+                    Select::make('status')
+                        ->label('Stage')
+                        ->options(Deal::STATUSES)
+                        ->default('draft')
+                        ->required()
+                        ->native(false)
+                        ->helperText('Moves by itself as you buy and ship.'),
 
                     DatePicker::make('deal_date')
                         ->label('Date')
@@ -193,13 +218,14 @@ class DealResource extends Resource
     }
 
     /**
-     * One line, in two deliberate rows.
+     * One line, in three deliberate rows.
      *
-     * The first row is what the customer asked for. The second is money, laid
-     * out left to right in the order the decision is actually made: where you
-     * buy it, what it costs, how you price it, what they pay. Letting the grid
-     * wrap on its own put "Sell" on a line of its own, away from the cost it is
-     * derived from — the one adjacency that matters on this screen.
+     * The first row reaches into the price lists. The second is what the
+     * customer asked for. The third is money, laid out left to right in the
+     * order the decision is actually made: where you buy it, what it costs, how
+     * you price it, what they pay. Letting the grid wrap on its own put "Sell"
+     * on a line of its own, away from the cost it is derived from — the one
+     * adjacency that matters on this screen.
      *
      * @return array<int, mixed>
      */
@@ -208,7 +234,63 @@ class DealResource extends Resource
         $canSeeCost = fn () => auth()->user()?->can('view_cost');
 
         return [
-            // ---- row one: what they asked for -------------------------------
+            /*
+             * ---- row one: what it is, from the lists you already keep -------
+             *
+             * The price lists are the most worked-on part of this system and
+             * the deal screen could not reach them at all: every line was typed
+             * from memory, and "From price list" was a pricing method that did
+             * nothing whatever. So the cost, the supplier, the Chinese name,
+             * the battery flag and the weight — all of it already recorded —
+             * had to be looked up on another screen and copied by hand, which
+             * is the exact re-entry this design exists to abolish.
+             *
+             * One box searches all four lists. Typing the item by hand instead
+             * still works and still costs nothing: a one-off stays a one-off.
+             */
+            Select::make('catalogue_key')
+                ->label('Find it in your price lists')
+                ->placeholder('Search crystals, textile, packaging, furniture, products — or just type it below')
+                ->searchable()
+                ->dehydrated(false)
+                ->getSearchResultsUsing(fn (?string $search) => app(CatalogueLookup::class)->search($search))
+                ->getOptionLabelUsing(fn (?string $value) => app(CatalogueLookup::class)->label($value))
+                // An existing line shows what it was picked from, rather than an
+                // empty search box beside a description that plainly came from
+                // somewhere.
+                ->afterStateHydrated(fn (Get $get, Set $set) => $set(
+                    'catalogue_key',
+                    app(CatalogueLookup::class)->keyForIds(
+                        (int) $get('product_id') ?: null,
+                        (int) $get('catalogue_item_id') ?: null,
+                        (int) $get('crystal_product_id') ?: null,
+                        (int) $get('crystal_size_id') ?: null,
+                    ),
+                ))
+                ->afterStateUpdated(fn (?string $state, Get $get, Set $set) => self::applyCatalogue($state, $get, $set))
+                ->columnSpanFull(),
+
+            /*
+             * What the line points at in the catalogue.
+             *
+             * Kept because they are what makes a line more than its
+             * description: the weight and volume behind the freight split live
+             * on the product, and a report asking which product earned most
+             * has nothing to group by without them. Hidden because they are the
+             * consequence of the search above, never a decision of their own.
+             */
+            Hidden::make('product_id'),
+            Hidden::make('catalogue_item_id'),
+            Hidden::make('crystal_product_id'),
+            Hidden::make('crystal_size_id'),
+
+            // The customer's language and the supplier's, carried from the
+            // catalogue so the quotation and the purchase order can each be
+            // read by the person receiving it.
+            Hidden::make('description_ku'),
+            Hidden::make('description_zh'),
+
+            // ---- row two: what they asked for -------------------------------
             TextInput::make('description')
                 ->label('Item')
                 ->required()
@@ -220,6 +302,10 @@ class DealResource extends Resource
                 ->default(1)
                 ->required()
                 ->live(onBlur: true)
+                // Quantity is not only a multiplier: both the cost lists and the
+                // selling lists carry breaks, so 500 pieces can be a different
+                // price per piece from 50.
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyPricing($get, $set))
                 ->columnSpan(2),
 
             TextInput::make('unit')->default('pcs')->columnSpan(2),
@@ -230,7 +316,7 @@ class DealResource extends Resource
                 ->helperText('Restricts air shipping')
                 ->columnSpan(2),
 
-            // ---- row two: six even columns, cost then price ------------------
+            // ---- row three: six even columns, cost then price ----------------
             Select::make('supplier_id')
                 ->label('Buy from')
                 ->options(fn () => Supplier::query()->active()->orderBy('name')->pluck('name', 'id'))
@@ -248,14 +334,14 @@ class DealResource extends Resource
                 ->columnSpan(2)
                 // Re-derive the selling price whenever the cost moves, but only
                 // on markup lines — a typed price must never be overwritten.
-                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyMarkup($get, $set)),
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyPricing($get, $set)),
 
             Select::make('cost_currency')
                 ->label('In')
                 ->options(['CNY' => 'RMB', 'USD' => 'USD'])
                 ->default('CNY')
                 ->live()
-                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyMarkup($get, $set))
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyPricing($get, $set))
                 ->visible($canSeeCost)
                 ->columnSpan(2),
 
@@ -266,7 +352,7 @@ class DealResource extends Resource
                 ->live()
                 ->visible($canSeeCost)
                 ->columnSpan(2)
-                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyMarkup($get, $set)),
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyPricing($get, $set)),
 
             TextInput::make('markup_percent')
                 ->label('Markup')
@@ -277,7 +363,7 @@ class DealResource extends Resource
                 ->visible(fn (Get $get) => auth()->user()?->can('view_cost')
                     && $get('pricing_method') === 'markup')
                 ->columnSpan(2)
-                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyMarkup($get, $set)),
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyPricing($get, $set)),
 
             /*
              * The selling price in the currency the goods were bought in.
@@ -289,32 +375,44 @@ class DealResource extends Resource
              * quotes ¥50, and "¥50 plus half again" is a thought worth being
              * able to have on the screen rather than in your head.
              *
-             * On a markup line it is filled in. On a typed price it is the box
-             * the price is typed into, and the converted figure follows it.
+             * On a markup or price-list line it is filled in. On a typed price
+             * it is one of the two boxes the price can be typed into, and the
+             * other follows it.
              */
             TextInput::make('sell_each_in_cost_currency')
                 ->label('Sell each for')
                 ->numeric()
                 ->dehydrated(false)
                 ->live(onBlur: true)
-                ->readOnly(fn (Get $get) => $get('pricing_method') === 'markup')
+                ->readOnly(fn (Get $get) => $get('pricing_method') !== 'manual')
                 ->suffix(fn (Get $get) => $get('cost_currency') === 'USD' ? 'USD' : 'RMB')
                 ->visible($canSeeCost)
                 ->columnSpan(2)
                 ->afterStateHydrated(fn (Get $get, Set $set) => self::showSellInCostCurrency($get, $set))
                 ->afterStateUpdated(fn (Get $get, Set $set) => self::priceFromCostCurrency($get, $set)),
 
+            /*
+             * The price the customer is actually billed.
+             *
+             * Typed or derived depending on the method, and on a typed line it
+             * is genuinely typed. It had been made read-only for anyone who can
+             * see cost, which left the owner able to say "¥50 plus half again"
+             * but unable to say "thirty thousand dinars" — and a dinar figure
+             * is what a customer negotiates, agrees to and remembers. Both
+             * boxes now write to each other, so the price can be settled in
+             * whichever currency it was settled in.
+             */
             TextInput::make('unit_price')
-                ->label(fn () => auth()->user()?->can('view_cost') ? 'Converted price' : 'Sell each')
+                ->label(fn () => auth()->user()?->can('view_cost') ? 'Customer pays each' : 'Sell each')
                 ->numeric()
                 ->required()
                 ->default(0)
                 ->live(onBlur: true)
                 ->suffix(fn (Get $get) => $get('../../sell_currency') ?: 'USD')
-                // Derived from the yuan price beside it, so it is shown rather
-                // than typed — except to an assistant, who has no cost fields
-                // to derive it from and prices in the customer's currency.
-                ->readOnly(fn () => auth()->user()?->can('view_cost'))
+                // Locked only where it is a consequence: a markup line derives
+                // it from the cost, a price-list line reads it off the list.
+                ->readOnly(fn (Get $get) => auth()->user()?->can('view_cost')
+                    && $get('pricing_method') !== 'manual')
                 ->afterStateUpdated(fn (Get $get, Set $set) => self::showSellInCostCurrency($get, $set))
                 ->columnSpan(fn () => auth()->user()?->can('view_cost') ? 2 : 6),
 
@@ -391,7 +489,7 @@ class DealResource extends Resource
                     ->content(function (Get $get): string {
                         $total = self::summarise($get);
 
-                        if ($total['needs_rate']) {
+                        if ($total['needs_cost_rate']) {
                             return 'Set the RMB rate above — the yuan cannot be valued without it.';
                         }
 
@@ -419,8 +517,18 @@ class DealResource extends Resource
 
                         $shown = self::money($total['customer_total'], $total['sell_currency']);
 
-                        return $total['sell_currency'] === 'USD'
-                            ? $shown
+                        if ($total['sell_currency'] === 'USD') {
+                            return $shown;
+                        }
+
+                        /*
+                         * Without the rate there is no dollar figure to show,
+                         * and the one that would have been shown is the dinar
+                         * total with a dollar sign in front of it — a deal of
+                         * 3,190,000 dinars reading as three million dollars.
+                         */
+                        return $total['needs_sell_rate']
+                            ? $shown.'  ·  set the '.$total['sell_currency'].' rate above for the dollar figure'
                             : $shown.'  ·  '.self::money($total['revenue_usd'], 'USD');
                     }),
 
@@ -430,7 +538,10 @@ class DealResource extends Resource
                     ->content(function (Get $get): string {
                         $total = self::summarise($get);
 
-                        if ($total['needs_rate']) {
+                        // Either half missing makes the answer meaningless, and
+                        // a meaningless profit is worse than none: it is the one
+                        // number on this screen a decision is made on.
+                        if ($total['needs_cost_rate'] || $total['needs_sell_rate']) {
                             return '—';
                         }
 
@@ -447,7 +558,7 @@ class DealResource extends Resource
      * of this business share: yuan out to the supplier, dinars or dollars in
      * from the customer.
      *
-     * @return array{cost_rmb: float, cost_usd: float, customer_total: float, revenue_usd: float, profit_usd: float, margin: float, sell_currency: string, needs_rate: bool}
+     * @return array{cost_rmb: float, cost_usd: float, customer_total: float, revenue_usd: float, profit_usd: float, margin: float, sell_currency: string, needs_cost_rate: bool, needs_sell_rate: bool}
      */
     private static function summarise(Get $get): array
     {
@@ -457,7 +568,7 @@ class DealResource extends Resource
         $costRmb = 0.0;
         $costUsd = 0.0;
         $goods = 0.0;
-        $needsRate = false;
+        $needsCostRate = false;
 
         foreach ((array) $get('lines') as $line) {
             $quantity = (float) ($line['quantity'] ?? 0);
@@ -469,13 +580,24 @@ class DealResource extends Resource
             }
 
             if ($cost > 0 && ! self::hasRatesFor($deal, [$currency])) {
-                $needsRate = true;
+                $needsCostRate = true;
             } else {
                 $costUsd += $deal->toBase(Money::of($cost, $currency))->toFloat();
             }
 
             $goods += (float) ($line['unit_price'] ?? 0) * $quantity;
         }
+
+        /*
+         * The selling side needs a rate just as much as the cost side.
+         *
+         * Only the cost currencies were checked, so a dinar deal typed before
+         * the rate was filled in valued dinars as dollars — Deal::rateFor()
+         * answers 1 for a rate it does not hold — and reported a profit around
+         * fifteen hundred times the truth, in the one box on this screen that
+         * decides whether a deal is worth doing.
+         */
+        $needsSellRate = $goods > 0 && ! self::hasRatesFor($deal, [$sellCurrency]);
 
         $goodsUsd = $deal->toBase(Money::of($goods, $sellCurrency))->toFloat();
 
@@ -500,7 +622,8 @@ class DealResource extends Resource
             'profit_usd' => $revenueUsd - $costUsd,
             'margin' => $revenueUsd > 0 ? round(($revenueUsd - $costUsd) / $revenueUsd * 100, 1) : 0.0,
             'sell_currency' => $sellCurrency,
-            'needs_rate' => $needsRate,
+            'needs_cost_rate' => $needsCostRate,
+            'needs_sell_rate' => $needsSellRate,
         ];
     }
 
@@ -514,6 +637,153 @@ class DealResource extends Resource
             'CNY' => '¥'.$formatted,
             default => $formatted.' '.$currency,
         };
+    }
+
+    /**
+     * Price the line the way this line is priced.
+     *
+     * All three methods are used and mixed inside one deal, which is why the
+     * method is per line. Everything that can change a price — the cost, the
+     * currency, the quantity, the markup, the catalogue pick — comes through
+     * here, so there is one answer to "what happens now" rather than one per
+     * field.
+     *
+     * A typed price is never touched by any of it. On a mixed deal, silently
+     * recalculating a price somebody decided on would undo a decision made on
+     * purpose, and it would only be noticed on the invoice.
+     */
+    private static function applyPricing(Get $get, Set $set): void
+    {
+        match ($get('pricing_method')) {
+            'markup' => self::applyMarkup($get, $set),
+            'list' => self::applyListPrice($get, $set),
+            default => null,
+        };
+    }
+
+    /**
+     * Take the selling price off the price list, for the customer's own type.
+     *
+     * "From price list" had been a pricing method that did nothing at all: the
+     * option was in the menu, the selling prices were in the database, and
+     * choosing it changed no number on the screen. Which meant the one method
+     * that needs no arithmetic from you was the one that did not work.
+     *
+     * Priced for the customer's type — wholesale pays what wholesale pays —
+     * and at the quantity on the line, because the lists carry breaks.
+     */
+    private static function applyListPrice(Get $get, Set $set): void
+    {
+        $found = app(CatalogueLookup::class)->resolve(
+            $get('catalogue_key'),
+            (float) $get('quantity') ?: 1,
+            self::customerTypeId($get),
+        );
+
+        if ($found === null) {
+            Notification::make()
+                ->title('Search the price list above first')
+                ->body('A list price needs to know which listed item this is.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        if ($found['list_price'] === null) {
+            Notification::make()
+                ->title('No selling price on the list for this one')
+                ->body('Set one on the price list, or price this line by markup.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        $deal = self::dealFromForm($get, parent: true);
+        $listCurrency = $found['list_price_currency'];
+
+        // A missing rate would be read as a rate of one — see applyMarkup.
+        if (! self::hasRatesFor($deal, [$listCurrency, $deal->sell_currency])) {
+            return;
+        }
+
+        $price = $deal->toSellCurrency(Money::of($found['list_price'], $listCurrency));
+
+        $set('unit_price', round($price->toFloat(), 4));
+
+        self::showSellInCostCurrency($get, $set);
+    }
+
+    /**
+     * Fill a line from something already in your price lists.
+     *
+     * Cost and sell together, which is the whole promise: one search fills the
+     * supplier's side and the customer's side at once. Everything it writes is
+     * still editable — a list is where a line starts, not what it is stuck as.
+     */
+    private static function applyCatalogue(?string $key, Get $get, Set $set): void
+    {
+        $lookup = app(CatalogueLookup::class);
+
+        $found = $lookup->resolve(
+            $key,
+            (float) $get('quantity') ?: 1,
+            self::customerTypeId($get),
+        );
+
+        /*
+         * Clearing the box makes the line a one-off again.
+         *
+         * The description and the prices are left exactly as they are: they may
+         * well be what you want, and deleting somebody's typing because they
+         * emptied a search box is the sort of help nobody asks for twice.
+         */
+        if ($found === null) {
+            foreach (['product_id', 'catalogue_item_id', 'crystal_product_id', 'crystal_size_id'] as $id) {
+                $set($id, null);
+            }
+
+            return;
+        }
+
+        foreach ([
+            'description', 'description_ku', 'description_zh', 'unit',
+            'product_id', 'catalogue_item_id', 'crystal_product_id', 'crystal_size_id',
+        ] as $field) {
+            $set($field, $found[$field]);
+        }
+
+        $set('contains_battery', $found['contains_battery']);
+
+        // Only where the list actually knows. An item nobody has priced yet
+        // should leave the cost box alone rather than zero it.
+        if ($found['unit_cost'] !== null) {
+            $set('unit_cost', $found['unit_cost']);
+            $set('cost_currency', $found['cost_currency']);
+        }
+
+        if ($found['supplier_id'] !== null) {
+            $set('supplier_id', $found['supplier_id']);
+        }
+
+        self::applyPricing($get, $set);
+    }
+
+    /**
+     * Which price list applies to this customer.
+     *
+     * Set once on the customer, so it is never a question at deal time — the
+     * whole reason selling prices are keyed on the type rather than typed per
+     * deal.
+     */
+    private static function customerTypeId(Get $get): ?int
+    {
+        $customerId = $get('../../customer_id');
+
+        return $customerId
+            ? Customer::find($customerId)?->customer_type_id
+            : null;
     }
 
     /**
@@ -582,12 +852,13 @@ class DealResource extends Resource
      * the one the customer is billed in.
      *
      * Only for lines priced by hand. On a markup line the yuan figure is a
-     * consequence of the cost and the margin, and typing over it would put the
-     * two out of step with each other.
+     * consequence of the cost and the margin, and on a price-list line it is a
+     * consequence of the list — typing over either would put the two out of
+     * step with each other.
      */
     private static function priceFromCostCurrency(Get $get, Set $set): void
     {
-        if ($get('pricing_method') === 'markup') {
+        if ($get('pricing_method') !== 'manual') {
             return;
         }
 
@@ -756,6 +1027,29 @@ class DealResource extends Resource
                     ->searchable()
                     ->preload(),
             ]);
+    }
+
+    /**
+     * The rest of the deal, on the deal.
+     *
+     * The design called this "the main working screen — lines, quotation,
+     * purchases, consignments, invoices, payments, profit, all in one place",
+     * and it was the lines and nothing else. Every other part of a deal lived
+     * on a screen listing every deal's, so the ordinary question — where is
+     * this order, has it been paid for, what did I quote — meant leaving the
+     * deal to go and find out.
+     *
+     * In the order the deal happens: what you offered, what it costs you, where
+     * the goods are, what the customer was billed.
+     */
+    public static function getRelations(): array
+    {
+        return [
+            QuotationsRelationManager::class,
+            PurchasesRelationManager::class,
+            ConsignmentsRelationManager::class,
+            InvoicesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

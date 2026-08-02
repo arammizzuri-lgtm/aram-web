@@ -39,6 +39,28 @@ class CrystalProduct extends Model
         return $this->hasMany(CrystalPrice::class);
     }
 
+    /** What you charge, per size and customer type. Cost lives on prices(). */
+    public function sellPrices(): HasMany
+    {
+        return $this->hasMany(CrystalSellPrice::class);
+    }
+
+    /**
+     * The selling price for one size and customer type.
+     *
+     * An exact match on the type beats the shared default, so a wholesale rate
+     * can be set for a few sizes without restating the rest.
+     */
+    public function sellPriceFor(int $sizeId, ?int $customerTypeId = null): ?CrystalSellPrice
+    {
+        return $this->sellPrices
+            ->filter(fn (CrystalSellPrice $p) => $p->crystal_size_id === $sizeId)
+            ->filter(fn (CrystalSellPrice $p) => $p->customer_type_id === $customerTypeId
+                || $p->customer_type_id === null)
+            ->sortByDesc(fn (CrystalSellPrice $p) => $p->customer_type_id === $customerTypeId ? 1 : 0)
+            ->first();
+    }
+
     /** Set once this colour is actually stocked, linking it into purchasing. */
     public function product(): BelongsTo
     {

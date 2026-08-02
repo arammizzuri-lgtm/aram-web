@@ -37,12 +37,19 @@ class ManageConsignments extends ManageRecords
      * One customer, one tracking number, one bill that is entirely theirs —
      * there is no decision to make, so no interface appears and the freight
      * simply lands on the deal.
+     *
+     * The deals attached also take their stage from this: goods in transfer
+     * mean a deal that is shipping, and arrived goods mean a deal that has
+     * landed. Left to be done by hand it would be done for the tracking number
+     * and forgotten for the deals, which are the records anybody actually
+     * looks at.
      */
     private function settle(Consignment $record): void
     {
         $writer = app(ConsignmentWriter::class);
 
         $writer->applyWholeBillToSoleDeal($record->fresh());
+        $writer->syncDealStatuses($record->fresh());
 
         foreach ($writer->warnings($record->fresh()) as $warning) {
             Notification::make()->title($warning)->warning()->persistent()->send();

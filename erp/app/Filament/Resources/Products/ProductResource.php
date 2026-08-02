@@ -8,6 +8,7 @@ use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Models\Product;
 use BackedEnum;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -138,6 +139,59 @@ class ProductResource extends Resource
                         ->prefix('$')
                         ->required()
                         ->helperText('Used when no customer-type price applies.'),
+
+                    /*
+                     * The customer-type prices this section has always promised.
+                     *
+                     * The description said "set below" and there was nothing
+                     * below: the table existed, the deal screen's "From price
+                     * list" method was meant to read it, and no screen in the
+                     * system could put a row in it. Wholesale paid the standard
+                     * price like everybody else, silently.
+                     *
+                     * Quantity breaks are here because they are genuinely used —
+                     * 500 pieces should be able to sell cheaper per piece than
+                     * 50 — and the largest applicable break wins.
+                     */
+                    Repeater::make('sellPrices')
+                        ->relationship()
+                        ->label('Prices by customer type')
+                        ->helperText(
+                            'Leave empty and everyone pays the standard price. '
+                            .'A deal line priced "From price list" reads these.'
+                        )
+                        ->addActionLabel('Add a customer-type price')
+                        ->columns(4)
+                        ->columnSpanFull()
+                        ->collapsed()
+                        ->itemLabel(fn (array $state): ?string => filled($state['price'] ?? null)
+                            ? trim(($state['currency'] ?? 'USD').' '.$state['price'])
+                            : null)
+                        ->schema([
+                            Select::make('customer_type_id')
+                                ->label('Customer type')
+                                ->relationship('customerType', 'name')
+                                ->preload()
+                                // Null is the price everyone without a type gets.
+                                ->placeholder('Everyone else'),
+
+                            TextInput::make('price')
+                                ->label('Price')
+                                ->numeric()
+                                ->required(),
+
+                            Select::make('currency')
+                                ->options(['USD' => 'USD', 'IQD' => 'IQD'])
+                                ->default('USD')
+                                ->required(),
+
+                            TextInput::make('min_quantity')
+                                ->label('From quantity')
+                                ->numeric()
+                                ->default(1)
+                                ->required()
+                                ->helperText('The largest break at or below the order wins.'),
+                        ]),
                 ]),
 
             Section::make('Availability')

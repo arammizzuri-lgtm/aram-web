@@ -19,7 +19,10 @@ use Illuminate\Support\Facades\DB;
  */
 class DealWriter
 {
-    public function __construct(private readonly DocumentNumberGenerator $numbers) {}
+    public function __construct(
+        private readonly DocumentNumberGenerator $numbers,
+        private readonly DealProgress $progress,
+    ) {}
 
     /**
      * Bring a deal's derived data back in step with its lines.
@@ -108,6 +111,18 @@ class DealWriter
             ->whereNotIn('supplier_id', $supplierIds->all())
             ->whereDoesntHave('payments')
             ->delete();
+
+        /*
+         * Naming a supplier is the deal starting to be bought.
+         *
+         * Said here rather than left for the operator to remember, because it
+         * is the one thing about the deal's stage the system can be certain of:
+         * a purchase document exists. Forward-only, so re-saving a deal that
+         * has already shipped does not drag it back.
+         */
+        if ($supplierIds->isNotEmpty()) {
+            $this->progress->advanceTo($deal, 'purchasing');
+        }
     }
 
     /** Allocate the deal's number at the moment it is first saved. */

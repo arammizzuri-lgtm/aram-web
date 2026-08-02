@@ -5,19 +5,30 @@
 > does not.
 
 > **Build status — 2026-08-02.** Every module below is built.
-> **217 tests · 608 assertions · Pint clean · 20 screens verified in a browser.**
+> **276 tests · 788 assertions · Pint clean · 20 screens verified in a browser.**
 >
 > | Module | State |
 > |---|---|
 > | Deals — lines carrying cost and sell together | ✅ |
+> | Deal lines picked from the price lists, both sides filled | ✅ |
+> | Deal stage — moves itself as you buy and ship, settable by hand | ✅ |
+> | Deal screen carries its quotations, purchases, shipping and invoices | ✅ |
 > | Quotations — photos + frozen approval snapshot | ✅ |
 > | Purchases + supplier payments with real transfer cost | ✅ |
 > | Consignments — 3 modes, freight split across deals | ✅ |
 > | Customer invoices — goods + shipping, EN/Sorani RTL PDFs | ✅ |
 > | Customer accounts — payments, suggestions, credit | ✅ |
 > | Price lists — crystals matrix, textile, packaging, furniture | ✅ |
+> | Selling prices per customer type — products | ✅ |
+> | Selling prices per customer type — crystals, catalogue items | ⚠ tables and reader built, no entry screen yet |
 > | Dashboard + 7 reports with CSV export | ✅ |
 > | Two roles — owner sees all, assistant sees no cost | ✅ |
+>
+> **The one gap.** `crystal_sell_prices` and `catalogue_item_sell_prices` are
+> read by the deal screen but can only be filled from the database — the crystal
+> matrix and the catalogue screens each need a selling-price mode of their own.
+> Until then, price those lines by markup or by hand, which is what §4 says you
+> do for most of them anyway.
 >
 > **Before real use:** the suite has only ever run against SQLite. Run it against
 > PostgreSQL on the server first — see §3 of `08-DEPLOYMENT.md`.

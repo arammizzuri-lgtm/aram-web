@@ -19,6 +19,10 @@ class Product extends Model
         'target_margin_percent', 'average_cost', 'last_landed_cost',
         'tax_rate', 'reorder_level', 'reorder_quantity', 'lead_time_days',
         'track_stock', 'is_active', 'is_sellable', 'is_purchasable', 'status', 'internal_notes',
+        // Lithium goods cannot fly as ordinary cargo. The column and the warning
+        // that reads it both existed; this was missing, so nothing could ever
+        // set it and the warning could never fire.
+        'contains_battery',
     ];
 
     protected function casts(): array
@@ -39,6 +43,7 @@ class Product extends Model
             'reorder_level' => 'decimal:4',
             'reorder_quantity' => 'decimal:4',
             'track_stock' => 'boolean',
+            'contains_battery' => 'boolean',
             'is_active' => 'boolean',
             'is_sellable' => 'boolean',
             'is_purchasable' => 'boolean',
