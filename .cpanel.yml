@@ -27,3 +27,32 @@ deployment:
     - cd $DEPLOYPATH && php artisan config:cache
     - cd $DEPLOYPATH && php artisan route:cache
     - cd $DEPLOYPATH && php artisan view:cache
+    # ------------------------------------------------------------------
+    #  ERP
+    #
+    #  A second Laravel application, in erp/, reached at /erp through the
+    #  front controller in public/erp. It keeps its own .env, its own
+    #  database and its own caches, so every step the site needs it needs
+    #  too — and it is installed by the same copy, since this host has no
+    #  Composer and no npm.
+    #
+    #  Last on purpose: the public site is already deployed and cached by
+    #  this point, so nothing here can take the site down with it.
+    # ------------------------------------------------------------------
+    - /bin/mkdir -p $DEPLOYPATH/erp/storage/framework/sessions $DEPLOYPATH/erp/storage/framework/views $DEPLOYPATH/erp/storage/framework/cache/data $DEPLOYPATH/erp/storage/logs $DEPLOYPATH/erp/storage/app/public $DEPLOYPATH/erp/storage/app/private $DEPLOYPATH/erp/bootstrap/cache
+    - /bin/chmod -R 775 $DEPLOYPATH/erp/storage $DEPLOYPATH/erp/bootstrap/cache
+    - test -f $DEPLOYPATH/erp/.env || /bin/cp $DEPLOYPATH/erp/.env.example $DEPLOYPATH/erp/.env
+    - test -f $DEPLOYPATH/erp/database/database.sqlite || /bin/touch $DEPLOYPATH/erp/database/database.sqlite
+    # The template leaves a comment after APP_KEY=, so the pattern has to
+    # allow for one; matching only '^APP_KEY=$' would silently skip this
+    # and leave the application with no key at all.
+    - cd $DEPLOYPATH/erp && (grep -qE '^APP_KEY=[[:space:]]*(#.*)?$' .env && php artisan key:generate --force || true)
+    - cd $DEPLOYPATH/erp && php artisan migrate --force
+    - cd $DEPLOYPATH/erp && (test -L ../public/erp/storage || php artisan storage:link)
+    # Seeds reference data into an empty database and creates the account
+    # named by ERP_ADMIN_EMAIL. Safe to repeat; does nothing once the ERP
+    # is running and the admin credentials have been cleared from .env.
+    - cd $DEPLOYPATH/erp && php artisan erp:provision
+    - cd $DEPLOYPATH/erp && php artisan config:cache
+    - cd $DEPLOYPATH/erp && php artisan route:cache
+    - cd $DEPLOYPATH/erp && php artisan view:cache

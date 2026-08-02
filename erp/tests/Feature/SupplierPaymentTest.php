@@ -324,7 +324,7 @@ class SupplierPaymentTest extends TestCase
 
         $this->assertFalse(PurchaseResource::canViewAny());
 
-        $this->get('/admin/purchases')->assertForbidden();
+        $this->get('/'.config('erp.mount').'/purchases')->assertForbidden();
     }
 
     /** Goods bought for nobody is the thing this business never does. */

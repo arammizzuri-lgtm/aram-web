@@ -8,6 +8,9 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/filament/admin/theme.css'],
             refresh: true,
+            // The application is served from the public site's document root, at
+            // /erp, so its built assets belong there and not in erp/public.
+            publicDirectory: '../public/erp',
             fonts: [
                 // Inter for the UI, JetBrains Mono for identifiers (SKU, container,
                 // B/L), IBM Plex Sans Arabic for the Arabic/Kurdish invoice locales.
@@ -18,6 +21,11 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        // Vite leaves an outDir outside the project root alone unless told
+        // otherwise, which would leave superseded bundles behind on every build.
+        emptyOutDir: true,
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

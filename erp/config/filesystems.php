@@ -41,7 +41,11 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // Uploaded files are linked into public/erp/storage, under the path
+            // the ERP is mounted at — so they are addressed from the asset
+            // origin, not from the site root, where the public site's own
+            // /storage lives.
+            'url' => rtrim(env('ASSET_URL') ?: env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

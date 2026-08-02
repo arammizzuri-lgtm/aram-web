@@ -15,27 +15,31 @@ const puppeteer = require('puppeteer');
 
 const BASE = process.argv[3] || 'http://127.0.0.1:8000';
 
+// The ERP answers under a path of the public site rather than at its root —
+// config('erp.mount'). Everything below hangs off it.
+const MOUNT = process.env.SMOKE_MOUNT || '/erp';
+
 const PAGES = [
-  ['Dashboard', '/admin'],
-  ['Deals', '/admin/deals'],
-  ['New deal', '/admin/deals/create'],
-  ['Consignments', '/admin/consignments'],
-  ['Collection points', '/admin/collection-points'],
-  ['Purchases', '/admin/purchases'],
-  ['Invoices', '/admin/customer-invoices'],
-  ['Payments', '/admin/customer-payments'],
-  ['Reports', '/admin/reports'],
-  ['Crystals price list', '/admin/crystal-price-list'],
-  ['Textile', '/admin/catalogue-price-list?section=textile'],
-  ['Packaging', '/admin/catalogue-price-list?section=packaging'],
-  ['Furniture', '/admin/catalogue-price-list?section=furniture'],
-  ['Products', '/admin/products'],
-  ['Suppliers', '/admin/suppliers'],
-  ['Customers', '/admin/customers'],
-  ['Expenses', '/admin/expenses'],
-  ['Ask (AI)', '/admin/ai-assistant'],
-  ['Price list import', '/admin/price-list-import'],
-  ['Company profile', '/admin/company-profile'],
+  ['Dashboard', ''],
+  ['Deals', '/deals'],
+  ['New deal', '/deals/create'],
+  ['Consignments', '/consignments'],
+  ['Collection points', '/collection-points'],
+  ['Purchases', '/purchases'],
+  ['Invoices', '/customer-invoices'],
+  ['Payments', '/customer-payments'],
+  ['Reports', '/reports'],
+  ['Crystals price list', '/crystal-price-list'],
+  ['Textile', '/catalogue-price-list?section=textile'],
+  ['Packaging', '/catalogue-price-list?section=packaging'],
+  ['Furniture', '/catalogue-price-list?section=furniture'],
+  ['Products', '/products'],
+  ['Suppliers', '/suppliers'],
+  ['Customers', '/customers'],
+  ['Expenses', '/expenses'],
+  ['Ask (AI)', '/ai-assistant'],
+  ['Price list import', '/price-list-import'],
+  ['Company profile', '/company-profile'],
 ];
 
 (async () => {
@@ -49,7 +53,7 @@ const PAGES = [
   const jsErrors = [];
   page.on('pageerror', (e) => jsErrors.push(e.message));
 
-  await page.goto(BASE + '/admin/login', { waitUntil: 'networkidle2' });
+  await page.goto(BASE + MOUNT + '/login', { waitUntil: 'networkidle2' });
   await page.type('#form\\.email', process.env.SMOKE_EMAIL || 'owner@example.com');
   await page.type('#form\\.password', process.env.SMOKE_PASSWORD || 'password');
   await Promise.all([
@@ -65,7 +69,7 @@ const PAGES = [
     const before = jsErrors.length;
     let status = '?';
     try {
-      const res = await page.goto(BASE + path, { waitUntil: 'networkidle2' });
+      const res = await page.goto(BASE + MOUNT + path, { waitUntil: 'networkidle2' });
       status = res.status();
     } catch (e) {
       status = 'ERR ' + e.message.slice(0, 40);

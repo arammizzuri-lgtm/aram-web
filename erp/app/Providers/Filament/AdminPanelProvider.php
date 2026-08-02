@@ -26,7 +26,13 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            /*
+             * The mount, not 'admin'. This application answers on /erp of the
+             * public site and the panel is the whole of it, so the panel sits at
+             * the root of the mount: /erp is the login, and everything else
+             * hangs off it. Nothing else here serves a page for it to shadow.
+             */
+            ->path(config('erp.mount'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->brandName('Import ERP')

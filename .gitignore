@@ -32,6 +32,11 @@ Thumbs.db
 /storage/framework/sessions/
 /storage/framework/views/
 
+# ── ERP mount (public/erp is the ERP's public directory) ──
+/public/erp/hot
+/public/erp/storage
+/public/erp/fonts-manifest.dev.json
+
 # ── SQLite database (recreated via: php artisan migrate --seed) ──
 /database/*.sqlite
 /database/*.sqlite-journal

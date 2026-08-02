@@ -2,6 +2,12 @@
 .DS_Store
 .env
 
+# vendor/ is committed, unusually, and deliberately: deploying this site is a
+# copy of the repository onto shared hosting with no shell and no Composer, so
+# whatever is not in here does not exist on the server. The built assets are
+# committed for the same reason — they live in ../public/erp/build, alongside
+# the site's own.
+
 # The development database. It carries demo data, it goes stale the moment
 # anyone migrates, and a binary file conflicts on every merge. Rebuild it with
 # `php artisan migrate --seed`.
@@ -22,13 +28,8 @@
 /.zed
 /auth.json
 /node_modules
-/public/build
-/public/fonts-manifest.dev.json
-/public/hot
-/public/storage
 /storage/*.key
 /storage/pail
-/vendor
 _ide_helper.php
 Homestead.json
 Homestead.yaml

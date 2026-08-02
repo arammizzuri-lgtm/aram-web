@@ -1,0 +1,63 @@
+# ----------------------------------------------------------------------
+#  ERP front controller
+#
+#  Apache applies the .htaccess of the deepest directory that matches the
+#  request, and mod_rewrite rules there REPLACE the parent's rather than adding
+#  to them. So every request under /erp is governed by this file alone, and the
+#  rules the public site relies on — HTTPS above all — have to be repeated here.
+# ----------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+    RewriteBase /erp/
+
+    # Force HTTPS. A login form posted over plaintext is a password given away.
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Keep the ERP out of search results even if its address escapes somewhere:
+    # robots.txt asks a crawler not to fetch it, this tells it not to publish it.
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+
+    # Business figures must not linger in a shared cache or a back button.
+    <FilesMatch "\.php$">
+        Header always set Cache-Control "no-store, no-cache, must-revalidate, private"
+    </FilesMatch>
+    # Assets are content-hashed by Vite, so they can be held forever.
+    <FilesMatch "\.(css|js|woff2?|ico)$">
+        Header set Cache-Control "public, max-age=31536000"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
