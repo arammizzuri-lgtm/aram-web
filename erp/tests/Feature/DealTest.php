@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Deals\Pages\CreateDeal;
 use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\DealLine;
@@ -13,6 +14,7 @@ use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -331,5 +333,95 @@ class DealTest extends TestCase
         $deal->lines()->first()->update(['contains_battery' => true]);
 
         $this->assertTrue($deal->fresh()->load('lines')->hasBatteryGoods());
+    }
+
+    // --------------------------------------------------- pricing on screen
+
+    /*
+     * The deal screen fills the selling price in from cost plus markup. It was
+     * doing that on the raw cost figure, with no regard for the currency it was
+     * in — so ¥50 marked up 75% became a price of 87.50, handed to a customer
+     * paying dollars. Nearly seven times what the goods are worth, and it looks
+     * like an extraordinarily profitable deal right up until it is quoted.
+     */
+
+    #[Test]
+    public function a_yuan_cost_is_valued_in_dollars_before_the_markup_is_taken(): void
+    {
+        $deal = Deal::create([
+            'number' => 'D-2026-0100',
+            'customer_id' => $this->customer->id,
+            'deal_date' => today(),
+            'sell_currency' => 'USD',
+            'rmb_usd_rate' => 6.7,
+        ]);
+
+        $line = DealLine::create([
+            'deal_id' => $deal->id,
+            'supplier_id' => $this->supplierA->id,
+            'description' => 'p01',
+            'quantity' => 47,
+            'unit_cost' => 50,
+            'cost_currency' => 'CNY',
+            'pricing_method' => 'markup',
+            'markup_percent' => 75,
+            'unit_price' => 0,
+        ]);
+
+        // ¥50 ÷ 6.7 = $7.4627, plus 75% = $13.0597
+        $this->assertSame(13.06, round($line->priceFromMarkup($deal)->toFloat(), 2));
+    }
+
+    /**
+     * The screen itself, not the model behind it.
+     *
+     * The model always priced this correctly; the deal form kept its own copy
+     * of the arithmetic and did not, which is how the two came to disagree
+     * without anything failing. Driving the form is the only place that catches
+     * it.
+     */
+    #[Test]
+    public function the_deal_screen_prices_a_yuan_cost_in_the_customers_currency(): void
+    {
+        $page = Livewire::test(CreateDeal::class)
+            ->fillForm([
+                'customer_id' => $this->customer->id,
+                'deal_date' => today(),
+                'sell_currency' => 'USD',
+                'rmb_usd_rate' => 6.7,
+                'lines' => [
+                    [
+                        'description' => 'p01',
+                        'quantity' => 47,
+                        'unit' => 'pcs',
+                        'unit_cost' => 50,
+                        'cost_currency' => 'CNY',
+                        'pricing_method' => 'markup',
+                        'markup_percent' => 75,
+                        'unit_price' => 0,
+                    ],
+                ],
+            ]);
+
+        $key = array_key_first($page->get('data.lines'));
+
+        // Nudging the cost is what the operator does; the price follows it.
+        $page->set("data.lines.{$key}.unit_cost", 50);
+
+        // ¥50 ÷ 6.7 = $7.4627, plus 75% = $13.06 — not 87.50.
+        $this->assertSame(13.06, round((float) $page->get("data.lines.{$key}.unit_price"), 2));
+    }
+
+    /** Selling in dinars: through dollars on the way, never around them. */
+    #[Test]
+    public function a_yuan_cost_priced_in_dinars_goes_through_dollars(): void
+    {
+        $deal = $this->workedDeal();
+
+        $line = $deal->lines()->first();
+        $line->update(['pricing_method' => 'markup', 'markup_percent' => 25]);
+
+        // ¥12.50 ÷ 7.2 = $1.7361, plus 25% = $2.1701, x 1,470 = 3,190 IQD
+        $this->assertSame(3190.0, round($line->fresh()->priceFromMarkup($deal)->toFloat(), 0));
     }
 }

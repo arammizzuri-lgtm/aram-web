@@ -258,10 +258,18 @@ class Deal extends Model
      */
     public function rateFor(string $currency): string
     {
+        /*
+         * Cast before the fallback, not after.
+         *
+         * The rates are decimal-cast, so an unset one reads back as the string
+         * "0.000000" — which PHP counts as true, since only "0" and "" are
+         * false. Written as `$this->rmb_usd_rate ?: 1` the zero was therefore
+         * kept and handed to toBase() to divide by.
+         */
         return match (strtoupper($currency)) {
             'USD' => '1',
-            'CNY', 'RMB' => (string) ($this->rmb_usd_rate ?: 1),
-            'IQD' => (string) ($this->iqd_usd_rate ?: 1),
+            'CNY', 'RMB' => (string) (((float) $this->rmb_usd_rate) ?: 1),
+            'IQD' => (string) (((float) $this->iqd_usd_rate) ?: 1),
             default => '1',
         };
     }

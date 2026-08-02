@@ -10,9 +10,11 @@ use App\Models\Deal;
 use App\Models\DealLine;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Support\Money;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -111,6 +113,8 @@ class DealResource extends Resource
                         ->step('0.000001')
                         ->default(fn () => Deal::lastRate('iqd_usd_rate'))
                         ->helperText('Pre-filled with the last rate you used.')
+                        // Live because the totals below are computed from it.
+                        ->live(onBlur: true)
                         // Only asked for when it is actually needed.
                         ->visible(fn (Get $get) => $get('sell_currency') === 'IQD')
                         ->required(fn (Get $get) => $get('sell_currency') === 'IQD'),
@@ -121,6 +125,9 @@ class DealResource extends Resource
                         ->step('0.000001')
                         ->default(fn () => Deal::lastRate('rmb_usd_rate'))
                         ->helperText('Needed when you buy in yuan.')
+                        // Every yuan figure on the screen is valued through
+                        // this, so the totals follow it as it is typed.
+                        ->live(onBlur: true)
                         ->visible(fn () => auth()->user()?->can('view_cost')),
                 ]),
 
@@ -156,13 +163,17 @@ class DealResource extends Resource
                     TextInput::make('deal_commission')
                         ->label('Amount')
                         ->numeric()
-                        ->default(0),
+                        ->default(0)
+                        ->live(onBlur: true),
 
                     Select::make('deal_commission_currency')
                         ->label('Currency')
                         ->options(['USD' => 'USD', 'IQD' => 'IQD'])
-                        ->default('USD'),
+                        ->default('USD')
+                        ->live(),
                 ]),
+
+            self::totalsSection(),
 
             Section::make('Notes')
                 ->columns(2)
@@ -243,6 +254,8 @@ class DealResource extends Resource
                 ->label('In')
                 ->options(['CNY' => 'RMB', 'USD' => 'USD'])
                 ->default('CNY')
+                ->live()
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::applyMarkup($get, $set))
                 ->visible($canSeeCost)
                 ->columnSpan(2),
 
@@ -302,6 +315,155 @@ class DealResource extends Resource
     }
 
     /**
+     * What the deal comes to, kept in front of whoever is building it.
+     *
+     * Two currencies, because the deal lives in two: the goods are bought in
+     * yuan and sold in whatever the customer pays. "Is there anything in this
+     * one" cannot be answered in either currency alone, and working it out on a
+     * phone calculator after the fact is how a deal gets quoted at a loss.
+     *
+     * The arithmetic is the same as Deal::costBase() and revenueBase(), which
+     * are what the deal reports once saved — done here against the form state,
+     * so the figures appear while the rows are still being typed.
+     */
+    private static function totalsSection(): Section
+    {
+        return Section::make('Totals')
+            ->description('Worked out from the rows above as you type. Nothing here is entered by hand.')
+            ->columns(3)
+            ->schema([
+                Placeholder::make('cost_summary')
+                    ->label('Goods cost you')
+                    ->visible(fn () => auth()->user()?->can('view_cost'))
+                    ->content(function (Get $get): string {
+                        $total = self::summarise($get);
+
+                        if ($total['needs_rate']) {
+                            return 'Set the RMB rate above — the yuan cannot be valued without it.';
+                        }
+
+                        $parts = [];
+
+                        if ($total['cost_rmb'] > 0) {
+                            $parts[] = self::money($total['cost_rmb'], 'CNY');
+                        }
+
+                        $parts[] = self::money($total['cost_usd'], 'USD');
+
+                        return implode('  ·  ', $parts);
+                    }),
+
+                /*
+                 * The figure the customer will see. It carries the commission,
+                 * which the invoice bills as its own line but which the customer
+                 * pays all the same — a total that left it out would be a total
+                 * of something nobody is ever asked for.
+                 */
+                Placeholder::make('customer_summary')
+                    ->label('Customer pays')
+                    ->content(function (Get $get): string {
+                        $total = self::summarise($get);
+
+                        $shown = self::money($total['customer_total'], $total['sell_currency']);
+
+                        return $total['sell_currency'] === 'USD'
+                            ? $shown
+                            : $shown.'  ·  '.self::money($total['revenue_usd'], 'USD');
+                    }),
+
+                Placeholder::make('profit_summary')
+                    ->label('Profit')
+                    ->visible(fn () => auth()->user()?->can('view_cost'))
+                    ->content(function (Get $get): string {
+                        $total = self::summarise($get);
+
+                        if ($total['needs_rate']) {
+                            return '—';
+                        }
+
+                        return self::money($total['profit_usd'], 'USD')
+                            .'  ·  '.number_format($total['margin'], 1).'% margin';
+                    }),
+            ]);
+    }
+
+    /**
+     * Add the deal up from what is currently on the screen.
+     *
+     * Everything meets in dollars, because that is the only currency both sides
+     * of this business share: yuan out to the supplier, dinars or dollars in
+     * from the customer.
+     *
+     * @return array{cost_rmb: float, cost_usd: float, customer_total: float, revenue_usd: float, profit_usd: float, margin: float, sell_currency: string, needs_rate: bool}
+     */
+    private static function summarise(Get $get): array
+    {
+        $deal = self::dealFromForm($get);
+        $sellCurrency = $deal->sell_currency;
+
+        $costRmb = 0.0;
+        $costUsd = 0.0;
+        $goods = 0.0;
+        $needsRate = false;
+
+        foreach ((array) $get('lines') as $line) {
+            $quantity = (float) ($line['quantity'] ?? 0);
+            $currency = $line['cost_currency'] ?: 'CNY';
+            $cost = (float) ($line['unit_cost'] ?? 0) * $quantity;
+
+            if ($currency === 'CNY') {
+                $costRmb += $cost;
+            }
+
+            if ($cost > 0 && ! self::hasRatesFor($deal, [$currency])) {
+                $needsRate = true;
+            } else {
+                $costUsd += $deal->toBase(Money::of($cost, $currency))->toFloat();
+            }
+
+            $goods += (float) ($line['unit_price'] ?? 0) * $quantity;
+        }
+
+        $goodsUsd = $deal->toBase(Money::of($goods, $sellCurrency))->toFloat();
+
+        $commissionUsd = $deal->toBase(Money::of(
+            (float) $get('deal_commission'),
+            $get('deal_commission_currency') ?: $sellCurrency,
+        ))->toFloat();
+
+        $revenueUsd = $goodsUsd + $commissionUsd;
+
+        // Back into what the customer is billed in, so the commission is part
+        // of one figure rather than a number they are told about separately.
+        $commissionInSellCurrency = $sellCurrency === 'USD'
+            ? $commissionUsd
+            : $commissionUsd * (float) $deal->rateFor($sellCurrency);
+
+        return [
+            'cost_rmb' => $costRmb,
+            'cost_usd' => $costUsd,
+            'customer_total' => $goods + $commissionInSellCurrency,
+            'revenue_usd' => $revenueUsd,
+            'profit_usd' => $revenueUsd - $costUsd,
+            'margin' => $revenueUsd > 0 ? round(($revenueUsd - $costUsd) / $revenueUsd * 100, 1) : 0.0,
+            'sell_currency' => $sellCurrency,
+            'needs_rate' => $needsRate,
+        ];
+    }
+
+    /** Dinars are never quoted with fractions; dollars and yuan always are. */
+    private static function money(float $amount, string $currency): string
+    {
+        $formatted = number_format($amount, $currency === 'IQD' ? 0 : 2);
+
+        return match ($currency) {
+            'USD' => '$'.$formatted,
+            'CNY' => '¥'.$formatted,
+            default => $formatted.' '.$currency,
+        };
+    }
+
+    /**
      * Fill the selling price from cost plus markup.
      *
      * Deliberately does nothing unless the line is set to markup pricing. On a
@@ -316,13 +478,82 @@ class DealResource extends Resource
         }
 
         $cost = (float) $get('unit_cost');
-        $markup = (float) $get('markup_percent');
 
         if ($cost <= 0) {
             return;
         }
 
-        $set('unit_price', round($cost * (1 + $markup / 100), 4));
+        $costCurrency = $get('cost_currency') ?: 'CNY';
+        $deal = self::dealFromForm($get, parent: true);
+
+        /*
+         * A missing rate would be read as a rate of one, and yuan would be
+         * priced as though they were dollars — which is the whole of the bug
+         * this guards. Leave the price alone instead: an empty box gets
+         * noticed, a confident wrong number does not.
+         */
+        if (! self::hasRatesFor($deal, [$costCurrency, $deal->sell_currency])) {
+            return;
+        }
+
+        /*
+         * Priced by the same code that prices a saved line.
+         *
+         * The screen used to do its own arithmetic — cost times markup, with no
+         * regard for the currency — so ¥50 plus 75% became a price of 87.50 to
+         * a customer paying dollars: nearly seven times the worth of the goods,
+         * and a deal that looks extraordinarily profitable right up until it is
+         * quoted. Both prices now come from one place, so they cannot disagree
+         * again. The models are unsaved carriers for the numbers on screen;
+         * nothing here touches the database.
+         */
+        $price = (new DealLine([
+            'unit_cost' => $cost,
+            'cost_currency' => $costCurrency,
+            'markup_percent' => (float) $get('markup_percent'),
+        ]))->priceFromMarkup($deal);
+
+        if ($price !== null) {
+            $set('unit_price', round($price->toFloat(), 4));
+        }
+    }
+
+    /**
+     * The deal as it currently stands on screen, unsaved.
+     *
+     * Only ever used to carry the currency and rates into the model's own
+     * conversions, so that the direction a rate is applied in is decided in one
+     * place — Deal::toBase() — rather than re-derived by every screen that
+     * needs a figure in dollars.
+     */
+    private static function dealFromForm(Get $get, bool $parent = false): Deal
+    {
+        $at = fn (string $field): mixed => $get(($parent ? '../../' : '').$field);
+
+        return new Deal([
+            'sell_currency' => $at('sell_currency') ?: 'USD',
+            'rmb_usd_rate' => (float) $at('rmb_usd_rate'),
+            'iqd_usd_rate' => (float) $at('iqd_usd_rate'),
+        ]);
+    }
+
+    /**
+     * Whether the deal carries a rate for every currency named.
+     *
+     * Deal::rateFor() answers 1 for a rate it does not have, which is the right
+     * answer for dollars and a dangerous one for anything else.
+     *
+     * @param  array<int, string|null>  $currencies
+     */
+    private static function hasRatesFor(Deal $deal, array $currencies): bool
+    {
+        foreach (array_filter($currencies) as $currency) {
+            if (strtoupper($currency) !== 'USD' && (float) $deal->rateFor($currency) <= 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static function table(Table $table): Table
