@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -93,81 +94,57 @@ class ProductResource extends Resource
                         ->columnSpanFull(),
                 ]),
 
-            Section::make('Units & packing')
-                ->description('Weight and volume drive freight and duty allocation — a missing CBM makes landed cost wrong.')
+            Section::make('Units & shipping')
+                ->description(
+                    'Weight and volume are what a shared freight bill gets split by — '
+                    .'sea charges for space, air for weight.'
+                )
                 ->columns(3)
                 ->schema([
                     Select::make('unit_id')
-                        ->label('Stock unit')
+                        ->label('Unit')
                         ->relationship('unit', 'name')
                         ->preload()
                         ->required(),
 
-                    Select::make('purchase_unit_id')
-                        ->label('Purchase unit')
-                        ->relationship('purchaseUnit', 'name')
-                        ->preload(),
-
-                    TextInput::make('pack_size')
-                        ->label('Units per purchase unit')
-                        ->numeric()
-                        ->default(1)
-                        ->helperText('e.g. 24 pieces per carton.'),
-
                     TextInput::make('weight_kg')->label('Weight (kg)')->numeric()->default(0)->suffix('kg'),
                     TextInput::make('volume_cbm')->label('Volume (CBM)')->numeric()->step('0.000001')->default(0)->suffix('m³'),
-                    TextInput::make('country_of_origin')->label('Origin')->default('CN')->length(2),
-                ]),
 
-            Section::make('Customs')
-                ->columns(2)
-                ->schema([
-                    TextInput::make('hs_code')->label('HS code')->maxLength(32),
-                    TextInput::make('duty_rate')
-                        ->label('Duty rate')
-                        ->numeric()
-                        ->suffix('%')
-                        ->helperText('Blank falls back to the category default.'),
+                    Toggle::make('contains_battery')
+                        ->label('Contains a battery')
+                        ->helperText(
+                            'Lithium batteries cannot travel as ordinary air cargo. Flagging it here '
+                            .'warns you before a shipping mode is booked, rather than after the '
+                            .'forwarder rejects it and a promised delivery date is already gone.'
+                        )
+                        ->columnSpanFull(),
                 ]),
 
             Section::make('Pricing')
-                ->columns(3)
+                ->description('Cost is what you pay. Selling price is per customer type, set below.')
+                ->columns(2)
                 ->schema([
                     TextInput::make('cost_price')
-                        ->label('Supplier price')
+                        ->label('Typical cost')
                         ->numeric()
                         ->prefix('$')
-                        ->helperText('Before freight and duty.'),
+                        ->helperText('A starting point. The real cost comes from the supplier on each deal.')
+                        // Never shown to the assistant, on any screen.
+                        ->visible(fn () => auth()->user()?->can('view_cost')),
 
-                    TextInput::make('average_cost')
-                        ->label('Landed cost')
+                    TextInput::make('selling_price')
+                        ->label('Standard selling price')
                         ->numeric()
                         ->prefix('$')
-                        ->disabled()
-                        ->dehydrated(false)
-                        ->helperText('Weighted average of what actually arrived. Set by goods receipt.'),
-
-                    TextInput::make('selling_price')->numeric()->prefix('$')->required(),
-
-                    TextInput::make('min_selling_price')
-                        ->label('Minimum price')
-                        ->numeric()
-                        ->prefix('$')
-                        ->helperText('Sales are warned below this.'),
-
-                    TextInput::make('target_margin_percent')->label('Target margin')->numeric()->suffix('%'),
-                    TextInput::make('tax_rate')->label('Tax rate')->numeric()->suffix('%')->default(0),
+                        ->required()
+                        ->helperText('Used when no customer-type price applies.'),
                 ]),
 
-            Section::make('Stock control')
-                ->columns(3)
+            Section::make('Availability')
+                ->columns(2)
                 ->schema([
-                    TextInput::make('reorder_level')->numeric()->default(0),
-                    TextInput::make('reorder_quantity')->numeric()->default(0),
-                    TextInput::make('lead_time_days')->label('Lead time (days)')->numeric(),
-                    Toggle::make('track_stock')->default(true),
-                    Toggle::make('is_sellable')->label('Sellable')->default(true),
-                    Toggle::make('is_purchasable')->label('Purchasable')->default(true),
+                    Toggle::make('is_active')->label('Active')->default(true),
+                    Toggle::make('is_sellable')->label('Can be sold')->default(true),
                 ]),
         ]);
     }
@@ -193,33 +170,22 @@ class ProductResource extends Resource
                     ->placeholder('—')
                     ->toggleable(),
 
-                TextColumn::make('stock')
-                    ->label('In stock')
-                    ->state(fn (Product $record) => number_format($record->stockOnHand(), 0))
-                    ->alignEnd()
-                    ->badge()
-                    ->color(fn (Product $record) => match (true) {
-                        $record->stockOnHand() <= 0 => 'danger',
-                        $record->stockOnHand() <= (float) $record->reorder_level => 'warning',
-                        default => 'success',
-                    }),
-
-                TextColumn::make('average_cost')
-                    ->label('Landed cost')
-                    // Nothing received yet means there is no landed cost — showing
-                    // $0.00 would read as "free" next to a healthy-looking margin
-                    // that is really based on the supplier price.
-                    ->formatStateUsing(fn (string $state, Product $record) => (float) $state > 0
-                        ? '$'.number_format((float) $state, 2)
-                        : '—')
-                    ->description(fn (Product $record) => (float) $record->average_cost > 0
-                        ? null
-                        : 'supplier $'.number_format((float) $record->cost_price, 2))
+                TextColumn::make('cost_price')
+                    ->label('Cost')
+                    ->money('USD')
                     ->alignEnd()
                     ->sortable()
-                    // Cost and margin are commercially sensitive: hidden from Sales
-                    // and Warehouse by the same permission that guards them elsewhere.
+                    // The whole commercial boundary in one line: the assistant
+                    // works these screens daily and must never see this column.
                     ->visible(fn () => auth()->user()?->can('view_cost')),
+
+                IconColumn::make('contains_battery')
+                    ->label('Battery')
+                    ->boolean()
+                    ->falseIcon(null)
+                    // Only worth flagging when true — it restricts how the goods
+                    // can be flown, and an icon on every other row is noise.
+                    ->toggleable(),
 
                 TextColumn::make('selling_price')
                     ->label('Selling')
@@ -261,9 +227,9 @@ class ProductResource extends Resource
 
                 TernaryFilter::make('is_active')->label('Active')->default(true),
 
-                Filter::make('low_stock')
-                    ->label('Low stock only')
-                    ->query(fn (Builder $query) => $query->lowStock())
+                Filter::make('contains_battery')
+                    ->label('Battery goods only')
+                    ->query(fn (Builder $query) => $query->where('contains_battery', true))
                     ->toggle(),
             ]);
     }

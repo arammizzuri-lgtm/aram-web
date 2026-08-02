@@ -44,19 +44,28 @@ class AiAssistant extends Page
         return app(AiProvider::class)->isConfigured();
     }
 
-    /** @return array<int, string> */
+    /**
+     * Starting questions, matched to what this user is allowed to be told.
+     *
+     * Offering "what was my profit?" to someone whose tools cannot return
+     * profit would produce a confident non-answer, which is worse than not
+     * offering it — so the cost-bearing suggestions appear only alongside the
+     * cost-bearing tools.
+     *
+     * @return array<int, string>
+     */
     public function suggestions(): array
     {
         $base = [
-            'Which products are running low and need reordering?',
+            'Which orders am I still waiting on?',
             'Which customers owe me the most money right now?',
-            'What is sitting in my containers at the moment?',
+            'Where are my goods at the moment?',
         ];
 
         if (auth()->user()?->can('view_cost')) {
             array_unshift($base, 'What was my profit over the last 30 days?');
-            $base[] = 'Which products are losing me money?';
-            $base[] = 'How much did shipping add to my last container?';
+            $base[] = 'Which orders lost me money?';
+            $base[] = 'How much do I still owe my suppliers?';
         }
 
         return $base;

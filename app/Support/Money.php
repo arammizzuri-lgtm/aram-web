@@ -227,6 +227,27 @@ final readonly class Money implements JsonSerializable, Stringable
         return $negative ? "\u{2212}{$withSymbol}" : $withSymbol;
     }
 
+    /**
+     * Format with this amount's own currency, however that currency is written.
+     *
+     * Exists because `format()` defaults to no symbol at all, which is easy to
+     * forget and produces a screen where one figure reads "$8,655.75" and the
+     * one beside it reads "9,523.81" — the reader cannot tell whether the
+     * second is dollars, dinars, or a quantity.
+     *
+     * The dinar takes no decimals and sits after the number, which is how it is
+     * written locally; the dollar and the yuan take a leading symbol.
+     */
+    public function display(): string
+    {
+        return match ($this->currency) {
+            'USD' => $this->format(2, '$'),
+            'CNY' => $this->format(2, '¥'),
+            'IQD' => $this->format(0, 'IQD', 'after'),
+            default => $this->format(2, $this->currency, 'after'),
+        };
+    }
+
     public function toFloat(): float
     {
         return (float) $this->amount;

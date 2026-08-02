@@ -7,99 +7,89 @@ use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 /**
- * The eight numbers that describe an import business.
+ * The headline figures.
  *
- * Inventory value and goods-in-transit are kept apart on purpose: they are both
- * assets, but only one of them can be sold this week.
+ * A rolling 30 days rather than "this month": on the 1st, a calendar month
+ * compares one day against a full previous month and reports a collapse that
+ * did not happen.
+ *
+ * Cost-bearing tiles are dropped entirely for the assistant rather than blanked
+ * — a row of tiles with three showing "—" invites the question the permission
+ * exists to prevent.
  */
 class BusinessOverviewWidget extends StatsOverviewWidget
 {
-    /**
-     * A rolling 30 days, not the calendar month.
-     *
-     * On the 1st a calendar month holds a single day of trading and compares it
-     * against a full previous month, which reads as a catastrophic collapse
-     * every time the month turns over. A rolling window is always comparable.
-     */
+    protected static ?int $sort = 2;
+
     protected ?string $heading = 'Last 30 days';
-
-    protected static ?int $sort = 0;
-
-    protected int|string|array $columnSpan = 'full';
-
-    public static function canView(): bool
-    {
-        return auth()->user()?->can('view_cost') ?? false;
-    }
-
-    protected function getColumns(): int
-    {
-        return 4;
-    }
 
     protected function getStats(): array
     {
         $metrics = app(BusinessMetrics::class);
+        [$from, $to] = $metrics->window();
 
-        $to = now()->endOfDay();
-        $from = now()->subDays(30)->startOfDay();
-        $previousTo = $from->copy()->subSecond();
-        $previousFrom = $from->copy()->subDays(30);
+        $canSeeCost = auth()->user()?->can('view_cost') ?? false;
 
         $revenue = $metrics->revenue($from, $to);
-        $grossProfit = $metrics->grossProfit($from, $to);
-        $netProfit = $metrics->netProfit($from, $to);
-        $overdue = $metrics->overdueReceivables();
+        $receivables = $metrics->receivables();
+        $credit = $metrics->customerCredit();
 
-        return [
-            $this->stat('Revenue', $revenue, $metrics->change($revenue, $metrics->revenue($previousFrom, $previousTo))),
-
-            Stat::make('Gross profit', $this->money($grossProfit))
-                ->description($metrics->grossMarginPercent($from, $to).'% margin')
-                ->color($grossProfit > 0 ? 'success' : 'gray'),
-
-            $this->stat('Net profit', $netProfit, $metrics->change($netProfit, $metrics->netProfit($previousFrom, $previousTo))),
-
-            Stat::make('Operating expenses', $this->money($metrics->operatingExpenses($from, $to)))
-                ->description('Excludes shipping, which sits in landed cost')
+        $stats = [
+            Stat::make('Invoiced', $revenue->display())
+                ->description('What customers were billed')
                 ->color('gray'),
 
-            Stat::make('Inventory value', $this->money($metrics->inventoryValue()))
-                ->description('At landed cost, in the warehouse')
-                ->color('gray'),
-
-            Stat::make('Goods in transit', $this->money($metrics->goodsInTransit()))
-                ->description($metrics->containersInTransit().' '.str('container')->plural($metrics->containersInTransit()).' on the water')
-                ->color($metrics->goodsInTransit() > 0 ? 'warning' : 'gray'),
-
-            Stat::make('Receivables', $this->money($metrics->receivables()))
-                ->description($overdue > 0 ? $this->money($overdue).' overdue' : 'Nothing overdue')
-                ->color($overdue > 0 ? 'danger' : 'success'),
-
-            Stat::make('Payables', $this->money($metrics->payables()))
-                ->description('Owed to suppliers')
-                ->color($metrics->payables() > 0 ? 'warning' : 'gray'),
+            Stat::make('Owed to you', $receivables->display())
+                ->description($credit->isPositive()
+                    ? $credit->display().' credit held separately'
+                    : 'Nothing sitting as credit')
+                ->color($receivables->isPositive() ? 'warning' : 'gray'),
         ];
-    }
 
-    private function stat(string $label, float $value, ?float $change): Stat
-    {
-        $stat = Stat::make($label, $this->money($value));
-
-        if ($change === null) {
-            return $stat->description('No comparable prior period')->color('gray');
+        if (! $canSeeCost) {
+            return $stats;
         }
 
-        return $stat
-            ->description(($change >= 0 ? '↑ ' : '↓ ').abs($change).'% vs previous 30 days')
-            ->color($change >= 0 ? 'success' : 'danger');
+        $profit = $metrics->profit($from, $to);
+        $atRisk = $metrics->boughtAtRisk();
+        $losses = $metrics->transferLosses($from, $to);
+
+        array_splice($stats, 1, 0, [
+            Stat::make('Profit', $this->signed($profit->toFloat()))
+                ->description($metrics->marginPercent($from, $to).'% margin')
+                ->color($profit->isNegative() ? 'danger' : 'success'),
+        ]);
+
+        $stats[] = Stat::make('Owed to suppliers', $metrics->payables()->display())
+            ->description('On live purchases')
+            ->color('gray');
+
+        /*
+         * The number nothing else surfaces.
+         *
+         * Approval is a warning rather than a wall, so this is what that
+         * judgement is currently costing you: goods on order that nobody has
+         * committed to buying.
+         */
+        $stats[] = Stat::make('Bought at your own risk', $atRisk->display())
+            ->description($atRisk->isPositive() ? 'Nobody has approved these yet' : 'Everything is approved')
+            ->color($atRisk->isPositive() ? 'danger' : 'success');
+
+        $stats[] = Stat::make('Lost on transfers', $losses->display())
+            ->description('What the exchange took, above the quoted rate')
+            ->color($losses->isPositive() ? 'warning' : 'gray');
+
+        return $stats;
     }
 
-    /** Sign goes outside the currency symbol, using a true minus rather than a hyphen. */
-    private function money(float $value): string
+    /**
+     * A true minus outside the symbol.
+     *
+     * `$-3,431.65` reads as a currency code followed by a negative; the minus
+     * belongs to the amount, not to the dollar.
+     */
+    private function signed(float $amount): string
     {
-        $formatted = '$'.number_format(abs($value), 2);
-
-        return $value < 0 ? "\u{2212}{$formatted}" : $formatted;
+        return ($amount < 0 ? '−' : '').'$'.number_format(abs($amount), 2);
     }
 }

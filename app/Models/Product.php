@@ -81,53 +81,42 @@ class Product extends Model
         return $this->hasMany(SupplierProduct::class);
     }
 
-    public function prices(): HasMany
+    /** What you sell it for, per customer type. Cost lives on supplierProducts. */
+    public function sellPrices(): HasMany
     {
-        return $this->hasMany(ProductPrice::class);
+        return $this->hasMany(ProductSellPrice::class);
     }
 
-    public function stockLevels(): HasMany
+    public function dealLines(): HasMany
     {
-        return $this->hasMany(StockLevel::class);
-    }
-
-    public function stockMovements(): HasMany
-    {
-        return $this->hasMany(StockMovement::class);
-    }
-
-    /** Quantity on hand across every warehouse, or one warehouse when given. */
-    public function stockOnHand(?int $warehouseId = null): float
-    {
-        return (float) $this->stockLevels()
-            ->when($warehouseId, fn (Builder $query) => $query->where('warehouse_id', $warehouseId))
-            ->sum('quantity');
-    }
-
-    /** What Sales is allowed to promise: on hand minus what is already committed. */
-    public function stockAvailable(?int $warehouseId = null): float
-    {
-        $levels = $this->stockLevels()
-            ->when($warehouseId, fn (Builder $query) => $query->where('warehouse_id', $warehouseId));
-
-        return (float) $levels->sum('quantity') - (float) $levels->sum('reserved_quantity');
-    }
-
-    public function stockIncoming(?int $warehouseId = null): float
-    {
-        return (float) $this->stockLevels()
-            ->when($warehouseId, fn (Builder $query) => $query->where('warehouse_id', $warehouseId))
-            ->sum('incoming_quantity');
+        return $this->hasMany(DealLine::class);
     }
 
     /**
-     * Margin against the true landed cost, not the supplier's invoice price.
+     * The selling price for a customer type, falling back to the base price.
      *
-     * Falls back to cost_price only when nothing has been received yet.
+     * A null customer type is the default price. Quantity breaks apply: the
+     * largest break at or below the quantity wins, so 500 pieces can sell
+     * cheaper per piece than 50.
      */
+    public function sellPriceFor(?int $customerTypeId = null, float $quantity = 1): ?ProductSellPrice
+    {
+        return $this->sellPrices
+            ->filter(fn (ProductSellPrice $p) => (float) $p->min_quantity <= $quantity)
+            ->filter(fn (ProductSellPrice $p) => $p->customer_type_id === $customerTypeId
+                || $p->customer_type_id === null)
+            // An exact customer-type match beats the shared default.
+            ->sortByDesc(fn (ProductSellPrice $p) => [
+                $p->customer_type_id === $customerTypeId ? 1 : 0,
+                (float) $p->min_quantity,
+            ])
+            ->first();
+    }
+
+    /** Margin on the price list alone — a real deal's margin comes from its lines. */
     public function grossMargin(): float
     {
-        return (float) $this->selling_price - $this->effectiveCost();
+        return (float) $this->selling_price - (float) $this->cost_price;
     }
 
     public function marginPercent(): float
@@ -137,31 +126,8 @@ class Product extends Model
         return $price > 0 ? round($this->grossMargin() / $price * 100, 2) : 0.0;
     }
 
-    public function effectiveCost(): float
-    {
-        $average = (float) $this->average_cost;
-
-        return $average > 0 ? $average : (float) $this->cost_price;
-    }
-
-    /** The duty rate that applies, falling back to the category default. */
-    public function effectiveDutyRate(): float
-    {
-        return (float) ($this->duty_rate ?? $this->category?->default_duty_rate ?? 0);
-    }
-
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
-    }
-
-    /** Products tracked for stock whose total on hand sits at or below the reorder level. */
-    public function scopeLowStock(Builder $query): Builder
-    {
-        return $query->where('track_stock', true)
-            ->where('reorder_level', '>', 0)
-            ->whereRaw(
-                '(select coalesce(sum(quantity), 0) from stock_levels where stock_levels.product_id = products.id) <= products.reorder_level'
-            );
     }
 }

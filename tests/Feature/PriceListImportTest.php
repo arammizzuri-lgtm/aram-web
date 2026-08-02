@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Actions\Catalog\CommitPriceListImport;
 use App\Models\PriceListImport;
+use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\Supplier;
 use App\Models\SupplierProduct;
+use App\Models\Unit;
 use App\Services\Import\PriceListMatcher;
 use App\Services\Import\SheetReader;
-use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -33,11 +35,58 @@ class PriceListImportTest extends TestCase
             FoundationSeeder::class,
             ReferenceDataSeeder::class,
             RolePermissionSeeder::class,
-            DemoDataSeeder::class,
         ]);
 
-        $this->supplier = Supplier::where('code', 'SUP-NBL')->firstOrFail();
+        // Its own fixtures rather than the demo seeder, which is gone. Import
+        // behaviour should be provable from the smallest catalogue that shows
+        // it — a rise, a cut, an unchanged line and a new item.
+        $this->supplier = Supplier::create([
+            'code' => 'SUP-NBL',
+            'name' => 'Ningbo Lighting Co.',
+            'default_currency' => 'USD',
+            'is_active' => true,
+        ]);
+
+        $this->seedCatalogue();
+
         $this->path = $this->writeSheet();
+    }
+
+    /** The prices the sheet under test is measured against. */
+    private function seedCatalogue(): void
+    {
+        $category = ProductCategory::create(['name' => 'Chandeliers', 'slug' => 'chandeliers']);
+        $unit = Unit::where('code', 'PCS')->firstOrFail();
+
+        // sku, name, supplier sku, current cost
+        $catalogue = [
+            ['CRY-0042', 'Crystal Chandelier A-330', 'A-330', '85.00'],
+            ['CRY-0043', 'Crystal Chandelier A-331', 'A-331', '92.00'],
+            ['CRY-0088', 'Crystal Wall Light Duo', 'W-112', '24.50'],
+            ['CRY-0120', 'Crystal Table Lamp Pearl', 'T-205', '31.00'],
+        ];
+
+        foreach ($catalogue as [$sku, $name, $supplierSku, $cost]) {
+            $product = Product::create([
+                'sku' => $sku,
+                'name' => $name,
+                'product_category_id' => $category->id,
+                'unit_id' => $unit->id,
+                'default_supplier_id' => $this->supplier->id,
+                'cost_price' => $cost,
+                'selling_price' => (string) ((float) $cost * 1.8),
+                'is_active' => true,
+            ]);
+
+            SupplierProduct::create([
+                'supplier_id' => $this->supplier->id,
+                'product_id' => $product->id,
+                'supplier_sku' => $supplierSku,
+                'currency' => 'USD',
+                'unit_price' => $cost,
+                'is_preferred' => true,
+            ]);
+        }
     }
 
     protected function tearDown(): void

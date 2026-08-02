@@ -56,15 +56,24 @@ class CustomerResource extends Resource
                     Textarea::make('billing_address')->rows(2)->columnSpanFull(),
                 ]),
 
-            Section::make('Credit & pricing')
-                ->description('Wholesale on credit is where importers lose money. Limits are enforced when an order is confirmed.')
+            Section::make('Pricing & documents')
+                ->description('Set once here so neither is ever a question while building a deal.')
                 ->columns(3)
                 ->schema([
-                    Select::make('price_tier_id')
-                        ->label('Price tier')
-                        ->relationship('priceTier', 'name')
+                    Select::make('customer_type_id')
+                        ->label('Customer type')
+                        ->relationship('customerType', 'name')
                         ->preload()
-                        ->helperText('Sets the default price this customer is quoted.'),
+                        ->helperText('Decides which selling price this customer is quoted.'),
+
+                    Select::make('document_language')
+                        ->label('Documents in')
+                        ->options(['en' => 'English', 'ckb' => 'Kurdish (Sorani)'])
+                        ->default('en')
+                        ->required()
+                        // Sorani is Arabic script and reads right to left, so the
+                        // document is mirrored rather than translated.
+                        ->helperText('Sorani prints right-to-left.'),
 
                     TextInput::make('credit_limit')->numeric()->prefix('$')->default(0),
                     TextInput::make('payment_terms_days')->label('Payment terms')->numeric()->suffix('days')->default(30),
@@ -96,26 +105,37 @@ class CustomerResource extends Resource
                     ->searchable(['name', 'name_ar', 'code'])
                     ->sortable(),
 
-                TextColumn::make('priceTier.name')->label('Tier')->badge()->color('gray')->placeholder('—'),
+                TextColumn::make('customerType.name')->label('Type')->badge()->color('gray')->placeholder('—'),
 
                 TextColumn::make('outstanding')
-                    ->label('Outstanding')
+                    ->label('Owes')
                     ->state(fn (Customer $record) => $record->outstandingBalance())
                     ->money('USD')
-                    ->alignEnd(),
-
-                TextColumn::make('credit_limit')->label('Credit limit')->money('USD')->alignEnd()->sortable(),
-
-                TextColumn::make('credit_used')
-                    ->label('Credit used')
-                    ->state(fn (Customer $record) => $record->creditUsedPercent().'%')
                     ->alignEnd()
+                    ->color(fn (Customer $record) => $record->outstandingBalance() > 0 ? 'warning' : 'gray'),
+
+                /*
+                 * Money held that is not yet matched to an invoice.
+                 *
+                 * Shown beside what they owe rather than netted into it: an
+                 * advance taken before the order existed and a debt still
+                 * outstanding are different facts, and collapsing them into one
+                 * figure hides the one you need to act on.
+                 */
+                TextColumn::make('credit')
+                    ->label('Credit held')
+                    ->state(fn (Customer $record) => $record->unallocatedCredit())
+                    ->money('USD')
+                    ->alignEnd()
+                    ->placeholder('—')
+                    ->color(fn (Customer $record) => $record->unallocatedCredit() > 0 ? 'success' : 'gray'),
+
+                TextColumn::make('document_language')
+                    ->label('Documents')
                     ->badge()
-                    ->color(fn (Customer $record) => match (true) {
-                        $record->creditUsedPercent() >= 100 => 'danger',
-                        $record->creditUsedPercent() >= 80 => 'warning',
-                        default => 'success',
-                    }),
+                    ->color('gray')
+                    ->formatStateUsing(fn (string $state) => $state === 'ckb' ? 'Kurdish' : 'English')
+                    ->toggleable(),
 
                 TextColumn::make('phone')->placeholder('—')->toggleable(),
 
@@ -127,7 +147,7 @@ class CustomerResource extends Resource
             ])
             ->defaultSort('name')
             ->filters([
-                SelectFilter::make('price_tier_id')->label('Tier')->relationship('priceTier', 'name')->preload(),
+                SelectFilter::make('customer_type_id')->label('Type')->relationship('customerType', 'name')->preload(),
                 SelectFilter::make('city')
                     ->options(fn () => Customer::query()->whereNotNull('city')->distinct()->pluck('city', 'city')),
                 TernaryFilter::make('is_active')->label('Active')->default(true),

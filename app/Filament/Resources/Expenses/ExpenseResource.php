@@ -3,9 +3,8 @@
 namespace App\Filament\Resources\Expenses;
 
 use App\Filament\Resources\Expenses\Pages\ManageExpenses;
+use App\Models\Deal;
 use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\Shipment;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -74,25 +73,26 @@ class ExpenseResource extends Resource
                         ->required(),
                 ]),
 
-            Section::make('Link to a container')
+            Section::make('Charge to a deal')
                 ->description(
-                    'Logistics spend belongs inside a container\'s landed cost, not general '
-                    .'overhead. Linking it here routes it straight into that shipment\'s costing.'
+                    'A cost incurred for one customer\'s order belongs on that order, so it '
+                    .'shows against the profit it reduced. Leave this empty for general '
+                    .'overhead like rent or phone bills.'
                 )
-                // Only offered for categories that may legitimately be allocated —
-                // office rent must never end up inside a product's cost.
-                ->visible(fn (callable $get) => (bool) ExpenseCategory::query()
-                    ->whereKey($get('expense_category_id'))
-                    ->value('is_shipment_allocatable'))
                 ->schema([
-                    Select::make('shipment_id')
-                        ->label('Shipment')
-                        ->options(fn () => Shipment::query()
-                            ->whereNotIn('status', ['closed', 'cancelled'])
+                    Select::make('deal_id')
+                        ->label('Deal')
+                        ->options(fn () => Deal::query()
+                            ->open()
+                            ->with('customer')
                             ->orderByDesc('id')
-                            ->pluck('number', 'id'))
+                            ->limit(100)
+                            ->get()
+                            ->mapWithKeys(fn (Deal $deal) => [
+                                $deal->id => $deal->number.' — '.$deal->customer?->name,
+                            ]))
                         ->searchable()
-                        ->helperText('The shipment will need recalculating after this is saved.'),
+                        ->placeholder('General overhead — not tied to a deal'),
                 ]),
 
             Section::make('Reference')
@@ -109,7 +109,7 @@ class ExpenseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['category', 'shipment']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['category', 'deal']))
             ->columns([
                 TextColumn::make('expense_date')->label('Date')->date('d M Y')->sortable(),
 
@@ -121,13 +121,13 @@ class ExpenseResource extends Resource
 
                 TextColumn::make('category.name')->label('Category')->badge()->color('gray')->sortable(),
 
-                TextColumn::make('shipment.number')
-                    ->label('Container')
-                    ->placeholder('—')
+                TextColumn::make('deal.number')
+                    ->label('Deal')
+                    ->placeholder('Overhead')
                     ->badge()
                     ->color('info')
-                    ->url(fn (Expense $record) => $record->shipment_id
-                        ? url("/admin/shipments/{$record->shipment_id}/costing")
+                    ->url(fn (Expense $record) => $record->deal_id
+                        ? url("/admin/deals/{$record->deal_id}")
                         : null),
 
                 TextColumn::make('base_amount')->label('Amount')->money('USD')->alignEnd()->sortable()->summarize(

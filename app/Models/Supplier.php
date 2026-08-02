@@ -57,14 +57,10 @@ class Supplier extends Model
         return $this->hasMany(CatalogueItem::class);
     }
 
-    public function purchaseOrders(): HasMany
+    /** This supplier's side of the deals you have bought for. */
+    public function purchases(): HasMany
     {
-        return $this->hasMany(PurchaseOrder::class);
-    }
-
-    public function bills(): HasMany
-    {
-        return $this->hasMany(SupplierBill::class);
+        return $this->hasMany(DealPurchase::class);
     }
 
     public function payments(): HasMany
@@ -72,13 +68,23 @@ class Supplier extends Model
         return $this->hasMany(SupplierPayment::class);
     }
 
-    /** Opening balance plus everything billed, less everything paid. */
+    /**
+     * What you still owe this supplier, in USD.
+     *
+     * Uses base_amount rather than actual_cost_base on the paid side: what you
+     * owe is settled by what the supplier received, not by what the transfer
+     * cost you. The exchange house's cut is your expense, not their credit.
+     */
     public function outstandingBalance(): float
     {
-        $billed = (float) $this->bills()->whereNot('status', 'cancelled')->sum('total');
-        $paid = (float) $this->bills()->whereNot('status', 'cancelled')->sum('amount_paid');
+        // cost_total_base is already the line total, so no multiplication here.
+        $ordered = (float) DealLine::query()
+            ->whereIn('deal_purchase_id', $this->purchases()->whereNot('status', 'cancelled')->select('id'))
+            ->sum('cost_total_base');
 
-        return round((float) $this->opening_balance + $billed - $paid, 2);
+        $paid = (float) $this->payments()->sum('base_amount');
+
+        return round((float) $this->opening_balance + $ordered - $paid, 2);
     }
 
     public function scopeActive(Builder $query): Builder

@@ -2,48 +2,83 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasDocumentNumber;
-use App\Models\Concerns\HasLineItems;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * What you offered, and the record of what the customer agreed to.
+ *
+ * The document matters less than the snapshot. On approval the lines and their
+ * photos are frozen; editing the deal afterwards supersedes this quotation
+ * rather than altering it. Without that, "you approved this model" is your word
+ * against theirs and the evidence is somewhere in a WhatsApp thread.
+ *
+ * `approved_by_name` is the customer's person, typed in. They never log in —
+ * you record who told you yes, through which channel, and when.
+ */
 class Quotation extends Model
 {
-    use HasDocumentNumber, HasLineItems;
+    public const STATUSES = [
+        'draft' => 'Draft',
+        'sent' => 'Sent',
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+        'superseded' => 'Superseded',
+    ];
 
     protected $fillable = [
-        'number', 'customer_id', 'quote_date', 'valid_until', 'status',
-        'currency', 'exchange_rate', 'base_total', 'price_tier_id', 'sales_rep_id',
-        'subtotal', 'discount_total', 'tax_total', 'total', 'notes', 'terms', 'created_by',
+        'deal_id', 'number', 'version', 'status', 'currency', 'exchange_rate',
+        'total', 'total_base', 'quotation_date', 'valid_until', 'language',
+        'terms', 'notes', 'sent_at',
+        'approved_at', 'approved_by_name', 'approval_channel', 'approval_note',
+        'recorded_by', 'rejected_at', 'rejection_reason',
     ];
 
     protected function casts(): array
     {
         return [
-            'quote_date' => 'date',
+            'version' => 'integer',
+            'exchange_rate' => 'decimal:6',
+            'total' => 'decimal:4',
+            'total_base' => 'decimal:4',
+            'quotation_date' => 'date',
             'valid_until' => 'date',
-            'exchange_rate' => 'decimal:8',
-            'subtotal' => 'decimal:2',
-            'discount_total' => 'decimal:2',
-            'tax_total' => 'decimal:2',
-            'total' => 'decimal:2',
-            'base_total' => 'decimal:4',
+            'sent_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
         ];
     }
 
-    public static function documentPrefix(): string
+    public function deal(): BelongsTo
     {
-        return 'QUO';
+        return $this->belongsTo(Deal::class);
     }
 
-    public function items(): HasMany
+    public function lines(): HasMany
     {
-        return $this->hasMany(QuotationItem::class);
+        return $this->hasMany(QuotationLine::class)->orderBy('display_order');
     }
 
-    public function customer(): BelongsTo
+    public function recorder(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isRightToLeft(): bool
+    {
+        return $this->language === 'ckb';
+    }
+
+    public function hasExpired(): bool
+    {
+        return $this->valid_until !== null
+            && $this->valid_until->isPast()
+            && ! $this->isApproved();
     }
 }

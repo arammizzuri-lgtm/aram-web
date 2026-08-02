@@ -47,9 +47,16 @@ class Expense extends Model
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
     }
 
-    public function shipment(): BelongsTo
+    /**
+     * An expense can be charged to a deal rather than being general overhead.
+     *
+     * Replaces the old link to a shipment: costs now attach to the customer
+     * request they were incurred for, since there is no container of mixed
+     * stock to attach them to instead.
+     */
+    public function deal(): BelongsTo
     {
-        return $this->belongsTo(Shipment::class);
+        return $this->belongsTo(Deal::class);
     }
 
     public function supplier(): BelongsTo

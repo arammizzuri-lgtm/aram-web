@@ -12,7 +12,8 @@ class Customer extends Model
     protected $fillable = [
         'code', 'name', 'name_ar', 'name_ku', 'contact_person', 'email', 'phone',
         'whatsapp', 'billing_address', 'shipping_address', 'city', 'area',
-        'tax_number', 'price_tier_id', 'credit_limit', 'credit_limit_currency',
+        'tax_number', 'customer_type_id', 'document_language',
+        'credit_limit', 'credit_limit_currency',
         'default_currency', 'payment_terms_days', 'opening_balance',
         'is_blocked', 'blocked_reason', 'sales_rep_id', 'rating', 'is_active', 'notes',
     ];
@@ -34,9 +35,10 @@ class Customer extends Model
         return $this->hasMany(CustomerContact::class);
     }
 
-    public function priceTier(): BelongsTo
+    /** Wholesale, regular — decides which selling price a product uses. */
+    public function customerType(): BelongsTo
     {
-        return $this->belongsTo(PriceTier::class, 'price_tier_id');
+        return $this->belongsTo(CustomerType::class);
     }
 
     /** How much of the credit limit is used, for the usage bar on the profile. */
@@ -47,38 +49,55 @@ class Customer extends Model
         return $limit > 0 ? round($this->outstandingBalance() / $limit * 100, 1) : 0.0;
     }
 
-    public function quotations(): HasMany
+    public function deals(): HasMany
     {
-        return $this->hasMany(Quotation::class);
-    }
-
-    public function salesOrders(): HasMany
-    {
-        return $this->hasMany(SalesOrder::class);
-    }
-
-    public function deliveryNotes(): HasMany
-    {
-        return $this->hasMany(DeliveryNote::class);
+        return $this->hasMany(Deal::class);
     }
 
     public function invoices(): HasMany
     {
-        return $this->hasMany(Invoice::class);
+        return $this->hasMany(CustomerInvoice::class);
     }
 
     public function payments(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(CustomerPayment::class);
     }
 
-    /** Opening balance plus everything invoiced, less everything received. */
+    /**
+     * What this customer owes, in USD.
+     *
+     * Everything invoiced less everything received — not less what has been
+     * *matched* to invoices. An advance paid before the deal existed is real
+     * money in your hand and must reduce what they owe, even though there was
+     * nothing to match it against at the time.
+     */
     public function outstandingBalance(): float
     {
-        $invoiced = (float) $this->invoices()->whereNot('status', 'cancelled')->sum('total');
-        $paid = (float) $this->invoices()->whereNot('status', 'cancelled')->sum('amount_paid');
+        $invoiced = (float) $this->invoices()
+            ->whereNot('status', 'cancelled')
+            ->sum('total_base');
 
-        return round((float) $this->opening_balance + $invoiced - $paid, 2);
+        $received = (float) $this->payments()->sum('base_amount');
+
+        return round((float) $this->opening_balance + $invoiced - $received, 2);
+    }
+
+    /**
+     * Money held that is not yet matched to any invoice.
+     *
+     * This is how an advance payment and a refund owed back to the customer
+     * are the same thing seen from two sides, rather than two features.
+     */
+    public function unallocatedCredit(): float
+    {
+        $received = (float) $this->payments()->sum('base_amount');
+
+        $matched = (float) CustomerPaymentAllocation::query()
+            ->whereIn('customer_payment_id', $this->payments()->select('id'))
+            ->sum('base_amount');
+
+        return round($received - $matched, 2);
     }
 
     /** How much more this customer may owe before hitting their credit limit. */

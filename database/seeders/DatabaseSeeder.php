@@ -17,11 +17,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
+         * The demo seeder is gone.
+         *
+         * It wrote fictional containers, stock and invoices for a business that
+         * held inventory. Beyond being wrong, seeding fake deals is actively
+         * harmful now: once a deal is invoiced and paid it cannot be deleted
+         * without breaking the references hanging off it, so demo data would
+         * become permanent furniture in a real ledger.
+         */
         $this->call([
             FoundationSeeder::class,
             ReferenceDataSeeder::class,
             RolePermissionSeeder::class,
-            DemoDataSeeder::class,
             CrystalCatalogueSeeder::class,
         ]);
 

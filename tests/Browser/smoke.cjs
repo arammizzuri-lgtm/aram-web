@@ -17,6 +17,14 @@ const BASE = process.argv[3] || 'http://127.0.0.1:8000';
 
 const PAGES = [
   ['Dashboard', '/admin'],
+  ['Deals', '/admin/deals'],
+  ['New deal', '/admin/deals/create'],
+  ['Consignments', '/admin/consignments'],
+  ['Collection points', '/admin/collection-points'],
+  ['Purchases', '/admin/purchases'],
+  ['Invoices', '/admin/customer-invoices'],
+  ['Payments', '/admin/customer-payments'],
+  ['Reports', '/admin/reports'],
   ['Crystals price list', '/admin/crystal-price-list'],
   ['Textile', '/admin/catalogue-price-list?section=textile'],
   ['Packaging', '/admin/catalogue-price-list?section=packaging'],
@@ -24,15 +32,7 @@ const PAGES = [
   ['Products', '/admin/products'],
   ['Suppliers', '/admin/suppliers'],
   ['Customers', '/admin/customers'],
-  ['Purchase orders', '/admin/purchase-orders'],
-  ['Shipments', '/admin/shipments'],
-  ['Stock', '/admin/stock-levels'],
-  ['Movements', '/admin/stock-movements'],
-  ['Invoices', '/admin/invoices'],
-  ['Sales orders', '/admin/sales-orders'],
-  ['Payments', '/admin/payments'],
   ['Expenses', '/admin/expenses'],
-  ['Reports', '/admin/reports'],
   ['Ask (AI)', '/admin/ai-assistant'],
   ['Price list import', '/admin/price-list-import'],
   ['Company profile', '/admin/company-profile'],
@@ -79,8 +79,8 @@ const PAGES = [
     console.log(`${ok ? 'OK  ' : 'FAIL'} ${String(status).padEnd(4)} ${name.padEnd(20)} ${title}${errs ? `  [${errs} js errors]` : ''}`);
 
     if (name === 'Dashboard') await page.screenshot({ path: `${out}/dashboard.png` });
-    if (name === 'Reports') await page.screenshot({ path: `${out}/reports.png` });
-    if (name === 'Crystals price list') await page.screenshot({ path: `${out}/crystals.png` });
+    if (name === 'New deal') await page.screenshot({ path: `${out}/new-deal.png` });
+    if (name === 'Deals') await page.screenshot({ path: `${out}/deals.png` });
   }
 
   console.log(`\n${PAGES.length - failed}/${PAGES.length} pages OK`);

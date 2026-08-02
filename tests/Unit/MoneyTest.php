@@ -211,4 +211,34 @@ class MoneyTest extends TestCase
         $this->assertTrue(Money::of('0.0001', 'USD')->isPositive());
         $this->assertSame('5.0000', Money::of('-5', 'USD')->absolute()->amount);
     }
+
+    /**
+     * Each currency written the way it is actually written.
+     *
+     * `format()` defaults to no symbol at all, which produced a dashboard where
+     * one tile read "$8,655.75" and the one beside it read "9,523.81" — the
+     * reader could not tell whether the second was dollars, dinars, or a count.
+     */
+    #[Test]
+    public function display_carries_the_currency_it_is_in(): void
+    {
+        $this->assertSame('$1,234.56', Money::of('1234.56', 'USD')->display());
+        $this->assertSame('¥6,250.00', Money::of('6250', 'CNY')->display());
+
+        // The dinar has no subunit in practice and is written after the number.
+        $this->assertSame('14,000,000 IQD', Money::of('14000000', 'IQD')->display());
+    }
+
+    /** An unknown currency still says which one it is, rather than nothing. */
+    #[Test]
+    public function display_falls_back_to_the_currency_code(): void
+    {
+        $this->assertSame('50.00 EUR', Money::of('50', 'EUR')->display());
+    }
+
+    #[Test]
+    public function a_negative_display_keeps_the_minus_outside_the_symbol(): void
+    {
+        $this->assertSame("\u{2212}$3,431.65", Money::of('-3431.65', 'USD')->display());
+    }
 }

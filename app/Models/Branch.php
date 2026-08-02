@@ -22,9 +22,4 @@ class Branch extends Model
     {
         return $this->hasMany(User::class);
     }
-
-    public function warehouses(): HasMany
-    {
-        return $this->hasMany(Warehouse::class);
-    }
 }

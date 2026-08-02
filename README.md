@@ -25,6 +25,7 @@ Read in order. [docs/00-OVERVIEW.md](docs/00-OVERVIEW.md) is the entry point.
 | [06 — User Flows](docs/06-USER-FLOWS.md) | Step-by-step flows per role, with permission matrix |
 | [07 — Roadmap](docs/07-ROADMAP.md) | 13 phases, dependencies, acceptance criteria, live build status |
 | [08 — Deployment](docs/08-DEPLOYMENT.md) | VPS build, PostgreSQL switch, backups, redeploy, hardening |
+| **[10 — Redesign](docs/10-REDESIGN.md)** | **Start here.** The deal-centred model this system was rebuilt around, and why the inventory core was deleted rather than adapted |
 
 ---
 

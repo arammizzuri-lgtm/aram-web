@@ -2,15 +2,12 @@
 
 namespace App\Services\Ai;
 
+use App\Models\Consignment;
 use App\Models\Customer;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
+use App\Models\Deal;
 use App\Models\Product;
-use App\Models\Shipment;
 use App\Models\Supplier;
 use App\Models\User;
-use App\Services\Reporting\BusinessMetrics;
-use Illuminate\Support\Carbon;
 
 /**
  * The fixed set of questions the assistant is allowed to ask the database.
@@ -18,141 +15,175 @@ use Illuminate\Support\Carbon;
  * Deliberately a closed surface of typed, parameterised queries — the model
  * never writes SQL and can never reach a table that is not exposed here. Every
  * tool is read-only, and each one re-checks the caller's permissions rather
- * than trusting the prompt: a Sales login asking "what are our margins?" gets
- * an answer with the cost figures removed, not a refusal the model could be
- * talked out of.
+ * than trusting the prompt: an assistant login asking "what did we pay for
+ * this?" gets an answer with the cost figures removed, not a refusal the model
+ * could be talked out of.
+ *
+ * Rebuilt around deals. The old stock and container tools are gone because the
+ * things they reported on no longer exist — a question with no possible answer
+ * is worse than a missing tool, because the model will try to answer it anyway.
  */
 class ErpToolSurface
 {
-    public function __construct(private readonly BusinessMetrics $metrics) {}
+    /** Tools whose output is meaningless once cost is stripped out. */
+    private const COST_BEARING = ['get_deal_profitability', 'get_suppliers'];
 
     /** @return array<int, array<string, mixed>> the tool schemas sent to the model */
     public function definitions(User $user): array
     {
         $tools = [
             [
-                'name' => 'get_business_summary',
-                'description' => 'Revenue, cost of goods, profit, expenses, inventory value, receivables and payables for a date range. Use for questions about overall performance, profit, or cash position.',
+                'name' => 'find_deals',
+                'description' => 'Search customer orders by customer, status or text. Use for '
+                    .'"what is happening with X", "which orders are waiting", "show me open deals".',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
-                        'from' => ['type' => 'string', 'description' => 'Start date, YYYY-MM-DD.'],
-                        'to' => ['type' => 'string', 'description' => 'End date, YYYY-MM-DD.'],
+                        'customer' => ['type' => 'string', 'description' => 'Customer name, partial match'],
+                        'status' => [
+                            'type' => 'string',
+                            'enum' => array_keys(Deal::STATUSES),
+                            'description' => 'Restrict to one stage',
+                        ],
+                        'open_only' => ['type' => 'boolean', 'description' => 'Exclude closed and cancelled'],
+                        'limit' => ['type' => 'integer', 'description' => 'Max rows, default 25'],
                     ],
-                    'required' => ['from', 'to'],
                 ],
             ],
             [
                 'name' => 'find_products',
-                'description' => 'Search the product catalogue by name, SKU or category. Returns stock, prices and margin. Use for questions about specific products or what is in stock.',
+                'description' => 'Look up products by name, SKU, Chinese name, category or supplier.',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
-                        'search' => ['type' => 'string', 'description' => 'Name, SKU or partial match.'],
-                        'category' => ['type' => 'string', 'description' => 'Category name, e.g. Crystals.'],
-                        'supplier' => ['type' => 'string', 'description' => 'Supplier name.'],
-                        'low_stock_only' => ['type' => 'boolean', 'description' => 'Only products at or below reorder level.'],
-                        'limit' => ['type' => 'integer', 'description' => 'Max rows, default 25.'],
+                        'search' => ['type' => 'string'],
+                        'category' => ['type' => 'string'],
+                        'supplier' => ['type' => 'string'],
+                        'limit' => ['type' => 'integer'],
                     ],
                 ],
             ],
             [
                 'name' => 'get_customer_balances',
-                'description' => 'What customers owe, with aging buckets and credit limits. Use for questions about who owes money or who is overdue.',
+                'description' => 'What customers owe, and what credit they hold. Use for '
+                    .'"who owes me money", "does X have credit", "what is outstanding".',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
-                        'overdue_only' => ['type' => 'boolean', 'description' => 'Only customers with overdue invoices.'],
+                        'customer' => ['type' => 'string'],
+                        'owing_only' => ['type' => 'boolean'],
                         'limit' => ['type' => 'integer'],
                     ],
                 ],
             ],
             [
-                'name' => 'get_shipments',
-                'description' => 'Containers with their goods value, shipping costs, cost uplift and costing status. Use for questions about imports, containers, freight or landed cost.',
+                'name' => 'get_consignments',
+                'description' => 'Shipments in progress by tracking number, mode and status. Use for '
+                    .'"where are my goods", "what is still in transit", "when does X arrive".',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
-                        'status' => ['type' => 'string', 'description' => 'e.g. in_transit, cleared, delivered.'],
+                        'tracking_number' => ['type' => 'string'],
+                        'status' => ['type' => 'string', 'enum' => array_keys(Consignment::STATUSES)],
+                        'in_transit_only' => ['type' => 'boolean'],
                         'limit' => ['type' => 'integer'],
                     ],
                 ],
             ],
             [
-                'name' => 'get_product_profitability',
-                'description' => 'Products ranked by gross profit over a period, measured against true landed cost. Use for best/worst sellers and margin questions.',
+                'name' => 'get_deal_profitability',
+                'description' => 'Revenue, cost and profit per deal. Use for "which orders made money", '
+                    .'"what did I earn on X", "worst deals".',
                 'input_schema' => [
                     'type' => 'object',
                     'properties' => [
-                        'from' => ['type' => 'string'],
-                        'to' => ['type' => 'string'],
-                        'worst_first' => ['type' => 'boolean', 'description' => 'Show loss-makers first.'],
+                        'from' => ['type' => 'string', 'description' => 'YYYY-MM-DD'],
+                        'to' => ['type' => 'string', 'description' => 'YYYY-MM-DD'],
+                        'worst_first' => ['type' => 'boolean', 'description' => 'Show losses first'],
                         'limit' => ['type' => 'integer'],
                     ],
-                    'required' => ['from', 'to'],
                 ],
             ],
             [
                 'name' => 'get_suppliers',
-                'description' => 'Suppliers with spend, lead times, catalogue size and outstanding balance. Use for questions about who you buy from.',
+                'description' => 'Suppliers, what is owed to them, and how much has been bought.',
                 'input_schema' => [
                     'type' => 'object',
-                    'properties' => ['limit' => ['type' => 'integer']],
+                    'properties' => [
+                        'search' => ['type' => 'string'],
+                        'limit' => ['type' => 'integer'],
+                    ],
                 ],
             ],
         ];
 
-        // Cost-bearing tools simply are not offered to a user who cannot see cost.
+        /*
+         * Withheld rather than emptied.
+         *
+         * A profitability tool with the money removed returns a list of deal
+         * numbers and nothing else, which invites the model to guess at the
+         * gap. Not offering the tool is the honest signal that this user does
+         * not get to ask the question.
+         */
         return $user->can('view_cost')
             ? $tools
             : array_values(array_filter(
                 $tools,
-                fn (array $t) => ! in_array($t['name'], ['get_business_summary', 'get_product_profitability', 'get_suppliers'], true),
+                fn (array $tool) => ! in_array($tool['name'], self::COST_BEARING, true),
             ));
     }
 
     /** @return array<string, mixed> */
     public function run(string $name, array $input, User $user): array
     {
-        $allowed = array_column($this->definitions($user), 'name');
-
-        if (! in_array($name, $allowed, true)) {
-            return ['error' => "The tool '{$name}' is not available to this user."];
+        // Second gate. The first is not offering the tool; this one assumes the
+        // first was bypassed, because a security boundary with one lock is a
+        // boundary that fails completely the first time something changes.
+        if (in_array($name, self::COST_BEARING, true) && ! $user->can('view_cost')) {
+            return ['error' => 'You do not have permission to see cost or profit figures.'];
         }
 
         return match ($name) {
-            'get_business_summary' => $this->businessSummary($input),
+            'find_deals' => $this->deals($input, $user),
             'find_products' => $this->products($input, $user),
             'get_customer_balances' => $this->customerBalances($input),
-            'get_shipments' => $this->shipments($input, $user),
-            'get_product_profitability' => $this->profitability($input),
+            'get_consignments' => $this->consignments($input),
+            'get_deal_profitability' => $this->profitability($input),
             'get_suppliers' => $this->suppliers($input),
-            default => ['error' => 'Unknown tool.'],
+            default => ['error' => "Unknown tool: {$name}"],
         };
     }
 
-    private function businessSummary(array $input): array
-    {
-        $from = Carbon::parse($input['from'] ?? now()->subDays(30))->startOfDay();
-        $to = Carbon::parse($input['to'] ?? now())->endOfDay();
+    // ----------------------------------------------------------------- tools
 
-        return [
-            'period' => $from->toDateString().' to '.$to->toDateString(),
-            'currency' => 'USD',
-            'revenue' => $this->metrics->revenue($from, $to),
-            'cost_of_goods_sold' => $this->metrics->costOfGoodsSold($from, $to),
-            'gross_profit' => $this->metrics->grossProfit($from, $to),
-            'gross_margin_percent' => $this->metrics->grossMarginPercent($from, $to),
-            'operating_expenses' => $this->metrics->operatingExpenses($from, $to),
-            'net_profit' => $this->metrics->netProfit($from, $to),
-            'inventory_value' => $this->metrics->inventoryValue(),
-            'goods_in_transit' => $this->metrics->goodsInTransit(),
-            'receivables' => $this->metrics->receivables(),
-            'overdue_receivables' => $this->metrics->overdueReceivables(),
-            'payables' => $this->metrics->payables(),
-            'shipments_awaiting_final_costing' => $this->metrics->shipmentsAwaitingFinalCosting(),
-            'note' => 'Operating expenses exclude freight and duty, which sit inside landed cost.',
-        ];
+    private function deals(array $input, User $user): array
+    {
+        $showCost = $user->can('view_cost');
+
+        $rows = Deal::query()
+            ->with(['customer', 'lines', 'purchases.costs', 'expenses', 'consignments'])
+            ->when($input['customer'] ?? null, fn ($q, $c) => $q->whereHas(
+                'customer', fn ($w) => $w->whereLike('name', "%{$c}%")
+            ))
+            ->when($input['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
+            ->when($input['open_only'] ?? false, fn ($q) => $q->open())
+            ->orderByDesc('deal_date')
+            ->limit(min((int) ($input['limit'] ?? 25), 100))
+            ->get()
+            ->map(fn (Deal $deal) => array_filter([
+                'deal' => $deal->number,
+                'customer' => $deal->customer?->name,
+                'status' => Deal::STATUSES[$deal->status] ?? $deal->status,
+                'date' => $deal->deal_date?->toDateString(),
+                'expected_delivery' => $deal->expected_delivery?->toDateString(),
+                'lines' => $deal->lines->count(),
+                'revenue_usd' => $deal->revenueBase()->toFloat(),
+                'cost_usd' => $showCost ? $deal->costBase()->toFloat() : null,
+                'profit_usd' => $showCost ? $deal->profitBase()->toFloat() : null,
+                'approved' => $deal->isApproved(),
+            ], fn ($v) => $v !== null));
+
+        return ['count' => $rows->count(), 'deals' => $rows->all()];
     }
 
     private function products(array $input, User $user): array
@@ -167,21 +198,23 @@ class ErpToolSurface
                 ->whereLike('name', "%{$s}%")
                 ->orWhereLike('sku', "%{$s}%")
                 ->orWhereLike('name_zh', "%{$s}%")))
-            ->when($input['category'] ?? null, fn ($q, $c) => $q->whereHas('category', fn ($w) => $w->whereLike('name', "%{$c}%")))
-            ->when($input['supplier'] ?? null, fn ($q, $s) => $q->whereHas('defaultSupplier', fn ($w) => $w->whereLike('name', "%{$s}%")))
-            ->when($input['low_stock_only'] ?? false, fn ($q) => $q->lowStock())
+            ->when($input['category'] ?? null, fn ($q, $c) => $q->whereHas(
+                'category', fn ($w) => $w->whereLike('name', "%{$c}%")
+            ))
+            ->when($input['supplier'] ?? null, fn ($q, $s) => $q->whereHas(
+                'defaultSupplier', fn ($w) => $w->whereLike('name', "%{$s}%")
+            ))
             ->limit(min((int) ($input['limit'] ?? 25), 100))
             ->get()
             ->map(fn (Product $p) => array_filter([
                 'sku' => $p->sku,
                 'name' => $p->name,
+                'name_zh' => $p->name_zh,
                 'category' => $p->category?->name,
                 'supplier' => $p->defaultSupplier?->name,
-                'in_stock' => $p->stockOnHand(),
-                'available' => $p->stockAvailable(),
-                'incoming' => $p->stockIncoming(),
+                'contains_battery' => $p->contains_battery ? true : null,
                 'selling_price' => (float) $p->selling_price,
-                'landed_cost' => $showCost ? $p->effectiveCost() : null,
+                'cost' => $showCost ? (float) $p->cost_price : null,
                 'margin_percent' => $showCost ? $p->marginPercent() : null,
             ], fn ($v) => $v !== null));
 
@@ -191,115 +224,92 @@ class ErpToolSurface
     private function customerBalances(array $input): array
     {
         $rows = Customer::query()
-            ->with(['invoices' => fn ($q) => $q->outstanding()])
+            ->when($input['customer'] ?? null, fn ($q, $c) => $q->whereLike('name', "%{$c}%"))
             ->get()
-            ->map(function (Customer $c) {
-                $overdue = $c->invoices->filter(fn (Invoice $i) => $i->isOverdue());
-
-                return [
-                    'customer' => $c->name,
-                    'city' => $c->city,
-                    'outstanding' => $c->outstandingBalance(),
-                    'overdue_amount' => round($overdue->sum(fn (Invoice $i) => $i->amountDue()), 2),
-                    'overdue_invoices' => $overdue->count(),
-                    'worst_days_overdue' => (int) ($overdue->max(fn (Invoice $i) => $i->daysOverdue()) ?? 0),
-                    'credit_limit' => (float) $c->credit_limit,
-                    'credit_used_percent' => $c->creditUsedPercent(),
-                ];
-            })
-            ->when($input['overdue_only'] ?? false, fn ($rows) => $rows->filter(fn ($r) => $r['overdue_amount'] > 0))
-            ->filter(fn ($r) => $r['outstanding'] > 0)
-            ->sortByDesc('outstanding')
+            ->map(fn (Customer $c) => [
+                'customer' => $c->name,
+                'city' => $c->city,
+                'owes_usd' => $c->outstandingBalance(),
+                'credit_held_usd' => $c->unallocatedCredit(),
+            ])
+            ->when(
+                $input['owing_only'] ?? false,
+                fn ($rows) => $rows->filter(fn ($r) => $r['owes_usd'] > 0)
+            )
+            ->sortByDesc('owes_usd')
             ->take(min((int) ($input['limit'] ?? 25), 100))
             ->values();
 
         return ['count' => $rows->count(), 'customers' => $rows->all()];
     }
 
-    private function shipments(array $input, User $user): array
+    /** No cost gate: where the goods are is not commercially sensitive. */
+    private function consignments(array $input): array
     {
-        $showCost = $user->can('view_cost');
-
-        $rows = Shipment::query()
+        $rows = Consignment::query()
+            ->with('deals.customer')
+            ->when($input['tracking_number'] ?? null, fn ($q, $t) => $q->whereLike('tracking_number', "%{$t}%"))
             ->when($input['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
-            ->orderByDesc('eta')
+            ->when($input['in_transit_only'] ?? false, fn ($q) => $q->inTransit())
+            ->orderByDesc('shipped_at')
             ->limit(min((int) ($input['limit'] ?? 20), 50))
             ->get()
-            ->map(fn (Shipment $s) => array_filter([
-                'shipment' => $s->number,
-                'container' => $s->container_number,
-                'route' => trim(($s->port_of_loading ?? '?').' to '.($s->port_of_discharge ?? '?')),
-                'status' => $s->status->getLabel(),
-                'eta' => $s->eta?->toDateString(),
-                'volume_cbm' => (float) $s->total_volume_cbm,
-                'goods_value' => $showCost ? (float) $s->total_goods_base : null,
-                'shipping_costs' => $showCost ? (float) $s->total_costs_base : null,
-                'cost_uplift_percent' => $showCost ? $s->costUpliftPercent() : null,
-                'costing_status' => $s->landed_cost_status->getLabel(),
-            ], fn ($v) => $v !== null));
+            ->map(fn (Consignment $c) => array_filter([
+                'tracking_number' => $c->tracking_number,
+                'mode' => Consignment::MODES[$c->mode] ?? $c->mode,
+                'status' => Consignment::STATUSES[$c->status] ?? $c->status,
+                'boxes' => $c->boxes,
+                'weight_kg' => $c->gross_weight_kg ? (float) $c->gross_weight_kg : null,
+                'cbm' => $c->cbm ? (float) $c->cbm : null,
+                'shipped' => $c->shipped_at?->toDateString(),
+                'arrived' => $c->arrived_at?->toDateString(),
+                'customers' => $c->deals->map(fn (Deal $d) => $d->customer?->name)->filter()->values()->all(),
+            ], fn ($v) => $v !== null && $v !== []));
 
-        return ['count' => $rows->count(), 'shipments' => $rows->all()];
+        return ['count' => $rows->count(), 'consignments' => $rows->all()];
     }
 
     private function profitability(array $input): array
     {
-        $from = Carbon::parse($input['from'])->startOfDay();
-        $to = Carbon::parse($input['to'])->endOfDay();
         $worstFirst = (bool) ($input['worst_first'] ?? false);
 
-        $rows = InvoiceItem::query()
-            ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
-            ->join('products', 'products.id', '=', 'invoice_items.product_id')
-            ->whereNot('invoices.status', 'cancelled')
-            ->whereBetween('invoices.invoice_date', [$from, $to])
-            ->groupBy('products.id', 'products.sku', 'products.name')
-            ->selectRaw('products.sku, products.name')
-            ->selectRaw('sum(invoice_items.quantity) as qty')
-            ->selectRaw('sum(invoice_items.line_total) as revenue')
-            ->selectRaw('sum(invoice_items.quantity * invoice_items.unit_cost_base) as cogs')
-            ->orderByRaw('sum(invoice_items.line_total - (invoice_items.quantity * invoice_items.unit_cost_base)) '.($worstFirst ? 'asc' : 'desc'))
-            ->limit(min((int) ($input['limit'] ?? 15), 50))
+        $rows = Deal::query()
+            ->with(['customer', 'lines', 'purchases.costs', 'expenses', 'consignments'])
+            ->when($input['from'] ?? null, fn ($q, $f) => $q->whereDate('deal_date', '>=', $f))
+            ->when($input['to'] ?? null, fn ($q, $t) => $q->whereDate('deal_date', '<=', $t))
             ->get()
-            ->map(function ($r) {
-                $revenue = round((float) $r->revenue, 2);
-                $cogs = round((float) $r->cogs, 2);
+            ->map(fn (Deal $deal) => [
+                'deal' => $deal->number,
+                'customer' => $deal->customer?->name,
+                'date' => $deal->deal_date?->toDateString(),
+                'revenue_usd' => $deal->revenueBase()->toFloat(),
+                'cost_usd' => $deal->costBase()->toFloat(),
+                'profit_usd' => $deal->profitBase()->toFloat(),
+                'margin_percent' => $deal->marginPercent(),
+            ])
+            ->sortBy('profit_usd', SORT_REGULAR, ! $worstFirst)
+            ->take(min((int) ($input['limit'] ?? 20), 100))
+            ->values();
 
-                return [
-                    'sku' => $r->sku,
-                    'product' => $r->name,
-                    'quantity_sold' => round((float) $r->qty, 2),
-                    'revenue' => $revenue,
-                    'cost_of_goods_sold' => $cogs,
-                    'gross_profit' => round($revenue - $cogs, 2),
-                    'margin_percent' => $revenue > 0 ? round(($revenue - $cogs) / $revenue * 100, 1) : 0,
-                ];
-            });
-
-        return [
-            'period' => $from->toDateString().' to '.$to->toDateString(),
-            'ordered_by' => $worstFirst ? 'lowest profit first' : 'highest profit first',
-            'products' => $rows->all(),
-            'note' => 'Cost of goods is the true landed cost including freight and duty, frozen when each invoice was posted.',
-        ];
+        return ['count' => $rows->count(), 'deals' => $rows->all()];
     }
 
     private function suppliers(array $input): array
     {
         $rows = Supplier::query()
-            ->withCount(['supplierProducts', 'crystalProducts', 'purchaseOrders'])
-            ->limit(min((int) ($input['limit'] ?? 25), 50))
+            ->withCount(['purchases', 'supplierProducts', 'crystalProducts'])
+            ->when($input['search'] ?? null, fn ($q, $s) => $q->whereLike('name', "%{$s}%"))
+            ->limit(min((int) ($input['limit'] ?? 25), 100))
             ->get()
-            ->map(fn (Supplier $s) => [
+            ->map(fn (Supplier $s) => array_filter([
                 'supplier' => $s->name,
-                'chinese_name' => $s->name_zh,
+                'name_zh' => $s->name_zh,
                 'country' => $s->country,
                 'city' => $s->city,
-                'orders' => $s->purchase_orders_count,
-                'total_spend' => round((float) $s->purchaseOrders()->sum('total'), 2),
-                'catalogue_size' => $s->supplier_products_count + $s->crystal_products_count,
-                'average_lead_time_days' => $s->average_lead_time_days,
-                'outstanding' => $s->outstandingBalance(),
-            ]);
+                'purchases' => $s->purchases_count,
+                'catalogue_items' => $s->supplier_products_count + $s->crystal_products_count,
+                'owed_usd' => $s->outstandingBalance(),
+            ], fn ($v) => $v !== null));
 
         return ['count' => $rows->count(), 'suppliers' => $rows->all()];
     }
