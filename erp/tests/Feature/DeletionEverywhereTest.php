@@ -15,6 +15,7 @@ use App\Models\CollectionPoint;
 use App\Models\Consignment;
 use App\Models\Currency;
 use App\Models\Customer;
+use App\Models\CustomerInvoice;
 use App\Models\Deal;
 use App\Models\DealLine;
 use App\Models\ProductCategory;
@@ -22,6 +23,7 @@ use App\Models\Supplier;
 use App\Models\User;
 use App\Services\Deals\PaymentWriter;
 use App\Services\Deletion\DeletionImpact;
+use App\Services\Reporting\BusinessMetrics;
 use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -284,6 +286,98 @@ class DeletionEverywhereTest extends TestCase
         Livewire::test(ManageCustomers::class)
             ->filterTable('trashed', true)
             ->assertActionHidden(TestAction::make('forceDelete')->table($customer));
+    }
+
+    // ---------------------------------------------- the figures follow along
+
+    /**
+     * Deleting the paperwork takes its money out of the totals with it.
+     *
+     * The dashboard read invoices — which respect deletion — against the
+     * matches between payments and invoices, which did not. Delete an invoice
+     * and its payment and the match stayed behind, still counting, so a
+     * customer with nothing outstanding at all was reported as owing minus four
+     * thousand dollars: money matched to invoices that were no longer there.
+     */
+    #[Test]
+    public function deleting_an_invoice_and_its_payment_clears_them_from_the_dashboard(): void
+    {
+        $customer = $this->customer();
+
+        $invoice = CustomerInvoice::create([
+            'number' => 'CI-2026-0001',
+            'customer_id' => $customer->id,
+            'deal_id' => Deal::create([
+                'number' => 'D-2026-0001', 'customer_id' => $customer->id,
+                'deal_date' => today(), 'sell_currency' => 'USD',
+            ])->id,
+            'type' => 'goods',
+            'status' => 'issued',
+            'invoice_date' => today(),
+            'currency' => 'USD',
+            'total' => 4112.50,
+            'total_base' => 4112.50,
+            'language' => 'en',
+        ]);
+
+        $payment = app(PaymentWriter::class)->receive(
+            customer: $customer,
+            amount: 4112.50,
+            currency: 'USD',
+            paidAt: today()->toDateString(),
+        );
+
+        app(PaymentWriter::class)->allocate($payment, [$invoice->id => 4112.50]);
+
+        $metrics = app(BusinessMetrics::class);
+
+        $this->assertSame('0.0000', $metrics->receivables()->amount, 'billed and paid, so nothing is owed');
+
+        // Now delete both, as clearing out a mistake would.
+        $invoice->delete();
+        $payment->delete();
+
+        $this->assertSame(
+            '0.0000',
+            $metrics->receivables()->amount,
+            'the match must go quiet with the records it joins',
+        );
+
+        $this->assertSame('0.0000', $metrics->customerCredit()->amount);
+        $this->assertSame(0.0, $customer->fresh()->outstandingBalance());
+    }
+
+    /** And come back, together, when they do. */
+    #[Test]
+    public function restoring_them_brings_the_matching_back(): void
+    {
+        $customer = $this->customer();
+
+        $invoice = CustomerInvoice::create([
+            'number' => 'CI-2026-0001',
+            'customer_id' => $customer->id,
+            'deal_id' => Deal::create([
+                'number' => 'D-2026-0001', 'customer_id' => $customer->id,
+                'deal_date' => today(), 'sell_currency' => 'USD',
+            ])->id,
+            'type' => 'goods', 'status' => 'issued', 'invoice_date' => today(),
+            'currency' => 'USD', 'total' => 1000, 'total_base' => 1000, 'language' => 'en',
+        ]);
+
+        $payment = app(PaymentWriter::class)->receive(
+            customer: $customer, amount: 400, currency: 'USD', paidAt: today()->toDateString(),
+        );
+
+        app(PaymentWriter::class)->allocate($payment, [$invoice->id => 400]);
+
+        $payment->delete();
+
+        // With the payment gone the whole invoice is outstanding again.
+        $this->assertSame('1000.0000', app(BusinessMetrics::class)->receivables()->amount);
+
+        $payment->restore();
+
+        $this->assertSame('600.0000', app(BusinessMetrics::class)->receivables()->amount);
     }
 
     // ------------------------------------------------------- codes come free
