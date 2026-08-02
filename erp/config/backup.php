@@ -254,7 +254,13 @@ return [
         'notifiable' => Notifiable::class,
 
         'mail' => [
-            'to' => env('BACKUP_NOTIFICATION_EMAIL', 'your@example.com'),
+            /*
+             * Left unset when no address is configured, rather than empty: the
+             * package validates this eagerly and refuses to boot on an empty
+             * string, which on a fresh .env — where the key is present and
+             * blank — takes the whole application down before it starts.
+             */
+            'to' => array_filter([env('BACKUP_NOTIFICATION_EMAIL')]),
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
