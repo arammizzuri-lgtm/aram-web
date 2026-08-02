@@ -7,14 +7,12 @@ class DefaultProviders
     /**
      * The current providers.
      *
-     * @var array<class-string>
+     * @var array
      */
     protected $providers;
 
     /**
      * Create a new default provider collection.
-     *
-     * @param  array<class-string>|null  $providers
      */
     public function __construct(?array $providers = null)
     {
@@ -29,7 +27,6 @@ class DefaultProviders
             \Illuminate\Database\DatabaseServiceProvider::class,
             \Illuminate\Encryption\EncryptionServiceProvider::class,
             \Illuminate\Filesystem\FilesystemServiceProvider::class,
-            \Illuminate\Image\ImageServiceProvider::class,
             \Illuminate\Foundation\Providers\FoundationServiceProvider::class,
             \Illuminate\Hashing\HashServiceProvider::class,
             \Illuminate\Mail\MailServiceProvider::class,
@@ -49,7 +46,7 @@ class DefaultProviders
     /**
      * Merge the given providers into the provider collection.
      *
-     * @param  array<class-string>  $providers
+     * @param  array  $providers
      * @return static
      */
     public function merge(array $providers)
@@ -62,7 +59,7 @@ class DefaultProviders
     /**
      * Replace the given providers with other providers.
      *
-     * @param  array<class-string, class-string>  $replacements
+     * @param  array  $replacements
      * @return static
      */
     public function replace(array $replacements)
@@ -81,7 +78,7 @@ class DefaultProviders
     /**
      * Disable the given providers.
      *
-     * @param  array<class-string>  $providers
+     * @param  array  $providers
      * @return static
      */
     public function except(array $providers)
@@ -95,7 +92,7 @@ class DefaultProviders
     /**
      * Convert the provider collection to an array.
      *
-     * @return array<class-string>
+     * @return array
      */
     public function toArray()
     {

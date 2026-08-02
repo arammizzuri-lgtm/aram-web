@@ -142,7 +142,7 @@ class RouteListCommand extends Command
         return $this->filterRoute([
             'domain' => $route->domain(),
             'method' => implode('|', $route->methods()),
-            'uri' => $this->resolveUri($route),
+            'uri' => $route->uri(),
             'name' => $route->getName(),
             'action' => ltrim($route->getActionName(), '\\'),
             'middleware' => $this->getMiddleware($route),
@@ -202,23 +202,6 @@ class RouteListCommand extends Command
     }
 
     /**
-     * Get the URI for the given route, including any binding fields.
-     *
-     * @param  \Illuminate\Routing\Route  $route
-     * @return string
-     */
-    protected function resolveUri(Route $route)
-    {
-        $uri = $route->uri();
-
-        foreach ($route->bindingFields() as $parameter => $field) {
-            $uri = str_replace("{{$parameter}}", "{{$parameter}:{$field}}", $uri);
-        }
-
-        return $uri;
-    }
-
-    /**
      * Get the middleware for the route.
      *
      * @param  \Illuminate\Routing\Route  $route
@@ -236,8 +219,6 @@ class RouteListCommand extends Command
      *
      * @param  \Illuminate\Routing\Route  $route
      * @return string|null
-     *
-     * @throws \ReflectionException
      */
     protected function getClosurePath(Route $route)
     {
@@ -394,14 +375,14 @@ class RouteListCommand extends Command
         $routes = $routes->map(
             fn ($route) => array_merge($route, [
                 'action' => $this->formatActionForCli($route),
-                'method' => $route['method'] === 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS' ? 'ANY' : $route['method'],
+                'method' => $route['method'] == 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS' ? 'ANY' : $route['method'],
                 'uri' => $route['domain'] ? ($route['domain'].'/'.ltrim($route['uri'], '/')) : $route['uri'],
             ]),
         );
 
         $maxMethod = mb_strlen($routes->max('method'));
 
-        $terminalWidth = self::getTerminalWidth();
+        $terminalWidth = $this->getTerminalWidth();
 
         $routeCount = $this->determineRouteCountOutput($routes, $terminalWidth);
 

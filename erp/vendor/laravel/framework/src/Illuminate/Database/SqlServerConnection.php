@@ -25,11 +25,9 @@ class SqlServerConnection extends Connection
     /**
      * Execute a Closure within a transaction.
      *
-     * @template TReturn
-     *
-     * @param  (\Closure(static): TReturn)  $callback
+     * @param  \Closure  $callback
      * @param  int  $attempts
-     * @return TReturn
+     * @return mixed
      *
      * @throws \Throwable
      */
@@ -83,28 +81,9 @@ class SqlServerConnection extends Connection
      * @param  \Exception  $exception
      * @return bool
      */
-    protected function isUniqueConstraintError(Exception $exception): bool
+    protected function isUniqueConstraintError(Exception $exception)
     {
-        return (bool) preg_match('#Cannot insert duplicate key(?: row)? in object#i', $exception->getMessage());
-    }
-
-    /**
-     * Extract the index that caused a unique constraint violation.
-     *
-     * @param  Exception  $exception
-     * @return array{index: string|null, columns: list<string>}
-     */
-    protected function parseUniqueConstraintViolation(Exception $exception): array
-    {
-        $index = null;
-
-        if (preg_match('#with unique index \'([^\']+)\'#i', $message = $exception->getMessage(), $matches)) {
-            $index = $matches[1];
-        } elseif (preg_match('#Violation of [A-Z ]+ constraint \'([^\']+)\'#i', $message, $matches)) {
-            $index = $matches[1];
-        }
-
-        return ['columns' => [], 'index' => $index];
+        return (bool) preg_match('#Cannot insert duplicate key row in object#i', $exception->getMessage());
     }
 
     /**

@@ -49,8 +49,6 @@ trait InteractsWithQueue
      *
      * @param  \Throwable|string|null  $exception
      * @return void
-     *
-     * @throws \InvalidArgumentException
      */
     public function fail($exception = null)
     {
@@ -122,8 +120,8 @@ trait InteractsWithQueue
     {
         $this->ensureQueueInteractionsHaveBeenFaked();
 
-        PHPUnit::assertFalse(
-            $this->job->isDeleted(),
+        PHPUnit::assertTrue(
+            ! $this->job->isDeleted(),
             'Job was unexpectedly deleted.'
         );
 
@@ -202,8 +200,8 @@ trait InteractsWithQueue
     {
         $this->ensureQueueInteractionsHaveBeenFaked();
 
-        PHPUnit::assertFalse(
-            $this->job->hasFailed(),
+        PHPUnit::assertTrue(
+            ! $this->job->hasFailed(),
             'Job was unexpectedly failed manually.'
         );
 
@@ -249,8 +247,8 @@ trait InteractsWithQueue
     {
         $this->ensureQueueInteractionsHaveBeenFaked();
 
-        PHPUnit::assertFalse(
-            $this->job->isReleased(),
+        PHPUnit::assertTrue(
+            ! $this->job->isReleased(),
             'Job was unexpectedly released.'
         );
 
@@ -261,8 +259,6 @@ trait InteractsWithQueue
      * Ensure that queue interactions have been faked.
      *
      * @return void
-     *
-     * @throws \RuntimeException
      */
     private function ensureQueueInteractionsHaveBeenFaked()
     {

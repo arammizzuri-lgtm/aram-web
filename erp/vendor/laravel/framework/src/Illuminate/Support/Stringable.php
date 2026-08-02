@@ -247,17 +247,6 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
     }
 
     /**
-     * Get the plural form of an English word with the count prepended.
-     *
-     * @param  int|array|\Countable  $count
-     * @return static
-     */
-    public function counted($count)
-    {
-        return new static(Str::counted($this->value, $count));
-    }
-
-    /**
      * Replace consecutive instances of a given character with a single character.
      *
      * @param  array<string>|string  $characters
@@ -994,23 +983,21 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
     /**
      * Convert a value to studly caps case.
      *
-     * @param  bool  $normalize
      * @return static
      */
-    public function studly(bool $normalize = false)
+    public function studly()
     {
-        return new static(Str::studly($this->value, $normalize));
+        return new static(Str::studly($this->value));
     }
 
     /**
      * Convert the string to Pascal case.
      *
-     * @param  bool  $normalize
      * @return static
      */
-    public function pascal(bool $normalize = false)
+    public function pascal()
     {
-        return new static(Str::pascal($this->value, $normalize));
+        return new static(Str::pascal($this->value));
     }
 
     /**

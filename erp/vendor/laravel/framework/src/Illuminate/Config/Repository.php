@@ -251,7 +251,7 @@ class Repository implements ArrayAccess, ConfigContract
     /**
      * Get all of the configuration items for the application.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function all()
     {
@@ -261,45 +261,45 @@ class Repository implements ArrayAccess, ConfigContract
     /**
      * Determine if the given configuration option exists.
      *
-     * @param  string  $offset
+     * @param  string  $key
      * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists($key): bool
     {
-        return $this->has($offset);
+        return $this->has($key);
     }
 
     /**
      * Get a configuration option.
      *
-     * @param  string  $offset
+     * @param  string  $key
      * @return mixed
      */
-    public function offsetGet($offset): mixed
+    public function offsetGet($key): mixed
     {
-        return $this->get($offset);
+        return $this->get($key);
     }
 
     /**
      * Set a configuration option.
      *
-     * @param  string  $offset
+     * @param  string  $key
      * @param  mixed  $value
      * @return void
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet($key, $value): void
     {
-        $this->set($offset, $value);
+        $this->set($key, $value);
     }
 
     /**
      * Unset a configuration option.
      *
-     * @param  string  $offset
+     * @param  string  $key
      * @return void
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset($key): void
     {
-        $this->set($offset, null);
+        $this->set($key, null);
     }
 }

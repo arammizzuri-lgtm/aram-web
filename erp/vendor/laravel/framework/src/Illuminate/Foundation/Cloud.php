@@ -59,26 +59,18 @@ class Cloud
         $disks = json_decode($_SERVER['LARAVEL_CLOUD_DISK_CONFIG'], true);
 
         foreach ($disks as $disk) {
-            if ($disk['scoped_disk'] ?? false) {
-                $app['config']->set('filesystems.disks.'.$disk['disk'], [
-                    'driver' => 'scoped',
-                    'disk' => $disk['scoped_disk'],
-                    'prefix' => $disk['prefix'] ?? '',
-                ]);
-            } else {
-                $app['config']->set('filesystems.disks.'.$disk['disk'], [
-                    'driver' => 's3',
-                    'key' => $disk['access_key_id'],
-                    'secret' => $disk['access_key_secret'],
-                    'bucket' => $disk['bucket'],
-                    'url' => $disk['url'],
-                    'endpoint' => $disk['endpoint'],
-                    'region' => 'auto',
-                    'use_path_style_endpoint' => false,
-                    'throw' => false,
-                    'report' => false,
-                ]);
-            }
+            $app['config']->set('filesystems.disks.'.$disk['disk'], [
+                'driver' => 's3',
+                'key' => $disk['access_key_id'],
+                'secret' => $disk['access_key_secret'],
+                'bucket' => $disk['bucket'],
+                'url' => $disk['url'],
+                'endpoint' => $disk['endpoint'],
+                'region' => 'auto',
+                'use_path_style_endpoint' => false,
+                'throw' => false,
+                'report' => false,
+            ]);
 
             if ($disk['is_default'] ?? false) {
                 $app['config']->set('filesystems.default', $disk['disk']);
@@ -122,7 +114,7 @@ class Cloud
         }
 
         Migrator::resolveConnectionsUsing(function ($resolver, $connection) use ($app) {
-            $connection ??= $app['config']->get('database.default');
+            $connection = $connection ?? $app['config']->get('database.default');
 
             return $resolver->connection(
                 $connection === 'pgsql' ? 'pgsql-unpooled' : $connection
@@ -132,8 +124,6 @@ class Cloud
 
     /**
      * Configure managed queues if applicable.
-     *
-     * @throws \JsonException
      */
     public static function configureManagedQueues(Application $app): void
     {
@@ -186,7 +176,7 @@ class Cloud
             'includeStacktraces' => true,
         ]);
 
-        $channel = [
+        $app['config']->set('logging.channels.laravel-cloud-socket', [
             'driver' => 'monolog',
             'level' => $_ENV['LOG_LEVEL'] ?? $_SERVER['LOG_LEVEL'] ?? 'debug',
             'handler' => SocketHandler::class,
@@ -198,13 +188,7 @@ class Cloud
                 'connectionString' => Cloud::socket(),
                 'persistent' => true,
             ],
-        ];
-
-        $app['config']->set('logging.channels.laravel-cloud-socket', $channel);
-
-        if (! $app['config']->has('logging.channels.cloud')) {
-            $app['config']->set('logging.channels.cloud', $channel);
-        }
+        ]);
     }
 
     /**

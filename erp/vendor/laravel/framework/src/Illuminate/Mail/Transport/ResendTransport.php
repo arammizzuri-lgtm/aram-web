@@ -48,9 +48,6 @@ class ResendTransport extends AbstractTransport
 
     /**
      * {@inheritDoc}
-     *
-     * @throws \Symfony\Component\Mailer\Exception\TransportException
-     * @throws \Throwable
      */
     protected function doSend(SentMessage $message): void
     {
@@ -79,7 +76,7 @@ class ResendTransport extends AbstractTransport
                 $disposition = $attachmentHeaders->getHeaderBody('Content-Disposition');
                 $filename = $attachmentHeaders->getHeaderParameter('Content-Disposition', 'filename');
 
-                if ($contentType === 'text/calendar') {
+                if ($contentType == 'text/calendar') {
                     $content = $attachment->getBody();
                 } else {
                     $content = str_replace("\r\n", '', $attachment->bodyToString());

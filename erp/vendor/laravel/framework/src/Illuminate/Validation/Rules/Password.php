@@ -141,7 +141,7 @@ class Password implements DataAwareRule, ImplicitRule, IteratorAggregate, Rule, 
      * If no arguments are passed, the default password rule configuration will be returned.
      *
      * @param  static|callable|null  $callback
-     * @return ($callback is null ? static : void)
+     * @return static|void
      *
      * @throws \InvalidArgumentException
      */
@@ -230,7 +230,7 @@ class Password implements DataAwareRule, ImplicitRule, IteratorAggregate, Rule, 
      * Set the minimum size of the password.
      *
      * @param  int  $size
-     * @return static
+     * @return $this
      */
     public static function min($size)
     {
@@ -432,42 +432,9 @@ class Password implements DataAwareRule, ImplicitRule, IteratorAggregate, Rule, 
     }
 
     /**
-     * Convert the password rule to a passwordrules HTML attribute string.
-     *
-     * @return string
-     *
-     * @see https://developer.apple.com/password-rules/
-     */
-    public function toPasswordRulesString()
-    {
-        $rules = ['minlength: '.$this->min];
-
-        if ($this->max) {
-            $rules[] = 'maxlength: '.$this->max;
-        }
-
-        if ($this->mixedCase) {
-            $rules[] = 'required: lower';
-            $rules[] = 'required: upper';
-        } elseif ($this->letters) {
-            $rules[] = 'required: lower';
-        }
-
-        if ($this->numbers) {
-            $rules[] = 'required: digit';
-        }
-
-        if ($this->symbols) {
-            $rules[] = 'required: special';
-        }
-
-        return implode('; ', $rules).';';
-    }
-
-    /**
      * Get an iterator for the password validation rules.
      *
-     * @return \ArrayIterator<int, mixed>
+     * @return \ArrayIterator<TKey, TValue>
      */
     public function getIterator(): Traversable
     {

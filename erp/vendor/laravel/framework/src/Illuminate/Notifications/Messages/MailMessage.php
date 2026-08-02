@@ -273,7 +273,7 @@ class MailMessage extends SimpleMessage implements Renderable
             return $file->attachTo($this);
         }
 
-        $this->attachments[] = ['file' => $file, 'options' => $options];
+        $this->attachments[] = compact('file', 'options');
 
         return $this;
     }
@@ -307,46 +307,9 @@ class MailMessage extends SimpleMessage implements Renderable
      */
     public function attachData($data, $name, array $options = [])
     {
-        $this->rawAttachments[] = ['data' => $data, 'name' => $name, 'options' => $options];
+        $this->rawAttachments[] = compact('data', 'name', 'options');
 
         return $this;
-    }
-
-    /**
-     * Attach a file to the message from storage.
-     *
-     * @param  string  $path
-     * @param  string|null  $name
-     * @param  array  $options
-     * @return $this
-     */
-    public function attachFromStorage($path, $name = null, array $options = [])
-    {
-        return $this->attachFromStorageDisk(null, $path, $name, $options);
-    }
-
-    /**
-     * Attach a file to the message from storage.
-     *
-     * @param  string|null  $disk
-     * @param  string  $path
-     * @param  string|null  $name
-     * @param  array  $options
-     * @return $this
-     */
-    public function attachFromStorageDisk($disk, $path, $name = null, array $options = [])
-    {
-        $attachment = Attachment::fromStorageDisk($disk, $path);
-
-        if (! is_null($name)) {
-            $attachment->as($name);
-        }
-
-        if (isset($options['mime'])) {
-            $attachment->withMime($options['mime']);
-        }
-
-        return $this->attach($attachment);
     }
 
     /**

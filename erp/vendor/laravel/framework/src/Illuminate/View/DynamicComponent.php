@@ -22,7 +22,7 @@ class DynamicComponent extends Component
     /**
      * The component tag compiler instance.
      *
-     * @var \Illuminate\View\Compilers\ComponentTagCompiler
+     * @var \Illuminate\View\Compilers\BladeTagCompiler
      */
     protected static $compiler;
 
@@ -135,7 +135,11 @@ EOF;
      */
     protected function classForComponent()
     {
-        return static::$componentClasses[$this->component] ?? static::$componentClasses[$this->component] =
+        if (isset(static::$componentClasses[$this->component])) {
+            return static::$componentClasses[$this->component];
+        }
+
+        return static::$componentClasses[$this->component] =
                     $this->compiler()->componentClass($this->component);
     }
 

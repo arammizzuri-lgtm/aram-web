@@ -3,7 +3,6 @@
 namespace Illuminate\Console\Concerns;
 
 use Closure;
-use Illuminate\Console\CommandInput;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
@@ -56,20 +55,6 @@ trait InteractsWithIO
         'quiet' => OutputInterface::VERBOSITY_QUIET,
         'normal' => OutputInterface::VERBOSITY_NORMAL,
     ];
-
-    /**
-     * Retrieve the command's input as a CommandInput instance or retrieve an input item.
-     *
-     * @param  string|null  $key
-     * @param  mixed  $default
-     * @return ($key is null ? \Illuminate\Console\CommandInput : mixed)
-     */
-    public function input($key = null, $default = null)
-    {
-        $input = new CommandInput($this->arguments(), $this->options());
-
-        return is_null($key) ? $input : data_get($input->all(), $key, $default);
-    }
 
     /**
      * Determine if the given argument is present.

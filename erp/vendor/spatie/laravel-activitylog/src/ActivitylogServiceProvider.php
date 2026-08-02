@@ -2,12 +2,11 @@
 
 namespace Spatie\Activitylog;
 
-use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Queue\Events\JobProcessed;
-use Spatie\Activitylog\Support\ActivityBuffer;
-use Spatie\Activitylog\Support\ActivityLogger;
-use Spatie\Activitylog\Support\ActivityLogStatus;
-use Spatie\Activitylog\Support\CauserResolver;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Contracts\Activity;
+use Spatie\Activitylog\Contracts\Activity as ActivityContract;
+use Spatie\Activitylog\Exceptions\InvalidConfiguration;
+use Spatie\Activitylog\Models\Activity as ActivityModel;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -16,47 +15,43 @@ class ActivitylogServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('laravel-activitylog')
-            ->hasConfigFile('activitylog')
-            ->hasMigrations([
-                'create_activity_log_table',
-            ])
-            ->hasCommand(Commands\CleanActivitylogCommand::class);
+        ->name('laravel-activitylog')
+        ->hasConfigFile('activitylog')
+        ->hasMigrations([
+            'create_activity_log_table',
+            'add_event_column_to_activity_log_table',
+            'add_batch_uuid_column_to_activity_log_table',
+        ])
+        ->hasCommand(CleanActivitylogCommand::class);
     }
 
-    public function registeringPackage(): void
+    public function registeringPackage()
     {
         $this->app->bind(ActivityLogger::class);
+
+        $this->app->scoped(LogBatch::class);
 
         $this->app->scoped(CauserResolver::class);
 
         $this->app->scoped(ActivityLogStatus::class);
-
-        $this->app->scoped(ActivityBuffer::class);
     }
 
-    public function packageBooted(): void
+    public static function determineActivityModel(): string
     {
-        if (config('activitylog.buffer.enabled', false)) {
-            $this->registerActivityBufferFlushing();
+        $activityModel = config('activitylog.activity_model') ?? ActivityModel::class;
+
+        if (! is_a($activityModel, Activity::class, true)
+            || ! is_a($activityModel, Model::class, true)) {
+            throw InvalidConfiguration::modelIsNotValid($activityModel);
         }
+
+        return $activityModel;
     }
 
-    protected function registerActivityBufferFlushing(): void
+    public static function getActivityModelInstance(): ActivityContract
     {
-        $this->app->terminating(fn () => app(ActivityBuffer::class)->flush());
+        $activityModelClassName = self::determineActivityModel();
 
-        $this->app['events']->listen(
-            [JobProcessed::class, JobFailed::class],
-            fn () => app(ActivityBuffer::class)->flush(),
-        );
-
-        register_shutdown_function(function () {
-            try {
-                app(ActivityBuffer::class)->flush();
-            } catch (\Throwable) {
-                // Container may be unavailable during shutdown
-            }
-        });
+        return new $activityModelClassName();
     }
 }

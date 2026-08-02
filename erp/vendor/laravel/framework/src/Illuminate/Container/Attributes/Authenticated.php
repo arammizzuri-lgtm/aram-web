@@ -5,7 +5,6 @@ namespace Illuminate\Container\Attributes;
 use Attribute;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Container\ContextualAttribute;
-use UnitEnum;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class Authenticated implements ContextualAttribute
@@ -13,7 +12,7 @@ class Authenticated implements ContextualAttribute
     /**
      * Create a new class instance.
      */
-    public function __construct(public UnitEnum|string|null $guard = null)
+    public function __construct(public ?string $guard = null)
     {
     }
 

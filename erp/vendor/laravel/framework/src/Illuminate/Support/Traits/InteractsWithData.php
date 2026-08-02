@@ -8,7 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Number;
-use Illuminate\Support\Stringable;
+use Illuminate\Support\Str;
 use stdClass;
 
 use function Illuminate\Support\enum_value;
@@ -55,7 +55,13 @@ trait InteractsWithData
 
         $data = $this->all();
 
-        return array_all($keys, fn ($value) => Arr::has($data, $value));
+        foreach ($keys as $value) {
+            if (! Arr::has($data, $value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -76,13 +82,10 @@ trait InteractsWithData
     /**
      * Apply the callback if the instance contains the given key.
      *
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
      * @param  string  $key
-     * @param  callable(mixed): TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return $this|mixed
      */
     public function whenHas($key, callable $callback, ?callable $default = null)
     {
@@ -107,7 +110,13 @@ trait InteractsWithData
     {
         $keys = is_array($key) ? $key : func_get_args();
 
-        return array_all($keys, fn ($value) => ! $this->isEmptyString($value));
+        foreach ($keys as $value) {
+            if ($this->isEmptyString($value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -120,7 +129,13 @@ trait InteractsWithData
     {
         $keys = is_array($key) ? $key : func_get_args();
 
-        return array_all($keys, fn ($value) => $this->isEmptyString($value));
+        foreach ($keys as $value) {
+            if (! $this->isEmptyString($value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -133,54 +148,27 @@ trait InteractsWithData
     {
         $keys = is_array($keys) ? $keys : func_get_args();
 
-        return array_any($keys, fn ($key) => $this->filled($key));
+        foreach ($keys as $key) {
+            if ($this->filled($key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Apply the callback if the instance contains a non-empty value for the given key.
      *
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
      * @param  string  $key
-     * @param  callable(mixed): TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return $this|mixed
      */
     public function whenFilled($key, callable $callback, ?callable $default = null)
     {
         if ($this->filled($key)) {
             return $callback(data_get($this->all(), $key)) ?: $this;
-        }
-
-        if ($default) {
-            return $default();
-        }
-
-        return $this;
-    }
-
-    /**
-     * Apply the callback if the instance contains a valid enum value for the given key.
-     *
-     * @template TEnum of \BackedEnum
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
-     * @param  string  $key
-     * @param  class-string<TEnum>  $enumClass
-     * @param  callable(TEnum):TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
-     */
-    public function whenEnum($key, string $enumClass, callable $callback, ?callable $default = null)
-    {
-        if ($this->filled($key) && $this->isBackedEnum($enumClass)) {
-            $value = $enumClass::tryFrom(data_get($this->all(), $key));
-
-            if ($value !== null) {
-                return $callback($value) ?: $this;
-            }
         }
 
         if ($default) {
@@ -206,13 +194,10 @@ trait InteractsWithData
     /**
      * Apply the callback if the instance is missing the given key.
      *
-     * @template TReturn
-     * @template TReturnDefault = never
-     *
      * @param  string  $key
-     * @param  callable(mixed): TReturn  $callback
-     * @param  (callable(): TReturnDefault)|null  $default
-     * @return $this|TReturn|TReturnDefault
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return $this|mixed
      */
     public function whenMissing($key, callable $callback, ?callable $default = null)
     {
@@ -261,7 +246,7 @@ trait InteractsWithData
      */
     public function string($key, $default = null)
     {
-        return new Stringable($this->data($key, $default));
+        return Str::of($this->data($key, $default));
     }
 
     /**
@@ -362,7 +347,7 @@ trait InteractsWithData
 
         $unit = $unit instanceof Unit ? $unit : Unit::fromName($unit);
 
-        return CarbonInterval::fromString(number_format((float) $value, 10, '.', '').' '.$unit->name);
+        return $unit->interval((float) $value);
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace Illuminate\Cache;
 
 use Closure;
-use Illuminate\Contracts\Cache\CanFlushLocks;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\ConnectionInterface;
@@ -15,9 +14,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
-use RuntimeException;
 
-class DatabaseStore implements CanFlushLocks, LockProvider, Store
+class DatabaseStore implements LockProvider, Store
 {
     use InteractsWithTime;
 
@@ -126,7 +124,7 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
      */
     public function many(array $keys)
     {
-        if ($keys === []) {
+        if (count($keys) === 0) {
             return [];
         }
 
@@ -222,11 +220,11 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
         $expiration = $this->getTime() + $seconds;
 
         if (! $this->getConnection() instanceof SqlServerConnection) {
-            return $this->table()->insertOrIgnore(['key' => $key, 'value' => $value, 'expiration' => $expiration]) > 0;
+            return $this->table()->insertOrIgnore(compact('key', 'value', 'expiration')) > 0;
         }
 
         try {
-            return $this->table()->insert(['key' => $key, 'value' => $value, 'expiration' => $expiration]);
+            return $this->table()->insert(compact('key', 'value', 'expiration'));
         } catch (QueryException) {
             // ...
         }
@@ -365,21 +363,6 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
     }
 
     /**
-     * Adjust the expiration time of a cached item.
-     *
-     * @param  string  $key
-     * @param  int  $seconds
-     * @return bool
-     */
-    public function touch($key, $seconds)
-    {
-        return (bool) $this->table()
-            ->where('key', '=', $this->getPrefix().$key)
-            ->where('expiration', '>', $now = $this->getTime())
-            ->update(['expiration' => $now + $seconds]);
-    }
-
-    /**
      * Remove an item from the cache.
      *
      * @param  string  $key
@@ -411,7 +394,7 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
     {
         $this->table()->whereIn('key', (new Collection($keys))->flatMap(fn ($key) => [
             $this->prefix.$key,
-            $this->prefix.Repository::FLEXIBLE_CREATED_KEY_PREFIX.$key,
+            "{$this->prefix}illuminate:cache:flexible:created:{$key}",
         ])->all())->delete();
 
         return true;
@@ -429,10 +412,10 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
         $this->table()
             ->whereIn('key', (new Collection($keys))->flatMap(fn ($key) => $prefixed ? [
                 $key,
-                $this->prefix.Repository::FLEXIBLE_CREATED_KEY_PREFIX.Str::chopStart($key, $this->prefix),
+                $this->prefix.'illuminate:cache:flexible:created:'.Str::chopStart($key, $this->prefix),
             ] : [
                 "{$this->prefix}{$key}",
-                $this->prefix.Repository::FLEXIBLE_CREATED_KEY_PREFIX.$key,
+                "{$this->prefix}illuminate:cache:flexible:created:{$key}",
             ])->all())
             ->where('expiration', '<=', $this->getTime())
             ->delete();
@@ -453,24 +436,6 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
     }
 
     /**
-     * Remove all locks from the store.
-     *
-     * @return bool
-     *
-     * @throws \RuntimeException
-     */
-    public function flushLocks(): bool
-    {
-        if (! $this->hasSeparateLockStore()) {
-            throw new RuntimeException('Flushing locks is only supported when the lock store is separate from the cache store.');
-        }
-
-        $this->lockTable()->delete();
-
-        return true;
-    }
-
-    /**
      * Get a query builder for the cache table.
      *
      * @return \Illuminate\Database\Query\Builder
@@ -478,16 +443,6 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
     protected function table()
     {
         return $this->connection->table($this->table);
-    }
-
-    /**
-     * Get a query builder for the cache locks table.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    protected function lockTable()
-    {
-        return $this->lockConnection->table($this->lockTable);
     }
 
     /**
@@ -595,15 +550,5 @@ class DatabaseStore implements CanFlushLocks, LockProvider, Store
         }
 
         return unserialize($value);
-    }
-
-    /**
-     * Determine if the lock store is separate from the cache store.
-     *
-     * @return bool
-     */
-    public function hasSeparateLockStore(): bool
-    {
-        return $this->lockTable !== $this->table;
     }
 }

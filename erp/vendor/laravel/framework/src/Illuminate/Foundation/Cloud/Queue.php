@@ -9,7 +9,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Stringable;
+use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use Symfony\Component\Console\Input\ArgvInput;
 
@@ -241,7 +241,6 @@ class Queue implements QueueContract, ClearableQueue
             fn (string $status, ?int $delay) => $this->reportJobStatusToAgent(
                 $messageId, $receiptHandle, $status, $delay
             ),
-            $this->config['connection']['overflow'] ?? [],
         );
     }
 
@@ -517,7 +516,7 @@ class Queue implements QueueContract, ClearableQueue
         $prefix = $this->config['connection']['prefix'] ?? null;
         $suffix = $this->config['connection']['suffix'] ?? null;
 
-        return (new Stringable($this->queue->getQueue($queue)))
+        return Str::of($this->queue->getQueue($queue))
             ->when($prefix, fn ($str) => $str->chopStart($prefix.'/'))
             ->when($suffix, fn ($str) => $str->endsWith('.fifo')
                 ? $str->chopEnd('.fifo')->chopEnd($suffix)->append('.fifo')

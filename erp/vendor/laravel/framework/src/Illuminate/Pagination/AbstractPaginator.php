@@ -204,7 +204,7 @@ abstract class AbstractPaginator implements CanBeEscapedWhenCastToString, Htmlab
      * Get / set the URL fragment to be appended to URLs.
      *
      * @param  string|null  $fragment
-     * @return ($fragment is null ? string|null : $this)
+     * @return $this|string|null
      */
     public function fragment($fragment = null)
     {
@@ -637,8 +637,8 @@ abstract class AbstractPaginator implements CanBeEscapedWhenCastToString, Htmlab
      */
     public static function useBootstrapThree()
     {
-        static::defaultView('pagination::bootstrap-3');
-        static::defaultSimpleView('pagination::simple-bootstrap-3');
+        static::defaultView('pagination::default');
+        static::defaultSimpleView('pagination::simple-default');
     }
 
     /**

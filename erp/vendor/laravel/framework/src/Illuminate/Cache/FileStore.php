@@ -3,16 +3,14 @@
 namespace Illuminate\Cache;
 
 use Exception;
-use Illuminate\Contracts\Cache\CanFlushLocks;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Contracts\Filesystem\LockTimeoutException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Filesystem\LockableFile;
 use Illuminate\Support\InteractsWithTime;
-use RuntimeException;
 
-class FileStore implements CanFlushLocks, LockProvider, Store
+class FileStore implements Store, LockProvider
 {
     use InteractsWithTime, RetrievesMultipleKeys;
 
@@ -91,7 +89,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
         $this->ensureCacheDirectoryExists($path = $this->path($key));
 
         $result = $this->files->put(
-            $path, str_pad((string) $this->expiration($seconds), 10, '0', STR_PAD_LEFT).serialize($value), true
+            $path, $this->expiration($seconds).serialize($value), true
         );
 
         if ($result !== false && $result > 0) {
@@ -129,7 +127,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
 
         if (empty($expire) || $this->currentTime() >= $expire) {
             $file->truncate()
-                ->write(str_pad((string) $this->expiration($seconds), 10, '0', STR_PAD_LEFT).serialize($value))
+                ->write($this->expiration($seconds).serialize($value))
                 ->close();
 
             $this->ensurePermissionsAreCorrect($path);
@@ -281,7 +279,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
 
         $expire = substr($contents, 0, 10);
 
-        $currentOwner = $this->unserialize(substr($contents, 10));
+        $currentOwner = unserialize(substr($contents, 10));
 
         if ($currentOwner !== $expectedOwner || $this->currentTime() >= $expire) {
             $file->close();
@@ -299,24 +297,6 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     }
 
     /**
-     * Adjust the expiration time of a cached item.
-     *
-     * @param  string  $key
-     * @param  int  $seconds
-     * @return bool
-     */
-    public function touch($key, $seconds)
-    {
-        $payload = $this->getPayload($this->getPrefix().$key);
-
-        if (is_null($payload['data'])) {
-            return false;
-        }
-
-        return $this->put($key, $payload['data'], $seconds);
-    }
-
-    /**
      * Remove an item from the cache.
      *
      * @param  string  $key
@@ -326,7 +306,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     {
         if ($this->files->exists($file = $this->path($key))) {
             return tap($this->files->delete($file), function ($forgotten) use ($key) {
-                if ($forgotten && $this->files->exists($file = $this->path(Repository::FLEXIBLE_CREATED_KEY_PREFIX.$key))) {
+                if ($forgotten && $this->files->exists($file = $this->path("illuminate:cache:flexible:created:{$key}"))) {
                     $this->files->delete($file);
                 }
             });
@@ -350,34 +330,6 @@ class FileStore implements CanFlushLocks, LockProvider, Store
             $deleted = $this->files->deleteDirectory($directory);
 
             if (! $deleted || $this->files->exists($directory)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Remove all locks from the store.
-     *
-     * @return bool
-     *
-     * @throws \RuntimeException
-     */
-    public function flushLocks(): bool
-    {
-        if (! $this->hasSeparateLockStore()) {
-            throw new RuntimeException('Flushing locks is only supported when the lock store is separate from the cache store.');
-        }
-
-        if (! $this->files->isDirectory($this->lockDirectory)) {
-            return false;
-        }
-
-        foreach ($this->files->directories($this->lockDirectory) as $lockDirectory) {
-            $deleted = $this->files->deleteDirectory($lockDirectory);
-
-            if (! $deleted || $this->files->exists($lockDirectory)) {
                 return false;
             }
         }
@@ -430,7 +382,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
         // operation that may be performed on this cache on a later operation.
         $time = $expire - $this->currentTime();
 
-        return ['data' => $data, 'time' => $time];
+        return compact('data', 'time');
     }
 
     /**
@@ -538,15 +490,5 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     public function getPrefix()
     {
         return '';
-    }
-
-    /**
-     * Determine if the lock store is separate from the cache store.
-     *
-     * @return bool
-     */
-    public function hasSeparateLockStore(): bool
-    {
-        return $this->lockDirectory !== null && $this->lockDirectory !== $this->directory;
     }
 }

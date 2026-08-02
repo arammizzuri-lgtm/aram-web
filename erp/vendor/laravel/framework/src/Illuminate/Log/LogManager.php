@@ -5,7 +5,6 @@ namespace Illuminate\Log;
 use Closure;
 use Illuminate\Contracts\Log\ContextLogProcessor;
 use Illuminate\Support\Collection;
-use Illuminate\Support\RebindsCallbacksToSelf;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Monolog\Formatter\LineFormatter;
@@ -22,18 +21,14 @@ use Monolog\Logger as Monolog;
 use Monolog\Processor\ProcessorInterface;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Log\LoggerInterface;
-use ReflectionException;
-use RuntimeException;
 use Throwable;
-
-use function Illuminate\Support\enum_value;
 
 /**
  * @mixin \Illuminate\Log\Logger
  */
 class LogManager implements LoggerInterface
 {
-    use ParsesLogConfiguration, RebindsCallbacksToSelf;
+    use ParsesLogConfiguration;
 
     /**
      * The application instance.
@@ -103,7 +98,7 @@ class LogManager implements LoggerInterface
     public function stack(array $channels, $channel = null)
     {
         return (new Logger(
-            $this->createStackDriver(['channels' => $channels, 'name' => $channel]),
+            $this->createStackDriver(compact('channels', 'channel')),
             $this->app['events']
         ))->withContext($this->sharedContext);
     }
@@ -111,7 +106,7 @@ class LogManager implements LoggerInterface
     /**
      * Get a log channel instance.
      *
-     * @param  \UnitEnum|string|null  $channel
+     * @param  string|null  $channel
      * @return \Psr\Log\LoggerInterface
      */
     public function channel($channel = null)
@@ -122,12 +117,12 @@ class LogManager implements LoggerInterface
     /**
      * Get a log driver instance.
      *
-     * @param  \UnitEnum|string|null  $driver
+     * @param  string|null  $driver
      * @return \Psr\Log\LoggerInterface
      */
     public function driver($driver = null)
     {
-        return $this->get($this->parseDriver(enum_value($driver)));
+        return $this->get($this->parseDriver($driver));
     }
 
     /**
@@ -325,43 +320,10 @@ class LogManager implements LoggerInterface
      */
     protected function createDailyDriver(array $config)
     {
-        return $this->createRotatingDriver(
-            $config,
-            RotatingFileHandler::FILE_PER_DAY,
-            $config['max_files'] ?? $config['days'] ?? 7,
-        );
-    }
-
-    /**
-     * Create an instance of the monthly file log driver.
-     *
-     * @param  array  $config
-     * @return \Psr\Log\LoggerInterface
-     */
-    protected function createMonthlyDriver(array $config)
-    {
-        return $this->createRotatingDriver(
-            $config,
-            RotatingFileHandler::FILE_PER_MONTH,
-            $config['max_files'] ?? 3,
-        );
-    }
-
-    /**
-     * Create an instance of a rotating file log driver.
-     *
-     * @param  array  $config
-     * @param  string  $dateFormat
-     * @param  int  $maxFiles
-     * @return \Psr\Log\LoggerInterface
-     */
-    protected function createRotatingDriver(array $config, string $dateFormat, $maxFiles)
-    {
         return new Monolog($this->parseChannel($config), [
             $this->prepareHandler(new RotatingFileHandler(
-                $config['path'], $maxFiles, $this->level($config),
-                $config['bubble'] ?? true, $config['permission'] ?? null, $config['locking'] ?? false,
-                $dateFormat,
+                $config['path'], $config['days'] ?? 7, $this->level($config),
+                $config['bubble'] ?? true, $config['permission'] ?? null, $config['locking'] ?? false
             ), $config),
         ], $config['replace_placeholders'] ?? false ? [new PsrLogMessageProcessor()] : []);
     }
@@ -616,12 +578,12 @@ class LogManager implements LoggerInterface
     /**
      * Set the default log driver name.
      *
-     * @param  \UnitEnum|string  $name
+     * @param  string  $name
      * @return void
      */
     public function setDefaultDriver($name)
     {
-        $this->app['config']['logging.default'] = enum_value($name);
+        $this->app['config']['logging.default'] = $name;
     }
 
     /**
@@ -636,13 +598,7 @@ class LogManager implements LoggerInterface
      */
     public function extend($driver, Closure $callback)
     {
-        try {
-            $callback = $this->bindCallbackToSelf($callback) ?? throw new RuntimeException('Unable to bind custom driver callback');
-        } catch (ReflectionException $e) {
-            throw new RuntimeException('Unable to bind custom driver callback', previous: $e);
-        }
-
-        $this->customCreators[$driver] = $callback;
+        $this->customCreators[$driver] = $callback->bindTo($this, $this);
 
         return $this;
     }
@@ -650,12 +606,12 @@ class LogManager implements LoggerInterface
     /**
      * Unset the given channel instance.
      *
-     * @param  \UnitEnum|string|null  $driver
+     * @param  string|null  $driver
      * @return void
      */
     public function forgetChannel($driver = null)
     {
-        $driver = $this->parseDriver(enum_value($driver));
+        $driver = $this->parseDriver($driver);
 
         if (isset($this->channels[$driver])) {
             unset($this->channels[$driver]);

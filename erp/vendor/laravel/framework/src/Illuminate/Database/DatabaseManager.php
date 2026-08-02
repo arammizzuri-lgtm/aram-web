@@ -12,7 +12,6 @@ use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use PDO;
 use RuntimeException;
-use UnitEnum;
 
 use function Illuminate\Support\enum_value;
 
@@ -144,15 +143,11 @@ class DatabaseManager implements ConnectionResolverInterface
      * @param  array  $config
      * @param  bool  $force
      * @return \Illuminate\Database\ConnectionInterface
-     *
-     * @throws \RuntimeException
      */
-    public function connectUsing(UnitEnum|string $name, array $config, bool $force = false)
+    public function connectUsing(string $name, array $config, bool $force = false)
     {
-        $name = enum_value($name);
-
         if ($force) {
-            $this->purge($name);
+            $this->purge($name = enum_value($name));
         }
 
         if (isset($this->connections[$name])) {
@@ -176,7 +171,7 @@ class DatabaseManager implements ConnectionResolverInterface
      */
     protected function parseConnectionName($name)
     {
-        return Str::endsWith($name, ['::read', '::write', '::direct'])
+        return Str::endsWith($name, ['::read', '::write'])
             ? explode('::', $name, 2)
             : [$name, null];
     }
@@ -290,9 +285,6 @@ class DatabaseManager implements ConnectionResolverInterface
             $connection->setPdo($connection->getReadPdo());
         } elseif ($type === 'write') {
             $connection->setReadPdo($connection->getPdo());
-        } elseif ($type === 'direct') {
-            $connection->setPdo($connection->getDirectPdo())
-                ->setReadPdo($connection->getDirectPdo());
         }
 
         return $connection;
@@ -346,11 +338,9 @@ class DatabaseManager implements ConnectionResolverInterface
     /**
      * Set the default database connection for the callback execution.
      *
-     * @template TReturn
-     *
      * @param  \UnitEnum|string  $name
-     * @param  (callable(): TReturn)  $callback
-     * @return TReturn
+     * @param  callable  $callback
+     * @return mixed
      */
     public function usingConnection($name, callable $callback)
     {
@@ -381,8 +371,7 @@ class DatabaseManager implements ConnectionResolverInterface
 
         return $this->connections[$name]
             ->setPdo($fresh->getRawPdo())
-            ->setReadPdo($fresh->getRawReadPdo())
-            ->setDirectPdo($fresh->getRawDirectPdo());
+            ->setReadPdo($fresh->getRawReadPdo());
     }
 
     /**

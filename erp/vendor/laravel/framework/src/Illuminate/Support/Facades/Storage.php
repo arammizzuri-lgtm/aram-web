@@ -7,7 +7,7 @@ use Illuminate\Filesystem\Filesystem;
 use function Illuminate\Support\enum_value;
 
 /**
- * @method static \Illuminate\Contracts\Filesystem\Filesystem drive(\UnitEnum|string|null $name = null)
+ * @method static \Illuminate\Contracts\Filesystem\Filesystem drive(string|null $name = null)
  * @method static \Illuminate\Contracts\Filesystem\Filesystem disk(\UnitEnum|string|null $name = null)
  * @method static \Illuminate\Contracts\Filesystem\Cloud cloud()
  * @method static \Illuminate\Contracts\Filesystem\Filesystem build(string|array $config)
@@ -50,7 +50,6 @@ use function Illuminate\Support\enum_value;
  * @method static \Illuminate\Filesystem\FilesystemAdapter assertCount(string $path, int $count, bool $recursive = false)
  * @method static \Illuminate\Filesystem\FilesystemAdapter assertMissing(string|array $path)
  * @method static \Illuminate\Filesystem\FilesystemAdapter assertDirectoryEmpty(string $path)
- * @method static \Illuminate\Filesystem\FilesystemAdapter assertEmpty()
  * @method static bool missing(string $path)
  * @method static bool fileExists(string $path)
  * @method static bool fileMissing(string $path)
@@ -60,7 +59,6 @@ use function Illuminate\Support\enum_value;
  * @method static \Symfony\Component\HttpFoundation\StreamedResponse response(string $path, string|null $name = null, array $headers = [], string|null $disposition = 'inline')
  * @method static \Symfony\Component\HttpFoundation\StreamedResponse serve(\Illuminate\Http\Request $request, string $path, string|null $name = null, array $headers = [])
  * @method static \Symfony\Component\HttpFoundation\StreamedResponse download(string $path, string|null $name = null, array $headers = [])
- * @method static \Illuminate\Image\Image image(string $path)
  * @method static string|false checksum(string $path, array $options = [])
  * @method static string|false mimeType(string $path)
  * @method static string url(string $path)

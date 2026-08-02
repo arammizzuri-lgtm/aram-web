@@ -5,14 +5,13 @@ namespace Illuminate\Database\Console;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\Prohibitable;
-use Illuminate\Database\Console\Concerns\InteractsWithPooledConnections;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(name: 'db:wipe')]
 class WipeCommand extends Command
 {
-    use ConfirmableTrait, Prohibitable, InteractsWithPooledConnections;
+    use ConfirmableTrait, Prohibitable;
 
     /**
      * The console command name.
@@ -71,7 +70,7 @@ class WipeCommand extends Command
      */
     protected function dropAllTables($database)
     {
-        $this->resolveDirectConnectionIfPossible($this->laravel['db'], $database)
+        $this->laravel['db']->connection($database)
             ->getSchemaBuilder()
             ->dropAllTables();
     }
@@ -84,7 +83,7 @@ class WipeCommand extends Command
      */
     protected function dropAllViews($database)
     {
-        $this->resolveDirectConnectionIfPossible($this->laravel['db'], $database)
+        $this->laravel['db']->connection($database)
             ->getSchemaBuilder()
             ->dropAllViews();
     }
@@ -97,7 +96,7 @@ class WipeCommand extends Command
      */
     protected function dropAllTypes($database)
     {
-        $this->resolveDirectConnectionIfPossible($this->laravel['db'], $database)
+        $this->laravel['db']->connection($database)
             ->getSchemaBuilder()
             ->dropAllTypes();
     }
@@ -110,7 +109,7 @@ class WipeCommand extends Command
      */
     protected function flushDatabaseConnection($database)
     {
-        $this->resolveDirectConnectionIfPossible($this->laravel['db'], $database)->disconnect();
+        $this->laravel['db']->connection($database)->disconnect();
     }
 
     /**

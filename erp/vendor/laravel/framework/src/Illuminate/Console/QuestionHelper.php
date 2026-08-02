@@ -77,7 +77,7 @@ class QuestionHelper extends SymfonyQuestionHelper
      */
     protected function ensureEndsWithPunctuation($string)
     {
-        if ((new Stringable($string))->doesntEndWith(['?', ':', '!', '.'])) {
+        if (! (new Stringable($string))->endsWith(['?', ':', '!', '.'])) {
             return "$string:";
         }
 

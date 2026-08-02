@@ -225,7 +225,7 @@ class MailFake implements Factory, Fake, Mailer, MailQueue
      * @param  int  $times
      * @return void
      */
-    public function assertQueuedTimes($mailable, $times = 1)
+    protected function assertQueuedTimes($mailable, $times = 1)
     {
         $count = $this->queued($mailable)->count();
 
@@ -428,17 +428,6 @@ class MailFake implements Factory, Fake, Mailer, MailQueue
         $this->currentMailer = $name;
 
         return $this;
-    }
-
-    /**
-     * Get a mailer driver instance.
-     *
-     * @param  string|null  $driver
-     * @return \Illuminate\Contracts\Mail\Mailer
-     */
-    public function driver($driver = null)
-    {
-        return $this->mailer($driver);
     }
 
     /**

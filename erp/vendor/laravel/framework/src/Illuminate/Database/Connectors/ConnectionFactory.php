@@ -4,7 +4,6 @@ namespace Illuminate\Database\Connectors;
 
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Connection;
-use Illuminate\Database\Connectors\Concerns\ConfiguresPooledConnections;
 use Illuminate\Database\MariaDbConnection;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Database\PostgresConnection;
@@ -16,8 +15,6 @@ use PDOException;
 
 class ConnectionFactory
 {
-    use ConfiguresPooledConnections;
-
     /**
      * The IoC container instance.
      *
@@ -45,10 +42,6 @@ class ConnectionFactory
     public function make(array $config, $name = null)
     {
         $config = $this->parseConfig($config, $name);
-
-        if (($config['driver'] ?? null) === 'pgsql') {
-            $config = $this->ensurePooledPostgresIsProperlyConfigured($config);
-        }
 
         if (isset($config['read'])) {
             return $this->createReadWriteConnection($config);
@@ -79,16 +72,9 @@ class ConnectionFactory
     {
         $pdo = $this->createPdoResolver($config);
 
-        $connection = $this->createConnection(
+        return $this->createConnection(
             $config['driver'], $pdo, $config['database'], $config['prefix'], $config
         );
-
-        if ($this->hasDirectConnection($config)) {
-            $connection->setDirectPdo($this->createDirectPdo($config))
-                ->setDirectPdoConfig($this->getDirectConfig($config));
-        }
-
-        return $connection;
     }
 
     /**
@@ -101,16 +87,9 @@ class ConnectionFactory
     {
         $connection = $this->createSingleConnection($this->getWriteConfig($config));
 
-        $connection
+        return $connection
             ->setReadPdo($this->createReadPdo($config))
             ->setReadPdoConfig($this->getReadConfig($config));
-
-        if ($this->hasDirectConnection($config)) {
-            $connection->setDirectPdo($this->createDirectPdo($config))
-                ->setDirectPdoConfig($this->getDirectConfig($config));
-        }
-
-        return $connection;
     }
 
     /**
@@ -177,17 +156,6 @@ class ConnectionFactory
     }
 
     /**
-     * Create a new PDO instance for direct connections.
-     *
-     * @param  array  $config
-     * @return \Closure
-     */
-    protected function createDirectPdo(array $config)
-    {
-        return $this->createPdoResolver($this->getDirectConfig($config));
-    }
-
-    /**
      * Create a new Closure that resolves to a PDO instance.
      *
      * @param  array  $config
@@ -211,20 +179,18 @@ class ConnectionFactory
     protected function createPdoResolverWithHosts(array $config)
     {
         return function () use ($config) {
-            $exception = null;
-
             foreach (Arr::shuffle($this->parseHosts($config)) as $host) {
                 $config['host'] = $host;
 
                 try {
                     return $this->createConnector($config)->connect($config);
                 } catch (PDOException $e) {
-                    $exception = $e;
+                    continue;
                 }
             }
 
-            if ($exception !== null) {
-                throw $exception;
+            if (isset($e)) {
+                throw $e;
             }
         };
     }

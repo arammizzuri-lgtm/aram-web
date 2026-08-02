@@ -2,7 +2,6 @@
 
 namespace Illuminate\Concurrency;
 
-use Carbon\CarbonInterval;
 use Closure;
 use Illuminate\Contracts\Concurrency\Driver;
 use Illuminate\Support\Collection;
@@ -15,7 +14,7 @@ class SyncDriver implements Driver
     /**
      * Run the given tasks concurrently and return an array containing the results.
      */
-    public function run(Closure|array $tasks, CarbonInterval|int|null $timeout = null): array
+    public function run(Closure|array $tasks): array
     {
         return Collection::wrap($tasks)->map(
             fn ($task) => $task()

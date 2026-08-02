@@ -85,19 +85,6 @@ class Str
     }
 
     /**
-     * Translate the given message and get a new stringable object.
-     *
-     * @param  string  $key
-     * @param  array  $replace
-     * @param  string|null  $locale
-     * @return \Illuminate\Support\Stringable
-     */
-    public static function trans($key, $replace = [], $locale = null)
-    {
-        return new Stringable(__($key, $replace, $locale));
-    }
-
-    /**
      * Return the remainder of a string after the first occurrence of a given value.
      *
      * @param  string  $subject
@@ -153,7 +140,7 @@ class Str
      */
     public static function transliterate($string, $unknown = '?', $strict = false)
     {
-        return ASCII::to_transliterate((string) $string, $unknown, $strict);
+        return ASCII::to_transliterate($string, $unknown, $strict);
     }
 
     /**
@@ -238,7 +225,11 @@ class Str
      */
     public static function camel($value)
     {
-        return static::$camelCache[$value] ?? static::$camelCache[$value] = lcfirst(static::studly($value));
+        if (isset(static::$camelCache[$value])) {
+            return static::$camelCache[$value];
+        }
+
+        return static::$camelCache[$value] = lcfirst(static::studly($value));
     }
 
     /**
@@ -340,17 +331,13 @@ class Str
      */
     public static function containsAll($haystack, $needles, $ignoreCase = false)
     {
-        $any = false;
-
         foreach ($needles as $needle) {
-            $any = true;
-
             if (! static::contains($haystack, $needle, $ignoreCase)) {
                 return false;
             }
         }
 
-        return $any;
+        return true;
     }
 
     /**
@@ -377,18 +364,6 @@ class Str
     public static function convertCase(string $string, int $mode = MB_CASE_FOLD, ?string $encoding = 'UTF-8')
     {
         return mb_convert_case($string, $mode, $encoding);
-    }
-
-    /**
-     * Get the plural form of an English word with the count prepended.
-     *
-     * @param  string  $value
-     * @param  int|array|\Countable  $count
-     * @return string
-     */
-    public static function counted($value, $count)
-    {
-        return static::plural($value, $count, prependCount: true);
     }
 
     /**
@@ -470,14 +445,14 @@ class Str
 
         $start = ltrim($matches[1]);
 
-        $start = (new Stringable(mb_substr($start, max(mb_strlen($start, 'UTF-8') - $radius, 0), $radius, 'UTF-8')))->ltrim()->unless(
+        $start = Str::of(mb_substr($start, max(mb_strlen($start, 'UTF-8') - $radius, 0), $radius, 'UTF-8'))->ltrim()->unless(
             fn ($startWithRadius) => $startWithRadius->exactly($start),
             fn ($startWithRadius) => $startWithRadius->prepend($omission),
         );
 
         $end = rtrim($matches[3]);
 
-        $end = (new Stringable(mb_substr($end, 0, $radius, 'UTF-8')))->rtrim()->unless(
+        $end = Str::of(mb_substr($end, 0, $radius, 'UTF-8'))->rtrim()->unless(
             fn ($endWithRadius) => $endWithRadius->exactly($end),
             fn ($endWithRadius) => $endWithRadius->append($omission),
         );
@@ -816,8 +791,6 @@ class Str
      */
     public static function markdown($string, array $options = [], array $extensions = [])
     {
-        $string = (string) $string;
-
         $converter = new GithubFlavoredMarkdownConverter($options);
 
         $environment = $converter->getEnvironment();
@@ -839,8 +812,6 @@ class Str
      */
     public static function inlineMarkdown($string, array $options = [], array $extensions = [])
     {
-        $string = (string) $string;
-
         $environment = new Environment($options);
 
         $environment->addExtension(new GithubFlavoredMarkdownExtension());
@@ -886,7 +857,7 @@ class Str
 
         $start = mb_substr($string, 0, $startIndex, $encoding);
         $segmentLen = mb_strlen($segment, $encoding);
-        $end = mb_substr($string, $startIndex + $segmentLen, null, $encoding);
+        $end = mb_substr($string, $startIndex + $segmentLen);
 
         return $start.str_repeat(mb_substr($character, 0, 1, $encoding), $segmentLen).$end;
     }
@@ -1231,7 +1202,7 @@ class Str
     public static function replaceArray($search, $replace, $subject)
     {
         if ($replace instanceof Traversable) {
-            $replace = iterator_to_array($replace);
+            $replace = Arr::from($replace);
         }
 
         $segments = explode($search, $subject);
@@ -1256,7 +1227,7 @@ class Str
     {
         try {
             return (string) $value;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             return $fallback;
         }
     }
@@ -1273,15 +1244,15 @@ class Str
     public static function replace($search, $replace, $subject, $caseSensitive = true)
     {
         if ($search instanceof Traversable) {
-            $search = iterator_to_array($search);
+            $search = Arr::from($search);
         }
 
         if ($replace instanceof Traversable) {
-            $replace = iterator_to_array($replace);
+            $replace = Arr::from($replace);
         }
 
         if ($subject instanceof Traversable) {
-            $subject = iterator_to_array($subject);
+            $subject = Arr::from($subject);
         }
 
         return $caseSensitive
@@ -1414,7 +1385,7 @@ class Str
     public static function remove($search, $subject, $caseSensitive = true)
     {
         if ($search instanceof Traversable) {
-            $search = iterator_to_array($search);
+            $search = Arr::from($search);
         }
 
         return $caseSensitive
@@ -1430,7 +1401,7 @@ class Str
      */
     public static function reverse(string $value)
     {
-        return implode('', array_reverse(mb_str_split($value)));
+        return implode(array_reverse(mb_str_split($value)));
     }
 
     /**
@@ -1477,7 +1448,7 @@ class Str
      */
     public static function headline($value)
     {
-        $parts = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = mb_split('\s+', $value);
 
         $parts = count($parts) > 1
             ? array_map(static::title(...), $parts)
@@ -1497,7 +1468,7 @@ class Str
      */
     public static function initials($value, $capitalize = false)
     {
-        $parts = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = mb_split("\s+", $value);
 
         $parts = array_map(fn ($part) => mb_substr($part, 0, 1), $parts);
 
@@ -1528,7 +1499,7 @@ class Str
 
         $endPunctuation = ['.', '!', '?', ':', '—', ','];
 
-        $words = preg_split('/\s+/u', $value, -1, PREG_SPLIT_NO_EMPTY);
+        $words = mb_split('\s+', $value);
         $wordCount = count($words);
 
         for ($i = 0; $i < $wordCount; $i++) {
@@ -1738,42 +1709,32 @@ class Str
      * Convert a value to studly caps case.
      *
      * @param  string  $value
-     * @param  bool  $normalize  When true, all-uppercase words (e.g. acronyms) are lowercased before conversion so "CBOR" becomes "Cbor" instead of "CBOR".
      * @return ($value is '' ? '' : string)
      */
-    public static function studly($value, bool $normalize = false)
+    public static function studly($value)
     {
-        if ($normalize) {
-            $value = preg_replace_callback(
-                '/(^|[-_ \s])([A-Z]+)(?=[-_ \s]|$)/u',
-                fn ($m) => $m[1].static::lower($m[2]),
-                $value
-            );
-        }
-
         $key = $value;
 
         if (isset(static::$studlyCache[$key])) {
             return static::$studlyCache[$key];
         }
 
-        $words = preg_split('/\s+/u', static::replace(['-', '_'], ' ', $value), -1, PREG_SPLIT_NO_EMPTY);
+        $words = mb_split('\s+', static::replace(['-', '_'], ' ', $value));
 
         $studlyWords = array_map(fn ($word) => static::ucfirst($word), $words);
 
-        return static::$studlyCache[$key] = implode('', $studlyWords);
+        return static::$studlyCache[$key] = implode($studlyWords);
     }
 
     /**
      * Convert a value to Pascal case.
      *
      * @param  string  $value
-     * @param  bool  $normalize  When true, all-uppercase words (e.g. acronyms) are lowercased before conversion so "CBOR" becomes "Cbor" instead of "CBOR".
      * @return ($value is '' ? '' : string)
      */
-    public static function pascal($value, bool $normalize = false)
+    public static function pascal($value)
     {
-        return static::studly($value, $normalize);
+        return static::studly($value);
     }
 
     /**
@@ -1887,7 +1848,7 @@ class Str
      */
     public static function lcfirst($string)
     {
-        return mb_lcfirst($string, 'UTF-8');
+        return static::lower(static::substr($string, 0, 1)).static::substr($string, 1);
     }
 
     /**
@@ -1898,7 +1859,7 @@ class Str
      */
     public static function ucfirst($string)
     {
-        return mb_ucfirst($string, 'UTF-8');
+        return static::upper(static::substr($string, 0, 1)).static::substr($string, 1);
     }
 
     /**
@@ -1951,35 +1912,7 @@ class Str
      */
     public static function wordWrap($string, $characters = 75, $break = "\n", $cutLongWords = false)
     {
-        if (static::isAscii($string)) {
-            return wordwrap($string, $characters, $break, $cutLongWords);
-        }
-
-        if ($break === '') {
-            return wordwrap($string, $characters, $break, $cutLongWords);
-        }
-
-        $replaced = [];
-
-        $skeleton = preg_replace_callback('/[\x80-\xFF][\x80-\xBF]*|\x1A/', function ($match) use (&$replaced) {
-            $replaced[] = $match[0];
-
-            return "\x1A";
-        }, $string);
-
-        $breakToken = "\0";
-
-        while (str_contains($skeleton, $breakToken)) {
-            $breakToken .= "\0";
-        }
-
-        $index = 0;
-
-        return implode($break, array_map(function ($segment) use (&$replaced, &$index) {
-            return preg_replace_callback('/\x1A/', function () use (&$replaced, &$index) {
-                return $replaced[$index++];
-            }, $segment);
-        }, explode($breakToken, wordwrap($skeleton, $characters, $breakToken, $cutLongWords))));
+        return wordwrap($string, $characters, $break, $cutLongWords);
     }
 
     /**
@@ -2217,17 +2150,5 @@ class Str
         static::$snakeCache = [];
         static::$camelCache = [];
         static::$studlyCache = [];
-    }
-
-    /**
-     * Return all factory functions to their default state.
-     *
-     * @return void
-     */
-    public static function resetFactoryState()
-    {
-        static::createRandomStringsNormally();
-        static::createUlidsNormally();
-        static::createUuidsNormally();
     }
 }

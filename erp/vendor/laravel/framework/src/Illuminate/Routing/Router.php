@@ -1307,7 +1307,13 @@ class Router implements BindingRegistrar, RegistrarContract
     {
         $names = is_array($name) ? $name : func_get_args();
 
-        return array_all($names, fn ($value) => $this->routes->hasNamedRoute($value));
+        foreach ($names as $value) {
+            if (! $this->routes->hasNamedRoute($value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -1362,7 +1368,13 @@ class Router implements BindingRegistrar, RegistrarContract
      */
     public function uses(...$patterns)
     {
-        return array_any($patterns, fn ($pattern) => Str::is($pattern, $this->currentRouteAction()));
+        foreach ($patterns as $pattern) {
+            if (Str::is($pattern, $this->currentRouteAction())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

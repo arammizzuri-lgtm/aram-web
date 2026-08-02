@@ -239,7 +239,7 @@ class Sleep
     }
 
     /**
-     * Sleep for one microsecond.
+     * Sleep for on microsecond.
      *
      * @return $this
      */
@@ -303,8 +303,6 @@ class Sleep
      * Handle the object's destruction.
      *
      * @return void
-     *
-     * @throws \RuntimeException
      */
     protected function goodnight()
     {
@@ -359,8 +357,6 @@ class Sleep
      * Resolve the pending duration.
      *
      * @return int|float
-     *
-     * @throws \RuntimeException
      */
     protected function pullPending()
     {

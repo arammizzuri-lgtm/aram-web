@@ -6,7 +6,6 @@ use ArrayAccess;
 use Closure;
 use Exception;
 use Illuminate\Container\Attributes\Bind;
-use Illuminate\Container\Attributes\BindWhen;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -872,9 +871,6 @@ class Container implements ArrayAccess, ContainerContract
      *
      * @param  string|class-string<TClass>  $id
      * @return ($id is class-string<TClass> ? TClass : mixed)
-     *
-     * @throws \Illuminate\Contracts\Container\CircularDependencyException
-     * @throws \Illuminate\Container\EntryNotFoundException
      */
     public function get(string $id)
     {
@@ -982,7 +978,8 @@ class Container implements ArrayAccess, ContainerContract
             return $this->bindings[$abstract]['concrete'];
         }
 
-        if (($this->checkedForAttributeBindings[$abstract] ?? false) || ! is_string($abstract)) {
+        if ($this->environmentResolver === null ||
+            ($this->checkedForAttributeBindings[$abstract] ?? false) || ! is_string($abstract)) {
             return $abstract;
         }
 
@@ -990,7 +987,7 @@ class Container implements ArrayAccess, ContainerContract
     }
 
     /**
-     * Get the concrete binding for an abstract from the BindWhen or Bind attributes.
+     * Get the concrete binding for an abstract from the Bind attribute.
      *
      * @param  string  $abstract
      * @return mixed
@@ -1005,13 +1002,35 @@ class Container implements ArrayAccess, ContainerContract
             return $abstract;
         }
 
-        $concrete = $this->resolveConcreteFromAttributes($reflected);
+        $bindAttributes = $reflected->getAttributes(Bind::class);
 
-        if ($concrete === null) {
-            if ($this->environmentResolver === null && $reflected->getAttributes(Bind::class) !== []) {
-                unset($this->checkedForAttributeBindings[$abstract]);
+        if ($bindAttributes === []) {
+            return $abstract;
+        }
+
+        $concrete = $maybeConcrete = null;
+
+        foreach ($bindAttributes as $reflectedAttribute) {
+            $instance = $reflectedAttribute->newInstance();
+
+            if ($instance->environments === ['*']) {
+                $maybeConcrete = $instance->concrete;
+
+                continue;
             }
 
+            if ($this->currentEnvironmentIs($instance->environments)) {
+                $concrete = $instance->concrete;
+
+                break;
+            }
+        }
+
+        if ($maybeConcrete !== null && $concrete === null) {
+            $concrete = $maybeConcrete;
+        }
+
+        if ($concrete === null) {
             return $abstract;
         }
 
@@ -1022,47 +1041,6 @@ class Container implements ArrayAccess, ContainerContract
         };
 
         return $this->bindings[$abstract]['concrete'];
-    }
-
-    /**
-     * Resolve the concrete from the Bind and BindWhen attributes in declaration order.
-     *
-     * @param  ReflectionClass<object>  $reflected
-     * @return class-string|null
-     */
-    protected function resolveConcreteFromAttributes(ReflectionClass $reflected)
-    {
-        $wildcard = null;
-
-        foreach ($reflected->getAttributes() as $reflectedAttribute) {
-            $name = $reflectedAttribute->getName();
-
-            if ($name === BindWhen::class) {
-                $instance = $reflectedAttribute->newInstance();
-
-                if (($instance->condition)($this)) {
-                    return $instance->concrete;
-                }
-
-                continue;
-            }
-
-            if ($name === Bind::class && $this->environmentResolver !== null) {
-                $instance = $reflectedAttribute->newInstance();
-
-                if ($instance->environments === ['*']) {
-                    $wildcard ??= $instance->concrete;
-
-                    continue;
-                }
-
-                if ($this->currentEnvironmentIs($instance->environments)) {
-                    return $instance->concrete;
-                }
-            }
-        }
-
-        return $wildcard;
     }
 
     /**
@@ -1248,7 +1226,7 @@ class Container implements ArrayAccess, ContainerContract
             $result = null;
 
             if (! is_null($attribute = Util::getContextualAttributeFromDependency($dependency))) {
-                $result = $this->resolveFromAttribute($attribute, $dependency);
+                $result = $this->resolveFromAttribute($attribute);
             }
 
             // If the class is null, it means the dependency is a string or some other
@@ -1394,10 +1372,8 @@ class Container implements ArrayAccess, ContainerContract
      * Resolve a dependency based on an attribute.
      *
      * @return mixed
-     *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function resolveFromAttribute(ReflectionAttribute $attribute, ReflectionParameter $parameter)
+    public function resolveFromAttribute(ReflectionAttribute $attribute)
     {
         $handler = $this->contextualAttributes[$attribute->getName()] ?? null;
 
@@ -1411,7 +1387,7 @@ class Container implements ArrayAccess, ContainerContract
             throw new BindingResolutionException("Contextual binding attribute [{$attribute->getName()}] has no registered handler.");
         }
 
-        return $handler($instance, $this, $parameter);
+        return $handler($instance, $this);
     }
 
     /**
@@ -1812,42 +1788,42 @@ class Container implements ArrayAccess, ContainerContract
     /**
      * Determine if a given offset exists.
      *
-     * @param  string  $offset
+     * @param  string  $key
      */
-    public function offsetExists($offset): bool
+    public function offsetExists($key): bool
     {
-        return $this->bound($offset);
+        return $this->bound($key);
     }
 
     /**
      * Get the value at a given offset.
      *
-     * @param  string  $offset
+     * @param  string  $key
      */
-    public function offsetGet($offset): mixed
+    public function offsetGet($key): mixed
     {
-        return $this->make($offset);
+        return $this->make($key);
     }
 
     /**
      * Set the value at a given offset.
      *
-     * @param  string  $offset
+     * @param  string  $key
      * @param  mixed  $value
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet($key, $value): void
     {
-        $this->bind($offset, $value instanceof Closure ? $value : fn () => $value);
+        $this->bind($key, $value instanceof Closure ? $value : fn () => $value);
     }
 
     /**
      * Unset the value at a given offset.
      *
-     * @param  string  $offset
+     * @param  string  $key
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset($key): void
     {
-        unset($this->bindings[$offset], $this->instances[$offset], $this->resolved[$offset]);
+        unset($this->bindings[$key], $this->instances[$key], $this->resolved[$key]);
     }
 
     /**

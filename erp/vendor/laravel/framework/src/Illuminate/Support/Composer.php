@@ -113,10 +113,9 @@ class Composer
     /**
      * Modify the "composer.json" file contents using the given callback.
      *
-     * @param  callable(array<string, mixed>):array<string, mixed>  $callback
+     * @param  callable(array):array  $callback
      * @return void
      *
-     * @throws \JsonException
      * @throws \RuntimeException
      */
     public function modify(callable $callback)
@@ -137,7 +136,7 @@ class Composer
     /**
      * Regenerate the Composer autoloader files.
      *
-     * @param  string|array<string>  $extra
+     * @param  string|array  $extra
      * @param  string|null  $composerBinary
      * @return int
      */
@@ -165,7 +164,7 @@ class Composer
      * Get the Composer binary / command for the environment.
      *
      * @param  string|null  $composerBinary
-     * @return array<string>
+     * @return array
      */
     public function findComposer($composerBinary = null)
     {
@@ -209,8 +208,8 @@ class Composer
     /**
      * Get a new Symfony process instance.
      *
-     * @param  array<string>  $command
-     * @param  array<string, string>  $env
+     * @param  array  $command
+     * @param  array  $env
      * @return \Symfony\Component\Process\Process
      */
     protected function getProcess(array $command, array $env = [])

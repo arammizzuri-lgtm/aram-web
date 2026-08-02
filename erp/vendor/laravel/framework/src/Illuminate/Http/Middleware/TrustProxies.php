@@ -112,14 +112,14 @@ class TrustProxies
     }
 
     /**
-     * Set the trusted proxies to catchall addresses for IPv4 and IPv6.
+     * Set the trusted proxy to be the IP address calling this servers.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return void
      */
     protected function setTrustedProxyIpAddressesToTheCallingIp(Request $request)
     {
-        $request->setTrustedProxies(['0.0.0.0/0', '::/0'], $this->getTrustedHeaderNames());
+        $request->setTrustedProxies([$request->server->get('REMOTE_ADDR')], $this->getTrustedHeaderNames());
     }
 
     /**

@@ -274,7 +274,7 @@ abstract class AbstractCursorPaginator implements Htmlable, Stringable
      * Get / set the URL fragment to be appended to URLs.
      *
      * @param  string|null  $fragment
-     * @return ($fragment is null ? string|null : $this)
+     * @return $this|string|null
      */
     public function fragment($fragment = null)
     {

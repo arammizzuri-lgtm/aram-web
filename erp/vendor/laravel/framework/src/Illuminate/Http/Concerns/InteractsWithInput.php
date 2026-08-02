@@ -3,7 +3,6 @@
 namespace Illuminate\Http\Concerns;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Image\Image;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Traits\Dumpable;
@@ -185,7 +184,7 @@ trait InteractsWithInput
     {
         $files = $this->files->all();
 
-        return $this->convertedFiles ??= $this->convertUploadedFiles($files);
+        return $this->convertedFiles = $this->convertedFiles ?? $this->convertUploadedFiles($files);
     }
 
     /**
@@ -219,7 +218,13 @@ trait InteractsWithInput
             $files = [$files];
         }
 
-        return array_any($files, fn ($file) => $this->isValidFile($file));
+        foreach ($files as $file) {
+            if ($this->isValidFile($file)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -243,20 +248,6 @@ trait InteractsWithInput
     public function file($key = null, $default = null)
     {
         return data_get($this->allFiles(), $key, $default);
-    }
-
-    /**
-     * Retrieve a file from the request as an image instance.
-     */
-    public function image(string $key): ?Image
-    {
-        $file = $this->file($key);
-
-        if (! $file instanceof UploadedFile) {
-            return null;
-        }
-
-        return new Image(fn () => $file->getContent(), $file);
     }
 
     /**
@@ -302,7 +293,7 @@ trait InteractsWithInput
     {
         $keys = is_array($keys) ? $keys : func_get_args();
 
-        dump($keys !== [] ? $this->only($keys) : $this->all());
+        dump(count($keys) > 0 ? $this->only($keys) : $this->all());
 
         return $this;
     }

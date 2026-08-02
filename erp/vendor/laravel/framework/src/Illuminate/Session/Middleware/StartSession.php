@@ -266,11 +266,11 @@ class StartSession
      */
     protected function getCookieExpirationDate()
     {
-        return $this->manager->getSessionConfig()['expire_on_close']
-            ? 0
-            : Date::instance(
-                Carbon::now()->addSeconds($this->getSessionLifetimeInSeconds())
-            );
+        $expiresOnClose = $this->manager->getSessionConfig()['expire_on_close'];
+
+        return $expiresOnClose ? 0 : Date::instance(
+            Carbon::now()->addSeconds($this->getSessionLifetimeInSeconds())
+        );
     }
 
     /**
@@ -300,7 +300,7 @@ class StartSession
      * Resolve the given cache driver.
      *
      * @param  string  $driver
-     * @return \Illuminate\Contracts\Cache\Repository
+     * @return \Illuminate\Cache\Store
      */
     protected function cache($driver)
     {

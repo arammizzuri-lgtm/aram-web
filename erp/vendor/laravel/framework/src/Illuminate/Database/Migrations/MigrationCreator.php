@@ -4,7 +4,6 @@ namespace Illuminate\Database\Migrations;
 
 use Closure;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -30,13 +29,6 @@ class MigrationCreator
      * @var (\Closure(string, string): void)[]
      */
     protected $postCreate = [];
-
-    /**
-     * The path given to the create method.
-     *
-     * @var string|null
-     */
-    protected $currentMigrationPath = null;
 
     /**
      * Create a new migration creator instance.
@@ -70,7 +62,7 @@ class MigrationCreator
         // various place-holders, save the file, and run the post create event.
         $stub = $this->getStub($table, $create);
 
-        $path = $this->getCollisionFreePath($name, $path);
+        $path = $this->getPath($name, $path);
 
         $this->files->ensureDirectoryExists(dirname($path));
 
@@ -182,24 +174,6 @@ class MigrationCreator
     }
 
     /**
-     * Get the full path to the migration.
-     *
-     * @param  string  $name
-     * @param  string  $path
-     * @return string
-     */
-    protected function getCollisionFreePath($name, $path)
-    {
-        $this->currentMigrationPath = $path;
-
-        $path = $this->getPath($name, $path);
-
-        $this->currentMigrationPath = null;
-
-        return $path;
-    }
-
-    /**
      * Fire the registered post create hooks.
      *
      * @param  string|null  $table
@@ -231,19 +205,7 @@ class MigrationCreator
      */
     protected function getDatePrefix()
     {
-        $path = $this->currentMigrationPath;
-
-        if ($path === null) {
-            return date('Y_m_d_His');
-        }
-
-        $date = Date::now();
-
-        while ($this->files->glob($path.'/'.$date->format('Y_m_d_His').'_*.php')) {
-            $date = $date->addSecond();
-        }
-
-        return $date->format('Y_m_d_His');
+        return date('Y_m_d_His');
     }
 
     /**

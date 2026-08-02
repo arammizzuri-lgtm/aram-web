@@ -607,7 +607,7 @@ class Repository
      * Handle unserialize exceptions using the given callback.
      *
      * @param  callable|null  $callback
-     * @return $this
+     * @return static
      */
     public function handleUnserializeExceptionsUsing($callback)
     {

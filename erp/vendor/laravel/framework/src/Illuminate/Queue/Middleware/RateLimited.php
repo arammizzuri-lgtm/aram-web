@@ -151,7 +151,6 @@ class RateLimited
     {
         return [
             'limiterName',
-            'releaseAfter',
             'shouldRelease',
         ];
     }

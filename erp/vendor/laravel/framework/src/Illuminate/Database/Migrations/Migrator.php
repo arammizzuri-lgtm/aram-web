@@ -62,7 +62,7 @@ class Migrator
     /**
      * The name of the default connection.
      *
-     * @var string|null
+     * @var string
      */
     protected $connection;
 
@@ -183,7 +183,7 @@ class Migrator
         // First we will just make sure that there are any migrations to run. If there
         // aren't, we will just make a note of it to the developer so they're aware
         // that all of the migrations have been run against this database system.
-        if ($migrations === []) {
+        if (count($migrations) === 0) {
             $this->fireMigrationEvent(new NoPendingMigrations('up'));
 
             $this->write(Info::class, 'Nothing to migrate');
@@ -250,7 +250,7 @@ class Migrator
 
             $this->write(Task::class, $name, fn () => MigrationResult::Skipped->value);
         } else {
-            $this->write(Task::class, $name, fn () => $this->runMigration($migration, 'up', $name));
+            $this->write(Task::class, $name, fn () => $this->runMigration($migration, 'up'));
 
             // Once we have run a migrations class, we will log that it was run in this
             // repository so that we don't try to run it next time we do a migration
@@ -290,7 +290,7 @@ class Migrator
      * Get the migrations for a rollback operation.
      *
      * @param  array<string, mixed>  $options
-     * @return object{id: int, migration: string, batch: int}[]
+     * @return array{id: int, migration: string, batch: int}[]
      */
     protected function getMigrationsForRollback(array $options)
     {
@@ -362,7 +362,7 @@ class Migrator
         // the database back into its "empty" state ready for the migrations.
         $migrations = array_reverse($this->repository->getRan());
 
-        if ($migrations === []) {
+        if (count($migrations) === 0) {
             $this->write(Info::class, 'Nothing to rollback.');
 
             return [];
@@ -389,7 +389,7 @@ class Migrator
         $migrations = (new Collection($migrations))->map(fn ($m) => (object) ['migration' => $m])->all();
 
         return $this->rollbackMigrations(
-            $migrations, $paths, ['pretend' => $pretend]
+            $migrations, $paths, compact('pretend')
         );
     }
 
@@ -414,7 +414,7 @@ class Migrator
             return $this->pretendToRun($instance, 'down');
         }
 
-        $this->write(Task::class, $name, fn () => $this->runMigration($instance, 'down', $name));
+        $this->write(Task::class, $name, fn () => $this->runMigration($instance, 'down'));
 
         // Once we have successfully run the migration "down" we will remove it from
         // the migration repository so it will be considered to have not been run
@@ -429,19 +429,19 @@ class Migrator
      * @param  string  $method
      * @return void
      */
-    protected function runMigration($migration, $method, $name = null)
+    protected function runMigration($migration, $method)
     {
         $connection = $this->resolveConnection(
             $migration->getConnection()
         );
 
-        $callback = function () use ($connection, $migration, $method, $name) {
+        $callback = function () use ($connection, $migration, $method) {
             if (method_exists($migration, $method)) {
-                $this->fireMigrationEvent(new MigrationStarted($migration, $method, $name));
+                $this->fireMigrationEvent(new MigrationStarted($migration, $method));
 
                 $this->runMethod($connection, $migration, $method);
 
-                $this->fireMigrationEvent(new MigrationEnded($migration, $method, $name));
+                $this->fireMigrationEvent(new MigrationEnded($migration, $method));
             }
         };
 
@@ -512,7 +512,7 @@ class Migrator
         $previousConnection = $this->resolver->getDefaultConnection();
 
         try {
-            $this->resolver->setDefaultConnection($connection->getNameWithReadWriteType());
+            $this->resolver->setDefaultConnection($connection->getName());
 
             $migration->{$method}();
         } finally {
@@ -645,7 +645,7 @@ class Migrator
     /**
      * Get the default connection name.
      *
-     * @return string|null
+     * @return string
      */
     public function getConnection()
     {
@@ -659,52 +659,34 @@ class Migrator
      *
      * @param  string  $name
      * @param  (callable(): TReturn)  $callback
-     * @return TReturn
+     * @return mixed
      */
     public function usingConnection($name, callable $callback)
     {
-        $previousConnection = $this->connection;
-        $previousDefaultConnection = $this->resolver->getDefaultConnection();
+        $previousConnection = $this->resolver->getDefaultConnection();
 
         $this->setConnection($name);
 
         try {
             return $callback();
         } finally {
-            $this->repository->setSource($previousConnection);
-            $this->resolver->setDefaultConnection($previousDefaultConnection);
-
-            $this->connection = $previousConnection;
+            $this->setConnection($previousConnection);
         }
     }
 
     /**
      * Set the default connection name.
      *
-     * @param  string|null  $name
+     * @param  string  $name
      * @return void
      */
     public function setConnection($name)
     {
-        if (is_null($name)) {
-            $defaultName = $this->resolver->getDefaultConnection();
-            $directName = $this->directConnectionName($defaultName);
-
-            // Using "null" connection, default is "null", and no direct connection...
-            if ($directName === $defaultName) {
-                $this->repository->setSource(null);
-                $this->connection = null;
-
-                return;
-            }
-
-            $name = $directName;
-        } else {
-            $name = $this->directConnectionName($name);
+        if (! is_null($name)) {
+            $this->resolver->setDefaultConnection($name);
         }
 
         $this->repository->setSource($name);
-        $this->resolver->setDefaultConnection($name);
 
         $this->connection = $name;
     }
@@ -712,7 +694,7 @@ class Migrator
     /**
      * Resolve the database connection instance.
      *
-     * @param  string|null  $connection
+     * @param  string  $connection
      * @return \Illuminate\Database\Connection
      */
     public function resolveConnection($connection)
@@ -724,29 +706,8 @@ class Migrator
                 $connection ?: $this->connection
             );
         } else {
-            return $this->resolver->connection(
-                $this->directConnectionName($connection ?: $this->connection)
-            );
+            return $this->resolver->connection($connection ?: $this->connection);
         }
-    }
-
-    /**
-     * Resolve the direct connection variant when one is configured.
-     *
-     * @param  string|null  $name
-     * @return string
-     */
-    protected function directConnectionName($name)
-    {
-        $name ??= $this->resolver->getDefaultConnection();
-
-        if (Str::endsWith($name, ['::read', '::write', '::direct'])) {
-            return $name;
-        }
-
-        return $this->resolver->connection($name)->hasDirectConnection()
-            ? $name.'::direct'
-            : $name;
     }
 
     /**

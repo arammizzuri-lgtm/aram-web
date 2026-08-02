@@ -19,13 +19,7 @@ class RouteSignatureParameters
     public static function fromAction(array $action, $conditions = [])
     {
         $callback = RouteAction::containsSerializedClosure($action)
-            ? unserialize($action['uses'], ['allowed_classes' => [
-                \Laravel\SerializableClosure\SerializableClosure::class,
-                \Laravel\SerializableClosure\UnsignedSerializableClosure::class,
-                \Laravel\SerializableClosure\Serializers\Native::class,
-                \Laravel\SerializableClosure\Serializers\Signed::class,
-                \Laravel\SerializableClosure\Support\SelfReference::class,
-            ]])->getClosure()
+            ? unserialize($action['uses'])->getClosure()
             : $action['uses'];
 
         $parameters = is_string($callback)
@@ -44,8 +38,6 @@ class RouteSignatureParameters
      *
      * @param  string  $uses
      * @return array
-     *
-     * @throws \ReflectionException
      */
     protected static function fromClassMethodString($uses)
     {

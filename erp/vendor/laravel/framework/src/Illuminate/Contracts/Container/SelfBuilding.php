@@ -3,7 +3,7 @@
 namespace Illuminate\Contracts\Container;
 
 /**
- * @method static static newInstance()
+ * @method static newInstance(): static
  */
 interface SelfBuilding
 {

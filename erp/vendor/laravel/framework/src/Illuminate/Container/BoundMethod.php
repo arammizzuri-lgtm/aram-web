@@ -175,7 +175,7 @@ class BoundMethod
 
             unset($parameters[$paramName]);
         } elseif ($attribute = Util::getContextualAttributeFromDependency($parameter)) {
-            $pendingDependencies[] = $container->resolveFromAttribute($attribute, $parameter);
+            $pendingDependencies[] = $container->resolveFromAttribute($attribute);
         } elseif (! is_null($className = Util::getParameterClassName($parameter))) {
             if (array_key_exists($className, $parameters)) {
                 $pendingDependencies[] = $parameters[$className];
@@ -187,8 +187,6 @@ class BoundMethod
                 $pendingDependencies = array_merge($pendingDependencies, is_array($variadicDependencies)
                     ? $variadicDependencies
                     : [$variadicDependencies]);
-            } elseif ($parameter->isDefaultValueAvailable() && ! $container->bound($className)) {
-                $pendingDependencies[] = $parameter->getDefaultValue();
             } else {
                 $pendingDependencies[] = $container->make($className);
             }

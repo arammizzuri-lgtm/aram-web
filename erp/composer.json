@@ -11,12 +11,12 @@
         "ext-zip": "*",
         "anthropic-ai/sdk": "^0.40.0",
         "filament/filament": "^4.0",
-        "laravel/framework": "^13.8",
-        "laravel/tinker": "^3.0",
+        "laravel/framework": "^12.0",
+        "laravel/tinker": "^2.9",
         "league/csv": "^9.28",
         "openspout/openspout": "^4.32",
         "spatie/browsershot": "^5.4",
-        "spatie/laravel-activitylog": "^5.0",
+        "spatie/laravel-activitylog": "^4.8",
         "spatie/laravel-backup": "^10.3",
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-pdf": "^2.12",
@@ -89,6 +89,9 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
+        "platform": {
+            "php": "8.3.0"
+        },
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true

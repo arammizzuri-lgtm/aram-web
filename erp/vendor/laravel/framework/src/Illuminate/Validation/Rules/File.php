@@ -92,7 +92,7 @@ class File implements Rule, DataAwareRule, ValidatorAwareRule
      * If no arguments are passed, the default file rule configuration will be returned.
      *
      * @param  static|callable|null  $callback
-     * @return ($callback is null ? static : void)
+     * @return static|void
      *
      * @throws \InvalidArgumentException
      */
@@ -341,11 +341,11 @@ class File implements Rule, DataAwareRule, ValidatorAwareRule
 
         $mimes = array_diff($this->allowedMimetypes, $mimetypes);
 
-        if ($mimetypes !== []) {
+        if (count($mimetypes) > 0) {
             $rules[] = 'mimetypes:'.implode(',', $mimetypes);
         }
 
-        if ($mimes !== []) {
+        if (count($mimes) > 0) {
             $rules[] = 'mimes:'.implode(',', $mimes);
         }
 
