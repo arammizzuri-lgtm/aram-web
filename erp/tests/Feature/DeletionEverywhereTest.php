@@ -234,6 +234,58 @@ class DeletionEverywhereTest extends TestCase
         $this->assertTrue(app(DeletionImpact::class)->canBeErased($this->supplier()));
     }
 
+    /**
+     * A deleted record is hidden, not gone — and its foreign key is as real as
+     * any other.
+     *
+     * Deleting a customer's every deal made them look untouched, so "Delete
+     * permanently" appeared and ran straight into a constraint that had never
+     * moved. Counting only the living rows is what made a 500 out of a button.
+     */
+    #[Test]
+    public function a_customer_whose_deals_are_all_deleted_still_cannot_be_erased(): void
+    {
+        $customer = $this->customer();
+
+        $deal = Deal::create([
+            'number' => 'D-2026-0001', 'customer_id' => $customer->id,
+            'deal_date' => today(), 'sell_currency' => 'IQD', 'iqd_usd_rate' => 1470,
+        ]);
+
+        $deal->delete();
+        $customer->delete();
+
+        $impact = app(DeletionImpact::class);
+
+        $this->assertFalse(
+            $impact->canBeErased($customer->fresh()),
+            'a deleted deal still holds the customer id',
+        );
+
+        $this->assertStringContainsString('1 deal on it', $impact->describe($customer->fresh()));
+
+        Livewire::test(RecentlyDeleted::class)
+            ->assertActionHidden(TestAction::make('erase')->table(Customer::class.':'.$customer->id));
+    }
+
+    /** The same guard on the screen the customer was deleted from. */
+    #[Test]
+    public function the_customers_own_screen_hides_it_too(): void
+    {
+        $customer = $this->customer();
+
+        Deal::create([
+            'number' => 'D-2026-0001', 'customer_id' => $customer->id,
+            'deal_date' => today(), 'sell_currency' => 'IQD', 'iqd_usd_rate' => 1470,
+        ])->delete();
+
+        $customer->delete();
+
+        Livewire::test(ManageCustomers::class)
+            ->filterTable('trashed', true)
+            ->assertActionHidden(TestAction::make('forceDelete')->table($customer));
+    }
+
     // ------------------------------------------------------- codes come free
 
     /**

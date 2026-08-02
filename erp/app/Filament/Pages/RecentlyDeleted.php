@@ -187,9 +187,36 @@ class RecentlyDeleted extends Page implements HasTable
         Notification::make()->title($this->name($model).' is back')->success()->send();
     }
 
+    /**
+     * Erasing, with the database given the last word.
+     *
+     * Whether anything still points at a record is worked out from a list of
+     * relationships kept by hand, and the database is the only thing that
+     * actually knows. So the answer from the guess decides whether the button
+     * appears, and the constraint decides whether it works — rather than a
+     * stack trace deciding for both.
+     */
     private function erase(array $record): void
     {
-        $this->resolve($record)?->forceDelete();
+        $model = $this->resolve($record);
+
+        if ($model === null) {
+            return;
+        }
+
+        try {
+            $model->forceDelete();
+        } catch (Throwable) {
+            Notification::make()
+                ->title('That one cannot be erased')
+                ->body('Something in the system still refers to it, including records that '
+                    .'have themselves been deleted. It stays here, deleted but intact.')
+                ->danger()
+                ->persistent()
+                ->send();
+
+            return;
+        }
 
         Notification::make()->title('Gone for good')->success()->send();
     }

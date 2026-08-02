@@ -109,7 +109,30 @@ class RecordDeletion
             ->label('Delete permanently')
             ->modalDescription('This one cannot be undone.')
             ->visible(fn (Model $record) => auth()->user()?->can('delete_record')
-                && app(DeletionImpact::class)->canBeErased($record));
+                && app(DeletionImpact::class)->canBeErased($record))
+            /*
+             * Whether anything still points at a record is worked out from a
+             * list of relationships kept by hand; the database is the only
+             * thing that actually knows. The guess decides whether the button
+             * appears, the constraint decides whether it works.
+             */
+            ->action(function (Model $record): void {
+                try {
+                    $record->forceDelete();
+                } catch (Throwable) {
+                    Notification::make()
+                        ->title('That one cannot be erased')
+                        ->body('Something in the system still refers to it, including records '
+                            .'that have themselves been deleted. It stays deleted but intact.')
+                        ->danger()
+                        ->persistent()
+                        ->send();
+
+                    return;
+                }
+
+                Notification::make()->title('Gone for good')->success()->send();
+            });
     }
 
     /** Deleted records are hidden by default, exactly as they always were. */

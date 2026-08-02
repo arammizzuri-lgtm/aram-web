@@ -19,6 +19,8 @@ use App\Models\SupplierPayment;
 use App\Models\User;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * What deleting this particular record would actually do.
@@ -58,9 +60,15 @@ class DeletionImpact
     /**
      * Whether this can be erased permanently rather than merely deleted.
      *
-     * False whenever something live still points at it. The foreign keys would
-     * refuse in most cases anyway; asking first turns a database error into a
-     * button that simply is not offered.
+     * False whenever anything still points at it — **including rows that have
+     * themselves been deleted**, because a deleted row is hidden and not gone,
+     * and its foreign key is as real as any other. Counting only the living
+     * ones is what offered "Delete permanently" on a customer whose every deal
+     * had been deleted, and met a constraint that had never moved.
+     *
+     * A guess either way, so it is wrong in the safe direction: the erase is
+     * wrapped in a catch as well, because this is a list of relationships
+     * maintained by hand and the database is the only thing that actually knows.
      */
     public function canBeErased(Model $record): bool
     {
@@ -160,8 +168,8 @@ class DeletionImpact
         $owed = $customer->outstandingBalance();
 
         return [
-            $this->count($customer->deals()->count(), 'deal'),
-            $this->count($customer->invoices()->count(), 'invoice'),
+            $this->count($this->stillThere($customer->deals()), 'deal'),
+            $this->count($this->stillThere($customer->invoices()), 'invoice'),
             abs($owed) > 0.005
                 ? ($owed > 0
                     ? 'They still owe you '.Money::of($owed, 'USD')->display().'.'
@@ -176,10 +184,10 @@ class DeletionImpact
         $paid = (float) $supplier->payments()->sum('base_amount');
 
         return [
-            $this->count($supplier->purchases()->count(), 'purchase'),
-            $this->count($supplier->supplierProducts()->count(), 'priced product'),
-            $this->count($supplier->crystalProducts()->count(), 'crystal colour'),
-            $this->count($supplier->catalogueItems()->count(), 'catalogue item'),
+            $this->count($this->stillThere($supplier->purchases()), 'purchase'),
+            $this->count($this->stillThere($supplier->supplierProducts()), 'priced product'),
+            $this->count($this->stillThere($supplier->crystalProducts()), 'crystal colour'),
+            $this->count($this->stillThere($supplier->catalogueItems()), 'catalogue item'),
             $paid > 0 ? Money::of($paid, 'USD')->display().' paid to them.' : null,
         ];
     }
@@ -190,8 +198,8 @@ class DeletionImpact
     private function product(Product $product): array
     {
         return [
-            $this->count($product->dealLines()->count(), 'deal line'),
-            $this->count($product->supplierProducts()->count(), 'supplier price'),
+            $this->count($this->stillThere($product->dealLines()), 'deal line'),
+            $this->count($this->stillThere($product->supplierProducts()), 'supplier price'),
         ];
     }
 
@@ -199,8 +207,8 @@ class DeletionImpact
     private function category(ProductCategory $category): array
     {
         return [
-            $this->count($category->products()->count(), 'product'),
-            $this->count($category->children()->count(), 'sub-category'),
+            $this->count($this->stillThere($category->products()), 'product'),
+            $this->count($this->stillThere($category->children()), 'sub-category'),
         ];
     }
 
@@ -214,7 +222,7 @@ class DeletionImpact
         $freight = (float) $consignment->deals()->sum('consignment_deal.freight_share_base');
 
         return [
-            $this->count($consignment->deals()->count(), 'deal', 'shipping under it'),
+            $this->count($this->stillThere($consignment->deals()), 'deal', 'shipping under it'),
             /*
              * The freight is the part worth saying out loud. It is a cost sitting
              * on those deals' profit, and it leaves with the consignment.
@@ -231,7 +239,7 @@ class DeletionImpact
         $paid = $purchase->paidBase();
 
         return [
-            $this->count($purchase->lines()->count(), 'line', 'buying through it'),
+            $this->count($this->stillThere($purchase->lines()), 'line', 'buying through it'),
             $paid->isPositive() ? $paid->display().' already sent to the supplier.' : null,
         ];
     }
@@ -262,7 +270,7 @@ class DeletionImpact
     private function customerPayment(CustomerPayment $payment): array
     {
         return [
-            $this->count($payment->allocations()->count(), 'invoice', 'matched to it'),
+            $this->count($this->stillThere($payment->allocations()), 'invoice', 'matched to it'),
             $this->balanceShift($payment->customer, (float) $payment->base_amount),
         ];
     }
@@ -293,13 +301,13 @@ class DeletionImpact
     /** @return array<int, ?string> */
     private function collectionPoint(CollectionPoint $point): array
     {
-        return [$this->count($point->consignments()->count(), 'consignment', 'collected from it')];
+        return [$this->count($this->stillThere($point->consignments()), 'consignment', 'collected from it')];
     }
 
     /** @return array<int, ?string> */
     private function currency(Currency $currency): array
     {
-        return [$this->count($currency->ratesFrom()->count(), 'exchange rate')];
+        return [$this->count($this->stillThere($currency->ratesFrom()), 'exchange rate')];
     }
 
     /** @return array<int, ?string> */
@@ -342,6 +350,30 @@ class DeletionImpact
         }
 
         return sprintf('%d %s %s.', $count, str($noun)->plural($count), $verb);
+    }
+
+    /**
+     * How many rows still point at this record — deleted ones included.
+     *
+     * The "included" is the whole point, and it was missing. A deleted deal is
+     * hidden, not gone: its row is still in the table and still holds the
+     * customer's id. So a customer whose every deal had been deleted counted
+     * zero, was offered "Delete permanently", and met a foreign key that had
+     * been there the entire time.
+     *
+     * Anything that soft-deletes therefore gets counted with its dead included.
+     * `withTrashed()` only exists on relations whose far side keeps them, hence
+     * the check.
+     *
+     * @param  HasMany|BelongsToMany  $relation
+     */
+    private function stillThere(Relation $relation): int
+    {
+        if (in_array(SoftDeletes::class, class_uses_recursive($relation->getRelated()), true)) {
+            $relation->withTrashed();
+        }
+
+        return $relation->count();
     }
 
     private function hasActiveFlag(Model $record): bool
