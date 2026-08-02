@@ -16,6 +16,7 @@ use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -67,7 +68,7 @@ class ReferenceDataEditingTest extends TestCase
     }
 
     #[Test]
-    #[\PHPUnit\Framework\Attributes\DataProvider('screens')]
+    #[DataProvider('screens')]
     public function every_reference_screen_offers_a_way_to_correct_a_row(string $page): void
     {
         $actions = collect(Livewire::test($page)->instance()->getTable()->getActions())

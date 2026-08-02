@@ -31,13 +31,75 @@ class EditDeal extends EditRecord
             $this->invoiceShippingAction(),
 
             ActionGroup::make([
+                $this->cancelAction(),
+
+                /*
+                 * Deleting is a warning here, not a wall — as approval is.
+                 *
+                 * It used to vanish entirely the moment anything was invoiced,
+                 * with no explanation on the screen and no alternative offered,
+                 * so a deal you needed gone was simply stuck. What it costs is
+                 * now spelled out for this particular deal and the decision is
+                 * left where it belongs. The delete is soft and the deals list
+                 * has a Deleted filter to bring it back from.
+                 */
                 DeleteAction::make()
-                    // Once anything has been invoiced, the deal records money that
-                    // moved. Cancel it instead — deleting would erase history a
-                    // customer's balance still depends on.
-                    ->hidden(fn () => $this->record->invoices()->exists()),
+                    ->modalHeading(fn () => "Delete {$this->record->number}?")
+                    ->modalDescription(fn () => DealResource::deletionConsequences($this->record))
+                    ->modalSubmitActionLabel('Delete it'),
             ])->hiddenLabel(),
         ];
+    }
+
+    /**
+     * The deal that did not happen.
+     *
+     * The alternative the delete button has always pointed at without ever
+     * offering: cancelling keeps the deal, its quotations and its history
+     * visible and searchable, and takes it off everything that counts open
+     * work. Deleting hides all of that. Most of the time this is the one you
+     * want, which is why it sits above the other.
+     */
+    private function cancelAction(): Action
+    {
+        return Action::make('cancel')
+            ->label('Cancel this deal')
+            ->icon('heroicon-o-x-circle')
+            ->color('danger')
+            ->visible(fn () => $this->record->status !== 'cancelled')
+            ->requiresConfirmation()
+            ->modalHeading(fn () => "Cancel {$this->record->number}?")
+            ->modalDescription(
+                'The deal stays where it is, marked cancelled, with everything on it '
+                .'intact. It stops counting as open work.'
+            )
+            ->schema([
+                Textarea::make('reason')
+                    ->label('Why?')
+                    ->placeholder('e.g. customer went elsewhere, supplier could not make the deadline')
+                    ->rows(2),
+            ])
+            ->action(function (array $data) {
+                $reason = trim((string) ($data['reason'] ?? ''));
+
+                $this->record->update([
+                    'status' => 'cancelled',
+                    // Appended rather than replacing: the notes are the record of
+                    // what happened, and this is one more thing that happened.
+                    'internal_notes' => trim(implode("\n\n", array_filter([
+                        $this->record->internal_notes,
+                        $reason === '' ? null : 'Cancelled: '.$reason,
+                    ]))) ?: null,
+                ]);
+
+                Notification::make()
+                    ->title("{$this->record->number} cancelled")
+                    ->body('It stays on file. Delete it only if it should not be there at all.')
+                    ->success()
+                    ->send();
+
+                $this->refreshFormData(['status', 'internal_notes']);
+            });
     }
 
     /**

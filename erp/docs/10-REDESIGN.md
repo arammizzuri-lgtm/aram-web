@@ -5,7 +5,7 @@
 > does not.
 
 > **Build status — 2026-08-02.** Every module below is built.
-> **276 tests · 788 assertions · Pint clean · 20 screens verified in a browser.**
+> **288 tests · 846 assertions · Pint clean · 20 screens verified in a browser.**
 >
 > | Module | State |
 > |---|---|
@@ -13,6 +13,7 @@
 > | Deal lines picked from the price lists, both sides filled | ✅ |
 > | Deal stage — moves itself as you buy and ship, settable by hand | ✅ |
 > | Deal screen carries its quotations, purchases, shipping and invoices | ✅ |
+> | Deleting a deal — soft, restorable, from the list or the deal | ✅ |
 > | Quotations — photos + frozen approval snapshot | ✅ |
 > | Purchases + supplier payments with real transfer cost | ✅ |
 > | Consignments — 3 modes, freight split across deals | ✅ |

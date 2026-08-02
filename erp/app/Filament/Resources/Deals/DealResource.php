@@ -17,6 +17,10 @@ use App\Models\Supplier;
 use App\Services\Deals\CatalogueLookup;
 use App\Support\Money;
 use BackedEnum;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -35,8 +39,10 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
@@ -965,6 +971,72 @@ class DealResource extends Resource
         return true;
     }
 
+    /**
+     * Deleted deals are kept, so the list has to be able to reach them.
+     *
+     * The model has always soft-deleted and nothing ever showed the deleted
+     * ones, which is the worst of both: the rows pile up invisibly and a delete
+     * cannot be taken back. Dropping the scope here lets the "Deleted" filter
+     * on the list find them; it defaults to hiding them, as before.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    /**
+     * What deleting this particular deal would actually do.
+     *
+     * Written out rather than reduced to "are you sure?", because the answer
+     * differs enormously between a draft typed by mistake and a deal a customer
+     * has already paid against — and the person clicking is the only one who
+     * can weigh it.
+     */
+    public static function deletionConsequences(Deal $deal): string
+    {
+        $deal->loadMissing(['purchases.payments', 'invoices.allocations']);
+
+        $invoices = $deal->invoices->whereNotIn('status', ['cancelled']);
+        $received = $deal->invoices->sum(fn ($invoice) => $invoice->paidBase()->toFloat());
+        $paidOut = $deal->purchases->sum(fn ($purchase) => $purchase->paidBase()->toFloat());
+
+        $lines = [];
+
+        if ($invoices->isNotEmpty()) {
+            $lines[] = sprintf(
+                '%d %s issued to the customer.',
+                $invoices->count(),
+                str('invoice')->plural($invoices->count()),
+            );
+        }
+
+        if ($received > 0) {
+            $lines[] = '$'.number_format($received, 2).' received against those invoices.';
+        }
+
+        if ($paidOut > 0 && auth()->user()?->can('view_cost')) {
+            $lines[] = '$'.number_format($paidOut, 2).' already paid to suppliers.';
+        }
+
+        /*
+         * The quiet one. A deleted deal drops out of every query that reaches
+         * through the deal — profit by product, goods bought without approval —
+         * so its numbers leave the reports without anything appearing to have
+         * changed. Money already recorded is untouched: the invoices and the
+         * payments on them stay, and so does the customer's balance.
+         */
+        if ($lines === []) {
+            return 'Nothing has been billed or paid on this deal. '
+                .'It can be restored from the Deleted filter on the deals list.';
+        }
+
+        return implode(' ', $lines)
+            .' Deleting hides the deal and takes its figures out of the reports. '
+            .'The invoices and payments themselves stay, so the customer\'s balance does not move. '
+            .'If the deal simply did not happen, cancel it instead — that keeps it visible with '
+            .'its history intact. It can be restored from the Deleted filter either way.';
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -1026,6 +1098,45 @@ class DealResource extends Resource
                     ->relationship('customer', 'name')
                     ->searchable()
                     ->preload(),
+
+                /*
+                 * Where deleted deals went.
+                 *
+                 * Defaults to hiding them, so the list reads as it always has —
+                 * but a delete you cannot look at again is one nobody dares
+                 * make, and the rows were being kept regardless.
+                 */
+                TrashedFilter::make()->label('Deleted deals'),
+            ])
+            /*
+             * Deleting from the list, which is where you are when you notice a
+             * deal should not be there. It had to be done from inside the deal,
+             * through a menu, and only while nothing had been invoiced.
+             */
+            ->recordActions([
+                EditAction::make(),
+
+                DeleteAction::make()
+                    ->modalHeading(fn (Deal $record) => "Delete {$record->number}?")
+                    ->modalDescription(fn (Deal $record) => self::deletionConsequences($record))
+                    ->modalSubmitActionLabel('Delete it'),
+
+                RestoreAction::make(),
+
+                /*
+                 * Permanent, and walled where the database itself would refuse:
+                 * customer invoices point at the deal with `restrict on delete`,
+                 * so a deal that has been billed cannot be erased however hard
+                 * anyone insists. Restricted to the owner besides.
+                 */
+                ForceDeleteAction::make()
+                    ->label('Delete permanently')
+                    ->modalDescription(
+                        'This cannot be undone. The lines, purchases, quotations and '
+                        .'shipping links go with it.'
+                    )
+                    ->visible(fn (Deal $record) => auth()->user()?->can('delete_deal')
+                        && $record->invoices()->doesntExist()),
             ]);
     }
 
