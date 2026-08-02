@@ -8,6 +8,7 @@ use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -88,10 +89,20 @@ class Provision extends Command
             $user = new User(['name' => $name, 'email' => $email]);
         }
 
-        // Blank means "leave the password as it is". That is what lets the
-        // password be wiped from .env after the first sign-in without the next
-        // deploy resetting the account to nothing.
-        if ($password !== '') {
+        /*
+         * Blank means "leave the password as it is". That is what lets the
+         * password be wiped from .env after the first sign-in without the next
+         * deploy resetting the account to nothing.
+         *
+         * And when it is not blank, it is written only if it is not already the
+         * password in force. Hashing is salted, so re-hashing the same password
+         * stores a different string every time — and the panel runs
+         * AuthenticateSession, which reads a changed hash as "signed in
+         * elsewhere" and ends every session there is. Left as an unconditional
+         * write, simply leaving the password in .env signs you out on every
+         * deploy, mid-work, with nothing to explain it.
+         */
+        if ($password !== '' && ! Hash::check($password, (string) $user->password)) {
             $user->password = $password;
         }
 
