@@ -3,16 +3,13 @@
 namespace App\Filament\Resources\CustomerInvoices\Pages;
 
 use App\Filament\Resources\CustomerInvoices\CustomerInvoiceResource;
-use App\Models\Company;
 use App\Models\CustomerInvoice;
 use App\Services\Deals\InvoiceWriter;
-use App\Services\Documents\PdfRenderer;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class ManageCustomerInvoices extends ManageRecords
@@ -38,40 +35,23 @@ class ManageCustomerInvoices extends ManageRecords
     private function printAction(): Action
     {
         return Action::make('print')
-            ->label('PDF')
+            ->label('Print')
             ->icon('heroicon-o-printer')
             ->color('gray')
-            ->action(function (CustomerInvoice $record) {
-                $renderer = app(PdfRenderer::class);
-
-                if (! $renderer->isAvailable()) {
-                    Notification::make()
-                        ->title('No browser available for rendering')
-                        ->body('PDFs are drawn by headless Chromium. Set CHROME_PATH in .env.')
-                        ->danger()
-                        ->send();
-
-                    return null;
-                }
-
-                $record->load(['lines', 'customer', 'deal']);
-
-                $pdf = $renderer->make('pdf.customer-invoice', [
-                    'invoice' => $record,
-                    'company' => Company::current(),
-                ]);
-
-                return new StreamedResponse(
-                    fn () => print ($pdf->base64()
-                        ? base64_decode($pdf->base64())
-                        : ''),
-                    200,
-                    [
-                        'Content-Type' => 'application/pdf',
-                        'Content-Disposition' => 'inline; filename="'.$record->number.'.pdf"',
-                    ],
-                );
-            });
+            ->tooltip('Opens the invoice to print, or to save as a PDF')
+            /*
+             * Opened in a tab rather than rendered on the server.
+             *
+             * The invoice is drawn by a browser engine because that is what
+             * lays out Sorani correctly, and this host has none: no shell, no
+             * Node, nowhere to install Chromium. It could only ever have
+             * apologised — which is what it did.
+             *
+             * Whoever clicks this is sitting in front of a browser, though, and
+             * the print dialog it raises writes the same PDF from the same
+             * template. See CustomerInvoicePrintController.
+             */
+            ->url(fn (CustomerInvoice $record) => route('filament.admin.invoices.print', $record), shouldOpenInNewTab: true);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Controllers\CustomerInvoicePrintController;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -17,6 +18,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -66,6 +68,20 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            /*
+             * The customer's copy of an invoice, opened on its own so a browser
+             * can print it or save it as a PDF.
+             *
+             * A page rather than a panel screen, but declared on the panel all
+             * the same: that is what gives it the panel's session, its guard and
+             * its login screen. Registered in routes/web.php it would fall to
+             * Laravel's stock auth middleware, which redirects to a route named
+             * `login` — and a Filament application has no such route, so an
+             * expired session would meet a 500 instead of a sign-in form.
+             */
+            ->routes(fn () => Route::get('invoices/{invoice}/print', CustomerInvoicePrintController::class)
+                ->middleware(Authenticate::class)
+                ->name('invoices.print'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

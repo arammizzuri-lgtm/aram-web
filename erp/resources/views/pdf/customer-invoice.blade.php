@@ -19,7 +19,13 @@
     <meta charset="utf-8">
     <title>{{ $invoice->number }}</title>
     <style>
-        @page { size: A4; }
+        /*
+         * The margins are stated here as well as in PdfRenderer, which sets
+         * them through Browsershot's API. Rendered on the server the API values
+         * win and these are ignored; printed from a browser there is no API, and
+         * without them the invoice runs to the edge of the paper.
+         */
+        @page { size: A4; margin: 12mm 12mm 16mm; }
 
         /*
          * Noto Naskh carries the Arabic script Sorani uses. Without an Arabic
@@ -75,6 +81,32 @@
             color: #d03b3b; font-weight: 700; text-align: center; letter-spacing: 0.05em;
         }
     </style>
+
+    {{--
+        Screen styling, and only when this page is being shown to somebody.
+
+        Server-side rendering never sees it, which is deliberate: it keeps the
+        document that Browsershot draws exactly as it was, and confines the
+        change to the case that did not exist before — an invoice opened in a
+        browser, where it should look like the sheet of paper it is about to
+        become rather than text against the side of the window.
+    --}}
+    @if ($autoPrint ?? false)
+        <style>
+            @media screen {
+                html { background: #f1f2f4; }
+
+                body {
+                    width: 186mm;                 /* A4 less the 12mm margins */
+                    min-height: 265mm;
+                    margin: 16px auto;
+                    padding: 12mm 12mm 16mm;
+                    background: #fff;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
+                }
+            }
+        </style>
+    @endif
 </head>
 <body>
 
@@ -186,6 +218,18 @@
 
 @if ($invoice->notes || $invoice->deal->customer_notes)
     <div class="foot">{{ $invoice->notes ?: $invoice->deal->customer_notes }}</div>
+@endif
+
+{{--
+    Opened in the browser rather than rendered on the server, the print dialog
+    is raised as soon as the page has settled — the browser then draws the PDF
+    itself. Nothing else on the page changes: this is the same document either
+    way, laid out by the same kind of engine.
+--}}
+@if ($autoPrint ?? false)
+    <script>
+        window.addEventListener('load', () => window.print());
+    </script>
 @endif
 
 </body>

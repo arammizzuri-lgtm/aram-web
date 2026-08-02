@@ -17,6 +17,7 @@ use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
 use Tests\TestCase;
@@ -427,5 +428,54 @@ class CustomerInvoiceTest extends TestCase
         $this->writer->cancel($invoice, 'Reissuing');
 
         $this->assertSame(0.0, $customer->fresh()->outstandingBalance());
+    }
+
+    // ------------------------------------------------------------- printing
+
+    /*
+     * The invoice is drawn by a browser engine, because that is what lays out
+     * Sorani correctly. The server has none — shared hosting, no shell, nothing
+     * to install Chromium with — so the customer's copy is opened in the
+     * browser of whoever asked for it, and printed or saved as a PDF from
+     * there. These check the page is actually served, and to nobody else.
+     */
+
+    #[Test]
+    public function the_customers_copy_can_be_opened_for_printing(): void
+    {
+        $invoice = $this->writer->issueGoods($this->deal);
+
+        $response = $this->get(route('filament.admin.invoices.print', $invoice));
+
+        $response->assertOk();
+        $response->assertSee($invoice->number);
+        $response->assertSee('window.print()', escape: false);
+    }
+
+    /**
+     * This customer takes their documents in Sorani, so the page is mirrored.
+     * It is the invoice that carries the language, and printing never asks.
+     */
+    #[Test]
+    public function a_kurdish_invoice_is_printed_right_to_left(): void
+    {
+        $invoice = $this->writer->issueGoods($this->deal);
+
+        $this->get(route('filament.admin.invoices.print', $invoice))
+            ->assertOk()
+            ->assertSee('dir="rtl"', escape: false);
+    }
+
+    /** An invoice is a customer's financial record, not a public page. */
+    #[Test]
+    public function printing_is_behind_the_login(): void
+    {
+        $invoice = $this->writer->issueGoods($this->deal);
+
+        // Dropping the guard rather than logging out: logout cycles the
+        // remember token, and this model was made rather than fetched.
+        Auth::forgetGuards();
+
+        $this->get(route('filament.admin.invoices.print', $invoice))->assertRedirect();
     }
 }
