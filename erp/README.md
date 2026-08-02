@@ -1,4 +1,4 @@
-# Import & Wholesale ERP
+# Aram Mizuri Sourcing
 
 A vertical ERP for a **China-import → local-wholesale** business, built around one question
 generic ERPs answer badly:

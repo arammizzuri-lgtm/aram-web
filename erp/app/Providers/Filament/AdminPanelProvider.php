@@ -37,7 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->path(config('erp.mount'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
-            ->brandName('Import ERP')
+            ->brandName('Aram Mizuri Sourcing')
             ->colors([
                 // Indigo, replacing Filament's default amber: one accent, used only for
                 // primary action, active navigation and focus. Deliberately clear of the

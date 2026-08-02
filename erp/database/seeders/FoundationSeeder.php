@@ -19,7 +19,7 @@ class FoundationSeeder extends Seeder
     public function run(): void
     {
         Company::firstOrCreate(
-            ['name' => config('app.name') === 'Laravel' ? 'Import ERP' : config('app.name')],
+            ['name' => config('app.name') === 'Laravel' ? 'Aram Mizuri Sourcing' : config('app.name')],
             [
                 'legal_name' => null,
                 'country' => 'IQ',
