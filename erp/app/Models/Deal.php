@@ -133,6 +133,29 @@ class Deal extends Model
     }
 
     /**
+     * Any of the deal's currencies into what the customer is billed in.
+     *
+     * Through the dollar, because yuan and dinars have no rate between them
+     * here — both are quoted against it, so it is the only road from one to the
+     * other. Rates are units per dollar, so the journey is a division followed
+     * by a multiplication.
+     *
+     * Both steps are held at calculation precision and rounded once at the end.
+     * Rounding the dollar in the middle, as a Money-typed intermediate does,
+     * costs four decimal places — which is nothing in dollars and 0.147 dinars
+     * once the dinar rate multiplies it back up, and it showed: ¥12.50 plus 25%
+     * came out at 3,190.08 dinars where the arithmetic says 3,190.10.
+     */
+    public function toSellCurrency(Money $amount): Money
+    {
+        $converted = $amount
+            ->dividedBy($this->rateFor($amount->currency), Money::CALC_SCALE)
+            ->times($this->rateFor($this->sell_currency), Money::CALC_SCALE);
+
+        return Money::of($converted->amount, $this->sell_currency);
+    }
+
+    /**
      * Sum that tolerates an empty list.
      *
      * Money::sum() throws on no arguments, which is right for it — summing

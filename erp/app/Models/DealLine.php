@@ -155,9 +155,16 @@ class DealLine extends Model
     /**
      * Selling price implied by the markup, in the deal's selling currency.
      *
-     * Goes through USD because cost and sale are usually in different
-     * currencies: yuan in, dinars out. Marking up ¥12.50 by 25% has no meaning
-     * in dinars until the yuan has been valued.
+     * The margin is taken in the currency the goods were bought in, and the
+     * result converted once. Both orders are the same arithmetic, but not the
+     * same rounding: converting first fixes the unit cost at four decimals and
+     * then multiplies that rounding by the markup, so ¥50 plus 150% came out a
+     * hundredth of a cent above ¥125 ÷ 6.7.
+     *
+     * Which would not matter, except that the deal screen shows the yuan price
+     * — ¥125 — beside the converted one. Two figures shown together have to
+     * reconcile when somebody checks them by hand, and the way to guarantee
+     * that is to do the arithmetic in the same order they read it.
      */
     public function priceFromMarkup(Deal $deal): ?Money
     {
@@ -166,23 +173,13 @@ class DealLine extends Model
         }
 
         /*
-         * Converts the raw unit cost rather than reading the stored USD figure.
-         *
-         * The stored figure is a line total frozen for reporting; deriving a
-         * per-unit price back out of it would round twice for no reason. This
-         * is a suggestion the operator sees and can overwrite, so it should be
-         * as close to the true number as the arithmetic allows.
+         * Marks up the raw unit cost rather than the stored USD figure. That
+         * one is a line total frozen for reporting; deriving a per-unit price
+         * back out of it would round twice for no reason.
          */
-        $costBase = $deal->toBase(Money::of($this->unit_cost, $this->cost_currency));
-        $withMargin = $costBase->times(1 + (float) $this->markup_percent / 100, Money::CALC_SCALE);
+        $withMargin = Money::of($this->unit_cost, $this->cost_currency)
+            ->times(1 + (float) $this->markup_percent / 100, Money::CALC_SCALE);
 
-        if ($deal->sell_currency === 'USD') {
-            return $withMargin->roundTo(Money::SCALE);
-        }
-
-        return Money::of(
-            $withMargin->times($deal->rateFor($deal->sell_currency))->amount,
-            $deal->sell_currency,
-        );
+        return $deal->toSellCurrency($withMargin);
     }
 }

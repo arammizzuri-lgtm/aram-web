@@ -279,16 +279,69 @@ class DealResource extends Resource
                 ->columnSpan(2)
                 ->afterStateUpdated(fn (Get $get, Set $set) => self::applyMarkup($get, $set)),
 
+            /*
+             * The selling price in the currency the goods were bought in.
+             *
+             * Never stored — the record keeps the price in the currency the
+             * customer is billed in, which is the only one an invoice can be
+             * written from. This is the same figure said in yuan, because that
+             * is the currency the decision is actually made in: a supplier
+             * quotes ¥50, and "¥50 plus half again" is a thought worth being
+             * able to have on the screen rather than in your head.
+             *
+             * On a markup line it is filled in. On a typed price it is the box
+             * the price is typed into, and the converted figure follows it.
+             */
+            TextInput::make('sell_each_in_cost_currency')
+                ->label('Sell each for')
+                ->numeric()
+                ->dehydrated(false)
+                ->live(onBlur: true)
+                ->readOnly(fn (Get $get) => $get('pricing_method') === 'markup')
+                ->suffix(fn (Get $get) => $get('cost_currency') === 'USD' ? 'USD' : 'RMB')
+                ->visible($canSeeCost)
+                ->columnSpan(2)
+                ->afterStateHydrated(fn (Get $get, Set $set) => self::showSellInCostCurrency($get, $set))
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::priceFromCostCurrency($get, $set)),
+
             TextInput::make('unit_price')
-                ->label('Sell each')
+                ->label(fn () => auth()->user()?->can('view_cost') ? 'Converted price' : 'Sell each')
                 ->numeric()
                 ->required()
                 ->default(0)
                 ->live(onBlur: true)
-                // The assistant sees only this half of the row, so it takes the
-                // width the cost fields would have used rather than sitting in
-                // a narrow column beside empty space.
+                ->suffix(fn (Get $get) => $get('../../sell_currency') ?: 'USD')
+                // Derived from the yuan price beside it, so it is shown rather
+                // than typed — except to an assistant, who has no cost fields
+                // to derive it from and prices in the customer's currency.
+                ->readOnly(fn () => auth()->user()?->can('view_cost'))
+                ->afterStateUpdated(fn (Get $get, Set $set) => self::showSellInCostCurrency($get, $set))
                 ->columnSpan(fn () => auth()->user()?->can('view_cost') ? 2 : 6),
+
+            /*
+             * What the line comes to, and what is left of it.
+             *
+             * Both in dollars, and both read-only: they are consequences of the
+             * boxes above, and a figure you can type over is a figure that can
+             * be made to say anything.
+             */
+            Placeholder::make('line_total')
+                ->label('Total of that item')
+                ->content(fn (Get $get) => self::money(self::lineFigures($get)['total'], 'USD'))
+                ->columnSpan(2),
+
+            Placeholder::make('line_profit')
+                ->label('Profit')
+                ->visible($canSeeCost)
+                ->content(function (Get $get) {
+                    $figures = self::lineFigures($get);
+
+                    return self::money($figures['profit'], 'USD')
+                        .($figures['total'] > 0
+                            ? '  ·  '.number_format($figures['profit'] / $figures['total'] * 100, 1).'%'
+                            : '');
+                })
+                ->columnSpan(2),
 
             Textarea::make('specification')
                 ->label('Specification')
@@ -507,15 +560,100 @@ class DealResource extends Resource
          * again. The models are unsaved carriers for the numbers on screen;
          * nothing here touches the database.
          */
+        $markup = (float) $get('markup_percent');
+
+        // The same figure said twice: in the currency it was bought in, which
+        // is where the decision is made, and in the one it is billed in.
+        $set('sell_each_in_cost_currency', round($cost * (1 + $markup / 100), 4));
+
         $price = (new DealLine([
             'unit_cost' => $cost,
             'cost_currency' => $costCurrency,
-            'markup_percent' => (float) $get('markup_percent'),
+            'markup_percent' => $markup,
         ]))->priceFromMarkup($deal);
 
         if ($price !== null) {
             $set('unit_price', round($price->toFloat(), 4));
         }
+    }
+
+    /**
+     * A price typed in the currency the goods were bought in, converted into
+     * the one the customer is billed in.
+     *
+     * Only for lines priced by hand. On a markup line the yuan figure is a
+     * consequence of the cost and the margin, and typing over it would put the
+     * two out of step with each other.
+     */
+    private static function priceFromCostCurrency(Get $get, Set $set): void
+    {
+        if ($get('pricing_method') === 'markup') {
+            return;
+        }
+
+        $deal = self::dealFromForm($get, parent: true);
+        $costCurrency = $get('cost_currency') ?: 'CNY';
+
+        if (! self::hasRatesFor($deal, [$costCurrency, $deal->sell_currency])) {
+            return;
+        }
+
+        $sell = Money::of((float) $get('sell_each_in_cost_currency'), $costCurrency);
+
+        $set('unit_price', round($deal->toSellCurrency($sell)->toFloat(), 4));
+    }
+
+    /**
+     * The reverse, for a line being opened rather than written.
+     *
+     * Only the billed price is stored, so the yuan box starts empty on an
+     * existing line and has to be worked back out of it.
+     */
+    private static function showSellInCostCurrency(Get $get, Set $set): void
+    {
+        $deal = self::dealFromForm($get, parent: true);
+        $costCurrency = $get('cost_currency') ?: 'CNY';
+        $price = (float) $get('unit_price');
+
+        if ($price <= 0 || ! self::hasRatesFor($deal, [$costCurrency, $deal->sell_currency])) {
+            return;
+        }
+
+        $base = $deal->toBase(Money::of($price, $deal->sell_currency));
+
+        $inCostCurrency = $costCurrency === 'USD'
+            ? $base
+            : $base->times($deal->rateFor($costCurrency));
+
+        $set('sell_each_in_cost_currency', round($inCostCurrency->toFloat(), 4));
+    }
+
+    /**
+     * What one line comes to, in dollars.
+     *
+     * Both figures are in dollars even when the customer is billed in dinars,
+     * because profit is only meaningful in the currency the business measures
+     * itself in — and a margin shown in dinars against a cost in yuan is two
+     * numbers that cannot be compared.
+     *
+     * @return array{total: float, profit: float}
+     */
+    private static function lineFigures(Get $get): array
+    {
+        $deal = self::dealFromForm($get, parent: true);
+        $quantity = (float) $get('quantity');
+
+        $total = $deal->toBase(Money::of(
+            (float) $get('unit_price') * $quantity,
+            $deal->sell_currency,
+        ))->toFloat();
+
+        $cost = $deal->toBase(Money::of(
+            (float) $get('unit_cost') * $quantity,
+            $get('cost_currency') ?: 'CNY',
+        ))->toFloat();
+
+        return ['total' => $total, 'profit' => $total - $cost];
     }
 
     /**

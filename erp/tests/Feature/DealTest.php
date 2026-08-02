@@ -259,17 +259,15 @@ class DealTest extends TestCase
     // ----------------------------------------------------------- line rules
 
     /**
-     * Marking up ¥12.50 has no meaning in dinars until the yuan is valued, so
-     * the markup runs through dollars rather than being applied to either
-     * end directly.
+     * A yuan cost priced in dinars still travels through the dollar, because
+     * yuan and dinars have no rate between them — both are quoted against it.
      *
-     * The result is 3,190.08 rather than the 3,190.10 exact arithmetic gives.
-     * Everything pivots through USD held to four decimal places, so ¥12.50
-     * becomes $1.7361 and the last fraction of a cent is gone before the dinar
-     * rate is applied. That is a 0.0006% difference on a *suggested* price the
-     * operator sees and can overwrite, in a currency whose smallest note is 250
-     * dinars — so the asserted number here is the real one, deliberately, and
-     * not a rounder figure the code was bent to produce.
+     * The result is 3,190.10, which is what the exact arithmetic gives. It used
+     * to be 3,190.08: the dollar in the middle was a Money value, rounded to
+     * four decimal places, and four decimal places of a dollar is 0.147 dinars
+     * once the dinar rate multiplies it back up. The conversion now holds both
+     * steps at calculation precision and rounds once at the end, so the pivot
+     * costs nothing.
      */
     #[Test]
     public function a_markup_price_is_derived_through_dollars_not_from_the_yuan_figure(): void
@@ -282,7 +280,7 @@ class DealTest extends TestCase
         $price = $line->fresh()->priceFromMarkup($deal);
 
         $this->assertSame('IQD', $price->currency);
-        $this->assertSame(3190.08, round($price->toFloat(), 2));
+        $this->assertSame(3190.10, round($price->toFloat(), 2));
 
         // Within a tenth of a dinar of exact arithmetic, which is what matters.
         $this->assertEqualsWithDelta(12.50 / 7.2 * 1.25 * 1470, $price->toFloat(), 0.1);
@@ -410,6 +408,70 @@ class DealTest extends TestCase
 
         // ¥50 ÷ 6.7 = $7.4627, plus 75% = $13.06 — not 87.50.
         $this->assertSame(13.06, round((float) $page->get("data.lines.{$key}.unit_price"), 2));
+    }
+
+    /**
+     * The whole of a line, in the order the thinking happens.
+     *
+     * A supplier quotes ¥50. Half again on top is ¥125 — a thought had in yuan,
+     * because that is the currency the decision is made in. Only then does it
+     * become a dollar price, and only then a line total and a profit.
+     */
+    #[Test]
+    public function a_line_reads_from_the_yuan_price_through_to_the_profit(): void
+    {
+        $page = Livewire::test(CreateDeal::class)
+            ->fillForm([
+                'customer_id' => $this->customer->id,
+                'deal_date' => today(),
+                'sell_currency' => 'USD',
+                'rmb_usd_rate' => 6.7,
+                'lines' => [
+                    [
+                        'description' => 'P01',
+                        'quantity' => 36,
+                        'unit' => 'pcs',
+                        'unit_cost' => 50,
+                        'cost_currency' => 'CNY',
+                        'pricing_method' => 'markup',
+                        'markup_percent' => 150,
+                        'unit_price' => 0,
+                    ],
+                ],
+            ]);
+
+        $key = array_key_first($page->get('data.lines'));
+
+        $page->set("data.lines.{$key}.unit_cost", 50);
+
+        // ¥50 plus 150% = ¥125, said in the currency it was bought in.
+        $this->assertSame(125.0, (float) $page->get("data.lines.{$key}.sell_each_in_cost_currency"));
+
+        // ¥125 ÷ 6.7 = $18.6567, which is what the customer is billed.
+        $this->assertSame(18.6567, round((float) $page->get("data.lines.{$key}.unit_price"), 4));
+
+        /*
+         * x 36 pieces = $671.64, against ¥1,800 of goods at $268.66.
+         *
+         * Not the $671.40 that multiplying the *displayed* $18.65 gives: the
+         * price is carried at four decimal places and rounded for showing, so
+         * the total is of the real number rather than of the printed one.
+         */
+        $page->assertSee('$671.64');
+        $page->assertSee('$402.98');
+
+        /*
+         * And it saves. The yuan price is a working figure that belongs to the
+         * screen, not a column — if it were handed to the model with the rest
+         * of the line, saving would fail on a field the table does not have.
+         */
+        $page->call('create')->assertHasNoFormErrors();
+
+        $line = Deal::query()->latest('id')->firstOrFail()->lines()->firstOrFail();
+
+        $this->assertSame(18.6567, round((float) $line->unit_price, 4));
+        $this->assertSame('36.0000', $line->quantity);
+        $this->assertArrayNotHasKey('sell_each_in_cost_currency', $line->getAttributes());
     }
 
     /** Selling in dinars: through dollars on the way, never around them. */
