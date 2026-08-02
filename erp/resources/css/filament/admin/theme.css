@@ -1,0 +1,321 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ * Import & Wholesale ERP — design system.
+ *
+ * The token set from docs/05-UIUX.md Part A. Filament supplies the component
+ * structure; this file supplies the look. Two rules do most of the work of
+ * moving the panel from "admin tool" to "product":
+ *
+ *   1. Elevation is a hairline border, not a drop shadow. Only genuinely
+ *      floating layers (dropdowns, modals) cast one.
+ *   2. Every figure that belongs in a column is tabular and right-aligned,
+ *      so decimals line up down the page.
+ *
+ * Colour ramps for primary/gray/success/warning/danger come from the panel's
+ * ->colors() call, which generates the --primary-* / --gray-* variables this
+ * file builds on.
+ */
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-arabic: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+
+    --radius-sm: 0.375rem; /* 6px  — badges, chips        */
+    --radius-md: 0.5rem;   /* 8px  — buttons, inputs      */
+    --radius-lg: 0.75rem;  /* 12px — cards, panels        */
+    --radius-xl: 1rem;     /* 16px — modals, drawers      */
+
+    --text-display: 2.125rem;
+    --text-display--line-height: 2.5rem;
+    --text-display--letter-spacing: -0.02em;
+}
+
+@layer base {
+    :root {
+        /* Surfaces — light */
+        --erp-bg-page: #f7f7f8;
+        --erp-bg-surface: #ffffff;
+        --erp-bg-surface-2: #fafafa;
+        --erp-bg-sunken: #f0f0f2;
+        --erp-bg-hover: rgb(0 0 0 / 0.035);
+
+        --erp-border: rgb(9 9 11 / 0.09);
+        --erp-border-strong: rgb(9 9 11 / 0.16);
+
+        --erp-text-primary: #0b0b0c;
+        --erp-text-secondary: #52525b;
+        --erp-text-muted: #8b8b94;
+
+        /* Status — reserved; never reused as a chart series colour */
+        --erp-good: #0ca30c;
+        --erp-warning: #fab219;
+        --erp-serious: #ec835a;
+        --erp-critical: #d03b3b;
+
+        /* Chart chrome */
+        --erp-grid: #e1e0d9;
+        --erp-axis: #c3c2b7;
+        --erp-axis-text: #898781;
+        --erp-delta-good: #006300;
+
+        /*
+         * Validated categorical palette (docs/05-UIUX.md §A1). Fixed slot order:
+         * a series keeps its slot no matter how many series are on screen.
+         * On this light surface aqua/yellow/magenta fall below 3:1, so charts
+         * using them must ship direct labels or the table view.
+         */
+        --erp-series-1: #2a78d6;
+        --erp-series-2: #eb6834;
+        --erp-series-3: #1baf7a;
+        --erp-series-4: #eda100;
+        --erp-series-5: #e87ba4;
+        --erp-series-6: #008300;
+        --erp-series-7: #4a3aa7;
+        --erp-series-8: #e34948;
+
+        --erp-diverging-pos: #2a78d6;
+        --erp-diverging-mid: #f0efec;
+        --erp-diverging-neg: #e34948;
+
+        --erp-shadow-popover: 0 4px 12px rgb(9 9 11 / 0.07), 0 1px 3px rgb(9 9 11 / 0.05);
+        --erp-shadow-modal: 0 16px 48px rgb(9 9 11 / 0.14), 0 2px 8px rgb(9 9 11 / 0.06);
+
+        --erp-row-height: 2.75rem; /* 44px; 36px in compact mode */
+    }
+
+    .dark {
+        --erp-bg-page: #0d0d0f;
+        --erp-bg-surface: #17171a;
+        --erp-bg-surface-2: #1e1e22;
+        --erp-bg-sunken: #08080a;
+        --erp-bg-hover: rgb(255 255 255 / 0.05);
+
+        --erp-border: rgb(255 255 255 / 0.10);
+        --erp-border-strong: rgb(255 255 255 / 0.18);
+
+        --erp-text-primary: #f5f5f6;
+        --erp-text-secondary: #a1a1aa;
+        --erp-text-muted: #71717a;
+
+        --erp-grid: #2c2c2a;
+        --erp-axis: #383835;
+        --erp-delta-good: #0ca30c;
+
+        /* Same eight hues, re-stepped for the dark surface — not an auto-flip. */
+        --erp-series-1: #3987e5;
+        --erp-series-2: #d95926;
+        --erp-series-3: #199e70;
+        --erp-series-4: #c98500;
+        --erp-series-5: #d55181;
+        --erp-series-6: #008300;
+        --erp-series-7: #9085e9;
+        --erp-series-8: #e66767;
+
+        --erp-diverging-pos: #3987e5;
+        --erp-diverging-mid: #383835;
+        --erp-diverging-neg: #e66767;
+
+        --erp-shadow-popover: 0 4px 12px rgb(0 0 0 / 0.4), 0 1px 3px rgb(0 0 0 / 0.3);
+        --erp-shadow-modal: 0 16px 48px rgb(0 0 0 / 0.55), 0 2px 8px rgb(0 0 0 / 0.35);
+    }
+
+    /* Sharper text rendering; Inter's optical sizing on by default. */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+        letter-spacing: -0.006em;
+    }
+
+    :is([dir='rtl']) body {
+        font-family: var(--font-arabic);
+        letter-spacing: normal;
+    }
+
+    h1, h2, h3 {
+        letter-spacing: -0.015em;
+    }
+}
+
+@layer components {
+    /*
+     * Elevation is a hairline, not a shadow. Filament ships soft shadows on
+     * sections and tables by default; flattening them is the single biggest
+     * step from "admin panel" toward a designed product.
+     */
+    .fi-section,
+    .fi-ta-ctn,
+    .fi-wi,
+    .fi-fo-component-ctn {
+        --tw-shadow: 0 0 rgb(0 0 0 / 0);
+        box-shadow: none;
+        border: 1px solid var(--erp-border);
+        border-radius: var(--radius-lg);
+        background-color: var(--erp-bg-surface);
+    }
+
+    /* Genuinely floating layers still cast one. */
+    .fi-dropdown-panel {
+        box-shadow: var(--erp-shadow-popover);
+        border: 1px solid var(--erp-border);
+        border-radius: var(--radius-lg);
+    }
+
+    .fi-modal-window {
+        box-shadow: var(--erp-shadow-modal);
+        border-radius: var(--radius-xl);
+    }
+
+    .fi-main-ctn,
+    .fi-body {
+        background-color: var(--erp-bg-page);
+    }
+
+    /* Sidebar: quiet, hairline-separated, with a solid active state. */
+    .fi-sidebar {
+        border-inline-end: 1px solid var(--erp-border);
+        background-color: var(--erp-bg-surface);
+    }
+
+    .fi-sidebar-item-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .fi-sidebar-group-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--erp-text-muted);
+    }
+
+    .fi-topbar > nav {
+        border-bottom: 1px solid var(--erp-border);
+        background-color: var(--erp-bg-surface);
+        box-shadow: none;
+    }
+
+    /* Table density and rhythm. */
+    .fi-ta-header-cell {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: var(--erp-text-secondary);
+        background-color: var(--erp-bg-surface-2);
+    }
+
+    .fi-ta-row {
+        min-height: var(--erp-row-height);
+    }
+
+    .fi-ta-row:hover {
+        background-color: var(--erp-bg-hover);
+    }
+
+    /*
+     * Money and quantity columns. Tabular figures plus right alignment are what
+     * make a column of decimals scannable — without them every row's point sits
+     * somewhere different and the eye has to re-find it.
+     */
+    .erp-numeric,
+    .fi-ta-text-item-label:where([data-numeric]) {
+        font-variant-numeric: tabular-nums;
+        text-align: end;
+        font-feature-settings: 'tnum';
+    }
+
+    /* Identifiers read as data, not prose. */
+    .erp-identifier {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        letter-spacing: -0.01em;
+        color: var(--erp-text-secondary);
+    }
+
+    /* Stat tile — the dashboard atom (docs/05-UIUX.md §A5). */
+    .erp-stat {
+        border: 1px solid var(--erp-border);
+        border-radius: var(--radius-lg);
+        background-color: var(--erp-bg-surface);
+        padding: 1.25rem;
+    }
+
+    .erp-stat-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--erp-text-muted);
+    }
+
+    .erp-stat-value {
+        font-size: var(--text-display);
+        line-height: var(--text-display--line-height);
+        letter-spacing: var(--text-display--letter-spacing);
+        font-weight: 600;
+        color: var(--erp-text-primary);
+    }
+
+    .erp-stat-delta {
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .erp-stat-delta[data-direction='up'] { color: var(--erp-delta-good); }
+    .erp-stat-delta[data-direction='down'] { color: var(--erp-critical); }
+
+    /* Inputs: hairline at rest, accent ring on focus. */
+    .fi-input-wrp {
+        border-radius: var(--radius-md);
+        box-shadow: none;
+        border: 1px solid var(--erp-border);
+    }
+
+    .fi-input-wrp:focus-within {
+        border-color: var(--color-primary-500);
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 1px;
+    }
+
+    .fi-btn {
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        box-shadow: none;
+    }
+
+    .fi-badge {
+        border-radius: var(--radius-sm);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+}
+
+@layer utilities {
+    /*
+     * Motion: fast and purposeful. Nothing exceeds 250ms except the deliberate
+     * stat count-up. Filament's base layer already collapses these under
+     * prefers-reduced-motion.
+     */
+    .erp-transition {
+        transition-duration: 120ms;
+        transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    .erp-transition-panel {
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Compact density, toggled per user and remembered. */
+    .erp-density-compact {
+        --erp-row-height: 2.25rem;
+    }
+}
