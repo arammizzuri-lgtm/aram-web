@@ -105,7 +105,29 @@ class ConsignmentResource extends Resource
                 ->schema([
                     Select::make('deals')
                         ->label('Deals')
-                        ->relationship('deals', 'number')
+                        /*
+                         * The customer is loaded with the deals, not fetched per
+                         * option.
+                         *
+                         * Filament works out the eager loads for a *column* by
+                         * itself, but it cannot see inside a label closure — so
+                         * naming the customer here made this screen fetch one
+                         * customer per deal on the list, and a hard 500 the
+                         * moment there was more than one deal to label. (Laravel
+                         * only arms preventLazyLoading on models that arrive in
+                         * company: `Builder::hydrate()` sets it when the query
+                         * returned more than one row, which is why this worked
+                         * for exactly as long as there was one deal.)
+                         *
+                         * The third argument reaches all three paths that build
+                         * labels — the preload, the search, and resolving what
+                         * is already selected.
+                         */
+                        ->relationship(
+                            'deals',
+                            'number',
+                            fn (Builder $query) => $query->with('customer'),
+                        )
                         ->multiple()
                         ->searchable()
                         ->preload()

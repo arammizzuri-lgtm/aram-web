@@ -1042,6 +1042,9 @@ class DealResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'customer', 'lines', 'purchases.costs', 'expenses', 'consignments',
+                // For the force-delete guard below, which otherwise asks the
+                // database once per row whether that deal has been billed.
+                'invoices',
             ]))
             ->columns([
                 TextColumn::make('number')
@@ -1136,7 +1139,7 @@ class DealResource extends Resource
                         .'shipping links go with it.'
                     )
                     ->visible(fn (Deal $record) => auth()->user()?->can('delete_deal')
-                        && $record->invoices()->doesntExist()),
+                        && $record->invoices->isEmpty()),
             ]);
     }
 
