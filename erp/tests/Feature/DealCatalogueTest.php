@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Deals\Pages\CreateDeal;
 use App\Filament\Resources\Deals\Pages\EditDeal;
-use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Models\CatalogueItem;
 use App\Models\CatalogueItemSellPrice;
 use App\Models\CrystalPrice;
@@ -354,26 +353,15 @@ class DealCatalogueTest extends TestCase
         $this->assertSame(9.0, $found['list_price']);
     }
 
-    /** The section said "set below" and there was nothing below to set. */
-    #[Test]
-    public function customer_type_prices_can_be_entered_on_the_product_screen(): void
-    {
-        $regularType = $this->customerTypeId($this->regularCustomer);
-
-        Livewire::test(EditProduct::class, ['record' => $this->lamp->getRouteKey()])
-            ->fillForm([
-                'sellPrices' => [
-                    ['customer_type_id' => $regularType, 'price' => 17, 'currency' => 'USD', 'min_quantity' => 1],
-                ],
-            ])
-            ->call('save')
-            ->assertHasNoFormErrors();
-
-        $this->assertSame(
-            17.0,
-            (float) $this->lamp->fresh()->sellPriceFor($regularType, 1)->price,
-        );
-    }
+    /*
+     * Customer-type prices are no longer entered on the product screen.
+     *
+     * Nothing is sold at a stored price now: a deal line takes the cost from
+     * the price list and marks it up, where the number can be argued with in
+     * front of the customer it applies to. The tables and their data are left
+     * alone, so this is reversible — but the screen no longer offers it, and a
+     * test asserting that it does would only be asserting the old design.
+     */
 
     /** An unpriced item leaves the cost box alone rather than zeroing it. */
     #[Test]

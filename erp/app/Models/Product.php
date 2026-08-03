@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
+        // The tree, the supplier who owns it, and which price list it lives in.
+        'parent_id', 'supplier_id', 'price_list_section_id',
         'sku', 'slug', 'barcode', 'name', 'name_ar', 'name_ku', 'name_zh', 'description',
         'product_category_id', 'brand_id', 'product_group_id', 'default_supplier_id',
         'unit_id', 'purchase_unit_id', 'pack_size', 'attributes',
@@ -51,6 +54,56 @@ class Product extends Model
             'is_sellable' => 'boolean',
             'is_purchasable' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        /*
+         * Nobody adding a crystal colour wants to invent a code for it, but
+         * imports, barcode lookups and reports all still key on one. So it is
+         * derived rather than asked for, and only when it was left blank —
+         * typing your own supplier code still wins.
+         */
+        static::saving(function (self $product) {
+            if (blank($product->sku)) {
+                $product->sku = $product->generateSku();
+            }
+
+            // Purchasing, imports and supplier comparison all read
+            // default_supplier_id. The form no longer asks twice, so the tree's
+            // owner fills it in — otherwise adding a product here would quietly
+            // drop out of every screen that reorders from a supplier.
+            $product->default_supplier_id ??= $product->supplier_id;
+        });
+    }
+
+    /** The branch this hangs from. Null means it is a top-level shelf. */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /** Whose catalogue this whole branch belongs to. */
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    /** Crystals, Textile, Packaging or Furniture. */
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(PriceListSection::class, 'price_list_section_id');
+    }
+
+    /** The sizes it is sold in, each with its own cost. */
+    public function sizes(): HasMany
+    {
+        return $this->hasMany(ProductSize::class);
     }
 
     public function category(): BelongsTo
@@ -137,5 +190,98 @@ class Product extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /** Top of a supplier's tree — the shelves you see before opening anything. */
+    public function scopeRoots(Builder $query): Builder
+    {
+        return $query->whereNull('parent_id');
+    }
+
+    public function scopeInSection(Builder $query, int $sectionId): Builder
+    {
+        return $query->where('price_list_section_id', $sectionId);
+    }
+
+    /**
+     * A shelf holds other products; a priced item holds sizes.
+     *
+     * Nothing forbids a product from having both, and the screens cope, but the
+     * distinction is what decides whether a row is worth showing on a price
+     * list at all — you cannot quote "Flat Crystal", only a size of a P13.
+     */
+    public function isShelf(): bool
+    {
+        return $this->children()->exists();
+    }
+
+    /** ['Crystal', 'Flat Crystal', 'P13'] — the trail from the top, for headings. */
+    public function pathNames(): array
+    {
+        $names = [];
+
+        for ($node = $this; $node !== null; $node = $node->parent) {
+            array_unshift($names, $node->name);
+        }
+
+        return $names;
+    }
+
+    public function pathLabel(string $separator = ' › '): string
+    {
+        return implode($separator, $this->pathNames());
+    }
+
+    /**
+     * Its own id and everything beneath it.
+     *
+     * A parent picker has to exclude these: hanging Crystal under its own P13
+     * would build a loop that every walk up the tree then runs forever on.
+     *
+     * @return array<int, int>
+     */
+    public function descendantIds(): array
+    {
+        $ids = [$this->getKey()];
+
+        foreach ($this->children as $child) {
+            $ids = [...$ids, ...$child->descendantIds()];
+        }
+
+        return $ids;
+    }
+
+    /**
+     * A readable code built from the section and the name.
+     *
+     * Uniqueness is settled by counting up rather than by random noise, so the
+     * second P13 in a section is P13-1 and still means something to read.
+     */
+    protected function generateSku(): string
+    {
+        $prefix = Str::of($this->section?->code ?: 'PRD')
+            ->upper()
+            ->replaceMatches('/[^A-Z0-9]+/', '')
+            ->limit(4, '');
+
+        $base = Str::of($this->name ?: Str::random(6))
+            ->upper()
+            ->replaceMatches('/[^A-Z0-9]+/', '-')
+            ->trim('-')
+            ->limit(24, '');
+
+        $candidate = "{$prefix}-{$base}";
+        $suffix = 1;
+
+        while (static::withTrashed()
+            ->where('sku', $candidate)
+            ->when($this->exists, fn (Builder $q) => $q->whereKeyNot($this->getKey()))
+            ->exists()
+        ) {
+            $candidate = "{$prefix}-{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $candidate;
     }
 }
