@@ -39,6 +39,18 @@ class ProductCategoryResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    /**
+     * The product tree is the classification now.
+     *
+     * Categories still exist on old products and nothing has been dropped, but
+     * offering both meant filing the same product twice and then wondering
+     * which of the two answers a report was counting.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $navigationLabel = 'Categories';
 
     protected static ?string $recordTitleAttribute = 'name';

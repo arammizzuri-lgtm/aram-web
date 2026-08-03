@@ -46,6 +46,18 @@ class CrystalPriceList extends Page
     /** @var array<string, string> cell key "productId-sizeId" => entered price */
     public array $prices = [];
 
+    /**
+     * Replaced by ProductPriceList, which serves all four sections.
+     *
+     * The page and its tables are left standing rather than deleted: the old
+     * colour charts and their prices are still in them, and this is the only
+     * way back to that data if the tree turns out to have lost something.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public function mount(): void
     {
         $this->supplierId = $this->suppliers()->keys()->first();

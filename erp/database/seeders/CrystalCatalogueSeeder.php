@@ -143,13 +143,13 @@ class CrystalCatalogueSeeder extends Seeder
         $sections = [
             [
                 'code' => 'crystals', 'name' => 'Crystals', 'icon' => 'heroicon-o-sparkles',
-                'route_name' => '/admin/crystal-price-list', 'item_label' => 'Colour',
+                'route_name' => '/erp/product-price-list?section=crystals', 'item_label' => 'Colour',
                 'description' => 'Rhinestones, crystals and decorative stones.',
                 'attribute_schema' => null, 'price_unit' => null,
             ],
             [
                 'code' => 'textile', 'name' => 'Textile', 'icon' => 'heroicon-o-swatch',
-                'route_name' => '/admin/catalogue-price-list?section=textile', 'item_label' => 'Fabric',
+                'route_name' => '/erp/product-price-list?section=textile', 'item_label' => 'Fabric',
                 'description' => 'Fabrics, lace, embroidery, tulle, mesh, trims and accessories.',
                 'price_unit' => 'per metre',
                 'attribute_schema' => [
@@ -162,7 +162,7 @@ class CrystalCatalogueSeeder extends Seeder
             ],
             [
                 'code' => 'packaging', 'name' => 'Packaging', 'icon' => 'heroicon-o-gift',
-                'route_name' => '/admin/catalogue-price-list?section=packaging', 'item_label' => 'Item',
+                'route_name' => '/erp/product-price-list?section=packaging', 'item_label' => 'Item',
                 'description' => 'Boxes, bags, gift packaging, labels, tags and ribbons.',
                 'price_unit' => 'per unit',
                 'attribute_schema' => [
@@ -175,7 +175,7 @@ class CrystalCatalogueSeeder extends Seeder
             ],
             [
                 'code' => 'furniture', 'name' => 'Furniture', 'icon' => 'heroicon-o-home-modern',
-                'route_name' => '/admin/catalogue-price-list?section=furniture', 'item_label' => 'Model',
+                'route_name' => '/erp/product-price-list?section=furniture', 'item_label' => 'Model',
                 'description' => 'Furniture, décor, lighting and home accessories.',
                 'price_unit' => 'per piece',
                 'attribute_schema' => [

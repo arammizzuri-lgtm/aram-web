@@ -57,7 +57,15 @@ class ProductPriceList extends Page
 
     public function mount(): void
     {
-        $this->section = $this->sections()->first()?->code;
+        // The Price Lists module links here with ?section=textile and the like,
+        // so arriving from one of those tiles opens the list it named.
+        $requested = request()->query('section');
+        $codes = $this->sections()->pluck('code');
+
+        $this->section = $codes->contains($requested)
+            ? $requested
+            : $codes->first();
+
         $this->supplierId = $this->suppliers()->keys()->first();
         $this->loadPrices();
     }

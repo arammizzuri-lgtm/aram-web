@@ -48,6 +48,18 @@ class CataloguePriceList extends Page
 
     public string $newBreak = '';
 
+    /**
+     * Replaced by ProductPriceList, which serves all four sections.
+     *
+     * Kept, not deleted: the textile, packaging and furniture lines entered
+     * here are still in catalogue_items, and this screen is the way back to
+     * them.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public function mount(): void
     {
         $this->section = request()->query('section', 'textile');

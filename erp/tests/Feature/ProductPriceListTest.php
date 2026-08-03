@@ -167,6 +167,42 @@ class ProductPriceListTest extends TestCase
     }
 
     #[Test]
+    public function the_screen_renders_with_a_priced_tree_on_it(): void
+    {
+        $this->p13->sizes->first()->update(['cost_price' => 0.45]);
+
+        Livewire::test(ProductPriceList::class)
+            ->call('expandAll')
+            ->assertOk()
+            ->assertSee('Flat Crystal')
+            ->assertSee('10mm');
+    }
+
+    #[Test]
+    public function a_section_named_in_the_url_is_the_one_that_opens(): void
+    {
+        PriceListSection::create([
+            'code' => 'textile', 'name' => 'Textile', 'is_active' => true, 'sort_order' => 2,
+        ]);
+
+        // The Price Lists module links to each section with ?section=<code>.
+        // Crystals sorts first, so landing on textile proves the URL was read.
+        $this->get('/erp/product-price-list?section=textile')->assertOk();
+
+        $page = Livewire::withQueryParams(['section' => 'textile'])->test(ProductPriceList::class);
+
+        $this->assertSame('textile', $page->instance()->section);
+    }
+
+    #[Test]
+    public function a_section_that_does_not_exist_falls_back_to_the_first(): void
+    {
+        $page = Livewire::withQueryParams(['section' => 'nonsense'])->test(ProductPriceList::class);
+
+        $this->assertSame('crystals', $page->instance()->section);
+    }
+
+    #[Test]
     public function staff_who_cannot_see_cost_cannot_open_the_screen(): void
     {
         $staff = User::create([
