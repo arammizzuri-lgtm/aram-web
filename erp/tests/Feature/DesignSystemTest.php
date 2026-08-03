@@ -99,6 +99,51 @@ class DesignSystemTest extends TestCase
     }
 
     /**
+     * Nothing wrapping the page may carry a transform.
+     *
+     * Filament positions a modal with `fixed inset-0` and renders it inline in
+     * the page rather than teleporting it to the body, so it depends on the
+     * viewport being its containing block. An element with a *filling*
+     * transform animation becomes the containing block for its fixed
+     * descendants — even after the animation settles on `transform: none` —
+     * and an eight-pixel entrance flourish on `.fi-page-content > *` therefore
+     * squeezed every dialog in the system into the box of whatever it happened
+     * to sit inside, with its buttons below the fold.
+     *
+     * `translate`, `scale`, `rotate`, `filter`, `perspective` and `will-change`
+     * on that property all do the same thing. Nothing in the browser reports
+     * any of it, which is why it is checked here.
+     */
+    #[Test]
+    public function the_page_entrance_animation_cannot_reparent_a_modal(): void
+    {
+        $css = file_get_contents(resource_path('css/filament/admin/theme.css'));
+
+        $this->assertMatchesRegularExpression(
+            '/\.fi-page-content\s*>\s*\*\s*\{[^}]*animation:/',
+            $css,
+            'the page entrance animation has moved — update this guard',
+        );
+
+        preg_match('/\.fi-page-content\s*>\s*\*\s*\{[^}]*animation:\s*([\w-]+)/', $css, $applied);
+
+        $name = $applied[1] ?? null;
+
+        $this->assertNotNull($name, 'could not read the animation name');
+
+        preg_match('/@keyframes\s+'.preg_quote((string) $name, '/').'\s*\{(.*?)\n\}/s', $css, $frames);
+
+        $this->assertNotEmpty($frames[1] ?? '', "@keyframes {$name} is missing");
+
+        $this->assertDoesNotMatchRegularExpression(
+            '/\b(transform|translate|scale|rotate|perspective)\s*:/',
+            $frames[1],
+            "@keyframes {$name} runs on a page-level container, so a transform in it "
+            .'becomes the containing block for every fixed-position modal inside the page',
+        );
+    }
+
+    /**
      * Nobody rebuilds the small-caps label by hand either.
      *
      * Six views were each writing the same four utilities and the same inline

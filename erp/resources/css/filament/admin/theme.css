@@ -656,11 +656,28 @@
     }
 
     /*
-     * Content arrives rather than appearing. Eight pixels and 180ms — enough
-     * to read as a settle, short enough that nobody is waiting for it.
+     * Content arrives rather than appearing.
+     *
+     * A fade and nothing else, and the missing eight-pixel rise is the whole
+     * story here. This began as `translateY(8px) → none`, which looked better
+     * and broke every modal in the system.
+     *
+     * Filament positions a modal with `fixed inset-0` and renders it inline in
+     * the page, not teleported to the body — so it depends on the viewport
+     * being its containing block. An element carrying a *filling* transform
+     * animation becomes the containing block for its fixed descendants, even
+     * once the animation has settled on `transform: none`. So `inset-0`
+     * resolved against the table's box instead of the screen, and every dialog
+     * opened squeezed into a band the height of whatever it happened to sit
+     * inside, with its buttons below the fold.
+     *
+     * Opacity cannot do that. It makes a stacking context while it is below 1
+     * and nothing at all once it lands on 1, so a fade is safe where a
+     * translate is not. Do not put the rise back — `translate`, `scale` and
+     * `rotate` carry exactly the same consequence as `transform`.
      */
     .fi-page-content > * {
-        animation: erp-rise 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: erp-fade-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     /*
@@ -678,9 +695,14 @@
     }
 }
 
-@keyframes erp-rise {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: none; }
+/*
+ * No transform in here, and that is load-bearing rather than an oversight —
+ * see the note on .fi-page-content above. A filling transform animation on a
+ * page-level container reparents every `position: fixed` modal inside it.
+ */
+@keyframes erp-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes erp-pulse {
