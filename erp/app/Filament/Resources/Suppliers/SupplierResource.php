@@ -96,6 +96,11 @@ class SupplierResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No suppliers yet')
+            ->emptyStateDescription(
+                'Who you buy from. Their WeChat ID and Chinese name live here, because that is how these conversations actually happen.'
+            )
+            ->emptyStateIcon('heroicon-o-building-storefront')
             ->columns([
                 TextColumn::make('name')
                     ->weight('medium')

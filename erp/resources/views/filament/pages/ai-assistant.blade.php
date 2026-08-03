@@ -1,7 +1,9 @@
 <x-filament-panels::page>
     @unless ($this->isConfigured())
-        <div class="rounded-xl border p-4"
-             style="border-color: var(--erp-border); border-inline-start: 3px solid var(--erp-status-warning); background: var(--erp-bg-surface)">
+        {{-- `--erp-status-warning` was never a token in this system, so this
+             border resolved to nothing at all. The token is `--erp-warning`. --}}
+        <div class="erp-card p-4"
+             style="border-inline-start: 3px solid var(--erp-warning)">
             <div class="text-sm font-semibold">The assistant needs a Claude API key</div>
             <div class="mt-1 text-xs" style="color: var(--erp-text-secondary)">
                 Add <code>ANTHROPIC_API_KEY=…</code> to your <code>.env</code> file and restart the
@@ -66,11 +68,11 @@
                         </div>
                     @else
                         <div>
-                            <div class="max-w-3xl rounded-xl border px-4 py-3 text-sm"
+                            <div class="erp-card max-w-3xl px-4 py-3 text-sm"
                                  @style([
                                      'border-color: var(--erp-border)',
                                      'background: var(--erp-bg-surface)',
-                                     'border-inline-start: 3px solid var(--erp-status-critical)' => $turn['error'],
+                                     'border-inline-start: 3px solid var(--erp-critical-text)' => $turn['error'],
                                  ])>
                                 <div class="prose prose-sm max-w-none dark:prose-invert">
                                     {!! str($turn['text'])->markdown() !!}

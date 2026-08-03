@@ -115,6 +115,11 @@ class ExpenseResource extends Resource
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['category', 'deal']))
+            ->emptyStateHeading('No expenses recorded')
+            ->emptyStateDescription(
+                'Costs that are not goods — inspection, samples, bank charges. Charge one to a deal and it comes off that deal\'s profit.'
+            )
+            ->emptyStateIcon('heroicon-o-receipt-percent')
             ->columns([
                 TextColumn::make('expense_date')->label('Date')->date('d M Y')->sortable(),
 

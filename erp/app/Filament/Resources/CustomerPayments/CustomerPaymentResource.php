@@ -107,6 +107,11 @@ class CustomerPaymentResource extends Resource
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['customer', 'allocations.invoice']))
+            ->emptyStateHeading('No payments recorded')
+            ->emptyStateDescription(
+                'Money in from customers. It lands on their account first and is matched to invoices afterwards, so record it the moment it arrives.'
+            )
+            ->emptyStateIcon('heroicon-o-banknotes')
             ->columns([
                 TextColumn::make('number')->label('Receipt')->weight('medium')->searchable(),
 

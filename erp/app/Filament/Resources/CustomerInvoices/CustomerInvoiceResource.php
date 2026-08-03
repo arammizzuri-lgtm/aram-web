@@ -75,6 +75,11 @@ class CustomerInvoiceResource extends Resource
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['customer', 'deal', 'allocations']))
+            ->emptyStateHeading('Nothing billed yet')
+            ->emptyStateDescription(
+                'Invoices are issued from a deal, not created here — open the deal and use "Invoice goods" once the prices are settled.'
+            )
+            ->emptyStateIcon('heroicon-o-document-currency-dollar')
             ->columns([
                 TextColumn::make('number')->label('Invoice')->weight('medium')->searchable()->sortable(),
 

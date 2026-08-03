@@ -86,6 +86,11 @@ class ProductCategoryResource extends Resource
             // The parent name is shown on every row, so it is eager loaded rather
             // than fetched per row.
             ->modifyQueryUsing(fn ($query) => $query->with('parent'))
+            ->emptyStateHeading('No categories yet')
+            ->emptyStateDescription(
+                'Categories are rows, not code — crystals, textile, furniture, or whatever you sell in five years.'
+            )
+            ->emptyStateIcon('heroicon-o-rectangle-group')
             ->columns([
                 TextColumn::make('name')
                     ->weight('medium')

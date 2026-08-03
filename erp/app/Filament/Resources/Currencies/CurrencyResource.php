@@ -76,6 +76,11 @@ class CurrencyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No currencies')
+            ->emptyStateDescription(
+                'The currencies you trade in. USD, RMB and IQD are seeded — add another only if you start buying or selling in it.'
+            )
+            ->emptyStateIcon('heroicon-o-currency-dollar')
             ->columns([
                 TextColumn::make('code')->label('Code')->badge()->color('gray')->sortable(),
                 TextColumn::make('name')->weight('medium')->searchable(),

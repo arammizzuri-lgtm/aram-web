@@ -98,6 +98,11 @@ class PurchaseResource extends Resource
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'supplier', 'deal.customer', 'lines', 'costs', 'payments',
             ]))
+            ->emptyStateHeading('Nothing bought yet')
+            ->emptyStateDescription(
+                'You never create a purchase here — name a supplier on a deal line and its purchase document appears, ready for payments.'
+            )
+            ->emptyStateIcon('heroicon-o-inbox-arrow-down')
             ->columns([
                 TextColumn::make('number')->label('Purchase')->weight('medium')->searchable(),
 

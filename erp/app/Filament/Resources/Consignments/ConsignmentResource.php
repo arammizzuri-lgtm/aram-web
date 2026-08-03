@@ -166,6 +166,11 @@ class ConsignmentResource extends Resource
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['deals.customer', 'collectionPoint']))
+            ->emptyStateHeading('Nothing shipping')
+            ->emptyStateDescription(
+                'Log the tracking number your forwarder gives you and the deals it carries. Freight lands on those deals from here.'
+            )
+            ->emptyStateIcon('heroicon-o-truck')
             ->columns([
                 TextColumn::make('tracking_number')
                     ->label('Tracking no.')

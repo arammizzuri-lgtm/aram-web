@@ -16,6 +16,11 @@ class UsersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No users')
+            ->emptyStateDescription(
+                'Two people use this system: an owner who sees everything, and an assistant who sees no cost or profit.'
+            )
+            ->emptyStateIcon('heroicon-o-users')
             ->columns([
                 TextColumn::make('name')
                     ->weight('medium')

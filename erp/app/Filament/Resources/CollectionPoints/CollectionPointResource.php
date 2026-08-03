@@ -73,6 +73,11 @@ class CollectionPointResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No collection points yet')
+            ->emptyStateDescription(
+                'Your forwarder\'s warehouses in China. Add one and you can hand a supplier the exact delivery address, in Chinese.'
+            )
+            ->emptyStateIcon('heroicon-o-building-office-2')
             ->columns([
                 TextColumn::make('city')->weight('medium')->sortable()->searchable(),
                 TextColumn::make('name')->searchable(),

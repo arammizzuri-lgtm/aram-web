@@ -30,24 +30,21 @@
             </x-slot>
         </x-filament::section>
     @else
-        {{-- Summary of what the file would do --}}
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            @foreach ([
-                ['New products', $import->rows_new, 'info'],
-                ['Price changes', $import->rows_updated, 'warning'],
-                ['Unchanged', $import->rows_unchanged, 'gray'],
-                ['Errors', $import->rows_error, $import->rows_error > 0 ? 'danger' : 'gray'],
-                ['Needs a look', $import->suspiciousRows(), $import->suspiciousRows() > 0 ? 'danger' : 'gray'],
-            ] as [$label, $value, $tone])
-                <div class="rounded-xl border p-4"
-                     style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
-                    <div class="text-xs font-semibold uppercase tracking-wide" style="color: var(--erp-text-muted)">
-                        {{ $label }}
-                    </div>
-                    <div class="mt-1 text-2xl font-semibold erp-numeric">{{ number_format($value) }}</div>
-                </div>
-            @endforeach
-        </div>
+        {{-- What the file would do, before it does any of it. Colour lands only
+             on the two that want looking at. --}}
+        <x-erp.card flush>
+            <div class="erp-figures">
+                @foreach ([
+                    ['New products', $import->rows_new, null],
+                    ['Price changes', $import->rows_updated, null],
+                    ['Unchanged', $import->rows_unchanged, null],
+                    ['Errors', $import->rows_error, $import->rows_error > 0 ? 'critical' : null],
+                    ['Needs a look', $import->suspiciousRows(), $import->suspiciousRows() > 0 ? 'warning' : null],
+                ] as [$label, $value, $tone])
+                    <x-erp.figure :label="$label" :value="number_format($value)" :tone="$tone" />
+                @endforeach
+            </div>
+        </x-erp.card>
 
         @if ($import->avg_change_percent !== null)
             <div class="text-sm" style="color: var(--erp-text-secondary)">
@@ -93,11 +90,11 @@
                                 <td class="py-2">
                                     <div>{{ $row->name ?? '—' }}</div>
                                     @if ($row->isSuspicious())
-                                        <div class="text-xs" style="color: var(--erp-status-critical)">
+                                        <div class="text-xs" style="color: var(--erp-critical-text)">
                                             {{ $row->errors[0] ?? '' }}
                                         </div>
                                     @elseif ($row->action === 'error')
-                                        <div class="text-xs" style="color: var(--erp-status-critical)">
+                                        <div class="text-xs" style="color: var(--erp-critical-text)">
                                             {{ $row->errors[0] ?? 'Could not read this row' }}
                                         </div>
                                     @endif
@@ -106,7 +103,7 @@
                                 <td class="py-2 text-end erp-numeric font-medium">{{ $money($row->new_price) }}</td>
                                 <td class="py-2 text-end erp-numeric">
                                     @if ($row->change_percent !== null && $row->action === 'update_price')
-                                        <span style="color: {{ (float) $row->change_percent > 0 ? 'var(--erp-status-serious)' : 'var(--erp-status-good)' }}">
+                                        <span style="color: {{ (float) $row->change_percent > 0 ? 'var(--erp-serious-text)' : 'var(--erp-good-text)' }}">
                                             {{ (float) $row->change_percent > 0 ? '+' : '' }}{{ $row->change_percent }}%
                                         </span>
                                     @else

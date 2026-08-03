@@ -212,6 +212,11 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No products yet')
+            ->emptyStateDescription(
+                'Your catalogue. A product carries its weight and volume for the freight split, its Chinese name for the supplier, and its selling price per customer type.'
+            )
+            ->emptyStateIcon('heroicon-o-cube')
             ->columns([
                 TextColumn::make('name')
                     ->weight('medium')

@@ -74,6 +74,11 @@ class ExchangeRateResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('No rates recorded')
+            ->emptyStateDescription(
+                'Rates are typed onto each deal and frozen there. These are the ones kept for reference and for pre-filling the next deal.'
+            )
+            ->emptyStateIcon('heroicon-o-arrows-right-left')
             ->columns([
                 TextColumn::make('effective_date')->label('In force from')->date()->sortable(),
                 TextColumn::make('from_currency')->label('From')->badge()->color('gray'),

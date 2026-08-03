@@ -108,6 +108,11 @@ class CustomerResource extends Resource
             // The row is the way in to the customer's account. A list of
             // balances you cannot open is a list of questions.
             ->recordUrl(fn (Customer $record) => static::getUrl('account', ['record' => $record]))
+            ->emptyStateHeading('No customers yet')
+            ->emptyStateDescription(
+                'Everyone you sell to. Each gets an account page with their balance, statement and the deals behind it.'
+            )
+            ->emptyStateIcon('heroicon-o-user-group')
             ->columns([
                 TextColumn::make('name')
                     ->weight('medium')

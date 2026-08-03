@@ -286,12 +286,47 @@
         background-color: var(--erp-bg-surface-2);
     }
 
+    /*
+     * The heading stays while the rows go by.
+     *
+     * A deal list runs past a screenful quickly and Filament does not pin the
+     * header, so by the third scroll you are reading columns you can no longer
+     * name and counting across from the left to work out which is which.
+     */
+    .fi-ta-header-cell {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
     .fi-ta-row {
         min-height: var(--erp-row-height);
     }
 
     .fi-ta-row:hover {
         background-color: var(--erp-bg-hover);
+    }
+
+    /* Keyboard users get the same answer to "which row am I on?" */
+    .fi-ta-row:focus-within {
+        background-color: var(--erp-bg-hover);
+    }
+
+    /*
+     * Every figure in every table, without a single resource being touched.
+     *
+     * Filament marks an end-aligned cell `fi-align-end`, and in this system an
+     * end-aligned cell is a figure — money, a count, a percentage. Tabular
+     * numerals there mean the decimal points sit in one vertical line down the
+     * page, which is the whole reason a column of money is readable at all.
+     * Doing it per column would have meant ten resources and every future one
+     * remembering; doing it here means none of them have to.
+     */
+    .fi-ta-cell.fi-align-end,
+    .fi-ta-header-cell.fi-align-end,
+    .fi-ta-cell.fi-align-end .fi-ta-text-item-label {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum';
     }
 
     /*
@@ -475,12 +510,87 @@
         border-radius: var(--radius-md);
         box-shadow: none;
         border: 1px solid var(--erp-border);
+        background-color: var(--erp-bg-surface);
+    }
+
+    /* A hint that the field is live, before it is focused. */
+    .fi-input-wrp:hover:not(:focus-within) {
+        border-color: var(--erp-border-strong);
     }
 
     .fi-input-wrp:focus-within {
         border-color: var(--color-primary-500);
         outline: 2px solid var(--color-primary-500);
         outline-offset: 1px;
+    }
+
+    /*
+     * A field you cannot type in should look like one.
+     *
+     * The deal screen is full of them — the converted price, the line total,
+     * every figure that is a consequence of something typed above it — and
+     * they were indistinguishable from an empty box somebody had forgotten to
+     * fill. Sunk rather than greyed: the value still has to be read, so the
+     * text keeps its contrast and the surface does the saying.
+     */
+    .fi-input-wrp:has(input:read-only, textarea:read-only),
+    .fi-input-wrp:has(input:disabled, textarea:disabled) {
+        background-color: var(--erp-bg-sunken);
+        border-style: dashed;
+    }
+
+    /*
+     * Field furniture, on the same scale as everything else.
+     *
+     * Labels, hints and errors were each whatever size Filament shipped, which
+     * left a form reading at three sizes that agreed with nothing on the page
+     * around it.
+     */
+    .fi-fo-field-label {
+        font-size: var(--text-title);
+        font-weight: 500;
+        color: var(--erp-text-primary);
+    }
+
+    .fi-fo-field-label-required-mark {
+        color: var(--erp-critical-text);
+    }
+
+    .fi-fo-field-wrp-hint,
+    .fi-fo-field-wrp-helper-text {
+        font-size: var(--text-hint);
+        line-height: var(--text-hint--line-height);
+        color: var(--erp-text-muted);
+    }
+
+    /*
+     * An error says what to do about it, so it should be the easiest thing on
+     * the field to find — and the field itself should say it too, because a
+     * red sentence under a normal-looking box is easy to scroll past.
+     */
+    .fi-fo-field-wrp-error-message {
+        font-size: var(--text-hint);
+        line-height: var(--text-hint--line-height);
+        color: var(--erp-critical-text);
+        font-weight: 500;
+    }
+
+    .fi-fo-field-wrp:has(.fi-fo-field-wrp-error-message) .fi-input-wrp {
+        border-color: var(--erp-critical);
+    }
+
+    /* Section headings match the cards they sit among. */
+    .fi-section-header-heading {
+        font-size: var(--text-title);
+        line-height: var(--text-title--line-height);
+        font-weight: 600;
+        color: var(--erp-text-primary);
+    }
+
+    .fi-section-header-description {
+        font-size: var(--text-hint);
+        line-height: var(--text-hint--line-height);
+        color: var(--erp-text-muted);
     }
 
     .fi-btn {

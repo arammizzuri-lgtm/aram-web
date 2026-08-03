@@ -979,6 +979,11 @@ class DealResource extends Resource
                 // database once per row whether that deal has been billed.
                 'invoices',
             ]))
+            ->emptyStateHeading('No deals yet')
+            ->emptyStateDescription(
+                'A deal is one customer request, followed from "they asked" to "they paid". Everything else in the system hangs off one.'
+            )
+            ->emptyStateIcon('heroicon-o-briefcase')
             ->columns([
                 TextColumn::make('number')
                     ->label('Deal')
