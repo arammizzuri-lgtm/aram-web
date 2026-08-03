@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\CustomerInvoice;
 use App\Models\CustomerPayment;
 use App\Models\CustomerPaymentAllocation;
+use App\Services\Customers\CustomerAccount;
 use App\Services\Documents\DocumentNumberGenerator;
 use App\Support\Money;
 use Illuminate\Support\Collection;
@@ -257,6 +258,55 @@ class PaymentWriter
         );
 
         return $this->allocate($payment, $suggestion, wasSuggested: true);
+    }
+
+    /**
+     * Spend a customer's spare credit on a new invoice.
+     *
+     * The four dollars left over after a payment cleared three invoices is not
+     * worth a decision, and asking for one every time is how it ends up
+     * forgotten on an account for a year. So it carries forward on its own: the
+     * moment there is a new invoice, the oldest credit goes against it first.
+     *
+     * The customer's balance does not move — the money was already theirs and
+     * already counted. What moves is which invoice is settled, and therefore
+     * what shows as overdue.
+     *
+     * Nothing here is irreversible: every allocation it makes can be undone
+     * from the payment it came from.
+     */
+    public function applyCreditTo(CustomerInvoice $invoice): Money
+    {
+        $customer = $invoice->customer;
+
+        if ($customer === null || $invoice->status === 'cancelled') {
+            return Money::zero('USD');
+        }
+
+        $applied = Money::zero('USD');
+
+        foreach (app(CustomerAccount::class)->paymentsWithCredit($customer) as $payment) {
+            $due = $invoice->fresh()->load('allocations')->outstandingBase();
+
+            if (! $due->isPositive()) {
+                break;
+            }
+
+            $spare = $payment->unallocatedBase();
+            $take = min($spare->toFloat(), $due->toFloat());
+
+            // Below half a cent there is nothing to move and a rounding
+            // argument to be had, so leave it where it is.
+            if ($take < 0.005) {
+                continue;
+            }
+
+            $this->allocate($payment, [$invoice->id => $take], wasSuggested: true);
+
+            $applied = $applied->plus(Money::of($take, 'USD'));
+        }
+
+        return $applied;
     }
 
     /**

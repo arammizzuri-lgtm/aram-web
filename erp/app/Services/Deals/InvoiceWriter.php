@@ -202,6 +202,15 @@ class InvoiceWriter
             'total_base' => $deal->toBase($subtotal)->amount,
         ]);
 
+        /*
+         * Credit the customer is already holding goes against this the moment
+         * it exists — the remainder of an earlier payment, or an advance paid
+         * before there was anything to pay for. Both are money of theirs you
+         * have; leaving it aside while sending them a bill for the full amount
+         * is a conversation nobody wants to have.
+         */
+        app(PaymentWriter::class)->applyCreditTo($invoice->refresh());
+
         return $invoice->refresh();
     }
 

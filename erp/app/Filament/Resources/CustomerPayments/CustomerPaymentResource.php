@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CustomerPayments;
 use App\Filament\Actions\RecordDeletion;
 use App\Filament\Concerns\KeepsDeletedRecords;
 use App\Filament\Resources\CustomerPayments\Pages\ManageCustomerPayments;
+use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\CustomerPayment;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
@@ -109,7 +110,19 @@ class CustomerPaymentResource extends Resource
             ->columns([
                 TextColumn::make('number')->label('Receipt')->weight('medium')->searchable(),
 
-                TextColumn::make('customer.name')->label('From')->searchable()->sortable(),
+                /*
+                 * A payment always belongs to a conversation with somebody, and
+                 * the account page is where that conversation lives — so the
+                 * name is the way there rather than a label.
+                 */
+                TextColumn::make('customer.name')
+                    ->label('From')
+                    ->searchable()
+                    ->sortable()
+                    ->color('primary')
+                    ->url(fn (CustomerPayment $r) => $r->customer
+                        ? CustomerResource::getUrl('account', ['record' => $r->customer_id])
+                        : null),
 
                 TextColumn::make('paid_at')->label('Date')->date('d M Y')->sortable(),
 
@@ -131,12 +144,15 @@ class CustomerPaymentResource extends Resource
                  * it is the answer to "can I put this against the new order?"
                  */
                 TextColumn::make('unallocated')
-                    ->label('Unmatched')
+                    ->label('Credit left')
                     ->state(fn (CustomerPayment $r) => $r->unallocatedBase()->toFloat())
                     ->money('USD')
                     ->alignEnd()
                     ->placeholder('—')
                     ->formatStateUsing(fn ($state) => $state > 0 ? '$'.number_format((float) $state, 2) : null)
+                    // It is not a problem to be fixed — it goes onto their next
+                    // invoice on its own — so it is stated, not flagged.
+                    ->description(fn ($state) => $state > 0 ? 'goes to their next invoice' : null)
                     ->color('info'),
 
                 TextColumn::make('allocations.invoice.number')

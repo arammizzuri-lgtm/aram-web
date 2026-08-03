@@ -4,8 +4,10 @@ namespace App\Filament\Resources\Customers;
 
 use App\Filament\Actions\RecordDeletion;
 use App\Filament\Concerns\KeepsDeletedRecords;
+use App\Filament\Resources\Customers\Pages\CustomerAccount;
 use App\Filament\Resources\Customers\Pages\ManageCustomers;
 use App\Models\Customer;
+use App\Services\Customers\CustomerAccount as CustomerAccountService;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -103,6 +105,9 @@ class CustomerResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // The row is the way in to the customer's account. A list of
+            // balances you cannot open is a list of questions.
+            ->recordUrl(fn (Customer $record) => static::getUrl('account', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
                     ->weight('medium')
@@ -112,12 +117,43 @@ class CustomerResource extends Resource
 
                 TextColumn::make('customerType.name')->label('Type')->badge()->color('gray')->placeholder('—'),
 
-                TextColumn::make('outstanding')
-                    ->label('Owes')
-                    ->state(fn (Customer $record) => $record->outstandingBalance())
+                /*
+                 * The balance as the account page states it: below zero they
+                 * owe you, above it you are holding their money.
+                 *
+                 * The same figure as `outstandingBalance()` with the sign
+                 * turned over — negated rather than added up again, so the list
+                 * and the account can never drift apart. It is not coloured by
+                 * sign: a customer owing you money is ordinary business, and
+                 * colouring every open account would spend the alarm on nothing.
+                 */
+                TextColumn::make('balance')
+                    ->label('Balance')
+                    ->state(fn (Customer $record) => -$record->outstandingBalance())
+                    ->money('USD')
+                    ->weight('medium')
+                    ->alignEnd()
+                    ->description(fn (Customer $record) => match (true) {
+                        $record->outstandingBalance() > 0.005 => 'owes you',
+                        $record->outstandingBalance() < -0.005 => 'in credit',
+                        default => 'settled',
+                    })
+                    ->sortable(false),
+
+                /*
+                 * Overdue is where the colour goes, because it is the only
+                 * figure on the row that asks for anything to be done.
+                 */
+                TextColumn::make('overdue')
+                    ->label('Overdue')
+                    ->state(fn (Customer $record) => app(CustomerAccountService::class)
+                        ->ageing($record)['30']->plus(app(CustomerAccountService::class)->ageing($record)['60'])
+                        ->plus(app(CustomerAccountService::class)->ageing($record)['90'])->toFloat())
                     ->money('USD')
                     ->alignEnd()
-                    ->color(fn (Customer $record) => $record->outstandingBalance() > 0 ? 'warning' : 'gray'),
+                    ->placeholder('—')
+                    ->formatStateUsing(fn ($state) => $state > 0.005 ? '$'.number_format((float) $state, 2) : null)
+                    ->color('danger'),
 
                 /*
                  * Money held that is not yet matched to an invoice.
@@ -171,6 +207,7 @@ class CustomerResource extends Resource
     {
         return [
             'index' => ManageCustomers::route('/'),
+            'account' => CustomerAccount::route('/{record}/account'),
         ];
     }
 }

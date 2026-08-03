@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CustomerPayments\Pages;
 
 use App\Filament\Actions\RecordDeletion;
+use App\Filament\Actions\UnmatchPayment;
 use App\Filament\Resources\CustomerPayments\CustomerPaymentResource;
 use App\Models\Customer;
 use App\Models\CustomerPayment;
@@ -37,6 +38,18 @@ class ManageCustomerPayments extends ManageRecords
     {
         return [
             $this->matchAction(),
+
+            /*
+             * Taking it back off again.
+             *
+             * PaymentWriter::unallocate() has existed since this was written and
+             * nothing ever called it, so money matched to the wrong invoice was
+             * matched to it for good — and because an invoice with money against
+             * it cannot be cancelled, one wrong click could wedge an account
+             * with no way out of it.
+             */
+            UnmatchPayment::make(),
+
             EditAction::make()
                 ->using(fn (CustomerPayment $record, array $data) => app(PaymentWriter::class)->amend($record, $data)),
             ...RecordDeletion::actions(),

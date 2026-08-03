@@ -5,7 +5,7 @@
 > does not.
 
 > **Build status — 2026-08-02.** Every module below is built.
-> **314 tests · 985 assertions · Pint clean · 20 screens verified in a browser.**
+> **334 tests · 1,057 assertions · Pint clean · 20 screens verified in a browser.**
 >
 > | Module | State |
 > |---|---|
@@ -15,11 +15,11 @@
 > | Deal screen carries its quotations, purchases, shipping and invoices | ✅ |
 > | Deleting anything — soft, restorable, on every screen | ✅ |
 > | Recently deleted — one place to find and restore from | ✅ |
+> | Customer accounts — statement, balance chart, ageing, credit carried forward | ✅ |
 > | Quotations — photos + frozen approval snapshot | ✅ |
 > | Purchases + supplier payments with real transfer cost | ✅ |
 > | Consignments — 3 modes, freight split across deals | ✅ |
 > | Customer invoices — goods + shipping, EN/Sorani RTL PDFs | ✅ |
-> | Customer accounts — payments, suggestions, credit | ✅ |
 > | Price lists — crystals matrix, textile, packaging, furniture | ✅ |
 > | Selling prices per customer type — products | ✅ |
 > | Selling prices per customer type — crystals, catalogue items | ⚠ tables and reader built, no entry screen yet |
@@ -329,6 +329,54 @@ Corrections are made by cancelling and re-issuing, which leaves a visible trail.
 ---
 
 ## 9. Customer money
+
+Every customer has an **account page**: one screen with the balance, a statement
+of everything that has passed between you, how overdue the rest is, and the
+deals and invoices behind it.
+
+### The account reads like a bank statement
+
+The system's own arithmetic is a receivable — invoiced less received, so a
+customer who owes you is a *positive* number. On the account page the sign is
+turned over, because that is the screen you look at with the customer in front
+of you:
+
+```
+        deposits    +   what they paid you
+        spending    −   what you invoiced them
+        withdrawals −   what you refunded
+        ─────────────────────────────────────
+        balance         below zero: they owe you
+                        above zero: you hold their money
+```
+
+Both are the same fact, and they cannot drift: the account balance is
+`outstandingBalance()` negated, not a second calculation.
+
+**Matching moves nothing.** The balance is what came in against what went out,
+whether or not anybody has said which payment settles which invoice. Matching
+decides *which* invoice is settled — which is what makes the ageing meaningful.
+
+### Leftover credit carries itself forward
+
+A payment that clears three invoices and leaves $4.77 does not ask you what to
+do with it. The remainder stays as the customer's credit and goes onto their
+next invoice the moment one is raised, oldest credit first. An advance paid
+before the deal existed behaves the same way.
+
+Four dollars is not worth a decision, and asking for one every time is how it
+ends up forgotten on an account for a year.
+
+### Matching is reversible
+
+`unallocate()` had been written since the beginning and nothing ever called it,
+so money matched to the wrong invoice stayed there — and because an invoice with
+money against it cannot be cancelled, one wrong click could wedge an account.
+**Unmatch** is on every payment now. Nothing is lost by it: the payment stays
+exactly as recorded, the balance does not move, and the money goes back to being
+credit.
+
+---
 
 Money lands on the **customer's account** first, then gets matched to invoices.
 
