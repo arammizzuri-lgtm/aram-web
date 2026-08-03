@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -143,5 +144,38 @@ class DealPurchase extends Model
     public function isFullyPaid(): bool
     {
         return ! $this->outstandingBase()->isPositive();
+    }
+
+    /**
+     * Goods on order that nobody has committed to buying — right now.
+     *
+     * `bought_at_risk` records that the purchase was *made* before approval and
+     * never changes afterwards, which is a true fact and the wrong question.
+     * The question is whether the risk is still open, and it stops being open
+     * the moment the customer says yes.
+     *
+     * The two had drifted: the dashboard already asked whether the deal was
+     * approved, while the purchases screen showed only the frozen flag. So the
+     * headline could read "everything is approved" while every row underneath
+     * carried a warning. Both read this now.
+     */
+    public function isAtRisk(): bool
+    {
+        return (bool) $this->bought_at_risk
+            && $this->status !== 'cancelled'
+            && $this->deal !== null
+            && $this->deal->approved_at === null
+            && $this->deal->status !== 'cancelled';
+    }
+
+    /** The same rule as a query, for the list filter and the dashboard total. */
+    public function scopeAtRisk(Builder $query): Builder
+    {
+        return $query
+            ->where('bought_at_risk', true)
+            ->whereNot('status', 'cancelled')
+            ->whereHas('deal', fn (Builder $deal) => $deal
+                ->whereNull('approved_at')
+                ->whereNot('status', 'cancelled'));
     }
 }

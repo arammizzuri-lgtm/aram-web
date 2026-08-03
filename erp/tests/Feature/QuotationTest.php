@@ -167,18 +167,44 @@ class QuotationTest extends TestCase
         $this->assertSame(auth()->id(), $approved->recorded_by);
     }
 
+    /**
+     * The approval date is stamped; the stage only ever moves forward.
+     *
+     * This deal has already reached `purchasing` — its line named a supplier, so
+     * goods are on order. Setting the stage to `approved` outright would wind it
+     * back to a point it left, and approval is routinely recorded late: the
+     * goods are bought, sometimes already shipping, before anyone types in who
+     * said yes.
+     */
     #[Test]
     public function approving_a_quotation_approves_the_deal(): void
     {
         $quotation = $this->writer->build($this->deal);
 
         $this->assertFalse($this->deal->isApproved());
+        $this->assertSame('purchasing', $this->deal->status);
 
         $this->writer->approve($quotation, 'Ali Hassan');
 
         $deal = $this->deal->fresh();
         $this->assertTrue($deal->isApproved());
-        $this->assertSame('approved', $deal->status);
+        $this->assertSame('purchasing', $deal->status, 'the deal did not go backwards');
+    }
+
+    /** From a draft deal, approval is genuinely the next stage. */
+    #[Test]
+    public function approval_moves_a_deal_that_has_got_no_further(): void
+    {
+        $deal = Deal::create([
+            'number' => 'D-2026-0003',
+            'customer_id' => $this->deal->customer_id,
+            'deal_date' => today(),
+            'sell_currency' => 'IQD',
+        ]);
+
+        $this->writer->recordApproval($deal, 'Ali Hassan');
+
+        $this->assertSame('approved', $deal->fresh()->status);
     }
 
     /**
@@ -265,16 +291,67 @@ class QuotationTest extends TestCase
         $this->assertSame('Q-2026-0001', $this->deal->quotations()->first()->number);
     }
 
+    /**
+     * The button asks whether the deal is settled, not whether a document exists.
+     *
+     * It used to be hidden until a quotation had been raised, which made a
+     * document the price of recording a fact — and left every purchase on the
+     * deal flagged "at your own risk" with nothing on the screen able to clear
+     * it. Most of these yeses arrive on WhatsApp against a photo and a price.
+     */
     #[Test]
-    public function the_approval_button_only_appears_once_there_is_something_to_approve(): void
+    public function approval_can_be_recorded_without_a_quotation(): void
     {
         Livewire::test(EditDeal::class, ['record' => $this->deal->getRouteKey()])
-            ->assertActionHidden('approve');
+            ->assertActionVisible('approve')
+            ->callAction('approve', ['approved_by_name' => 'Ali Hassan', 'approval_channel' => 'whatsapp'])
+            ->assertHasNoActionErrors();
 
-        $this->writer->build($this->deal);
+        $deal = $this->deal->fresh();
+
+        $this->assertTrue($deal->isApproved());
+        $this->assertSame(0, $deal->quotations()->count(), 'no document was invented');
+        // The evidence has to survive somewhere, or the record is worthless.
+        $this->assertStringContainsString('Ali Hassan', (string) $deal->internal_notes);
+        $this->assertStringContainsString('whatsapp', (string) $deal->internal_notes);
+    }
+
+    #[Test]
+    public function the_approval_button_goes_away_once_the_deal_is_approved(): void
+    {
+        $this->writer->recordApproval($this->deal, 'Ali Hassan');
 
         Livewire::test(EditDeal::class, ['record' => $this->deal->getRouteKey()])
-            ->assertActionVisible('approve');
+            ->assertActionHidden('approve');
+    }
+
+    /** Where a live quotation exists, that is where the evidence belongs. */
+    #[Test]
+    public function an_approval_lands_on_the_live_quotation_when_there_is_one(): void
+    {
+        $quotation = $this->writer->markSent($this->writer->build($this->deal));
+
+        $this->writer->recordApproval($this->deal->fresh(), 'Ali Hassan', 'phone');
+
+        $this->assertSame('approved', $quotation->fresh()->status);
+        $this->assertSame('Ali Hassan', $quotation->fresh()->approved_by_name);
+        $this->assertTrue($this->deal->fresh()->isApproved());
+    }
+
+    /**
+     * Approval is very often recorded late — the goods are bought, sometimes
+     * already shipping. Stamping the stage outright would wind such a deal back
+     * to a point it left weeks ago.
+     */
+    #[Test]
+    public function recording_a_late_approval_does_not_wind_the_deal_backwards(): void
+    {
+        $this->deal->update(['status' => 'shipping']);
+
+        $deal = $this->writer->recordApproval($this->deal, 'Ali Hassan');
+
+        $this->assertSame('shipping', $deal->status);
+        $this->assertTrue($deal->isApproved());
     }
 
     #[Test]

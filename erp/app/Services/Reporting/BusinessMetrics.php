@@ -138,13 +138,16 @@ class BusinessMetrics
      * Approval is a warning here rather than a wall, so this is the running
      * total of what that judgement is currently costing you — the number worth
      * watching, because nothing else surfaces it.
+     *
+     * The rule lives on the model. This total and the purchases screen had each
+     * spelled it out separately and drifted apart: the screen flagged rows off
+     * the frozen `bought_at_risk` flag alone, so it kept warning about deals
+     * that had since been approved while this figure — correctly — read zero.
      */
     public function boughtAtRisk(): Money
     {
         $purchases = DealPurchase::query()
-            ->where('bought_at_risk', true)
-            ->whereNot('status', 'cancelled')
-            ->whereHas('deal', fn ($q) => $q->whereNull('approved_at')->whereNot('status', 'cancelled'))
+            ->atRisk()
             ->with(['lines', 'costs'])
             ->get();
 
@@ -207,7 +210,8 @@ class BusinessMetrics
         $unapproved = Deal::query()
             ->whereNull('approved_at')
             ->whereNot('status', 'cancelled')
-            ->whereHas('purchases', fn ($q) => $q->where('bought_at_risk', true))
+            // The same rule again, so the count and the money below agree.
+            ->whereHas('purchases', fn ($q) => $q->atRisk())
             ->count();
 
         if ($unapproved > 0) {

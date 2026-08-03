@@ -2,16 +2,15 @@
 
 namespace App\Filament\Resources\Deals\Pages;
 
+use App\Filament\Actions\RecordApproval;
 use App\Filament\Actions\RecordDeletion;
 use App\Filament\Resources\Deals\DealResource;
-use App\Models\Quotation;
 use App\Services\Deals\DealWriter;
 use App\Services\Deals\InvoiceWriter;
 use App\Services\Deals\QuotationWriter;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -26,7 +25,15 @@ class EditDeal extends EditRecord
     {
         return [
             $this->quoteAction(),
-            $this->approveAction(),
+
+            /*
+             * Was hidden until a quotation existed, which made a document the
+             * price of recording a fact. Most approvals arrive on WhatsApp
+             * against a photo; the quotation, where there is one, still carries
+             * the approval.
+             */
+            RecordApproval::make()->record(fn () => $this->record),
+
             $this->invoiceGoodsAction(),
             $this->invoiceShippingAction(),
 
@@ -135,72 +142,6 @@ class EditDeal extends EditRecord
     }
 
     /**
-     * Record that the customer said yes.
-     *
-     * Everything asked for here is evidence: who told you, through which
-     * channel, and what they said. None of it is inferred, because the value of
-     * the record is precisely that it repeats what actually happened.
-     */
-    private function approveAction(): Action
-    {
-        return Action::make('approve')
-            ->label('Record approval')
-            ->icon('heroicon-o-check-badge')
-            ->color('success')
-            ->visible(fn () => $this->latestQuotation() !== null && ! $this->record->isApproved())
-            ->schema([
-                TextInput::make('approved_by_name')
-                    ->label('Who approved it?')
-                    ->placeholder('The person at the customer who said yes')
-                    ->required(),
-
-                Select::make('approval_channel')
-                    ->label('How?')
-                    ->options([
-                        'whatsapp' => 'WhatsApp',
-                        'phone' => 'Phone call',
-                        'in_person' => 'In person',
-                        'email' => 'Email',
-                        'viber' => 'Viber',
-                    ])
-                    ->native(false),
-
-                Textarea::make('approval_note')
-                    ->label('Anything they said')
-                    ->placeholder('e.g. confirmed the gold finish, wants delivery before Eid')
-                    ->rows(2),
-            ])
-            ->action(function (array $data) {
-                $quotation = $this->latestQuotation();
-
-                if ($quotation === null) {
-                    Notification::make()->title('Create a quotation first.')->warning()->send();
-
-                    return;
-                }
-
-                try {
-                    app(QuotationWriter::class)->approve(
-                        $quotation,
-                        $data['approved_by_name'],
-                        $data['approval_channel'] ?? null,
-                        $data['approval_note'] ?? null,
-                    );
-                } catch (Throwable $e) {
-                    Notification::make()->title($e->getMessage())->danger()->send();
-
-                    return;
-                }
-
-                Notification::make()
-                    ->title('Approval recorded')
-                    ->body('Purchases from here on are no longer at your own risk.')
-                    ->success()
-                    ->send();
-            });
-    }
-
-    /**
      * Bill the goods.
      *
      * Offered whether or not the customer approved, because approval is a
@@ -293,15 +234,6 @@ class EditDeal extends EditRecord
         return $deal->sell_currency === 'USD'
             ? $base->toFloat()
             : (float) $base->times($deal->rateFor($deal->sell_currency))->amount;
-    }
-
-    /** The version currently on the table — draft or sent, never superseded. */
-    private function latestQuotation(): ?Quotation
-    {
-        return $this->record->quotations()
-            ->whereIn('status', ['draft', 'sent'])
-            ->orderByDesc('version')
-            ->first();
     }
 
     /**

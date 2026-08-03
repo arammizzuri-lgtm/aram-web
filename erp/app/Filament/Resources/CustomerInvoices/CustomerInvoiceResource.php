@@ -144,7 +144,9 @@ class CustomerInvoiceResource extends Resource
 
                 Filter::make('unpaid')
                     ->label('Still owed')
-                    ->query(fn (Builder $q) => $q->outstanding())
+                    // `$query` by name — see the note in PurchaseResource. As `$q`
+                    // this threw on a model-less builder the moment it was switched on.
+                    ->query(fn (Builder $query) => $query->outstanding())
                     ->toggle(),
 
                 RecordDeletion::filter(),

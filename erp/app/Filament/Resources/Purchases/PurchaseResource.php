@@ -119,17 +119,23 @@ class PurchaseResource extends Resource
                     ->color('primary'),
 
                 /*
-                 * Bought before the customer committed.
+                 * Whether the risk is still open, not whether it ever was.
                  *
-                 * Approval is a warning rather than a wall, so this is where the
-                 * consequence of pushing through becomes visible.
+                 * This drew `boolean()`, which renders true as a tick — so a
+                 * purchase nobody had committed to was marked with the glyph
+                 * that everywhere else means "fine". Warning now says warning,
+                 * and a settled one says nothing loudly.
                  */
-                IconColumn::make('bought_at_risk')
+                IconColumn::make('at_risk')
                     ->label('At risk')
-                    ->boolean()
-                    ->falseIcon(null)
-                    ->trueColor('warning')
-                    ->tooltip('Bought before the customer approved'),
+                    ->state(fn (DealPurchase $r) => $r->isAtRisk())
+                    ->icon(fn (bool $state) => $state
+                        ? 'heroicon-o-exclamation-triangle'
+                        : 'heroicon-o-check-circle')
+                    ->color(fn (bool $state) => $state ? 'warning' : 'gray')
+                    ->tooltip(fn (DealPurchase $r) => $r->isAtRisk()
+                        ? 'Bought before the customer approved — nobody has committed to these goods'
+                        : 'The customer has approved this deal'),
 
                 TextColumn::make('goods')
                     ->label('Goods')
@@ -193,14 +199,25 @@ class PurchaseResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                Filter::make('bought_at_risk')
-                    ->label('Bought before approval')
-                    ->query(fn (Builder $q) => $q->where('bought_at_risk', true))
+                /*
+                 * `$query`, not `$q`, and it matters more than it looks.
+                 *
+                 * Filament injects the builder by parameter *name*; anything
+                 * else falls through to the container, which hands back an
+                 * Eloquent builder with no model attached. The filter then
+                 * narrows that throwaway and the screen shows every row — a
+                 * toggle that lights up and does nothing. Both of these were
+                 * dead that way. FilterWiringTest holds the whole codebase to it.
+                 */
+                Filter::make('at_risk')
+                    ->label('Still unapproved')
+                    // The same rule the column and the dashboard total use.
+                    ->query(fn (Builder $query) => $query->atRisk())
                     ->toggle(),
 
                 Filter::make('unpaid')
                     ->label('Still owed')
-                    ->query(fn (Builder $q) => $q->whereNotIn('status', ['paid', 'cancelled']))
+                    ->query(fn (Builder $query) => $query->whereNotIn('status', ['paid', 'cancelled']))
                     ->toggle(),
 
                 RecordDeletion::filter(),

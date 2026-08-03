@@ -181,7 +181,8 @@ class CustomerPaymentResource extends Resource
 
                 Filter::make('unmatched')
                     ->label('Still unmatched')
-                    ->query(fn (Builder $q) => $q->whereRaw(
+                    // `$query` by name — see the note in PurchaseResource.
+                    ->query(fn (Builder $query) => $query->whereRaw(
                         'base_amount > (select coalesce(sum(base_amount), 0) from customer_payment_allocations '
                         .'where customer_payment_allocations.customer_payment_id = customer_payments.id)'
                     ))

@@ -44,7 +44,9 @@ class PurchasesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['supplier', 'lines', 'costs', 'payments']))
+            // `deal` because the at-risk column asks whether it is approved, and
+            // a relation manager does not set the inverse for you.
+            ->modifyQueryUsing(fn ($query) => $query->with(['supplier', 'deal', 'lines', 'costs', 'payments']))
             ->recordTitleAttribute('number')
             ->emptyStateHeading('Nothing bought yet')
             ->emptyStateDescription('Name a supplier on a line above and its purchase appears here.')
@@ -56,12 +58,18 @@ class PurchasesRelationManager extends RelationManager
                     // The Chinese name is the one the supplier answers to.
                     ->description(fn (DealPurchase $r) => $r->supplier?->name_zh),
 
-                IconColumn::make('bought_at_risk')
+                // Whether the risk is still open, not whether it ever was — the
+                // same question the purchases screen and the dashboard ask.
+                IconColumn::make('at_risk')
                     ->label('At risk')
-                    ->boolean()
-                    ->falseIcon(null)
-                    ->trueColor('warning')
-                    ->tooltip('Bought before the customer approved'),
+                    ->state(fn (DealPurchase $r) => $r->isAtRisk())
+                    ->icon(fn (bool $state) => $state
+                        ? 'heroicon-o-exclamation-triangle'
+                        : 'heroicon-o-check-circle')
+                    ->color(fn (bool $state) => $state ? 'warning' : 'gray')
+                    ->tooltip(fn (DealPurchase $r) => $r->isAtRisk()
+                        ? 'Bought before the customer approved — nobody has committed to these goods'
+                        : 'The customer has approved this deal'),
 
                 TextColumn::make('goods')
                     ->label('Goods')
