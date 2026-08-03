@@ -21,17 +21,19 @@
                     };
                 @endphp
 
+                {{-- The same card as everywhere else, with a colour bound down
+                     one edge. Hover dims the whole row rather than tinting it:
+                     these rows carry status colour already, and a hover tint
+                     underneath it reads as a second status. --}}
                 <a href="{{ $item['url'] }}"
-                   class="flex items-start gap-3 rounded-xl border p-4 transition hover:opacity-80"
-                   style="border-color: var(--erp-border);
-                          border-inline-start: 3px solid {{ $tone['border'] }};
-                          background: var(--erp-bg-surface)">
+                   class="erp-card erp-transition flex items-start gap-3 p-4 hover:bg-[var(--erp-bg-hover)]"
+                   style="border-inline-start: 3px solid {{ $tone['border'] }}">
 
                     <x-filament::icon :icon="$tone['icon']" class="mt-0.5 h-5 w-5 shrink-0"
                                       style="color: {{ $tone['border'] }}" />
 
                     <div class="min-w-0">
-                        <div class="font-medium">{{ $item['title'] }}</div>
+                        <div class="font-medium" style="color: var(--erp-text-primary)">{{ $item['title'] }}</div>
                         <div class="text-sm" style="color: var(--erp-text-secondary)">{{ $item['body'] }}</div>
                     </div>
 

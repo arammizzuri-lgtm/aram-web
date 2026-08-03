@@ -1,5 +1,71 @@
 # UI / UX Design System & Screen Specifications
 
+> **Phase 1 — foundation, 2026-08-03.** The token layer was audited against WCAG
+> and rebuilt. Read this section before adding a screen; the rest of Part A is
+> the original specification and still stands.
+>
+> ### Every colour is now measured
+>
+> `php tools/contrast.php` checks all forty token/surface pairs in both themes
+> and exits non-zero on a failure. **Run it after touching a colour.** It found
+> nine failures on first use, the worst of them in the theme actually in use:
+>
+> | Token | Was | Now | Why it mattered |
+> |---|---|---|---|
+> | `--erp-critical` (dark) | 3.72:1 | 4.62:1 | Inherited from the light theme. This is the colour the overdue figure and every negative profit is printed in. |
+> | `--erp-text-muted` | 3.38:1 / 3.70:1 | 4.63:1 / 4.57:1 | Every hint and column label in the system. |
+> | `--erp-warning` | 1.83:1 | see below | Invisible as a figure on white. |
+> | `--erp-serious`, `--erp-good` | 2.64 / 3.35 | 4.55 / 4.74 | Used as text. |
+> | `--erp-series-3/4/5` (light) | 2.17–2.82 | 3.07–3.13 | Chart series below the non-text floor. |
+>
+> The dark block now **restates all four statuses in full**, even where the value
+> is unchanged. A status block that inherits half its colours from the other
+> theme is exactly how the first failure happened.
+>
+> ### Status colours come in pairs
+>
+> A colour needs **3:1** to work as a shape and **4.5:1** to work as text, and no
+> single yellow clears both. So each status is two tokens:
+>
+> ```
+> --erp-warning        the fill  — bars, dots, chart segments
+> --erp-warning-text   the text  — same hue, walked down until it can be read
+> ```
+>
+> Use `.erp-good` / `.erp-warning` / `.erp-serious` / `.erp-critical` as classes
+> for text; they resolve to the `-text` variant. Only lightness moves between a
+> pair — the palette's identity is its hues, and an accessible palette that no
+> longer looks like itself has traded one problem for another.
+>
+> ### Scales, so screens stop choosing
+>
+> Type is six named steps — `display`, `figure`, `title`, `label`, `hint`, body —
+> named for the job rather than the size. Spacing is three: `--erp-pad` inside a
+> card, `--erp-gap` between cards, `--erp-gap-tight` within a group.
+>
+> ### Build the page out of the components
+>
+> Nine views were hand-writing `rounded-xl border` with the colours inlined —
+> Filament's own `.fi-section` rule, restated nine times and free to drift nine
+> ways. Use these instead:
+>
+> | | |
+> |---|---|
+> | `<x-erp.card title hint flush>` | Any panel. `flush` when the content draws its own edges, such as a table. |
+> | `<x-erp.figure label value hint lead tone>` | A figure with its label and meaning. **One `lead` per screen** — if everything is emphasised, nothing is. |
+> | `<x-erp.empty title>` | Nothing-here-yet. A blank panel reads as a failure to load. |
+> | `.erp-figures` | A hairline-separated row of figures that wraps rather than scrolls. |
+>
+> ### Two things that will bite
+>
+> **A new Blade view needs `npm run build`.** Tailwind compiles only the classes
+> it can find at build time; ship a view without rebuilding and it arrives with
+> its colours and no layout.
+>
+> **Colour is for the figure that asks to be acted on.** A customer owing you
+> money is ordinary business. Painting every open account red spends the alarm on
+> nothing, and the one number that matters stops being visible.
+
 ---
 
 # PART A — The Design System

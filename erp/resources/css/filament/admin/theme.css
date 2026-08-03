@@ -31,9 +31,40 @@
     --radius-lg: 0.75rem;  /* 12px — cards, panels        */
     --radius-xl: 1rem;     /* 16px — modals, drawers      */
 
-    --text-display: 2.125rem;
+    /*
+     * Type scale.
+     *
+     * Six steps and no more. Every screen before this picked its own sizes —
+     * `text-xs` here, `text-sm` there, `text-4xl` for one figure — and the
+     * result is a system where nothing looks deliberate because nothing was
+     * chosen twice. Named for the job rather than the size, so the choice at
+     * the point of use is "what is this" and not "how big".
+     */
+    --text-display: 2.125rem;          /* the one figure a screen is about   */
     --text-display--line-height: 2.5rem;
     --text-display--letter-spacing: -0.02em;
+
+    --text-figure: 1.375rem;           /* supporting figures, stat tiles     */
+    --text-figure--line-height: 1.75rem;
+    --text-figure--letter-spacing: -0.015em;
+
+    --text-title: 0.875rem;            /* card and section headings          */
+    --text-title--line-height: 1.25rem;
+
+    --text-label: 0.6875rem;           /* the small caps above a figure      */
+    --text-label--line-height: 1rem;
+    --text-label--letter-spacing: 0.06em;
+
+    --text-hint: 0.75rem;              /* the sentence under a figure        */
+    --text-hint--line-height: 1.125rem;
+
+    /*
+     * Spacing. Card padding, the gap between cards, the gap inside one.
+     * Three names cover nearly every decision on a screen like this.
+     */
+    --erp-pad: 1.25rem;
+    --erp-gap: 1.5rem;
+    --erp-gap-tight: 0.75rem;
 }
 
 @layer base {
@@ -50,13 +81,34 @@
 
         --erp-text-primary: #0b0b0c;
         --erp-text-secondary: #52525b;
-        --erp-text-muted: #8b8b94;
+        /* 3.38:1 before — under the floor for anything anyone has to read. */
+        --erp-text-muted: #74747d;
 
-        /* Status — reserved; never reused as a chart series colour */
-        --erp-good: #0ca30c;
-        --erp-warning: #fab219;
-        --erp-serious: #ec835a;
-        --erp-critical: #d03b3b;
+        /*
+         * Status, split by role — the one change that makes these usable.
+         *
+         * A colour needs 3:1 against its surface to work as a *shape* and
+         * 4.5:1 to work as *text*, and no single yellow clears both: at 1.83:1
+         * the old warning was invisible as a figure on white and only just
+         * held up as a bar. So each status is two tokens. The plain name fills
+         * (bars, dots, segments); `-text` is the same hue walked down until it
+         * can be read.
+         *
+         * Only the lightness moves between the pair. The palette's identity is
+         * its hues, and an accessible palette that no longer looks like itself
+         * has traded one problem for another.
+         *
+         * Ratios below are against --erp-bg-surface; `php tools/contrast.php`
+         * re-checks every one of them.
+         */
+        --erp-good: #0ca30c;          /* fill  3.35 */
+        --erp-good-text: #0a860a;     /* text  4.74 */
+        --erp-warning: #c78904;       /* fill  3.00 */
+        --erp-warning-text: #9f6d03;  /* text  4.50 */
+        --erp-serious: #e97243;       /* fill  3.02 */
+        --erp-serious-text: #cd4b18;  /* text  4.55 */
+        --erp-critical: #d03b3b;      /* fill  4.80 */
+        --erp-critical-text: #d03b3b; /* text  4.80 — already clears both */
 
         /* Chart chrome */
         --erp-grid: #e1e0d9;
@@ -70,14 +122,14 @@
          * On this light surface aqua/yellow/magenta fall below 3:1, so charts
          * using them must ship direct labels or the table view.
          */
-        --erp-series-1: #2a78d6;
-        --erp-series-2: #eb6834;
-        --erp-series-3: #1baf7a;
-        --erp-series-4: #eda100;
-        --erp-series-5: #e87ba4;
-        --erp-series-6: #008300;
-        --erp-series-7: #4a3aa7;
-        --erp-series-8: #e34948;
+        --erp-series-1: #2a78d6;  /* 4.42 */
+        --erp-series-2: #eb6834;  /* 3.20 */
+        --erp-series-3: #1aa674;  /* 3.11 — was 2.82 */
+        --erp-series-4: #c48500;  /* 3.13 — was 2.17 */
+        --erp-series-5: #e56a98;  /* 3.07 — was 2.69 */
+        --erp-series-6: #008300;  /* 4.95 */
+        --erp-series-7: #4a3aa7;  /* 8.56 */
+        --erp-series-8: #e34948;  /* 3.95 */
 
         --erp-diverging-pos: #2a78d6;
         --erp-diverging-mid: #f0efec;
@@ -101,11 +153,34 @@
 
         --erp-text-primary: #f5f5f6;
         --erp-text-secondary: #a1a1aa;
-        --erp-text-muted: #71717a;
+        --erp-text-muted: #808089;  /* 4.57 — was #71717a at 3.70 */
+
+        /*
+         * Status, restated.
+         *
+         * These were not here, so all four fell through to the light values —
+         * tuned against white and never checked against #17171a. `critical`
+         * landed at 3.72:1, which is the colour the overdue figure and every
+         * negative profit is printed in: the one number on the screen that has
+         * to be read, in the theme actually being used.
+         *
+         * They are restated in full rather than only where a value changes,
+         * because a status block that inherits half its colours from the other
+         * theme is how this happened in the first place.
+         */
+        --erp-good: #0ca30c;          /* fill  5.33 */
+        --erp-good-text: #16bd16;     /* text  7.06 */
+        --erp-warning: #fab219;       /* fill  9.75 */
+        --erp-warning-text: #fab219;  /* text  9.75 */
+        --erp-serious: #ec835a;       /* fill  6.78 */
+        --erp-serious-text: #ec835a;  /* text  6.78 */
+        --erp-critical: #d75858;      /* fill  4.62 */
+        --erp-critical-text: #d75858; /* text  4.62 — was #d03b3b at 3.72 */
 
         --erp-grid: #2c2c2a;
         --erp-axis: #383835;
-        --erp-delta-good: #0ca30c;
+        --erp-axis-text: #8f8d86;   /* 5.35 */
+        --erp-delta-good: #16bd16;
 
         /* Same eight hues, re-stepped for the dark surface — not an auto-flip. */
         --erp-series-1: #3987e5;
@@ -239,28 +314,98 @@
         color: var(--erp-text-secondary);
     }
 
+    /*
+     * The card, and everything that lives on one.
+     *
+     * Nine custom views were each writing `rounded-xl border` with the border
+     * and background colours inlined by hand — the same rule as `.fi-section`
+     * above, restated nine times and free to drift nine ways. This is that rule
+     * with a name, so a page written in plain Blade looks like a page built out
+     * of Filament sections, because it is the same card.
+     */
+    .erp-card {
+        border: 1px solid var(--erp-border);
+        border-radius: var(--radius-lg);
+        background-color: var(--erp-bg-surface);
+        overflow: hidden;
+    }
+
+    .erp-card-head {
+        padding: 1rem var(--erp-pad);
+        border-bottom: 1px solid var(--erp-border);
+    }
+
+    /* A head with nothing under it needs no rule beneath it. */
+    .erp-card-head:last-child {
+        border-bottom: 0;
+    }
+
+    .erp-card-body {
+        padding: var(--erp-pad);
+    }
+
+    .erp-card-title {
+        font-size: var(--text-title);
+        line-height: var(--text-title--line-height);
+        font-weight: 600;
+        color: var(--erp-text-primary);
+    }
+
+    .erp-card-hint {
+        margin-top: 0.125rem;
+        font-size: var(--text-hint);
+        line-height: var(--text-hint--line-height);
+        color: var(--erp-text-muted);
+    }
+
+    /* The small caps above a figure. Six views were rolling this by hand. */
+    .erp-label {
+        font-size: var(--text-label);
+        line-height: var(--text-label--line-height);
+        font-weight: 600;
+        letter-spacing: var(--text-label--letter-spacing);
+        text-transform: uppercase;
+        color: var(--erp-text-muted);
+    }
+
     /* Stat tile — the dashboard atom (docs/05-UIUX.md §A5). */
     .erp-stat {
         border: 1px solid var(--erp-border);
         border-radius: var(--radius-lg);
         background-color: var(--erp-bg-surface);
-        padding: 1.25rem;
+        padding: var(--erp-pad);
     }
 
     .erp-stat-label {
-        font-size: 0.6875rem;
+        font-size: var(--text-label);
+        line-height: var(--text-label--line-height);
         font-weight: 600;
-        letter-spacing: 0.06em;
+        letter-spacing: var(--text-label--letter-spacing);
         text-transform: uppercase;
         color: var(--erp-text-muted);
     }
 
     .erp-stat-value {
+        font-size: var(--text-figure);
+        line-height: var(--text-figure--line-height);
+        letter-spacing: var(--text-figure--letter-spacing);
+        font-weight: 600;
+        color: var(--erp-text-primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* One figure per screen earns display size; the rest are supporting. */
+    .erp-stat-value[data-lead] {
         font-size: var(--text-display);
         line-height: var(--text-display--line-height);
         letter-spacing: var(--text-display--letter-spacing);
-        font-weight: 600;
-        color: var(--erp-text-primary);
+    }
+
+    .erp-stat-hint {
+        margin-top: 0.25rem;
+        font-size: var(--text-hint);
+        line-height: var(--text-hint--line-height);
+        color: var(--erp-text-muted);
     }
 
     .erp-stat-delta {
@@ -269,7 +414,61 @@
     }
 
     .erp-stat-delta[data-direction='up'] { color: var(--erp-delta-good); }
-    .erp-stat-delta[data-direction='down'] { color: var(--erp-critical); }
+    .erp-stat-delta[data-direction='down'] { color: var(--erp-critical-text); }
+
+    /*
+     * A row of figures, hairline-separated.
+     *
+     * The separator is the grid's own background showing through a one-pixel
+     * gap, which is why the cells carry a surface colour. It wraps rather than
+     * scrolls: a figure pushed off the side of a card is a figure nobody reads.
+     */
+    .erp-figures {
+        display: grid;
+        gap: 1px;
+        background-color: var(--erp-border);
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    }
+
+    .erp-figures > * {
+        background-color: var(--erp-bg-surface);
+        padding: var(--erp-pad);
+    }
+
+    /*
+     * Empty states. A blank panel reads as something failing to load; a
+     * sentence saying what would appear here, and how to make it, does not.
+     */
+    .erp-empty {
+        padding: 2.5rem var(--erp-pad);
+        text-align: center;
+        color: var(--erp-text-muted);
+        font-size: 0.875rem;
+    }
+
+    .erp-empty-title {
+        color: var(--erp-text-secondary);
+        font-weight: 500;
+    }
+
+    /* Status text. Paired with the fills above — see the token block. */
+    .erp-good { color: var(--erp-good-text); }
+    .erp-warning { color: var(--erp-warning-text); }
+    .erp-serious { color: var(--erp-serious-text); }
+    .erp-critical { color: var(--erp-critical-text); }
+
+    /*
+     * Focus, everywhere, on one rule.
+     *
+     * Filament rings some controls and not others. A keyboard user needs the
+     * same answer to "where am I?" on every element, so this states it once
+     * rather than leaving it to each component.
+     */
+    :where(a, button, [role='button'], summary, [tabindex]):focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
 
     /* Inputs: hairline at rest, accent ring on focus. */
     .fi-input-wrp {
