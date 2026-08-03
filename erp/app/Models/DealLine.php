@@ -25,7 +25,7 @@ class DealLine extends Model
 
     protected $fillable = [
         'deal_id', 'deal_purchase_id', 'supplier_id',
-        'product_id', 'catalogue_item_id', 'crystal_product_id', 'crystal_size_id',
+        'product_id', 'product_size_id', 'catalogue_item_id', 'crystal_product_id', 'crystal_size_id',
         'description', 'description_ku', 'description_zh', 'specification', 'photo_path',
         'quantity', 'unit',
         'unit_cost', 'cost_currency', 'cost_total_base',

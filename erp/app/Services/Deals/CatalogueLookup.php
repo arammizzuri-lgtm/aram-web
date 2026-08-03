@@ -6,6 +6,7 @@ use App\Models\CatalogueItem;
 use App\Models\CrystalPrice;
 use App\Models\CrystalProduct;
 use App\Models\Product;
+use App\Models\ProductSize;
 
 /**
  * The bridge from the price lists to a deal line.
@@ -44,6 +45,9 @@ class CatalogueLookup
         }
 
         return array_merge(
+            // Sizes first: they are what the catalogue is being rebuilt around,
+            // and the only entries that carry a cost of their own.
+            $this->searchSizes($term, $limit),
             $this->searchProducts($term, $limit),
             $this->searchItems($term, $limit),
             $this->searchCrystals($term, $limit),
@@ -60,6 +64,9 @@ class CatalogueLookup
         }
 
         return match ($parts[0]) {
+            'size' => ($size = ProductSize::with('product.parent')->find($parts[1]))
+                ? $this->sizeLabel($size)
+                : null,
             'product' => ($product = Product::find($parts[1]))
                 ? $this->productLabel($product)
                 : null,
@@ -122,6 +129,7 @@ class CatalogueLookup
         }
 
         return match ($parts[0]) {
+            'size' => $this->fromSize((int) $parts[1]),
             'product' => $this->fromProduct((int) $parts[1], max($quantity, 1), $customerTypeId),
             'item' => $this->fromItem((int) $parts[1], max($quantity, 1), $customerTypeId),
             'crystal' => $this->fromCrystal((int) $parts[1], (int) ($parts[2] ?? 0), $customerTypeId),
@@ -130,6 +138,41 @@ class CatalogueLookup
     }
 
     // ------------------------------------------------------------- resolving
+
+    /**
+     * One size of one product, and what that supplier charges for it.
+     *
+     * No selling price comes back, and none is missing: nothing is sold at a
+     * stored price any more. The line takes this cost and marks it up, where
+     * the number can be argued with in front of the customer it applies to.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function fromSize(int $id): ?array
+    {
+        $size = ProductSize::with(['product.unit', 'product.parent'])->find($id);
+        $product = $size?->product;
+
+        if ($size === null || $product === null) {
+            return null;
+        }
+
+        return $this->payload(
+            // The trail, because "20mm" on an invoice line is not a description
+            // of anything — "Flat Crystal P13 · 20mm" is.
+            description: trim($product->pathLabel(' ').' · '.$size->label),
+            descriptionKu: $product->name_ku,
+            descriptionZh: $product->name_zh,
+            unit: $product->unit?->code,
+            supplierId: $product->supplier_id,
+            unitCost: $size->cost_price,
+            costCurrency: $size->currency,
+            containsBattery: (bool) $product->contains_battery,
+            listPrice: null,
+            listCurrency: null,
+            ids: ['product_id' => $product->id, 'product_size_id' => $size->id],
+        );
+    }
 
     /** @return array<string, mixed>|null */
     private function fromProduct(int $id, float $quantity, ?int $customerTypeId): ?array
@@ -290,10 +333,37 @@ class CatalogueLookup
             'catalogue_item_id' => $ids['catalogue_item_id'] ?? null,
             'crystal_product_id' => $ids['crystal_product_id'] ?? null,
             'crystal_size_id' => $ids['crystal_size_id'] ?? null,
+            'product_size_id' => $ids['product_size_id'] ?? null,
         ];
     }
 
     // -------------------------------------------------------------- searching
+
+    /**
+     * Priced sizes only.
+     *
+     * A size nobody has quoted cannot fill a line's cost, and offering it would
+     * mean picking something that silently leaves the cost box empty.
+     *
+     * @return array<string, string>
+     */
+    private function searchSizes(string $term, int $limit): array
+    {
+        return ProductSize::query()
+            ->priced()
+            ->active()
+            ->with(['product.parent', 'product.supplier'])
+            ->whereHas('product', fn ($q) => $q->active()
+                ->where(fn ($w) => $w->whereLike('name', "%{$term}%")
+                    ->orWhereLike('sku', "%{$term}%")
+                    ->orWhereLike('name_zh', "%{$term}%")))
+            ->orWhere(fn ($q) => $q->whereLike('label', "%{$term}%")
+                ->whereHas('product', fn ($p) => $p->active()))
+            ->limit($limit)
+            ->get()
+            ->mapWithKeys(fn (ProductSize $size) => ["size:{$size->id}" => $this->sizeLabel($size)])
+            ->all();
+    }
 
     /** @return array<string, string> */
     private function searchProducts(string $term, int $limit): array
@@ -357,6 +427,15 @@ class CatalogueLookup
 
     // ---------------------------------------------------------------- labels
 
+    private function sizeLabel(ProductSize $size): string
+    {
+        $product = $size->product;
+        $supplier = $product?->supplier?->name;
+
+        return trim(($product?->pathLabel(' › ') ?? '').'  ·  '.$size->label)
+            .($supplier ? "  ·  {$supplier}" : '');
+    }
+
     private function productLabel(Product $product): string
     {
         return trim($product->name.($product->sku ? "  ·  {$product->sku}" : ''));
@@ -390,6 +469,6 @@ class CatalogueLookup
 
         $parts = explode(':', (string) $key);
 
-        return in_array($parts[0], ['product', 'item', 'crystal'], true) ? $parts : null;
+        return in_array($parts[0], ['product', 'item', 'crystal', 'size'], true) ? $parts : null;
     }
 }

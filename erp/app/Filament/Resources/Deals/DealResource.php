@@ -285,6 +285,7 @@ class DealResource extends Resource
              * consequence of the search above, never a decision of their own.
              */
             Hidden::make('product_id'),
+            Hidden::make('product_size_id'),
             Hidden::make('catalogue_item_id'),
             Hidden::make('crystal_product_id'),
             Hidden::make('crystal_size_id'),
@@ -745,7 +746,10 @@ class DealResource extends Resource
          * emptied a search box is the sort of help nobody asks for twice.
          */
         if ($found === null) {
-            foreach (['product_id', 'catalogue_item_id', 'crystal_product_id', 'crystal_size_id'] as $id) {
+            foreach ([
+                'product_id', 'product_size_id', 'catalogue_item_id',
+                'crystal_product_id', 'crystal_size_id',
+            ] as $id) {
                 $set($id, null);
             }
 
@@ -754,7 +758,8 @@ class DealResource extends Resource
 
         foreach ([
             'description', 'description_ku', 'description_zh', 'unit',
-            'product_id', 'catalogue_item_id', 'crystal_product_id', 'crystal_size_id',
+            'product_id', 'product_size_id', 'catalogue_item_id',
+            'crystal_product_id', 'crystal_size_id',
         ] as $field) {
             $set($field, $found[$field]);
         }
@@ -770,6 +775,23 @@ class DealResource extends Resource
 
         if ($found['supplier_id'] !== null) {
             $set('supplier_id', $found['supplier_id']);
+        }
+
+        /*
+         * Nothing carries a selling price of its own any more, so "from price
+         * list" has nothing to read and would leave the line at zero. Marking
+         * the cost up is the answer the business gave: a suggested number, on
+         * the screen, that can be overwritten before the customer sees it.
+         *
+         * Only switched when the pick genuinely has no list price — the older
+         * entries still have theirs, and a method someone chose by hand is not
+         * ours to override.
+         */
+        if ($found['list_price'] === null
+            && $found['unit_cost'] !== null
+            && $get('pricing_method') === 'list'
+        ) {
+            $set('pricing_method', 'markup');
         }
 
         self::applyPricing($get, $set);
