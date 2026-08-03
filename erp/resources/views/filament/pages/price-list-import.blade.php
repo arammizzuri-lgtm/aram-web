@@ -14,7 +14,15 @@
 
             {{ $this->form }}
 
-            <x-slot name="footerActions">
+            {{--
+                `footer`, not `footerActions`.
+
+                A Blade component silently ignores a slot it does not declare,
+                and Filament's section declares `footer`. So this button — the
+                only way to start an import — was dropped on the floor without a
+                word, and the screen offered an upload and no way to use it.
+            --}}
+            <x-slot name="footer">
                 <x-filament::button wire:click="analyse" wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="analyse">Analyse price list</span>
                     <span wire:loading wire:target="analyse">Reading…</span>

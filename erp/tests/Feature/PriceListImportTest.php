@@ -3,18 +3,22 @@
 namespace Tests\Feature;
 
 use App\Actions\Catalog\CommitPriceListImport;
+use App\Filament\Pages\PriceListImportPage;
 use App\Models\PriceListImport;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Supplier;
 use App\Models\SupplierProduct;
 use App\Models\Unit;
+use App\Models\User;
 use App\Services\Import\PriceListMatcher;
 use App\Services\Import\SheetReader;
 use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
 use Tests\TestCase;
@@ -249,6 +253,68 @@ class PriceListImportTest extends TestCase
         $this->expectExceptionMessage('already been committed');
 
         app(CommitPriceListImport::class)->handle($import);
+    }
+
+    // ------------------------------------------------------------ the screen
+
+    /**
+     * The screen has a way to start an import.
+     *
+     * Everything above drives the services directly, so the page itself was
+     * never exercised — and the button that runs it had been written into a
+     * slot the section does not declare (`footerActions`, where Filament has
+     * `footer`). A Blade component ignores an unknown slot without a word, so
+     * the screen offered an upload box and no way to use it, and every test
+     * here passed while the feature was unreachable.
+     */
+    #[Test]
+    public function the_import_screen_offers_a_way_to_start(): void
+    {
+        $owner = User::create([
+            'name' => 'Owner', 'email' => 'owner@test.local',
+            'password' => 'password', 'is_active' => true,
+        ]);
+        $owner->assignRole('owner');
+
+        Livewire::actingAs($owner)
+            ->test(PriceListImportPage::class)
+            ->assertOk()
+            ->assertSee('Analyse price list');
+    }
+
+    /** And pressing it reads the file and produces something to review. */
+    #[Test]
+    public function pressing_it_reads_the_file_and_offers_the_changes(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::create([
+            'name' => 'Owner', 'email' => 'owner@test.local',
+            'password' => 'password', 'is_active' => true,
+        ]);
+        $owner->assignRole('owner');
+
+        // Where FileUpload leaves a file once it has been dropped in.
+        Storage::disk('local')->put('price-lists/pricelist.csv', file_get_contents($this->path));
+
+        Livewire::actingAs($owner)
+            ->test(PriceListImportPage::class)
+            ->fillForm([
+                'supplier_id' => $this->supplier->id,
+                'currency' => 'USD',
+                'header_row' => 4,
+                'effective_date' => today(),
+                'file' => ['uploaded' => 'price-lists/pricelist.csv'],
+                'save_profile' => true,
+            ])
+            ->call('analyse')
+            ->assertNotified('Price list analysed');
+
+        $import = PriceListImport::latest('id')->firstOrFail();
+
+        $this->assertSame('previewed', $import->status);
+        $this->assertSame(1, $import->rows_new, 'X-999 is not in the catalogue');
+        $this->assertSame(3, $import->rows_updated, 'two real moves and one nonsense one');
     }
 
     #[Test]
