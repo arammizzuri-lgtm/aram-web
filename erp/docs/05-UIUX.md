@@ -56,6 +56,41 @@
 > | `<x-erp.empty title>` | Nothing-here-yet. A blank panel reads as a failure to load. |
 > | `.erp-figures` | A hairline-separated row of figures that wraps rather than scrolls. |
 >
+> ### The rules are tests, not prose
+>
+> Nothing this redesign fixed was ever found by reading the code — a palette
+> that called itself validated and failed nine checks, four `--erp-status-*`
+> tokens that never existed and had been drawing nothing for months, a
+> navigation group nobody declared. CSS fails silently. So `DesignSystemTest`
+> measures it:
+>
+> - every colour clears its contrast threshold, in both themes
+> - every table declares an empty state
+> - no view rebuilds the card or the label by hand
+> - every custom property a view names is actually defined
+> - every navigation group is used, and every group used is declared
+>
+> **Add a screen, run the suite.** It will tell you which rule you broke.
+>
+> ### Motion
+>
+> Motion confirms; it is never something to wait on. Content rises 8px over
+> 180ms, cards below the first stagger by 30ms and cap at four, buttons take one
+> pixel on press — no scale, because a control that grows under the cursor is a
+> toy.
+>
+> The whole block sits inside `prefers-reduced-motion: no-preference`, so a
+> reader who asked for stillness gets stillness rather than a shorter animation.
+>
+> ### Narrow screens
+>
+> This is a dense system read mostly on a desktop and it does not pretend
+> otherwise — but a tracking number gets typed standing in a warehouse and a
+> balance gets checked in a taxi. Padding tightens, the lead figure steps down
+> rather than the layout squeezing, wide tables scroll inside their own edges
+> instead of pushing the page sideways, and row actions grow to 44px on a coarse
+> pointer only.
+>
 > ### Two things that will bite
 >
 > **A new Blade view needs `npm run build`.** Tailwind compiles only the classes

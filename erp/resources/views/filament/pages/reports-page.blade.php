@@ -22,8 +22,7 @@
     <x-filament::section>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div class="xl:col-span-2">
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Report</label>
+                <label class="erp-label mb-1 block">Report</label>
                 <select wire:model.live="report"
                         class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                         style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
@@ -34,16 +33,14 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">From</label>
+                <label class="erp-label mb-1 block">From</label>
                 <input type="date" wire:model.live="from"
                        class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                        style="border-color: var(--erp-border); background: var(--erp-bg-surface)" />
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">To</label>
+                <label class="erp-label mb-1 block">To</label>
                 <input type="date" wire:model.live="to"
                        class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                        style="border-color: var(--erp-border); background: var(--erp-bg-surface)" />

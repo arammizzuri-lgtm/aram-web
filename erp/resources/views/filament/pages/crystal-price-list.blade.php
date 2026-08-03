@@ -11,8 +11,7 @@
     <x-filament::section>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Supplier</label>
+                <label class="erp-label mb-1 block">Supplier</label>
                 <select wire:model.live="supplierId" class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                         style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
                     @forelse ($suppliers as $id => $name)
@@ -24,8 +23,7 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Finish</label>
+                <label class="erp-label mb-1 block">Finish</label>
                 <select wire:model.live="finish" class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                         style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
                     @foreach ($this->finishOptions() as $value => $label)
@@ -35,8 +33,7 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Order by</label>
+                <label class="erp-label mb-1 block">Order by</label>
                 <div class="flex gap-2">
                     <select wire:model.live="sort" class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                             style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
@@ -55,8 +52,7 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Search</label>
+                <label class="erp-label mb-1 block">Search</label>
                 <input type="search" wire:model.live.debounce.300ms="search"
                        placeholder="Code or colour name — P01, Siam, AB…"
                        class="fi-input w-full rounded-lg border px-3 py-2 text-sm"

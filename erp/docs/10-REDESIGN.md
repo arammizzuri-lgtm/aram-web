@@ -5,7 +5,7 @@
 > does not.
 
 > **Build status — 2026-08-02.** Every module below is built.
-> **334 tests · 1,057 assertions · Pint clean · 20 screens verified in a browser.**
+> **347 tests · 1,104 assertions · Pint clean · 20 screens verified in a browser.**
 >
 > | Module | State |
 > |---|---|
@@ -25,6 +25,7 @@
 > | Selling prices per customer type — crystals, catalogue items | ⚠ tables and reader built, no entry screen yet |
 > | Dashboard + 7 reports with CSV export | ✅ |
 > | Two roles — owner sees all, assistant sees no cost | ✅ |
+> | Design system — measured contrast, one card, rules kept by tests | ✅ |
 >
 > **The one gap.** `crystal_sell_prices` and `catalogue_item_sell_prices` are
 > read by the deal screen but can only be filled from the database — the crystal

@@ -13,8 +13,7 @@
     <x-filament::section>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Section</label>
+                <label class="erp-label mb-1 block">Section</label>
                 <select wire:model.live="section" class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                         style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
                     @foreach ($this->sections() as $option)
@@ -24,8 +23,7 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Supplier</label>
+                <label class="erp-label mb-1 block">Supplier</label>
                 <select wire:model.live="supplierId" class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
                         style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
                     @forelse ($suppliers as $id => $name)
@@ -37,8 +35,7 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Search</label>
+                <label class="erp-label mb-1 block">Search</label>
                 <input type="search" wire:model.live.debounce.300ms="search"
                        placeholder="Code or name…"
                        class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
@@ -61,8 +58,7 @@
 
         <div class="mt-4 flex flex-wrap items-end gap-3 border-t pt-4" style="border-color: var(--erp-border)">
             <div>
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide"
-                       style="color: var(--erp-text-muted)">Add a quantity break</label>
+                <label class="erp-label mb-1 block">Add a quantity break</label>
                 <input type="number" min="2" step="1" wire:model="newBreak" wire:keydown.enter="addBreak"
                        placeholder="e.g. 10000"
                        class="fi-input w-40 rounded-lg border px-3 py-2 text-sm erp-numeric"

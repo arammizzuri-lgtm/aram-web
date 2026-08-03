@@ -628,3 +628,113 @@
         --erp-row-height: 2.25rem;
     }
 }
+
+/*
+ * ─────────────────────────────────────────────────────────── motion
+ *
+ * Motion here confirms rather than decorates. Something that changed under
+ * your hand should say so; nothing should be waited on.
+ *
+ * The whole block sits inside `prefers-reduced-motion: no-preference`, so a
+ * reader who has asked their system for stillness gets stillness — not a
+ * shortened animation, none. That is the correct reading of the preference and
+ * it is also why the rules are additive rather than something to undo.
+ */
+@media (prefers-reduced-motion: no-preference) {
+    :where(.fi-btn, .fi-ta-row, .fi-sidebar-item, .erp-card, .fi-input-wrp, .fi-badge) {
+        transition-property: background-color, border-color, color, opacity, box-shadow;
+        transition-duration: 120ms;
+        transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    /*
+     * A button that has been pressed should feel pressed. One pixel and no
+     * scale: a control that grows under the cursor is a toy.
+     */
+    .fi-btn:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+
+    /*
+     * Content arrives rather than appearing. Eight pixels and 180ms — enough
+     * to read as a settle, short enough that nobody is waiting for it.
+     */
+    .fi-page-content > * {
+        animation: erp-rise 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /*
+     * Cards further down begin a little later, so a screen resolves top-first
+     * the way it is read. Capped at four: past that the last card is waiting on
+     * a queue, which is the opposite of the point.
+     */
+    .fi-page-content > *:nth-child(2) { animation-delay: 30ms; }
+    .fi-page-content > *:nth-child(3) { animation-delay: 60ms; }
+    .fi-page-content > *:nth-child(n + 4) { animation-delay: 90ms; }
+
+    /* What Livewire is busy with, said in the thing you are waiting on. */
+    [wire\:loading] {
+        animation: erp-pulse 1.4s ease-in-out infinite;
+    }
+}
+
+@keyframes erp-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes erp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+/*
+ * ─────────────────────────────────────────────────── narrow screens
+ *
+ * This is a dense system read mostly on a desktop, and it should not pretend
+ * otherwise on a phone — but a tracking number gets typed standing in a
+ * warehouse, and a balance gets checked in a taxi. The aim is that everything
+ * remains usable and nothing is silently cut off.
+ */
+@media (max-width: 40rem) {
+    :root {
+        --erp-pad: 1rem;
+        --erp-gap: 1rem;
+    }
+
+    /*
+     * A figure is never worth shrinking to the point of being hard to read, so
+     * the display step steps down rather than the layout squeezing.
+     */
+    .erp-stat-value[data-lead] {
+        font-size: 1.75rem;
+        line-height: 2.125rem;
+    }
+
+    /*
+     * Anything wide scrolls inside its own edges rather than pushing the page
+     * sideways. A page that scrolls horizontally has lost its left margin, and
+     * with it the reader's place.
+     */
+    .fi-ta-ctn,
+    .erp-card {
+        max-width: 100%;
+    }
+
+    .fi-ta-ctn table,
+    .erp-card table {
+        min-width: max-content;
+    }
+
+    /*
+     * Touch targets. A row action at 24px is a coin toss with a thumb; the
+     * pointer-coarse query means a mouse is left exactly as it was.
+     */
+    @media (pointer: coarse) {
+        .fi-ta-actions .fi-btn,
+        .fi-ta-actions .fi-icon-btn {
+            min-height: 2.75rem;
+            min-width: 2.75rem;
+        }
+    }
+}

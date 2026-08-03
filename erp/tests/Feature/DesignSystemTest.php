@@ -99,6 +99,29 @@ class DesignSystemTest extends TestCase
     }
 
     /**
+     * Nobody rebuilds the small-caps label by hand either.
+     *
+     * Six views were each writing the same four utilities and the same inline
+     * colour above a figure. `.erp-label` is that, once — and once means it can
+     * be changed once.
+     */
+    #[Test]
+    public function no_view_hand_rolls_the_label(): void
+    {
+        $offenders = [];
+
+        foreach ($this->viewFiles() as $file) {
+            $code = preg_replace('/\{\{--.*?--\}\}/s', '', file_get_contents($file));
+
+            if (preg_match('/text-xs\s+font-semibold\s+uppercase/', (string) $code)) {
+                $offenders[] = str_replace(resource_path('views/'), '', $file);
+            }
+        }
+
+        $this->assertSame([], $offenders, 'use the .erp-label class');
+    }
+
+    /**
      * Every custom property a view asks for actually exists.
      *
      * `var(--erp-status-warning)` sat in the AI assistant view for months. There
