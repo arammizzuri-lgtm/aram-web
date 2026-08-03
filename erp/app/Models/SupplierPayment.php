@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,6 +28,34 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class SupplierPayment extends Model
 {
     use SoftDeletes;
+
+    /**
+     * A payment counts only while the purchase it paid for does.
+     *
+     * Deleting a purchase used to leave this row behind, still counting. The
+     * supplier's balance is what was ordered minus what was paid — so the
+     * ordered half respected the deletion and the paid half did not, and three
+     * suppliers with nothing left in the system sat at −$208.96, −$690.30 and
+     * −$1,828.36. A negative balance there reads as "they owe you", which was
+     * never true. The dashboard's transfer losses had the same hole.
+     *
+     * A payment that never had a purchase is a different thing — an opening
+     * settlement, money sent against nothing in particular — and it keeps
+     * counting, because there is no parent for it to have outlived.
+     *
+     * Not deleted along with the purchase, on purpose: deleting is reversible
+     * here, and a purchase restored six weeks later should come back with the
+     * money already sent against it. So the row stays and simply stops
+     * counting, which is what soft deletion does everywhere else.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('purchaseStillThere', function (Builder $query): void {
+            $query->where(function (Builder $query): void {
+                $query->whereNull('deal_purchase_id')->orWhereHas('purchase');
+            });
+        });
+    }
 
     protected $fillable = [
         'supplier_id', 'deal_purchase_id', 'number',

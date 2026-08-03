@@ -18,6 +18,7 @@ use App\Models\Supplier;
 use App\Models\SupplierPayment;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -75,6 +76,33 @@ class UndoDelete extends Component
     }
 
     /**
+     * The scopes that hide a row whose parent has gone.
+     *
+     * A purchase under a deleted deal, a supplier payment against a deleted
+     * purchase, a match whose invoice has gone — each stops counting, which is
+     * the entire point of those scopes and what keeps a deleted deal's costs
+     * off the dashboard.
+     *
+     * Two questions must ignore them. *What is in the bin* — a row hidden from
+     * the way back is a delete you cannot undo, which is the one thing this
+     * page exists to prevent. And *what still points at this row* — a foreign
+     * key does not care what is being reported; it is there or it is not.
+     *
+     * @var array<int, string>
+     */
+    public const PARENT_SCOPES = ['dealStillThere', 'purchaseStillThere', 'bothEndsPresent'];
+
+    /**
+     * Every row of a model, deleted ones and orphans included.
+     *
+     * @param  class-string<Model>  $class
+     */
+    public static function everyRowOf(string $class): Builder
+    {
+        return $class::withTrashed()->withoutGlobalScopes(self::PARENT_SCOPES);
+    }
+
+    /**
      * Put it back, then reload.
      *
      * The row reappearing where it was is the confirmation — better than a
@@ -102,7 +130,7 @@ class UndoDelete extends Component
             return;
         }
 
-        $model = $class::withTrashed()->find($key);
+        $model = self::everyRowOf($class)->find($key);
 
         if (! $model instanceof Model || ! $model->trashed()) {
             return;

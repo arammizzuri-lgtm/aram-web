@@ -123,7 +123,14 @@ class RecentlyDeleted extends Page implements HasTable
                     return [];
                 }
 
+                /*
+                 * Without the parent-presence scopes: a purchase deleted along
+                 * with its deal is hidden from every report on purpose, and
+                 * hiding it from the way back too would make the delete
+                 * permanent by accident.
+                 */
                 return $class::onlyTrashed()
+                    ->withoutGlobalScopes(UndoDelete::PARENT_SCOPES)
                     ->where('deleted_at', '>=', $since)
                     ->latest('deleted_at')
                     ->get()
@@ -242,7 +249,7 @@ class RecentlyDeleted extends Page implements HasTable
             return null;
         }
 
-        return $class::withTrashed()->find($key);
+        return UndoDelete::everyRowOf($class)->find($key);
     }
 
     private function name(Model $record): string

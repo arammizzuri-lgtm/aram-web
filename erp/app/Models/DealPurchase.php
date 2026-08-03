@@ -23,6 +23,26 @@ class DealPurchase extends Model
 {
     use SoftDeletes;
 
+    /**
+     * A purchase counts only while the deal it was bought for does.
+     *
+     * The deal's own delete dialog promises "its figures leave the reports",
+     * and for the selling side that was true. The buying side stayed: costs
+     * kept counting as money owed to suppliers with no deal on any screen to
+     * trace them back to, and the only way to be rid of them was to go and
+     * delete every purchase by hand — which is exactly what happened.
+     *
+     * Not deleted along with the deal, for the same reason as everywhere else
+     * here: restore the deal and its purchases, and the money already sent
+     * against them, come back untouched.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('dealStillThere', function (Builder $query): void {
+            $query->whereHas('deal');
+        });
+    }
+
     public const STATUSES = [
         'draft' => 'Draft',
         'ordered' => 'Ordered',

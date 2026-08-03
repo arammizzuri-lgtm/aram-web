@@ -2,6 +2,7 @@
 
 namespace App\Services\Deletion;
 
+use App\Livewire\UndoDelete;
 use App\Models\CollectionPoint;
 use App\Models\Consignment;
 use App\Models\Currency;
@@ -140,22 +141,39 @@ class DeletionImpact
             $this->count($invoices->count(), 'invoice', 'issued to the customer'),
             $received > 0 ? Money::of($received, 'USD')->display().' received against them.' : null,
 
-            // The cost half of the sentence is cost, and stays behind the same
-            // boundary as every other figure in this business.
-            $paidOut > 0 && auth()->user()?->can('view_cost')
-                ? Money::of($paidOut, 'USD')->display().' already paid to suppliers.'
+            /*
+             * The figure is cost and stays behind the same boundary as every
+             * other figure in this business — but the *fact* does not.
+             *
+             * It used to return null outright without `view_cost`, which left
+             * an assistant deleting a deal told nothing at all about the money
+             * already sent to suppliers over it. And `canBeErased()` is this
+             * same list, so a line that appears for one person and not another
+             * makes a safety check depend on who is looking — here it happens
+             * to be caught by the sentence below, which is luck rather than
+             * design.
+             */
+            $paidOut > 0
+                ? (auth()->user()?->can('view_cost')
+                    ? Money::of($paidOut, 'USD')->display().' already paid to suppliers.'
+                    : 'Money has already been paid to suppliers against it.')
                 : null,
 
             /*
              * The quiet one. A deleted deal drops out of every query that
-             * reaches through the deal — profit by product, goods bought
-             * without approval — so its figures leave the reports without
-             * anything appearing to have changed. The money already recorded is
-             * untouched: the invoices and the payments on them stay, and so
-             * does the customer's balance.
+             * reaches through it — profit by product, goods bought without
+             * approval, and now the purchases underneath it and the money sent
+             * against them, which used to stay behind and keep counting as owed
+             * to suppliers with no deal on any screen to trace them back to.
+             *
+             * The selling side is deliberately not the same. An invoice is a
+             * document the customer is holding; you do not un-issue one by
+             * deleting the deal behind it, so it stays, and so does their
+             * balance. Cancel the invoice if that is what you meant.
              */
             $invoices->isNotEmpty() || $received > 0 || $paidOut > 0
-                ? 'Its figures leave the reports; the invoices and payments themselves stay.'
+                ? 'Its figures leave the reports, the purchases under it included; '
+                    .'the invoices themselves stay, and so does the customer\'s balance.'
                 : null,
         ];
     }
@@ -373,7 +391,17 @@ class DeletionImpact
             $relation->withTrashed();
         }
 
-        return $relation->count();
+        /*
+         * And without the scopes that hide a row whose parent has gone.
+         *
+         * A purchase under a deleted deal stops counting everywhere else —
+         * that is the point of those scopes — but the row is still in the
+         * table, still holding this supplier's id, and `supplier_id` is
+         * restrict-on-delete. Counted through the scope it reads as zero, the
+         * dialog offers "Delete permanently", and the database refuses. This
+         * question is about foreign keys, not about what should be reported.
+         */
+        return $relation->withoutGlobalScopes(UndoDelete::PARENT_SCOPES)->count();
     }
 
     private function hasActiveFlag(Model $record): bool
