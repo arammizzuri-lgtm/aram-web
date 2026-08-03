@@ -136,6 +136,13 @@ class ProductResource extends Resource
                         ->numeric()
                         ->prefix('$')
                         ->helperText('A starting point. The real cost comes from the supplier on each deal.')
+                        // The column is NOT NULL DEFAULT 0, and a default only
+                        // applies when the column is left out of the insert
+                        // altogether — an empty box sends an explicit null and
+                        // the save dies. Nobody knows the cost of everything on
+                        // the day they add it, so blank has to mean zero here.
+                        ->default(0)
+                        ->dehydrateStateUsing(fn ($state) => blank($state) ? 0 : $state)
                         // Never shown to the assistant, on any screen.
                         ->visible(fn () => auth()->user()?->can('view_cost')),
 

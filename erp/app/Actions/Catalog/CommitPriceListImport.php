@@ -85,7 +85,7 @@ class CommitPriceListImport
             'name_zh' => $row->name_zh,
             'slug' => Str::slug(($row->supplier_sku ?? '').'-'.Str::random(6)),
             'default_supplier_id' => $import->supplier_id,
-            'cost_price' => $row->new_price,
+            'cost_price' => $row->new_price ?? 0,
             'selling_price' => 0,
             'volume_cbm' => $row->volume_cbm ?? 0,
             'weight_kg' => $row->weight_kg ?? 0,
