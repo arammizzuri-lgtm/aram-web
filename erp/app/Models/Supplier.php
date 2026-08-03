@@ -43,6 +43,12 @@ class Supplier extends Model
         return $this->hasMany(SupplierProduct::class);
     }
 
+    /** This supplier's whole catalogue tree, every section of it. */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
     /** This supplier's own crystal colour chart, in the Price Lists module. */
     public function crystalProducts(): HasMany
     {
