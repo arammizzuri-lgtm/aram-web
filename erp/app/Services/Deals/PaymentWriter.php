@@ -233,14 +233,39 @@ class PaymentWriter
                     ));
                 }
 
-                CustomerPaymentAllocation::create([
-                    'customer_payment_id' => $payment->id,
-                    'customer_invoice_id' => $invoice->id,
-                    // Shown against the invoice, so recorded in its own currency.
-                    'amount' => $this->inInvoiceCurrency($invoice, $share)->amount,
-                    'base_amount' => $share->amount,
-                    'was_suggested' => $wasSuggested,
-                ]);
+                /*
+                 * One row per payment and invoice, added to rather than
+                 * repeated.
+                 *
+                 * The table holds a unique key on the pair, and this always
+                 * inserted — so pointing the same payment at the same invoice
+                 * twice failed at the database. Which sounds like an edge case
+                 * and is not: credit carried forward does exactly that whenever
+                 * a remainder lands on an invoice the payment already covers
+                 * part of. The second time is a top-up, not a second match.
+                 */
+                $existing = CustomerPaymentAllocation::query()
+                    ->where('customer_payment_id', $payment->id)
+                    ->where('customer_invoice_id', $invoice->id)
+                    ->first();
+
+                if ($existing instanceof CustomerPaymentAllocation) {
+                    $existing->update([
+                        'amount' => Money::of($existing->amount, $invoice->currency)
+                            ->plus($this->inInvoiceCurrency($invoice, $share))->amount,
+                        'base_amount' => Money::of($existing->base_amount, 'USD')
+                            ->plus($share)->amount,
+                    ]);
+                } else {
+                    CustomerPaymentAllocation::create([
+                        'customer_payment_id' => $payment->id,
+                        'customer_invoice_id' => $invoice->id,
+                        // Shown against the invoice, so in its own currency.
+                        'amount' => $this->inInvoiceCurrency($invoice, $share)->amount,
+                        'base_amount' => $share->amount,
+                        'was_suggested' => $wasSuggested,
+                    ]);
+                }
 
                 $this->refreshInvoice($invoice->fresh());
             }

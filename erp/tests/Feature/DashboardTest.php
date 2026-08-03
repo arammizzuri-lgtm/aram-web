@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Filament\Widgets\PipelineWidget;
 use App\Filament\Widgets\PositionWidget;
+use App\Filament\Widgets\ProfitByMonthChart;
+use App\Filament\Widgets\TopCustomersChart;
 use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\DealLine;
@@ -177,6 +179,73 @@ class DashboardTest extends TestCase
             ->assertDontSee('Profit')
             ->assertDontSee('Owed to suppliers')
             ->assertDontSee('Bought at your own risk');
+    }
+
+    // ---------------------------------------------------------------- charts
+
+    /**
+     * Both charts are drawn now rather than handed to a charting library, so
+     * what they render is markup and can be checked.
+     */
+    #[Test]
+    public function the_monthly_chart_draws_twelve_months_and_states_the_total(): void
+    {
+        $this->deal('D-2026-0001', 'delivered', 500);
+
+        $chart = Livewire::test(ProfitByMonthChart::class);
+
+        $chart->assertOk()->assertSee('Profit by month');
+
+        $data = $chart->instance()->chart();
+
+        $this->assertCount(12, $data['columns']);
+        $this->assertIsFloat($data['zero']);
+
+        // The current month carries the profit, so the run ends non-empty.
+        $this->assertFalse($data['columns']->last()['empty']);
+    }
+
+    /** A young business has mostly empty months and the chart must survive it. */
+    #[Test]
+    public function the_monthly_chart_says_so_when_nothing_has_been_earned(): void
+    {
+        Livewire::test(ProfitByMonthChart::class)
+            ->assertOk()
+            ->assertSee('No profit recorded yet');
+    }
+
+    #[Test]
+    public function the_customer_ranking_lists_names_with_their_figures(): void
+    {
+        $this->deal('D-2026-0001', 'delivered', 500);
+
+        Livewire::test(TopCustomersChart::class)
+            ->assertOk()
+            ->assertSee('Profit by customer')
+            ->assertSee('Ali Trading');
+    }
+
+    #[Test]
+    public function the_customer_ranking_has_an_empty_state(): void
+    {
+        Livewire::test(TopCustomersChart::class)
+            ->assertOk()
+            ->assertSee('Nothing earned in the last 90 days');
+    }
+
+    /** Both are cost from end to end. */
+    #[Test]
+    public function an_assistant_sees_neither_chart(): void
+    {
+        $assistant = User::create([
+            'name' => 'Assistant', 'email' => 'assistant@test.local',
+            'password' => 'password', 'is_active' => true,
+        ]);
+        $assistant->assignRole('assistant');
+        $this->actingAs($assistant);
+
+        $this->assertFalse(ProfitByMonthChart::canView());
+        $this->assertFalse(TopCustomersChart::canView());
     }
 
     // ------------------------------------------------------------ the screen

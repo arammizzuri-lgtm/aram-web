@@ -236,6 +236,53 @@ class CustomerAccountTest extends TestCase
         $this->assertFalse($payment->fresh()->load('allocations')->unallocatedBase()->isPositive());
     }
 
+    /**
+     * The same payment, twice, against the same invoice.
+     *
+     * The allocations table holds a unique key on the payment and invoice pair,
+     * and allocate() always inserted — so the second time round it failed at the
+     * database with an integrity violation and a stack trace. That sounds like
+     * an edge case and is not: credit carried forward does exactly this the
+     * moment a remainder lands on an invoice the payment already part-covers.
+     * The second time is a top-up, not a second match.
+     */
+    #[Test]
+    public function topping_up_an_existing_match_adds_to_it(): void
+    {
+        $invoice = $this->invoice('D-2026-0001', 100);
+        $payment = $this->pay(100);
+
+        app(PaymentWriter::class)->allocate($payment, [$invoice->id => 40]);
+        app(PaymentWriter::class)->allocate($payment, [$invoice->id => 30]);
+
+        // One row, holding both — not two rows and not an exception.
+        $this->assertSame(1, $payment->fresh()->allocations()->count());
+        $this->assertSame('70.0000', $invoice->fresh()->load('allocations')->paidBase()->amount);
+        $this->assertSame('30.0000', $payment->fresh()->load('allocations')->unallocatedBase()->amount);
+    }
+
+    /**
+     * And the way it actually happened: a shipping invoice raised later, on a
+     * deal whose goods invoice the same payment is already sitting against.
+     */
+    #[Test]
+    public function credit_can_land_on_an_invoice_the_payment_already_part_covers(): void
+    {
+        $deal = $this->deal('D-2026-0005', 355.23);
+        $goods = app(InvoiceWriter::class)->issueGoods($deal);
+
+        $payment = $this->pay(5050);
+        app(PaymentWriter::class)->autoAllocate($payment);
+
+        $this->assertTrue($goods->fresh()->load('allocations')->isPaid());
+
+        // The shipping bill turns up afterwards and the credit reaches for it.
+        $shipping = app(InvoiceWriter::class)->issueShipping($deal->fresh(), 25);
+
+        $this->assertTrue($shipping->fresh()->load('allocations')->isPaid());
+        $this->assertSame('4669.7700', $this->account()->credit($this->customer->fresh())->amount);
+    }
+
     /** An advance paid before there was anything to pay for behaves the same. */
     #[Test]
     public function an_advance_is_spent_on_the_first_invoice_that_appears(): void

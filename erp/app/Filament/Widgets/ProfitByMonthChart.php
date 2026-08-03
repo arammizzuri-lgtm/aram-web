@@ -3,29 +3,36 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Deal;
-use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Carbon;
+use App\Support\Money;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Collection;
 
 /**
  * Profit per month, twelve months back.
  *
- * A single series, so there is no legend — the heading names it. Polarity is
- * the point of the chart, so it uses the diverging pair from the validated
- * palette (blue above zero, red below) with the zero baseline doing the primary
- * work; colour only reinforces what position already says, which is what keeps
- * it readable without colour.
+ * Drawn rather than charted, for the same reason the customer account is. The
+ * charting library gave a canvas a third of a screen tall to show one bar,
+ * with a y-axis of eight gridlines standing over eleven empty months — a chart
+ * whose furniture outweighed its data, telling you about itself rather than
+ * about the business. A young business has mostly empty months and the design
+ * has to be honest about that instead of inflating one column to fill a box.
+ *
+ * So: a compact strip of columns against a zero line, with the total and the
+ * best month stated in words above it, because those are the two things anybody
+ * actually takes from a twelve-month profit chart. Every column carries its own
+ * figure for a hover.
+ *
+ * Polarity is the point — above the line or below it — with position doing the
+ * work and colour only confirming it. That is what keeps it readable for
+ * someone who cannot tell the two colours apart.
  */
-class ProfitByMonthChart extends ChartWidget
+class ProfitByMonthChart extends Widget
 {
-    protected ?string $heading = 'Profit by month';
+    protected string $view = 'filament.widgets.profit-by-month';
 
-    protected ?string $description = 'What each month earned, in USD, after everything it cost.';
-
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
 
     protected int|string|array $columnSpan = 'full';
-
-    protected ?string $maxHeight = '260px';
 
     /** Cost is the whole content — hidden from anyone without `view_cost`. */
     public static function canView(): bool
@@ -33,73 +40,71 @@ class ProfitByMonthChart extends ChartWidget
         return auth()->user()?->can('view_cost') ?? false;
     }
 
-    protected function getType(): string
+    /**
+     * @return array<string, mixed>
+     */
+    public function chart(): array
     {
-        return 'bar';
+        $months = $this->months();
+        $values = $months->pluck('profit')->all();
+
+        $high = max(max($values), 0.0);
+        $low = min(min($values), 0.0);
+        $span = ($high - $low) ?: 1.0;
+
+        // Headroom, so the tallest column is never flush with the edge.
+        $high += $span * 0.15;
+        $low -= $span * 0.08;
+        $span = $high - $low;
+
+        $zero = round((1 - ((0 - $low) / $span)) * 100, 2);
+
+        $columns = $months->map(function (array $month) use ($low, $span, $zero): array {
+            $y = round((1 - (($month['profit'] - $low) / $span)) * 100, 2);
+            $positive = $month['profit'] >= 0;
+
+            return [
+                ...$month,
+                /*
+                 * Percentages of the plot rather than pixels, so the columns
+                 * keep their proportions at any card width and the whole thing
+                 * scales without a redraw.
+                 */
+                'top' => $positive ? $y : $zero,
+                // A month at exactly zero still gets a hairline, so the run of
+                // months reads as a run rather than as gaps.
+                'height' => max(0.6, abs($zero - $y)),
+                'positive' => $positive,
+                'empty' => abs($month['profit']) < 0.005,
+            ];
+        });
+
+        return [
+            'columns' => $columns,
+            'zero' => $zero,
+            'total' => Money::of(array_sum($values), 'USD'),
+            'best' => $months->sortByDesc('profit')->first(),
+            'anything' => collect($values)->contains(fn (float $value) => abs($value) > 0.005),
+        ];
     }
 
-    protected function getData(): array
+    /** @return Collection<int, array{label: string, full: string, profit: float}> */
+    private function months(): Collection
     {
-        $months = collect(range(11, 0))->map(fn (int $back) => now()->subMonths($back)->startOfMonth());
+        return collect(range(11, 0))->map(function (int $back): array {
+            $month = now()->subMonths($back)->startOfMonth();
 
-        $profits = $months->map(function (Carbon $month) {
             $deals = Deal::query()
                 ->whereBetween('deal_date', [$month, $month->copy()->endOfMonth()])
                 ->whereNot('status', 'cancelled')
                 ->with(['lines', 'purchases.costs', 'expenses', 'consignments'])
                 ->get();
 
-            return round($deals->sum(fn (Deal $deal) => $deal->profitBase()->toFloat()), 2);
+            return [
+                'label' => $month->format('M'),
+                'full' => $month->format('F Y'),
+                'profit' => round($deals->sum(fn (Deal $deal) => $deal->profitBase()->toFloat()), 2),
+            ];
         });
-
-        return [
-            'datasets' => [[
-                'label' => 'Profit',
-                'data' => $profits->all(),
-                /*
-                 * Blue above zero, red below — the diverging pair from
-                 * docs/05-UIUX.md. Not the reserved `critical` status colour:
-                 * that one ships with an icon and a label and means something
-                 * has gone wrong, whereas a losing month is a value on a scale.
-                 *
-                 * One hardcoded pair for both themes, which needed checking
-                 * rather than assuming: the panel runs on ThemeMode::System and
-                 * Chart.js takes its colours from PHP, which cannot know which
-                 * mode the reader is in. Validated on both surfaces —
-                 *
-                 *   light #ffffff · dark #17171a
-                 *   lightness PASS · chroma PASS · contrast PASS (both ≥ 3:1)
-                 *   CVD adjacent ΔE 21.6 protan · normal-vision ΔE 32.3
-                 *
-                 * so no per-mode swap is needed. Re-run the palette validator
-                 * before changing either value.
-                 */
-                'backgroundColor' => $profits
-                    ->map(fn (float $p) => $p < 0 ? '#e34948' : '#2a78d6')
-                    ->all(),
-                'borderRadius' => 4,
-                'borderSkipped' => false,
-            ]],
-            'labels' => $months->map(fn (Carbon $m) => $m->format('M'))->all(),
-        ];
-    }
-
-    protected function getOptions(): array
-    {
-        return [
-            // One series needs no legend; the heading names it.
-            'plugins' => ['legend' => ['display' => false]],
-            'scales' => [
-                'y' => [
-                    'grid' => ['color' => 'rgba(140,140,140,0.15)'],
-                    'ticks' => ['color' => '#898781'],
-                ],
-                'x' => [
-                    'grid' => ['display' => false],
-                    'ticks' => ['color' => '#898781'],
-                ],
-            ],
-            'maintainAspectRatio' => false,
-        ];
     }
 }
