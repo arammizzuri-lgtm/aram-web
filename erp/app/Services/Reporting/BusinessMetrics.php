@@ -13,6 +13,7 @@ use App\Models\DealLine;
 use App\Models\DealPurchase;
 use App\Models\Expense;
 use App\Models\SupplierPayment;
+use App\Services\Deals\DealProgress;
 use App\Support\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -273,6 +274,45 @@ class BusinessMetrics
     }
 
     /** @return Collection<int, Deal> */
+    /**
+     * Open work, by the stage it has reached.
+     *
+     * The business is organised around the deal and the dashboard never showed
+     * one — it opened on six money tiles and a chart, with no answer to "what
+     * is actually on?" This is that answer: how many requests are sitting at
+     * each stage and what they are worth, which is also where the queue is
+     * backing up.
+     *
+     * Closed and cancelled are left out. They are not work.
+     *
+     * @return Collection<int, array{stage: string, label: string, count: int, value: Money}>
+     */
+    public function pipeline(): Collection
+    {
+        $deals = Deal::query()
+            ->open()
+            ->with(['lines', 'customer'])
+            ->get()
+            ->groupBy('status');
+
+        return collect(DealProgress::ORDER)
+            ->reject(fn (string $stage) => $stage === 'closed')
+            ->map(function (string $stage) use ($deals): array {
+                $atStage = $deals->get($stage, collect());
+
+                return [
+                    'stage' => $stage,
+                    'label' => Deal::STATUSES[$stage] ?? $stage,
+                    'count' => $atStage->count(),
+                    'value' => Money::of(
+                        $atStage->sum(fn (Deal $deal) => $deal->revenueBase()->toFloat()),
+                        'USD',
+                    ),
+                ];
+            })
+            ->values();
+    }
+
     public function dealsInProgress(int $limit = 10): Collection
     {
         return Deal::query()

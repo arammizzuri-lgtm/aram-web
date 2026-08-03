@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Dashboard;
 use App\Http\Controllers\CustomerInvoicePrintController;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -9,7 +10,6 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationGroup;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -113,8 +113,19 @@ class AdminPanelProvider extends PanelProvider
     }
 
     /**
-     * Navigation follows the shape of the business, not the shape of the schema:
-     * goods are bought, shipped, costed, stocked, then sold.
+     * Navigation follows the shape of the business.
+     *
+     * It had drifted out of step with it. **Trading** — Deals, Consignments,
+     * Purchases, which is nearly everything anybody does here — was never
+     * declared, so it took no icon and sorted outside the intended order: the
+     * central group of the system, placed by accident. Meanwhile Logistics and
+     * Inventory were declared and empty, left behind by the redesign that
+     * removed the warehouse. Two ghosts above the real thing.
+     *
+     * The order is the working day. The deal first, because everything is one;
+     * then the money it brings in, then the money it costs; then the catalogues
+     * behind the prices; then the books, the reports, and the settings nobody
+     * opens twice a year.
      *
      * @return array<NavigationGroup>
      */
@@ -122,13 +133,13 @@ class AdminPanelProvider extends PanelProvider
     {
         return [
             NavigationGroup::make('Overview')->icon('heroicon-o-squares-2x2'),
-            // Supplier catalogues you quote from, upstream of what you stock.
+            // The centre of the system: one customer request, followed through.
+            NavigationGroup::make('Trading')->icon('heroicon-o-briefcase'),
+            NavigationGroup::make('Sales')->icon('heroicon-o-banknotes'),
+            NavigationGroup::make('Purchasing')->icon('heroicon-o-shopping-cart'),
+            // Supplier catalogues you quote from, upstream of the prices.
             NavigationGroup::make('Price Lists')->icon('heroicon-o-tag'),
             NavigationGroup::make('Catalog')->icon('heroicon-o-cube'),
-            NavigationGroup::make('Purchasing')->icon('heroicon-o-shopping-cart'),
-            NavigationGroup::make('Logistics')->icon('heroicon-o-truck'),
-            NavigationGroup::make('Inventory')->icon('heroicon-o-archive-box'),
-            NavigationGroup::make('Sales')->icon('heroicon-o-banknotes'),
             NavigationGroup::make('Finance')->icon('heroicon-o-calculator'),
             NavigationGroup::make('Reports')->icon('heroicon-o-chart-bar'),
             NavigationGroup::make('Settings')->icon('heroicon-o-cog-6-tooth')->collapsed(),
