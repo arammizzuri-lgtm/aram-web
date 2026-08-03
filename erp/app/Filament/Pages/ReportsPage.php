@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Services\Reporting\BusinessMetrics;
 use App\Services\Reporting\ReportBuilder;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -117,6 +118,38 @@ class ReportsPage extends Page
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$name}\"",
         ]);
+    }
+
+    /**
+     * The three comparisons, over the same window as the report above them.
+     *
+     * They live here rather than on the dashboard on purpose. The first screen
+     * is for checking; this one is for deciding, and a question like "is air
+     * worth it" is not one anybody answers in passing. Sharing the date range
+     * with the report is the point of putting them on the same screen — you set
+     * a period once and everything on the page answers for it.
+     *
+     * @return array<string, mixed>
+     */
+    public function comparisons(): array
+    {
+        $metrics = app(BusinessMetrics::class);
+        $from = Carbon::parse($this->from)->startOfDay();
+        $to = Carbon::parse($this->to)->endOfDay();
+
+        $pricing = $metrics->marginByPricingMethod($from, $to);
+        $shipping = $metrics->shippingEconomics($from, $to);
+        $thin = $metrics->thinnestDeals($from, $to);
+
+        return [
+            'pricing' => $pricing,
+            // Bars are drawn against the best margin on the screen, so the
+            // comparison is between the methods rather than against 100%.
+            'pricing_widest' => max(1.0, (float) ($pricing->max('margin_percent') ?: 1)),
+            'shipping' => $shipping,
+            'thin' => $thin,
+            'thin_widest' => max(1.0, (float) ($thin->max('margin_percent') ?: 1)),
+        ];
     }
 
     public function getTitle(): string

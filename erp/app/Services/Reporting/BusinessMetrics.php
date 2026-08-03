@@ -369,6 +369,178 @@ class BusinessMetrics
     }
 
     /**
+     * What each supplier is actually worth to you.
+     *
+     * Two figures, and both genuinely belong to the supplier. The **goods
+     * margin** is exact: a deal line carries its own cost, its own sell price
+     * and the supplier it was bought from, so nothing is apportioned. The
+     * **cost of paying them** is exact too — every supplier payment records
+     * what the transfer really took above the quoted rate, and that is a cost
+     * of dealing with this supplier and nobody else.
+     *
+     * Freight is deliberately absent. A consignment carries deals, not
+     * suppliers, so a freight figure per supplier would be a guess wearing the
+     * clothes of a measurement. The shipping comparison answers that question
+     * where it can be answered honestly.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function profitBySupplier(Carbon $from, Carbon $to): Collection
+    {
+        $lines = DealLine::query()
+            ->whereNotNull('supplier_id')
+            ->whereHas('deal', fn ($q) => $q
+                ->whereBetween('deal_date', [$from, $to])
+                ->whereNot('status', 'cancelled'))
+            ->with('supplier')
+            ->get()
+            ->groupBy('supplier_id');
+
+        // What the exchange took, per supplier, across the same window.
+        $losses = SupplierPayment::query()
+            ->whereBetween('paid_at', [$from, $to])
+            ->get()
+            ->groupBy('supplier_id')
+            ->map(fn (Collection $payments) => $payments->sum(
+                fn (SupplierPayment $payment) => $payment->transferLossBase()->toFloat()
+            ));
+
+        return $lines
+            ->map(function (Collection $group, int|string $supplierId) use ($losses): array {
+                $revenue = $group->sum(fn (DealLine $line) => $line->sellTotalBase()->toFloat());
+                $cost = $group->sum(fn (DealLine $line) => $line->costTotalBase()->toFloat());
+                $transfer = (float) ($losses[$supplierId] ?? 0);
+                $margin = $revenue - $cost;
+
+                return [
+                    'supplier' => $group->first()->supplier?->name ?? 'Unknown',
+                    'supplier_id' => (int) $supplierId,
+                    'revenue' => round($revenue, 2),
+                    'cost' => round($cost, 2),
+                    'goods_margin' => round($margin, 2),
+                    'transfer_cost' => round($transfer, 2),
+                    'profit' => round($margin - $transfer, 2),
+                    'margin_percent' => $revenue > 0 ? round(($margin - $transfer) / $revenue * 100, 1) : 0.0,
+                ];
+            })
+            ->sortByDesc('profit')
+            ->values();
+    }
+
+    /**
+     * Which way of setting a price actually earns more.
+     *
+     * The three methods are mixed inside a single deal, so the comparison is
+     * per line rather than per deal — and this is the only place the system can
+     * say whether your judgement when typing a price beats your standard
+     * markup, or whether the price list is quietly leaving money behind.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function marginByPricingMethod(Carbon $from, Carbon $to): Collection
+    {
+        $labels = DealLine::PRICING_METHODS;
+
+        return DealLine::query()
+            ->whereHas('deal', fn ($q) => $q
+                ->whereBetween('deal_date', [$from, $to])
+                ->whereNot('status', 'cancelled'))
+            ->get()
+            ->groupBy('pricing_method')
+            ->map(function (Collection $lines, string $method) use ($labels): array {
+                $revenue = $lines->sum(fn (DealLine $line) => $line->sellTotalBase()->toFloat());
+                $cost = $lines->sum(fn (DealLine $line) => $line->costTotalBase()->toFloat());
+
+                return [
+                    'method' => $method,
+                    'label' => $labels[$method] ?? $method,
+                    'lines' => $lines->count(),
+                    'revenue' => round($revenue, 2),
+                    'profit' => round($revenue - $cost, 2),
+                    /*
+                     * The comparison is the margin, not the total. A method used
+                     * on twice as many lines will always win on volume, and that
+                     * says nothing at all about which is the better way to price.
+                     */
+                    'margin_percent' => $revenue > 0 ? round(($revenue - $cost) / $revenue * 100, 1) : 0.0,
+                ];
+            })
+            ->sortByDesc('margin_percent')
+            ->values();
+    }
+
+    /**
+     * What each shipping mode really costs, in your own numbers.
+     *
+     * Sea is billed for space and air for weight, so the two arrive quoted in
+     * units that cannot be compared — which is why the choice usually gets made
+     * on feel. Both figures are given for both modes: the cost of a kilo by sea
+     * and of a cubic metre by air are not what anybody bills you, but they are
+     * what makes the decision comparable.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function shippingEconomics(Carbon $from, Carbon $to): Collection
+    {
+        return Consignment::query()
+            ->whereNotNull('freight_base')
+            ->where(fn ($q) => $q
+                ->whereBetween('shipped_at', [$from, $to])
+                ->orWhereBetween('created_at', [$from, $to]))
+            ->get()
+            ->groupBy('mode')
+            ->map(function (Collection $shipments, string $mode): array {
+                $freight = $shipments->sum(fn (Consignment $c) => (float) $c->freight_base);
+                $weight = $shipments->sum(fn (Consignment $c) => (float) $c->gross_weight_kg);
+                $volume = $shipments->sum(fn (Consignment $c) => (float) $c->cbm);
+
+                return [
+                    'mode' => $mode,
+                    'label' => Consignment::MODES[$mode] ?? $mode,
+                    'shipments' => $shipments->count(),
+                    'freight' => round($freight, 2),
+                    'kg' => round($weight, 2),
+                    'cbm' => round($volume, 3),
+                    'per_kg' => $weight > 0 ? round($freight / $weight, 2) : null,
+                    'per_cbm' => $volume > 0 ? round($freight / $volume, 2) : null,
+                ];
+            })
+            ->sortByDesc('freight')
+            ->values();
+    }
+
+    /**
+     * The deals earning least, so a thin one surfaces.
+     *
+     * A monthly total averages a bad deal away: a month can look healthy while
+     * a third of its orders barely paid for themselves. Ranked by margin and
+     * not by profit, because a small order at 4% is the same mistake a large
+     * one at 4% only makes more expensive.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function thinnestDeals(Carbon $from, Carbon $to, int $limit = 8): Collection
+    {
+        return Deal::query()
+            ->whereBetween('deal_date', [$from, $to])
+            ->whereNot('status', 'cancelled')
+            ->with(['customer', 'lines', 'purchases.costs', 'expenses', 'consignments'])
+            ->get()
+            ->filter(fn (Deal $deal) => $deal->revenueBase()->isPositive())
+            ->map(fn (Deal $deal) => [
+                'deal' => $deal->number,
+                'id' => $deal->id,
+                'customer' => $deal->customer?->name ?? 'Unknown',
+                'revenue' => round($deal->revenueBase()->toFloat(), 2),
+                'profit' => round($deal->profitBase()->toFloat(), 2),
+                'margin_percent' => $deal->marginPercent(),
+            ])
+            ->sortBy('margin_percent')
+            ->take($limit)
+            ->values();
+    }
+
+    /**
      * Per-product profit, marked approximate where a deal commission exists.
      *
      * @return Collection<int, array<string, mixed>>
