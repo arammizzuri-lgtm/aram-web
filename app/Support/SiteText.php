@@ -156,7 +156,59 @@ class SiteText
                 'footer_logo'    => ['Logo text', 'ARAM MIZURI', 'ئارام مزووری'],
                 'footer_tagline' => ['Tagline', 'Architecture · Erbil · Kurdistan', 'تەڵارسازی · هەولێر · کوردستان'],
             ],
+
+            // Everything a visitor reads while they are waiting. Most of these
+            // are only ever seen on a slow connection, which is exactly when a
+            // Kurdish reader must not be dropped into English — so they live
+            // here with the rest, not hard-coded in script.js. Shipped to the
+            // browser as window.__SITE__.ui (see self::JS_TAB).
+            self::JS_TAB => [
+                'wait_slow'        => ['Loader — slow connection note', 'Still loading — this is taking longer than usual.', 'هێشتا باردەبێت — لەوە زیاتر کاتی دەوێت کە ئاسایی بێت.', 'area'],
+                'wait_stuck'       => ['Loader — gave up note', 'This is taking too long to load.', 'ئەمە زۆر کات دەخایەنێت بۆ بارکردن.'],
+                'wait_reload'      => ['Loader — reload button', 'Reload the page', 'پەڕەکە دووبارە بارکە'],
+                'wait_continue'    => ['Loader — continue anyway button', 'Continue anyway', 'بەهەرحاڵ بەردەوام بە'],
+                'img_failed'       => ['Image — could not load', 'Image unavailable', 'وێنە بەردەست نییە'],
+                'img_retry'        => ['Image — retry button', 'Retry', 'دووبارە هەوڵبدە'],
+                'dl_preparing'     => ['Full image — preparing', 'Preparing your image', 'وێنەکەت ئامادە دەکرێت'],
+                'dl_downloading'   => ['Full image — downloading', 'Downloading the full-size image', 'وێنەی قەبارە تەواو دادەبەزێت'],
+                'dl_stamping'      => ['Full image — watermarking', 'Adding the studio mark', 'نیشانەی ستۆدیۆ زیاد دەکرێت'],
+                'dl_saving'        => ['Full image — saving', 'Saving to your device', 'پاشەکەوت دەکرێت بۆ ئامێرەکەت'],
+                'dl_done'          => ['Full image — finished', 'Done', 'تەواو'],
+                'dl_cancel'        => ['Full image — cancel button', 'Cancel', 'هەڵوەشاندنەوە'],
+                'dl_failed'        => ['Full image — failed', 'That image could not be loaded.', 'نەتوانرا ئەو وێنەیە باربکرێت.'],
+                'dl_retry'         => ['Full image — retry button', 'Try again', 'دووبارە هەوڵبدە'],
+                'dl_large_note'    => ['Full image — large file note', 'These are full-size originals — they can be large.', 'ئەمانە ڕەسەنی قەبارە تەواون — دەتوانن گەورە بن.', 'area'],
+                'map_loading'      => ['Map — loading', 'Loading the map', 'نەخشەکە بار دەبێت'],
+                'map_failed'       => ['Map — could not load', 'The map could not be loaded.', 'نەتوانرا نەخشەکە باربکرێت.'],
+                'form_sending'     => ['Form — sending', 'Sending…', 'دەنێردرێت…'],
+                'form_failed'      => ['Form — failed', '⚠ Something went wrong — please email us directly.', '⚠ هەڵەیەک ڕوویدا — تکایە ڕاستەوخۆ ئیمەیڵمان بۆ بنێرە.', 'area'],
+            ],
         ];
+    }
+
+    /**
+     * The tab whose strings are also shipped to the browser.
+     *
+     * These are the only strings script.js has to render itself — every other
+     * bilingual string on the page is already in the markup, carried by the
+     * data-en / data-ku pair that the language toggle swaps. Waiting states
+     * have no markup to sit in until the wait happens, so they travel as data.
+     */
+    public const JS_TAB = 'Loading & waiting';
+
+    /**
+     * The JS_TAB strings resolved to both languages, for window.__SITE__.ui.
+     *
+     * @return array<string, array{en:string, ku:string}>
+     */
+    public static function jsStrings(): array
+    {
+        $out = [];
+        foreach (array_keys(static::tabs()[self::JS_TAB] ?? []) as $key) {
+            $out[$key] = ['en' => static::en($key), 'ku' => static::ku($key)];
+        }
+
+        return $out;
     }
 
     /**

@@ -42,11 +42,18 @@
 </head>
 <body>
 
-    <!-- Page Loader -->
+    {{-- Page Loader — the bar is driven by real progress in initLoader, not a
+         fixed animation, and the note + buttons only appear if the wait runs
+         long enough that silence would start to read as a broken page. --}}
     <div class="loader" id="loader">
         <div class="loader__sun" id="loaderSun"></div>
         <div class="loader__text">Aram Mizuri Architecture</div>
-        <div class="loader__bar"><div class="loader__progress"></div></div>
+        <div class="loader__bar"><div class="loader__progress" id="loaderProgress"></div></div>
+        <p class="loader__note" id="loaderNote" role="status" aria-live="polite"></p>
+        <div class="loader__actions" id="loaderActions">
+            <button class="loader__btn" id="loaderReload" type="button" {!! bitext('wait_reload') !!}>{{ bival('wait_reload') }}</button>
+            <button class="loader__btn loader__btn--ghost" id="loaderSkip" type="button" {!! bitext('wait_continue') !!}>{{ bival('wait_continue') }}</button>
+        </div>
     </div>
 
     <!-- Custom Cursor -->
@@ -222,7 +229,11 @@
             <span class="map-card__sheen" aria-hidden="true"></span>
             <button class="map-card__close" id="mapCardClose" aria-label="Close">✕</button>
 
+            {{-- .img-ph rather than the shimmer host class: this frame's own
+                 ::after is already the bottom gradient that keeps the number
+                 legible over the photo. --}}
             <div class="map-card__img-wrap">
+                <span class="img-ph is-loading" id="mapCardPh" aria-hidden="true"></span>
                 <img class="map-card__img" id="mapCardImg" src="" alt="">
                 <span class="map-card__num" id="mapCardNum"></span>
             </div>
@@ -451,6 +462,9 @@
                 <div class="about__side">
                     <div class="about__portrait">
                         <div class="portrait__sun" id="portraitSun"></div>
+                        {{-- .img-ph again — the portrait frame's ::after is the
+                             caption gradient. --}}
+                        <span class="img-ph is-loading" aria-hidden="true"></span>
                         <img class="portrait__photo" src="{{ \App\Models\Project::resolveImage(setting('about_portrait_img')) }}" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
                         <span class="portrait__corner portrait__corner--tl"></span>
                         <span class="portrait__corner portrait__corner--br"></span>
@@ -876,6 +890,30 @@
         </div>
       </div><!-- /.od-modal -->
 
+    </div>
+
+    {{-- ========== FULL-SIZE IMAGE PROGRESS ==========
+         Shown while "View Full Resolution" or the download is fetching the
+         untouched original — a multi-megabyte file that is then decoded and
+         watermarked. Before this existed the full-res link opened a blank
+         tab and the download button appeared to do nothing at all, which is
+         the exact wait most likely to be read as a broken site. Percentages
+         come from Content-Length; see prepareFullImage in script.js. --}}
+    <div class="dlp" id="dlProgress" role="dialog" aria-modal="true" aria-live="polite" aria-label="Preparing full-size image">
+        <div class="dlp__panel">
+            <div class="dlp__sun" id="dlpSun" aria-hidden="true"></div>
+            <p class="dlp__title" id="dlpTitle"></p>
+            <p class="dlp__note" id="dlpNote"></p>
+            <div class="dlp__bar" id="dlpBar"><div class="dlp__fill" id="dlpFill"></div></div>
+            <div class="dlp__stats">
+                <span class="dlp__bytes" id="dlpBytes"></span>
+                <span class="dlp__pct" id="dlpPct"></span>
+            </div>
+            <div class="dlp__actions">
+                <button class="dlp__btn dlp__btn--gold" id="dlpRetry" type="button" hidden {!! bitext('dl_retry') !!}>{{ bival('dl_retry') }}</button>
+                <button class="dlp__btn" id="dlpCancel" type="button" {!! bitext('dl_cancel') !!}>{{ bival('dl_cancel') }}</button>
+            </div>
+        </div>
     </div>
 
     {{-- The #kurdOutline SVG filter that used to live here (dilate/erode to

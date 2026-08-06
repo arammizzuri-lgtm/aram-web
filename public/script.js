@@ -4,6 +4,235 @@
 
 'use strict';
 
+/* ---- Waiting-state helpers ------------------------------
+   Everything the site says while a visitor is waiting goes through here, so
+   the rules are applied once instead of being re-decided at each call site.
+
+   Two of them matter:
+   - a wait must never silently switch to English. Copy comes from
+     window.__SITE__.ui (the "Loading & waiting" tab in SiteText) and is
+     re-read on every render, so a language toggle mid-wait is picked up.
+   - a wait must never end without saying how. Every helper that starts a
+     loading state has a matching way to end it in failure, because an
+     indicator that just stops is worse than none at all. */
+
+/** Bilingual UI string by key, following the current page direction. */
+function uiText(key) {
+    const site = window.__SITE__;
+    const row  = site && site.ui && site.ui[key];
+    if (!row) return '';
+    return document.documentElement.getAttribute('dir') === 'rtl' ? (row.ku || row.en) : row.en;
+}
+
+/** Bytes as a short human string — "7.9 MB", "812 KB". */
+function formatBytes(n) {
+    if (!n && n !== 0) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+/**
+ * Put "this image did not load" into a frame, with a way to try again.
+ *
+ * A frame that simply stays empty is the single thing most likely to be read
+ * as a broken site, so no image wait is allowed to end silently.
+ */
+function showImageFallback(box, onRetry) {
+    if (!box) return;
+    const old = box.querySelector(':scope > .img-fallback');
+    if (old) old.remove();
+
+    const el = document.createElement('div');
+    el.className = 'img-fallback';
+    el.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" '
+        + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        + '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/>'
+        + '</svg><span>' + uiText('img_failed') + '</span>';
+
+    if (typeof onRetry === 'function') {
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'img-fallback__retry';
+        retry.textContent = uiText('img_retry');
+        retry.addEventListener('click', function (e) {
+            // The frames these sit in are themselves clickable — a project
+            // card opens the overlay. Without this, asking for the photo
+            // again would also navigate away from the card you asked on.
+            e.stopPropagation();
+            e.preventDefault();
+            el.remove();
+            onRetry();
+        });
+        el.appendChild(retry);
+    }
+    box.appendChild(el);
+}
+
+/** Same URL, but guaranteed to re-request rather than replay a cached failure. */
+function cacheBust(url) {
+    if (!url) return url;
+    const base = url.split('#')[0];
+    return base + (base.indexOf('?') === -1 ? '?' : '&') + 'r=' + Date.now();
+}
+
+/**
+ * Track one image's arrival and keep its frame's loading state in step.
+ *
+ * `frame` shimmers (via .is-loading, or a .img-ph placeholder inside it)
+ * until the image is decoded, then hands over. If it never arrives the
+ * frame says so and offers a retry, rather than staying an empty box —
+ * the one outcome that reads as a broken page instead of a slow one.
+ *
+ * Call it *after* assigning the new src. Assigning src is synchronous while
+ * the load event is not, so the listeners below are always in place in time;
+ * calling it first would instead let the check for an already-complete image
+ * see the *previous* photo and settle the frame before the new one had even
+ * started. Safe to call again whenever the src changes.
+ */
+function trackImage(img, frame, opts) {
+    if (!img) return;
+    const o = opts || {};
+    const box = frame || img.parentElement;
+    const ph  = box && box.querySelector(':scope > .img-ph');
+
+    // A cached image settles both from the `complete` check at the bottom and
+    // from the load event that follows it, so each attempt settles once.
+    let settled = false;
+
+    // The placeholder is faded out rather than removed so the photo is never
+    // seen to land on a hard edge; it is reused if the src changes again.
+    //
+    // Clearing `settled` here is what makes a retry work: the first attempt
+    // settled the frame in failure, and without this the guard below would
+    // still be latched when the replacement image loaded — leaving a photo
+    // that had arrived sitting at opacity 0 behind a cleared placeholder.
+    function startWait() {
+        settled = false;
+        if (ph) { ph.classList.remove('is-done'); ph.classList.add('is-loading'); }
+        else if (box) box.classList.add('is-loading');
+        if (box) box.classList.remove('is-failed');
+        clearFallback();
+    }
+    function endWait() {
+        if (ph) { ph.classList.add('is-done'); ph.classList.remove('is-loading'); }
+        else if (box) box.classList.remove('is-loading');
+    }
+    function clearFallback() {
+        if (!box) return;
+        const old = box.querySelector(':scope > .img-fallback');
+        if (old) old.remove();
+    }
+
+    function done() {
+        if (settled) return;
+        settled = true;
+        endWait();
+        img.classList.add('img-loaded', 'img-ready');
+        if (typeof o.onload === 'function') o.onload();
+    }
+
+    function fail() {
+        if (settled) return;
+        settled = true;
+        endWait();
+        if (box) box.classList.add('is-failed');
+        img.classList.remove('img-loaded', 'img-ready');
+        if (!box || o.silent) return;
+        showImageFallback(box, function () {
+            const src = img.src;
+            startWait();
+            img.src = cacheBust(src);
+        });
+    }
+
+    // The DOM listeners are attached once per element and dispatch through a
+    // property holding the latest pair. Some images are reused for many
+    // photos — the map's hover card is one <img> serving every pin — so
+    // re-registering here would quietly pile up a handler per hover.
+    img._trackTo = { done: done, fail: fail };
+    if (!img._tracked) {
+        img._tracked = true;
+        img.addEventListener('load', function () {
+            // A broken file can still fire load with no pixels behind it.
+            if (img.naturalWidth) img._trackTo.done(); else img._trackTo.fail();
+        });
+        img.addEventListener('error', function () { img._trackTo.fail(); });
+    }
+
+    // Already in the browser's cache: no event is coming, so settle now.
+    if (img.complete && img.src) {
+        img.naturalWidth ? done() : fail();
+    } else {
+        startWait();
+    }
+}
+
+/**
+ * Cover a Leaflet container until its first tiles arrive.
+ *
+ * All three maps on this page pull tiles from a CDN, so on a slow line the
+ * container sits as a plain dark rectangle — which is also exactly what it
+ * looks like when the CDN is blocked or unreachable. The skeleton makes the
+ * two distinguishable: a faint graticule and a pulse while tiles are on
+ * their way, and a plain statement once we stop expecting them.
+ *
+ * Returns the element so callers can hand it to the tile layer's events.
+ */
+function mapSkeleton(container, tileLayer, opts) {
+    if (!container) return null;
+    const o = opts || {};
+    const el = document.createElement('div');
+    el.className = 'map-skeleton';
+    el.innerHTML = '<span class="map-skeleton__label">'
+        + '<span class="map-skeleton__dot"></span>'
+        + '<span class="map-skeleton__text"></span></span>';
+    const text = el.querySelector('.map-skeleton__text');
+
+    let settled = false;
+    function say(key) { if (text) { text.textContent = uiText(key); text.dataset.key = key; } }
+    say('map_loading');
+
+    // Leaflet keeps its own panes inside the container; appending after init
+    // puts the skeleton above them without disturbing the layout.
+    container.appendChild(el);
+
+    function done() {
+        if (settled) return;
+        settled = true;
+        clearTimeout(giveUp);
+        el.classList.add('is-done');
+        setTimeout(function () { if (el.parentNode) el.remove(); }, 700);
+    }
+    function fail() {
+        if (settled) return;
+        settled = true;
+        el.classList.add('is-failed');
+        say('map_failed');
+    }
+
+    // Leaflet's 'load' means "nothing left in the queue", which it also
+    // reports for an empty queue — so on its own it fires before a single
+    // tile has been requested and hands over to a blank map. Counting real
+    // 'tileload' events is the honest signal: the skeleton lifts on the
+    // first tile that actually paints, and 'load' only counts once at least
+    // one has. 'tileerror' alone is not failure either, since Leaflet asks
+    // for tiles past the edge of the world and expects those to 404.
+    let painted = 0;
+    if (tileLayer && tileLayer.on) {
+        tileLayer.on('tileload', function () { if (++painted === 1) done(); });
+        tileLayer.on('load', function () { if (painted > 0) done(); });
+    }
+    const giveUp = setTimeout(function () { if (!painted) fail(); else done(); }, o.timeout || 12000);
+
+    document.addEventListener('langchange', function () {
+        if (text && text.dataset.key) text.textContent = uiText(text.dataset.key);
+    });
+
+    return { el: el, done: done, fail: fail };
+}
+
 /* ---- Kurdish Sun SVG Generator ------------------------- */
 function buildKurdishSun(container, opts = {}) {
     const {
@@ -87,26 +316,163 @@ function buildKurdishSun(container, opts = {}) {
     return svg;
 }
 
-/* ---- Loader -------------------------------------------- */
+/* ---- Loader ---------------------------------------------
+   The full-screen loading screen: the one wait long enough, and total
+   enough, that a skeleton would be the wrong answer.
+
+   What changed and why:
+
+   - The bar used to be a CSS animation that filled 0→100% in 1.6s no matter
+     what was happening. On a slow connection it sat full while nothing had
+     loaded, which is a worse signal than no bar at all — it promises the
+     page is about to appear and is then contradicted. It is now driven by
+     milestones that have actually been reached.
+
+   - Dismissal used to wait for window 'load' plus a flat 1700ms. window
+     'load' waits for *every* subresource, including the Leaflet CDN and
+     every image below the fold, none of which the hero needs; and the
+     1700ms was added to a visitor who was already ready. We now leave as
+     soon as what is behind the loader can actually be drawn.
+
+   - If window 'load' never fired — one hung font or CDN request is enough —
+     the loader stayed up forever. The old safety net set the body class but
+     never removed the loader, so the page was there, permanently covered.
+     Dismissal is now a single function every path calls.
+
+   Past ~7s the wait stops being explicable by "loading" alone, so we say so;
+   past ~14s we assume something is wrong and offer a way out. */
 (function initLoader() {
     const loader    = document.getElementById('loader');
     const loaderSun = document.getElementById('loaderSun');
+    const fill      = document.getElementById('loaderProgress');
+    const note      = document.getElementById('loaderNote');
+    const actions   = document.getElementById('loaderActions');
     if (!loader || !loaderSun) return;
 
     buildKurdishSun(loaderSun, { size: 150, color: '#F5C518', spin: true, spinSpeed: 0.03 });
 
-    window.addEventListener('load', () => {
-        setTimeout(() => {
+    const SLOW_AFTER  = 7000;    // "this is taking a while"
+    const STUCK_AFTER = 14000;   // "here is how to get out of it"
+    const FONT_CAP    = 4000;    // never hold the hero for a slow webfont
+    const HARD_CAP    = 18000;   // absolute ceiling — always leave eventually
+
+    // Weighted milestones. The weights are rough, but they are honest about
+    // ordering: parsing finishes first, fonts decide whether the headline can
+    // be drawn without reflowing, and 'load' is everything else.
+    const steps = { dom: 30, fonts: 25, load: 45 };
+    const done  = { dom: false, fonts: false, load: false };
+
+    let shown = 0, dismissed = false, raf = null;
+    const startedAt = Date.now();
+
+    function target() {
+        let t = 0;
+        for (const k in steps) if (done[k]) t += steps[k];
+        // A little creep between milestones so a long step still looks alive,
+        // but capped below the next one so it can never overstate progress.
+        if (t < 100) t = Math.min(t + Math.min(8, (Date.now() - startedAt) / 700), 97);
+        return t;
+    }
+
+    function paint() {
+        const t = target();
+        shown += (t - shown) * 0.12;                 // ease toward it, never back
+        if (fill) fill.style.width = shown.toFixed(1) + '%';
+        raf = requestAnimationFrame(paint);
+    }
+    if (fill) { fill.style.width = '0%'; raf = requestAnimationFrame(paint); }
+
+    function mark(key) {
+        if (done[key]) return;
+        done[key] = true;
+        maybeDismiss();
+    }
+
+    // The hero needs the DOM and the fonts. It does not need the Leaflet CDN,
+    // the map tiles, or any below-the-fold image, so 'load' is not waited on.
+    function ready() { return done.dom && done.fonts; }
+
+    function maybeDismiss() {
+        if (!dismissed && ready()) dismiss();
+    }
+
+    function dismiss() {
+        if (dismissed) return;
+        dismissed = true;
+        if (fill) fill.style.width = '100%';
+        clearTimeout(slowTimer);
+        clearTimeout(stuckTimer);
+        clearTimeout(hardTimer);
+        // One frame at 100% so the bar is seen to complete rather than
+        // vanishing mid-fill, then out.
+        setTimeout(function () {
+            if (raf) cancelAnimationFrame(raf);
             loader.classList.add('out');
             document.body.classList.add('is-loaded');   // triggers the hero reveal
-        }, 1700);
+            document.dispatchEvent(new Event('siteready'));
+        }, 260);
+    }
+
+    /* ---- Milestones -------------------------------------- */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { mark('dom'); });
+    } else {
+        mark('dom');
+    }
+
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () { mark('fonts'); });
+        // A webfont that never resolves must not hold the page hostage —
+        // font-display: swap means the text is readable regardless.
+        setTimeout(function () { mark('fonts'); }, FONT_CAP);
+    } else {
+        mark('fonts');
+    }
+
+    if (document.readyState === 'complete') mark('load');
+    else window.addEventListener('load', function () { mark('load'); });
+
+    /* ---- Long waits -------------------------------------- */
+    const slowTimer = setTimeout(function () {
+        if (dismissed || !note) return;
+        note.textContent = uiText('wait_slow');
+        note.classList.add('show');
+    }, SLOW_AFTER);
+
+    const stuckTimer = setTimeout(function () {
+        if (dismissed) return;
+        if (note) { note.textContent = uiText('wait_stuck'); note.classList.add('show'); }
+        if (actions) actions.classList.add('show');
+    }, STUCK_AFTER);
+
+    // Last resort. Whatever is still outstanding, a covered page is worse
+    // than a partly-loaded one — the visitor can see and use what is there.
+    const hardTimer = setTimeout(dismiss, HARD_CAP);
+
+    const reloadBtn = document.getElementById('loaderReload');
+    const skipBtn   = document.getElementById('loaderSkip');
+    if (reloadBtn) reloadBtn.addEventListener('click', function () { window.location.reload(); });
+    if (skipBtn)   skipBtn.addEventListener('click', dismiss);
+
+    // Keep the two long-wait strings in the visitor's language if they switch
+    // while still waiting.
+    document.addEventListener('langchange', function () {
+        if (dismissed || !note || !note.classList.contains('show')) return;
+        note.textContent = uiText(actions && actions.classList.contains('show') ? 'wait_stuck' : 'wait_slow');
     });
 })();
 
 /* ---- Hero (kinetic) ------------------------------------ */
 (function initHero() {
-    // Safety net: reveal the hero even if the loader never fires.
-    setTimeout(function () { document.body.classList.add('is-loaded'); }, 2500);
+    // Safety net for the case initLoader bails on — no loader markup at all.
+    // It used to fire at 2.5s unconditionally, which ran the hero's reveal
+    // animation underneath a loader that was still up, so on any slower load
+    // the animation was over before it could be seen. It now only covers the
+    // case nothing else does, and sits past the loader's own hard ceiling.
+    setTimeout(function () {
+        if (!document.getElementById('loader')) document.body.classList.add('is-loaded');
+    }, 2500);
+    setTimeout(function () { document.body.classList.add('is-loaded'); }, 20000);
 
     // Live Erbil clock
     var clock = document.getElementById('heroClock');
@@ -467,24 +833,42 @@ function imgVariant(proj, size, i) {
     const nameEl = document.getElementById('pshowName');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    let cur = 0, active = 0, inView = true, timer = null;
+    let cur = 0, active = 0, inView = true, timer = null, misses = 0;
 
     function caption(s) {
         const isKu = document.documentElement.getAttribute('dir') === 'rtl';
         numEl.textContent  = s.num;
         nameEl.textContent = (isKu && s.nameKu) ? s.nameKu : s.name;
     }
+    // The frame shimmers until the first slide lands. After that it never
+    // shimmers again: the reel only swaps once the incoming photo has
+    // decoded, so every later change is a crossfade between two images that
+    // both exist, and there is no gap to fill.
+    const frame = box.querySelector('.pshow__frame');
+    if (frame) frame.classList.add('is-loading');
+
     function show(i, instant) {
         const s = slides[i];
         const next = imgs[1 - active];
         next.onload = () => {
+            if (frame) frame.classList.remove('is-loading');
             imgs[active].classList.remove('on');
             next.classList.add('on');
             active = 1 - active;
             caption(s);
         };
+        // A slide that will not load must not take the reel down with it —
+        // step past it so the rotation carries on. `misses` stops that from
+        // becoming an endless walk if every slide is unreachable (offline,
+        // or the storage link is broken).
+        next.onerror = () => {
+            if (frame) frame.classList.remove('is-loading');
+            if (++misses >= slides.length) { box.hidden = true; if (timer) clearInterval(timer); return; }
+            cur = (i + 1) % slides.length;
+            show(cur);
+        };
         next.src = s.img;
-        if (instant && next.complete) next.onload();
+        if (instant && next.complete && next.naturalWidth) next.onload();
     }
     show(0, true);
 
@@ -522,9 +906,10 @@ function imgVariant(proj, size, i) {
         dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
         boxZoom: false, keyboard: false, touchZoom: false, tap: false,
     }).setView(OFFICE, 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    const tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd', maxZoom: 18,
     }).addTo(map);
+    mapSkeleton(el, tiles);
     L.marker(OFFICE, {
         interactive: false,
         icon: L.divIcon({
@@ -732,6 +1117,16 @@ function imgVariant(proj, size, i) {
     });
 })();
 
+/* ---- Portrait ------------------------------------------
+   The About portrait is a single large photo in a tall frame, so an empty
+   frame there is a conspicuous hole in the section rather than a small gap.
+   It carries an .img-ph in the markup (the frame's own ::after is already
+   the caption gradient) which this hands over from. */
+(function initPortrait() {
+    const img = document.querySelector('.portrait__photo');
+    if (img) trackImage(img, img.closest('.about__portrait'));
+})();
+
 /* ---- Contact Form -------------------------------------- */
 (function initForm() {
     const form    = document.getElementById('contactForm');
@@ -743,7 +1138,10 @@ function imgVariant(proj, size, i) {
         const btn      = form.querySelector('.form-submit__label');
         const original = btn.textContent;
         const token    = document.querySelector('meta[name="csrf-token"]');
-        btn.textContent = 'Sending…';
+        // Was hard-coded English, so a Kurdish visitor was dropped into
+        // English at the one moment they most need to understand what is
+        // happening — the send they are waiting on.
+        btn.textContent = uiText('form_sending');
 
         const payload = {
             name:    (form.querySelector('[name="name"]')    || {}).value || '',
@@ -776,7 +1174,14 @@ function imgVariant(proj, size, i) {
         .catch(() => {
             btn.textContent = original;
             if (success) {
-                success.textContent = '⚠ Something went wrong — please email us directly.';
+                // Repoint the element's own bilingual pair rather than just
+                // its text, or the next language toggle would swap this error
+                // back to the success message it is standing in for.
+                const ui = (window.__SITE__ || {}).ui || {};
+                const row = ui.form_failed || {};
+                success.dataset.en = row.en || '';
+                success.dataset.ku = row.ku || row.en || '';
+                success.textContent = uiText('form_failed');
                 success.hidden = false;
             }
         });
@@ -1292,56 +1697,335 @@ const PROJECT_COORDS = [
         ctx.restore();
     }
 
-    function watermarkedURL(url) {
+    /* ---- The progress screen -----------------------------
+       This is the site's longest wait by a wide margin. "View full
+       resolution" and the download both pull the untouched original —
+       routinely several megabytes of architectural render — then decode it
+       and stamp it, and until now they did all of that in silence. Full
+       resolution opened a blank white tab and left it blank; the download
+       button appeared to do nothing at all until the file simply arrived.
+       Both are far past the point where a visitor concludes it is broken and
+       clicks again, which only starts a second download alongside the first.
+
+       So it gets a real loading screen. The percentage is read off
+       Content-Length as the body streams in, which also means the fetched
+       bytes are ours: the canvas is fed a blob from our own origin instead
+       of a cross-origin <img>, so the export no longer depends on the host
+       returning CORS headers. Where fetch cannot be used at all we fall back
+       to the original element-based path rather than losing the feature. */
+    const dlpEl     = document.getElementById('dlProgress');
+    const dlpTitle  = document.getElementById('dlpTitle');
+    const dlpNote   = document.getElementById('dlpNote');
+    const dlpBar    = document.getElementById('dlpBar');
+    const dlpFill   = document.getElementById('dlpFill');
+    const dlpBytes  = document.getElementById('dlpBytes');
+    const dlpPct    = document.getElementById('dlpPct');
+    const dlpCancel = document.getElementById('dlpCancel');
+    const dlpRetry  = document.getElementById('dlpRetry');
+    const dlpSun    = document.getElementById('dlpSun');
+    if (dlpSun && !dlpSun.firstChild) {
+        buildKurdishSun(dlpSun, { size: 76, color: '#F5C518', spin: true, spinSpeed: 0.03 });
+    }
+
+    let dlpJob = null;              // { controller, retry, titleKey } while one is running
+
+    function dlpSetPhase(key) {
+        if (dlpJob) dlpJob.titleKey = key;
+        if (dlpTitle) dlpTitle.textContent = uiText(key);
+    }
+
+    function dlpShow(titleKey, retry) {
+        if (!dlpEl) return;
+        dlpEl.classList.remove('is-failed', 'is-done');
+        dlpEl.classList.add('open');
+        if (dlpRetry) dlpRetry.hidden = true;
+        if (dlpCancel) dlpCancel.hidden = false;
+        if (dlpNote) dlpNote.textContent = uiText('dl_large_note');
+        if (dlpJob) dlpJob.retry = retry;
+        dlpSetPhase(titleKey);
+        dlpSetProgress(0, 0);
+    }
+
+    function dlpSetProgress(loaded, total) {
+        if (!dlpBar) return;
+        // No Content-Length means no honest percentage to show, so the rail
+        // goes indeterminate rather than inventing one.
+        const known = total > 0;
+        dlpBar.classList.toggle('is-indeterminate', !known);
+        if (dlpFill && known) dlpFill.style.width = Math.min(100, (loaded / total) * 100).toFixed(1) + '%';
+        if (dlpPct)   dlpPct.textContent = known ? Math.min(100, Math.round((loaded / total) * 100)) + '%' : '';
+        if (dlpBytes) {
+            // Nothing has arrived yet: say nothing rather than "0 B", which
+            // reads as a stalled transfer at exactly the moment one is
+            // starting normally.
+            dlpBytes.textContent = known ? formatBytes(loaded) + ' / ' + formatBytes(total)
+                                 : (loaded > 0 ? formatBytes(loaded) : '');
+        }
+    }
+
+    function dlpHide() {
+        if (!dlpEl) return;
+        dlpEl.classList.remove('open', 'is-failed', 'is-done');
+        dlpJob = null;
+    }
+
+    // `job` guards the delayed close: without it a second transfer started
+    // inside the confirmation beat would have its panel shut on it.
+    function dlpFinish(job) {
+        if (!dlpEl) return;
+        dlpEl.classList.add('is-done');
+        dlpSetPhase('dl_done');
+        setTimeout(function () { if (!job || dlpJob === job) dlpHide(); }, 550);
+    }
+
+    function dlpFail() {
+        if (!dlpEl) return;
+        if (dlpJob && typeof dlpJob.giveUp === 'function') dlpJob.giveUp();
+        dlpEl.classList.add('is-failed');
+        if (dlpTitle) dlpTitle.textContent = uiText('dl_failed');
+        if (dlpNote)  dlpNote.textContent = '';
+        if (dlpRetry) dlpRetry.hidden = !(dlpJob && dlpJob.retry);
+    }
+
+    // Cancelling has to undo everything the click set in motion — the
+    // transfer *and* any tab opened in anticipation of it.
+    function dlpAbort() {
+        if (!dlpJob) return;
+        if (dlpJob.controller) dlpJob.controller.abort();
+        if (typeof dlpJob.giveUp === 'function') dlpJob.giveUp();
+        dlpHide();
+    }
+    if (dlpCancel) dlpCancel.addEventListener('click', dlpAbort);
+    if (dlpRetry) dlpRetry.addEventListener('click', function () {
+        const again = dlpJob && dlpJob.retry;
+        dlpHide();
+        if (again) again();
+    });
+    // Escape cancels, like every other layer on this site.
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && dlpEl && dlpEl.classList.contains('open')) {
+            e.stopPropagation();          // don't also close the project overlay behind it
+            dlpAbort();
+        }
+    }, true);
+    // Mid-download language switch keeps the running commentary in step.
+    document.addEventListener('langchange', function () {
+        if (!dlpEl || !dlpEl.classList.contains('open')) return;
+        if (dlpEl.classList.contains('is-failed')) {
+            if (dlpTitle) dlpTitle.textContent = uiText('dl_failed');
+        } else if (dlpJob) {
+            dlpSetPhase(dlpJob.titleKey);
+            if (dlpNote) dlpNote.textContent = uiText('dl_large_note');
+        }
+    });
+
+    /* ---- Fetching with real progress --------------------- */
+
+    // Streams the response so the panel can report bytes as they arrive.
+    // Falls back to a plain (progress-less) read wherever streams are not
+    // available — the wait is still explained, just without a percentage.
+    function fetchWithProgress(url, signal, onProgress) {
+        return fetch(url, { signal, mode: 'cors', credentials: 'omit' }).then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const total = Number(res.headers.get('Content-Length')) || 0;
+            if (!res.body || !res.body.getReader) { onProgress(0, total); return res.blob(); }
+
+            const reader = res.body.getReader();
+            const chunks = [];
+            let loaded = 0;
+            return (function pump() {
+                return reader.read().then(function (r) {
+                    if (r.done) return new Blob(chunks, { type: res.headers.get('Content-Type') || 'image/jpeg' });
+                    chunks.push(r.value);
+                    loaded += r.value.length;
+                    onProgress(loaded, total);
+                    return pump();
+                });
+            })();
+        });
+    }
+
+    // Decode a blob we already hold. Because the pixels came through fetch
+    // rather than a cross-origin <img>, the canvas stays untainted and the
+    // export works without the image host sending CORS headers.
+    function blobToImage(blob) {
+        const url = URL.createObjectURL(blob);
         return new Promise(function (resolve, reject) {
             const img = new Image();
-            img.crossOrigin = 'anonymous';         // request CORS so canvas isn't tainted
-            img.onload = function () {
-                wmLogoReady.then(function () {     // ensure the logo is ready to stamp
-                    try {
-                        const c = document.createElement('canvas');
-                        c.width = img.naturalWidth || img.width;
-                        c.height = img.naturalHeight || img.height;
-                        const ctx = c.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        drawWatermark(ctx, c.width, c.height);
-                        c.toBlob(function (blob) {
-                            blob ? resolve(URL.createObjectURL(blob)) : reject(new Error('export failed'));
-                        }, 'image/jpeg', 0.92);
-                    } catch (err) { reject(err); }
-                });
-            };
-            img.onerror = function () { reject(new Error('load failed')); };
+            img.onload  = function () { resolve({ img: img, revoke: function () { URL.revokeObjectURL(url); } }); };
+            img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
             img.src = url;
         });
+    }
+
+    function stampToBlobURL(img) {
+        return wmLogoReady.then(function () {
+            return new Promise(function (resolve, reject) {
+                try {
+                    const c = document.createElement('canvas');
+                    c.width  = img.naturalWidth  || img.width;
+                    c.height = img.naturalHeight || img.height;
+                    const ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    drawWatermark(ctx, c.width, c.height);
+                    c.toBlob(function (blob) {
+                        blob ? resolve(URL.createObjectURL(blob)) : reject(new Error('export failed'));
+                    }, 'image/jpeg', 0.92);
+                } catch (err) { reject(err); }
+            });
+        });
+    }
+
+    // The original element-based route, kept for browsers or hosts where
+    // fetch is refused. No byte counter is possible here, so the panel shows
+    // its indeterminate rail instead of a percentage.
+    //
+    // The two ways this fails are not the same thing and must not be treated
+    // as one: `unreachable` means there is no image to give anybody, while
+    // `export` means the photo loaded fine and only the watermarking step
+    // failed (a tainted canvas). The first is a dead end worth admitting to;
+    // the second still has a perfectly good file to hand over.
+    function watermarkedURLLegacy(url) {
+        return new Promise(function (resolve, reject) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload  = function () {
+                stampToBlobURL(img).then(resolve, function () { reject(new Error('export')); });
+            };
+            img.onerror = function () { reject(new Error('unreachable')); };
+            img.src = url;
+        });
+    }
+
+    /**
+     * Fetch the original, stamp it, and hand back an object URL — narrating
+     * every phase to the panel as it goes.
+     *
+     * `deliver` receives the finished URL. It is passed rather than awaited
+     * so each caller can decide what "done" means: the download triggers a
+     * save, the full-resolution view navigates a tab it opened earlier.
+     *
+     * `onGiveUp` runs when nothing could be delivered, so a caller that has
+     * already committed to something on the strength of the click — the
+     * full-resolution view has a tab open by then — can undo it.
+     */
+    function prepareFullImage(url, titleKey, deliver, retry, onGiveUp) {
+        const controller = ('AbortController' in window) ? new AbortController() : null;
+        const job = { controller: controller, retry: retry, titleKey: titleKey, giveUp: onGiveUp };
+        dlpJob = job;
+        dlpShow(titleKey, retry);
+
+        let revokeSource = null;
+
+        // Every step checks it is still the job the panel belongs to, by
+        // identity rather than by "is anything running". Cancelling one
+        // transfer and immediately starting another is easy to do, and a
+        // truthiness check would let the abandoned chain deliver its file
+        // into the new one's panel.
+        function current() { return dlpJob === job; }
+
+        fetchWithProgress(url, controller && controller.signal, function (loaded, total) {
+            if (current()) dlpSetProgress(loaded, total);
+        })
+            .then(function (blob) {
+                if (!current()) throw Object.assign(new Error('stale'), { stale: true });
+                if (dlpBar) dlpBar.classList.add('is-indeterminate');   // bytes are in; encoding has no percentage
+                dlpSetPhase('dl_stamping');
+                return blobToImage(blob);
+            })
+            .then(function (held) {
+                revokeSource = held.revoke;
+                return stampToBlobURL(held.img);
+            })
+            .then(function (objectUrl) {
+                if (revokeSource) revokeSource();
+                if (!current()) { URL.revokeObjectURL(objectUrl); return; }   // cancelled while encoding
+                deliver(objectUrl, true);
+                dlpFinish(job);
+            })
+            .catch(function (err) {
+                if (revokeSource) revokeSource();
+                if (err && (err.stale || err.name === 'AbortError')) return;  // superseded, or cancelled
+                if (!current()) return;
+                // fetch was refused (CORS, or an old browser) — try the
+                // element route before admitting defeat.
+                if (dlpBar) dlpBar.classList.add('is-indeterminate');
+                watermarkedURLLegacy(url).then(function (objectUrl) {
+                    if (!current()) { URL.revokeObjectURL(objectUrl); return; }
+                    deliver(objectUrl, true);
+                    dlpFinish(job);
+                }).catch(function (err2) {
+                    if (!current()) return;
+                    if (err2 && err2.message === 'export') {
+                        // The photo is fine; only the stamp failed. Hand over
+                        // the untouched file — it loses the watermark, but
+                        // the visitor gets what they asked for.
+                        deliver(url, false);
+                        dlpFinish(job);
+                        return;
+                    }
+                    // Nothing reached us at all. Say so and offer another go,
+                    // rather than opening a tab onto a dead URL and letting
+                    // the browser's own error page deliver the news.
+                    dlpFail();
+                });
+            });
     }
 
     if (fullResEl) fullResEl.addEventListener('click', function (e) {
         const url = fullResEl.dataset.src;
         if (!url) return;
         e.preventDefault();
-        const win = window.open('', '_blank');     // open synchronously (popup-blocker safe)
-        watermarkedURL(url).then(function (obj) {
-            if (win) win.location = obj; else window.open(obj, '_blank');
-            setTimeout(function () { URL.revokeObjectURL(obj); }, 60000);
-        }).catch(function () {
-            if (win) win.location = url; else window.open(url, '_blank');
-        });
+        // Opened synchronously inside the click so the popup blocker allows
+        // it, then given something to say. It used to sit blank — a white
+        // tab for the entire download, which is the single worst place on
+        // the site to leave someone with no explanation.
+        const win = window.open('', '_blank');
+        if (win) writeWaitingTab(win);
+
+        prepareFullImage(url, 'dl_downloading', function (href, isBlob) {
+            if (win && !win.closed) win.location = href;
+            else window.open(href, '_blank');
+            if (isBlob) setTimeout(function () { URL.revokeObjectURL(href); }, 60000);
+        }, function () { fullResEl.click(); },
+        // Nothing to show: close the holding tab rather than leaving it
+        // stuck on "preparing" for a file that is never coming.
+        function () { if (win && !win.closed) win.close(); });
     });
+
+    // A holding page for the tab opened above, styled to match the site so
+    // the wait reads as ours and not as a browser failure.
+    function writeWaitingTab(win) {
+        try {
+            const rtl = document.documentElement.getAttribute('dir') === 'rtl';
+            win.document.write(
+                '<!doctype html><html lang="' + (rtl ? 'ku' : 'en') + '" dir="' + (rtl ? 'rtl' : 'ltr') + '">'
+                + '<head><meta charset="utf-8"><title>' + uiText('dl_preparing') + '</title>'
+                + '<style>html,body{height:100%;margin:0}'
+                + 'body{background:#090909;color:rgba(255,255,255,.55);display:flex;align-items:center;'
+                + 'justify-content:center;font:300 13px/1.7 -apple-system,BlinkMacSystemFont,"Inter",sans-serif;'
+                + 'letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:24px}'
+                + '.d{width:8px;height:8px;border-radius:50%;background:#F5C518;margin:0 auto 18px;'
+                + 'box-shadow:0 0 14px rgba(245,197,24,.7);animation:p 1.5s ease-in-out infinite}'
+                + '@keyframes p{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}'
+                + '@media (prefers-reduced-motion:reduce){.d{animation:none}}</style></head>'
+                + '<body><div><div class="d"></div>' + uiText('dl_preparing') + '</div></body></html>'
+            );
+            win.document.close();
+        } catch (err) { /* cross-origin or blocked — the panel still explains the wait */ }
+    }
 
     if (downloadEl) downloadEl.addEventListener('click', function (e) {
         const url = downloadEl.dataset.src;
         if (!url) return;
         e.preventDefault();
         const fname = downloadEl.dataset.fname || 'project.jpg';
-        const trigger = function (href, revoke) {
+        prepareFullImage(url, 'dl_saving', function (href, isBlob) {
             const a = document.createElement('a');
             a.href = href; a.download = fname;
             document.body.appendChild(a); a.click(); a.remove();
-            if (revoke) setTimeout(function () { URL.revokeObjectURL(href); }, 60000);
-        };
-        watermarkedURL(url).then(function (obj) { trigger(obj, true); })
-                           .catch(function () { trigger(url, false); });
+            if (isBlob) setTimeout(function () { URL.revokeObjectURL(href); }, 60000);
+        }, function () { downloadEl.click(); });
     });
 
     // Paint a blurred copy of the current image behind the image + info panel,
@@ -1365,9 +2049,10 @@ const PROJECT_COORDS = [
             boxZoom: false, keyboard: false, touchZoom: false, tap: false,
             inertia: false, fadeAnimation: false,
         });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        var miniTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             subdomains: 'abcd', maxZoom: 18,
         }).addTo(miniMap);
+        mapSkeleton(miniCanvas, miniTiles);
         miniMarker = L.marker([0, 0], {
             interactive: false,
             icon: L.divIcon({
@@ -1507,10 +2192,62 @@ const PROJECT_COORDS = [
         loader.src = full;
     }
 
+    /* ---- Painting the hero ------------------------------
+       The hero used to be assigned its src and faded in the moment the
+       overlay opened, whether or not there was an image behind it yet. On
+       anything slower than a warm cache that produced a fully-drawn info
+       panel beside an empty black rectangle — which does not look like a
+       photo arriving, it looks like a photo that failed.
+
+       So the frame shimmers instead, and only hands over once the file is
+       decoded. The image is fetched into a detached Image first, which also
+       means the outgoing photo stays up until the incoming one is genuinely
+       ready rather than being cleared into a gap.
+
+       `heroToken` guards the order: on a slow connection a visitor can step
+       through several photos before the first one lands, and without it the
+       slowest request would win and paint over whatever they settled on. */
+    const heroFrame = heroImg.closest('.od-bg');
+    let heroToken = 0;
+
     function paintHero(proj, i) {
-        heroImg.src = imgVariant(proj, 'lg', i);
+        const src = imgVariant(proj, 'lg', i);
+        const token = ++heroToken;
+
         heroImg.alt = proj.name;
         applyAmbient(imgVariant(proj, 'sm', i));
+
+        heroImg.classList.remove('img-ready');
+        if (heroFrame) {
+            heroFrame.classList.add('is-loading');
+            heroFrame.classList.remove('is-failed');
+            const stale = heroFrame.querySelector(':scope > .img-fallback');
+            if (stale) stale.remove();
+        }
+        if (!src) { settleHero(token, false); return; }
+
+        const pre = new Image();
+        pre.onload  = function () { if (token === heroToken) { heroImg.src = src; settleHero(token, true); } };
+        pre.onerror = function () { settleHero(token, false, src); };
+        pre.src = src;
+    }
+
+    function settleHero(token, ok, retrySrc) {
+        if (token !== heroToken) return;      // a later photo already owns the frame
+        if (heroFrame) heroFrame.classList.remove('is-loading');
+        if (ok) { heroImg.classList.add('img-ready'); return; }
+        if (heroFrame) {
+            heroFrame.classList.add('is-failed');
+            showImageFallback(heroFrame, retrySrc ? function () {
+                const again = ++heroToken;
+                heroFrame.classList.add('is-loading');
+                heroFrame.classList.remove('is-failed');
+                const pre = new Image();
+                pre.onload  = function () { if (again === heroToken) { heroImg.src = pre.src; settleHero(again, true); } };
+                pre.onerror = function () { settleHero(again, false, retrySrc); };
+                pre.src = cacheBust(retrySrc);
+            } : null);
+        }
     }
 
     // Checked after every hero load: someone who was already zoomed in when they
@@ -1531,11 +2268,12 @@ const PROJECT_COORDS = [
         const proj = PROJECT_DATA[currentProjIdx];
         if (!proj) return;
         currentImgIdx = ((idx % proj.imgs.length) + proj.imgs.length) % proj.imgs.length;
-        heroImg.style.opacity = '0';
-        setTimeout(() => {
-            paintHero(proj, currentImgIdx);
-            heroImg.style.opacity = '1';
-        }, 200);
+        // No inline opacity and no timed gap any more: paintHero drops
+        // .img-ready to fade the old photo out, and only restores it once the
+        // new one has decoded. The crossfade is therefore as long as the wait
+        // actually is, instead of a fixed 200ms that assumed there would not
+        // be one.
+        paintHero(proj, currentImgIdx);
         centreThumbs();
         updateImageLinks();
     }
@@ -1639,16 +2377,15 @@ const PROJECT_COORDS = [
         viewport.appendChild(reel);
         thumbsEl.appendChild(viewport);
 
-        // Hero image — crossfade
+        // Hero image — starts shimmering immediately and reveals itself when
+        // the photo lands (see paintHero). Kicked off right away rather than
+        // after a 60ms tick, so the download starts as early as possible.
         currentImgIdx = 0;
         // place the reel before the overlay is revealed, so it opens already
         // centred rather than being seen to slide into position
         centreThumbs(true);
-        heroImg.style.opacity = '0';
-        setTimeout(function() {
-            paintHero(proj, 0);
-            heroImg.style.opacity = '';  // CSS transition handles this
-        }, 60);
+        heroImg.style.opacity = '';      // clear any inline value left by older builds
+        paintHero(proj, 0);
         updateImageLinks();
 
         if (topbarEl) topbarEl.classList.remove('bar-solid');
@@ -1835,6 +2572,11 @@ const PROJECT_COORDS = [
     const cards = Array.from(grid.querySelectorAll('.pgc'));
 
     /* ---- Lazy load images -------------------------------- */
+    // Cards shimmer from the moment they are in range until their photo has
+    // decoded. Because loading only starts when a card comes near the
+    // viewport, an empty frame here is the normal case rather than a fault —
+    // which is exactly why it needs to look like something on its way, and
+    // not like a card that has nothing in it.
     const imgObserver = new IntersectionObserver(entries => {
         entries.forEach(e => {
             if (!e.isIntersecting) return;
@@ -1842,8 +2584,7 @@ const PROJECT_COORDS = [
             const src = img.dataset.src;
             if (src) {
                 img.src = src;
-                img.addEventListener('load', () => img.classList.add('img-loaded'), { once: true });
-                if (img.complete && img.naturalWidth) img.classList.add('img-loaded');
+                trackImage(img, img.closest('.pgc__inner'));
             }
             imgObserver.unobserve(img);
         });
@@ -1851,6 +2592,10 @@ const PROJECT_COORDS = [
 
     cards.forEach(card => {
         const img = card.querySelector('.pgc__img');
+        // The frame carries the shimmer straight away — a card scrolled into
+        // view before its observer fires should already read as loading.
+        const inner = card.querySelector('.pgc__inner');
+        if (inner && img && img.dataset.src) inner.classList.add('is-loading');
         if (img) imgObserver.observe(img);
     });
 
@@ -2041,7 +2786,7 @@ const PROJECT_COORDS = [
     // 60fps. Tiles that are already dark cost nothing; `opacity` over the black
     // container keeps them as deep as the filter did and is a compositor
     // property, not a repaint.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    const baseTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 18,
@@ -2051,6 +2796,10 @@ const PROJECT_COORDS = [
         updateWhenIdle: isTouchDevice,
         keepBuffer: 2,
     }).addTo(map);
+
+    // This map is a full-bleed section — an empty one is a screen-height hole
+    // in the page, so it is the one that most needs to say what it is doing.
+    mapSkeleton(mapEl, baseTiles);
 
     /* ── Kurdistan outline ──────────────────────────────────────────────
        The border used to be SVG paths with an feMorphology filter over them,
@@ -2484,8 +3233,14 @@ const PROJECT_COORDS = [
         } else {
             cardBadge.hidden = true;
             // hover card is a ~280px tile — the grid derivative covers it at 2x
+            // The card is summoned by a hover and has to feel instant, so its
+            // photo shimmers in place rather than leaving the top of the card
+            // blank while it loads. Silent on failure: this card is a preview
+            // that vanishes on mouse-out, so a retry button in it would be
+            // gone before it could be pressed.
             cardImg.src          = imgVariant(proj, 'thumb', 0);
             cardImg.alt          = proj.name;
+            trackImage(cardImg, cardImg.closest('.map-card__img-wrap'), { silent: true });
             cardMeta.textContent = [proj.location, proj.year, proj.typology].filter(Boolean).join('  ·  ');
             cardExcerpt.textContent = (isKu && proj.desc_ku) ? proj.desc_ku : proj.desc;
             cardCta.onclick = () => {

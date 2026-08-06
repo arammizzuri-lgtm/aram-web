@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Models\Status;
+use App\Support\SiteText;
 
 /**
  * Serves the public portfolio page, now powered by the database. Builds the
@@ -59,6 +60,10 @@ class PortfolioController extends Controller
             'stats' => $stats,
             // name => tone, so the map overlay can colour any status' dot.
             'statusTones' => Status::ordered()->pluck('tone', 'name')->all(),
+            // Waiting/progress copy in both languages. Everything else on the
+            // page carries its own data-en/data-ku pair, but these strings have
+            // no markup to live in until something is actually slow.
+            'ui' => SiteText::jsStrings(),
         ];
 
         return view('portfolio', compact('projects', 'clients', 'categories', 'content', 'payload', 'stats'));
