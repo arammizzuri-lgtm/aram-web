@@ -1734,6 +1734,11 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 .footer__kurdish {
     font-size: 13px; color: var(--gold); opacity: .5;
     letter-spacing: .04em;
+    /* Stays dir="rtl" so the Kurdish shapes and reads correctly, but the line
+       is pinned left so it starts on the same edge as the English tagline
+       above it. Left by name, not `start` — `start` in an RTL box is the right
+       edge, which is what floated it into the middle of the footer. */
+    text-align: left;
 }
 .footer__col--sun { display: flex; justify-content: center; }
 .footer__sun-wrap { width: 52px; height: 52px; opacity: .3; }
