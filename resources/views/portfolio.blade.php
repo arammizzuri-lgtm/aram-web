@@ -30,15 +30,37 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Fonts load without blocking. A stylesheet in the head holds up every
+         script on the page until it answers, so a slow fonts.googleapis.com
+         used to stall script.js — and with it the loader that is supposed to
+         explain the wait. Loading it as `print` takes it off that critical
+         path; the onload promotes it to `all` the moment it arrives. The
+         faces already carry display=swap, so text is readable in the fallback
+         either way, and <noscript> covers the no-JS case. --}}
+    @php $fontsHref = 'https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Vazirmatn:wght@200;300;400;500;600;700&display=swap'; @endphp
+    <link href="{{ $fontsHref }}" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
+    <noscript><link href="{{ $fontsHref }}" rel="stylesheet"></noscript>
     {{-- Kurdish sun — same mark as the loader --}}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.css">
+    {{-- Leaflet is served from our own origin, not unpkg.com.
+
+         A stylesheet in the head blocks script execution until it resolves,
+         and a <script> blocks everything after it — so with these four files
+         on a third-party CDN, one unreachable host meant script.js never ran
+         at all. Not a slow page: a permanently black one, with the loader
+         still sitting on top of it and no code alive to take it down. That is
+         not a hypothetical on the networks this practice's clients are on.
+
+         Self-hosted, the worst case is a map that does not draw, on a page
+         that works. three.min.js was already kept here for the same reason.
+         To update, re-download all four files (plus vendor/images/) from
+         unpkg at the matching version. --}}
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet-gesture-handling.min.css') }}?v={{ filemtime(public_path('vendor/leaflet-gesture-handling.min.css')) }}">
 </head>
 <body>
 
@@ -922,8 +944,9 @@
          iPad and iPhone. The same outline is now composited on a viewport-sized
          canvas — see KurdistanOutline in script.js. --}}
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>
+    {{-- Self-hosted — see the note beside the Leaflet stylesheets above. --}}
+    <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}"></script>
+    <script src="{{ asset('vendor/leaflet-gesture-handling.min.js') }}?v={{ filemtime(public_path('vendor/leaflet-gesture-handling.min.js')) }}"></script>
     <script>window.__SITE__ = {!! \Illuminate\Support\Js::from($payload) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
     <script src="{{ asset('vendor/three.min.js') }}" defer></script>
