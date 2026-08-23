@@ -75,6 +75,12 @@ class PurchasesRelationManager extends RelationManager
                     ->label('Goods')
                     // display() carries the currency already.
                     ->state(fn (DealPurchase $r) => $r->goodsTotal()->display())
+                    // The quoted figure stays the headline and the concession is
+                    // named under it, so the row goes on matching the supplier's
+                    // own invoice.
+                    ->description(fn (DealPurchase $r) => $r->hasDiscount()
+                        ? 'less '.$r->discountTotal()->display().' discount'
+                        : null)
                     ->alignEnd(),
 
                 TextColumn::make('total_base')

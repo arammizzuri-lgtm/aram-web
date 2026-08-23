@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Deals\DealDiscounts;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,9 @@ class Deal extends Model
         'number', 'customer_id', 'status', 'deal_date', 'expected_delivery',
         'rmb_usd_rate', 'iqd_usd_rate', 'sell_currency',
         'deal_commission', 'deal_commission_currency',
+        'supplier_discount_percent', 'supplier_discount_amount', 'supplier_discount_currency',
+        'pass_supplier_discount_on', 'profit_discount_percent', 'profit_discount_amount',
+        'supplier_discount_base', 'customer_discount', 'customer_discount_base',
         'customer_notes', 'internal_notes', 'created_by', 'approved_at', 'closed_at',
     ];
 
@@ -51,6 +55,14 @@ class Deal extends Model
             'rmb_usd_rate' => 'decimal:6',
             'iqd_usd_rate' => 'decimal:6',
             'deal_commission' => 'decimal:4',
+            'supplier_discount_percent' => 'decimal:4',
+            'supplier_discount_amount' => 'decimal:4',
+            'pass_supplier_discount_on' => 'boolean',
+            'profit_discount_percent' => 'decimal:4',
+            'profit_discount_amount' => 'decimal:4',
+            'supplier_discount_base' => 'decimal:4',
+            'customer_discount' => 'decimal:4',
+            'customer_discount_base' => 'decimal:4',
             'approved_at' => 'datetime',
             'closed_at' => 'datetime',
         ];
@@ -183,6 +195,35 @@ class Deal extends Model
         );
     }
 
+    /**
+     * The same figure in the currency the customer is actually billed in.
+     *
+     * Priced from this deal's own currency rather than through
+     * `DealLine::sellTotal()`, which reaches back up for the deal it belongs to.
+     * That round trip is a lazy load, and lazy loading is off — so a discount
+     * saved from the purchase screen, where the lines were never eager-loaded
+     * with their deal, threw rather than saving.
+     */
+    public function goodsRevenue(): Money
+    {
+        $currency = $this->sell_currency ?: 'USD';
+        $total = Money::zero($currency);
+
+        foreach ($this->lines as $line) {
+            $total = $total->plus(Money::of($line->unit_price, $currency)->times($line->quantity));
+        }
+
+        return $total;
+    }
+
+    /** What the items cost you before any supplier knocked anything off. */
+    public function grossGoodsCostBase(): Money
+    {
+        return self::totalBase(
+            $this->lines->map(fn (DealLine $line) => $line->costTotalBase())
+        );
+    }
+
     public function commissionBase(): Money
     {
         if ((float) $this->deal_commission <= 0) {
@@ -195,9 +236,72 @@ class Deal extends Model
         ));
     }
 
+    /**
+     * Every supplier concession on this deal, in USD.
+     *
+     * The deal-wide one plus each supplier's own. Read from the frozen figures
+     * rather than recomputed, so a rate typed today cannot resize a discount
+     * agreed in March — the same rule the line totals follow.
+     */
+    public function supplierDiscountBase(): Money
+    {
+        return Money::of($this->supplier_discount_base, 'USD')
+            ->plus(Money::of($this->purchases->sum('discount_base'), 'USD'));
+    }
+
+    /** What comes off the customer's total, in the currency they are billed in. */
+    public function customerDiscount(): Money
+    {
+        return Money::of($this->customer_discount, $this->sell_currency ?: 'USD');
+    }
+
+    public function customerDiscountBase(): Money
+    {
+        return Money::of($this->customer_discount_base, 'USD');
+    }
+
+    public function hasDiscount(): bool
+    {
+        return ! $this->supplierDiscountBase()->isZero()
+            || ! $this->customerDiscountBase()->isZero();
+    }
+
+    /**
+     * Rework the discounts from the deal as it stands now.
+     *
+     * The live answer, as against the frozen one above. DealWriter calls this
+     * on save and stamps the result; nothing else should, because everything
+     * else wants the figure as it was agreed rather than as it would be today.
+     */
+    public function computeDiscounts(): DealDiscounts
+    {
+        $perSupplier = Money::zero('USD');
+
+        foreach ($this->purchases as $purchase) {
+            $perSupplier = $perSupplier->plus($this->toBase($purchase->discountTotal()));
+        }
+
+        return DealDiscounts::of(
+            $this,
+            $this->grossGoodsCostBase(),
+            $this->goodsRevenue(),
+            $perSupplier,
+        );
+    }
+
+    /**
+     * What the customer owes, after anything you took off.
+     *
+     * The discount is subtracted here rather than written back into the line
+     * prices, so the items go on saying what they were quoted at and the
+     * concession stays a visible row on the invoice — which is most of the
+     * value of giving one.
+     */
     public function revenueBase(): Money
     {
-        return $this->goodsRevenueBase()->plus($this->commissionBase());
+        return $this->goodsRevenueBase()
+            ->plus($this->commissionBase())
+            ->minus($this->customerDiscountBase());
     }
 
     /**
@@ -209,9 +313,10 @@ class Deal extends Model
      */
     public function costBase(): Money
     {
-        $goods = self::totalBase(
-            $this->lines->map(fn (DealLine $line) => $line->costTotalBase())
-        );
+        // Net of every supplier concession: the point of one is that you send
+        // them less, and a cost that ignored it would report profit you never
+        // actually made back.
+        $goods = $this->grossGoodsCostBase()->minus($this->supplierDiscountBase());
 
         $extras = self::totalBase(
             $this->purchases->map(fn (DealPurchase $p) => $p->extraCostsBase())
@@ -250,7 +355,7 @@ class Deal extends Model
      */
     public function perLineProfitIsApproximate(): bool
     {
-        return (float) $this->deal_commission > 0;
+        return (float) $this->deal_commission > 0 || $this->hasDiscount();
     }
 
     /**

@@ -100,9 +100,26 @@ class QuotationWriter
             $total = $total->plus($lineTotal);
         }
 
+        /*
+         * Subtotal, discount, total — three rows rather than one.
+         *
+         * A discounted quotation showing only the final figure invites the very
+         * question the frozen snapshot exists to prevent: "why is this not what
+         * you told me per piece?" The items keep the price they were quoted at
+         * and the concession is a line of its own, so the customer can see both
+         * what the goods came to and what you took off them.
+         *
+         * The discount is read off the deal's frozen figure rather than worked
+         * out again here, so the quotation, the invoice and the profit report
+         * can never quote three different numbers for one concession.
+         */
+        $discount = $deal->customerDiscount();
+
         $quotation->update([
-            'total' => $total->amount,
-            'total_base' => $deal->toBase($total)->amount,
+            'subtotal' => $total->amount,
+            'discount' => $discount->amount,
+            'total' => $total->minus($discount)->amount,
+            'total_base' => $deal->toBase($total->minus($discount))->amount,
         ]);
     }
 

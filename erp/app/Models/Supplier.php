@@ -86,14 +86,26 @@ class Supplier extends Model
      */
     public function outstandingBalance(): float
     {
+        $live = $this->purchases()->whereNot('status', 'cancelled');
+
         // cost_total_base is already the line total, so no multiplication here.
         $ordered = (float) DealLine::query()
-            ->whereIn('deal_purchase_id', $this->purchases()->whereNot('status', 'cancelled')->select('id'))
+            ->whereIn('deal_purchase_id', (clone $live)->select('id'))
             ->sum('cost_total_base');
+
+        /*
+         * What they knocked off never became a debt.
+         *
+         * Left out, a supplier who gives 5% would show that 5% as permanently
+         * owing however faithfully you paid their invoice — the balance could
+         * not reach zero, and the one screen that answers "are we square?"
+         * would answer no forever.
+         */
+        $discounts = (float) (clone $live)->sum('discount_base');
 
         $paid = (float) $this->payments()->sum('base_amount');
 
-        return round((float) $this->opening_balance + $ordered - $paid, 2);
+        return round((float) $this->opening_balance + $ordered - $discounts - $paid, 2);
     }
 
     public function scopeActive(Builder $query): Builder

@@ -29,7 +29,7 @@ class Quotation extends Model
 
     protected $fillable = [
         'deal_id', 'number', 'version', 'status', 'currency', 'exchange_rate',
-        'total', 'total_base', 'quotation_date', 'valid_until', 'language',
+        'subtotal', 'discount', 'total', 'total_base', 'quotation_date', 'valid_until', 'language',
         'terms', 'notes', 'sent_at',
         'approved_at', 'approved_by_name', 'approval_channel', 'approval_note',
         'recorded_by', 'rejected_at', 'rejection_reason',
@@ -40,6 +40,8 @@ class Quotation extends Model
         return [
             'version' => 'integer',
             'exchange_rate' => 'decimal:6',
+            'subtotal' => 'decimal:4',
+            'discount' => 'decimal:4',
             'total' => 'decimal:4',
             'total_base' => 'decimal:4',
             'quotation_date' => 'date',
@@ -68,6 +70,11 @@ class Quotation extends Model
     public function isApproved(): bool
     {
         return $this->status === 'approved';
+    }
+
+    public function hasDiscount(): bool
+    {
+        return (float) $this->discount > 0;
     }
 
     public function isRightToLeft(): bool

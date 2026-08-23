@@ -9,6 +9,7 @@ use App\Filament\Resources\Purchases\Pages\ManagePurchases;
 use App\Models\DealPurchase;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -89,6 +90,43 @@ class PurchaseResource extends Resource
 
                     Textarea::make('notes')->rows(2)->columnSpanFull(),
                 ]),
+
+            /*
+             * This supplier's own concession, on their own order.
+             *
+             * Separate from the deal-wide box because a deal bought from three
+             * suppliers is three negotiations — supplier A's 5% has nothing to
+             * do with supplier B, and what you owe each of them has to be right
+             * on its own. This is the document you settle against, so it is
+             * where the figure belongs.
+             */
+            Section::make('Discount')
+                ->description(
+                    'What this supplier knocked off. It reduces what you owe them and '
+                    .'raises the profit on the deal — unless the deal is set to pass it on.'
+                )
+                ->columns(3)
+                ->schema([
+                    TextInput::make('discount_percent')
+                        ->label('They took off')
+                        ->numeric()
+                        ->suffix('%')
+                        ->helperText('Off the goods on this order.'),
+
+                    TextInput::make('discount_amount')
+                        ->label('And / or a flat amount')
+                        ->numeric()
+                        ->default(0)
+                        ->suffix(fn (?DealPurchase $record) => $record?->currency === 'USD' ? 'USD' : 'RMB')
+                        ->helperText('Both are applied if you fill in both.'),
+
+                    Placeholder::make('discount_summary')
+                        ->label('Goods after discount')
+                        ->content(fn (?DealPurchase $record) => $record === null
+                            ? '—'
+                            : $record->netGoodsTotal()->display()
+                                .'  ·  from '.$record->goodsTotal()->display()),
+                ]),
         ]);
     }
 
@@ -142,6 +180,12 @@ class PurchaseResource extends Resource
                     // display() already carries the currency; appending it again
                     // gave "¥6,250.00 CNY".
                     ->state(fn (DealPurchase $r) => $r->goodsTotal()->display())
+                    // What the supplier quoted stays the headline; what they
+                    // took off is said underneath rather than folded in, so the
+                    // row still reconciles against their invoice.
+                    ->description(fn (DealPurchase $r) => $r->hasDiscount()
+                        ? 'less '.$r->discountTotal()->display().' discount'
+                        : null)
                     ->alignEnd(),
 
                 TextColumn::make('total_base')

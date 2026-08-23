@@ -17,6 +17,7 @@ use App\Models\DealLine;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Services\Deals\CatalogueLookup;
+use App\Services\Deals\DealDiscounts;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -40,6 +41,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
@@ -202,6 +204,9 @@ class DealResource extends Resource
                         ->default('USD')
                         ->live(),
                 ]),
+
+            self::supplierDiscountSection(),
+            self::profitDiscountSection(),
 
             self::totalsSection(),
 
@@ -447,6 +452,33 @@ class DealResource extends Resource
                 })
                 ->columnSpan(2),
 
+            /*
+             * What this item costs once the order discount is counted.
+             *
+             * The discount is held as a lump against the order, not written
+             * back into the unit costs — the supplier quoted ¥50 and the record
+             * has to go on saying ¥50, or it stops reconciling against their
+             * invoice. But "what is this actually costing me now" is a fair
+             * question, so the item's share is shown here beside the quoted
+             * price rather than replacing it.
+             *
+             * The share is pro-rata by value, which is exactly right for a
+             * percentage and the only defensible split for a flat sum.
+             */
+            Placeholder::make('line_cost_after_discount')
+                ->label('After order discount')
+                ->visible(fn (Get $get) => auth()->user()?->can('view_cost')
+                    && self::orderDiscountRatio($get) > 0)
+                ->content(function (Get $get): string {
+                    $ratio = self::orderDiscountRatio($get);
+                    $currency = $get('cost_currency') ?: 'CNY';
+                    $unit = (float) $get('unit_cost') * (1 - $ratio);
+
+                    return self::money($unit, $currency).' each  ·  '
+                        .self::money($unit * (float) $get('quantity'), $currency);
+                })
+                ->columnSpan(2),
+
             Textarea::make('specification')
                 ->label('Specification')
                 ->rows(2)
@@ -472,6 +504,184 @@ class DealResource extends Resource
     }
 
     /**
+     * The concession the supplier made on the finished order.
+     *
+     * It comes off what you PAY. Whether the customer sees any of it is a
+     * separate decision and a separate switch, because both answers are
+     * ordinary: the discount was won by you on your order, and the customer has
+     * usually already agreed a price — but a long-standing customer waiting on
+     * a better number is exactly who you would hand it to.
+     *
+     * This box is the deal-wide one. Where several suppliers each gave their
+     * own, those are typed on the purchase itself, under "What it costs you",
+     * because that is the document you settle against — and this one then comes
+     * off whatever is left after them.
+     */
+    private static function supplierDiscountSection(): Section
+    {
+        return Section::make('Discount from the supplier')
+            ->description(
+                'Off what you pay. By default it stays with you and shows up as profit — '
+                .'turn on "pass it to the customer" to hand the same percentage on.'
+            )
+            ->columns(4)
+            ->visible(fn () => auth()->user()?->can('view_cost'))
+            ->collapsible()
+            ->collapsed(fn (Get $get) => ! self::hasSupplierDiscount($get))
+            ->schema([
+                TextInput::make('supplier_discount_percent')
+                    ->label('They took off')
+                    ->numeric()
+                    ->suffix('%')
+                    ->live(onBlur: true)
+                    ->helperText('Off the whole order.'),
+
+                TextInput::make('supplier_discount_amount')
+                    ->label('And / or a flat amount')
+                    ->numeric()
+                    ->default(0)
+                    ->live(onBlur: true)
+                    // Both apply together: "5% off, and another ¥200 off the
+                    // carriage" is one concession in two parts, and making you
+                    // choose between them would lose half of it.
+                    ->helperText('Both are applied if you fill in both.'),
+
+                Select::make('supplier_discount_currency')
+                    ->label('In')
+                    ->options(['CNY' => 'RMB', 'USD' => 'USD'])
+                    ->default('CNY')
+                    // `default()` only speaks on a new deal, so every deal that
+                    // existed before this feature opened the box empty and
+                    // reading "Select an option" — an unanswered question where
+                    // there is only ever one sensible answer.
+                    ->afterStateHydrated(fn (Set $set, ?string $state) => $set(
+                        'supplier_discount_currency',
+                        $state ?: 'CNY',
+                    ))
+                    ->live(),
+
+                Toggle::make('pass_supplier_discount_on')
+                    ->label('Pass it to the customer')
+                    ->inline(false)
+                    ->live()
+                    ->helperText('Same percentage off their total.'),
+
+                Placeholder::make('supplier_discount_summary')
+                    ->label('Comes to')
+                    ->columnSpanFull()
+                    ->content(fn (Get $get, ?Deal $record) => self::supplierDiscountNote($get, $record)),
+            ]);
+    }
+
+    /**
+     * What you chose to give away out of your own margin.
+     *
+     * No supplier price moves. This is you taking less, and it is the discount
+     * that gets given in practice — the customer asks for something off, the
+     * supplier is not involved, and the only question is how much of the margin
+     * you are willing to part with.
+     *
+     * The percentage is a share of what the ITEMS earn, deliberately not of the
+     * deal's bottom line: freight and expenses land weeks later, and a discount
+     * agreed on the phone must not change size when the freight bill arrives.
+     */
+    private static function profitDiscountSection(): Section
+    {
+        return Section::make('Discount from your profit')
+            ->description(
+                'Off what the customer pays, out of your margin alone. No supplier price changes — '
+                .'the items go on costing you exactly what they cost.'
+            )
+            ->columns(3)
+            ->visible(fn () => auth()->user()?->can('view_cost'))
+            ->collapsible()
+            ->collapsed(fn (Get $get) => ! self::hasProfitDiscount($get))
+            ->schema([
+                TextInput::make('profit_discount_percent')
+                    ->label('Give away')
+                    ->numeric()
+                    ->suffix('%')
+                    ->live(onBlur: true)
+                    ->helperText('Of the profit the items make.'),
+
+                TextInput::make('profit_discount_amount')
+                    ->label('And / or take off')
+                    ->numeric()
+                    ->default(0)
+                    ->suffix(fn (Get $get) => $get('sell_currency') ?: 'USD')
+                    ->live(onBlur: true)
+                    ->helperText('A flat amount, in what the customer pays in.'),
+
+                Placeholder::make('profit_discount_summary')
+                    ->label('Comes to')
+                    ->content(fn (Get $get, ?Deal $record) => self::profitDiscountNote($get, $record)),
+            ]);
+    }
+
+    /**
+     * The supplier's side, said in both currencies.
+     *
+     * Per-supplier concessions are named separately from the deal-wide one, so
+     * that a figure appearing here without anything typed above has a visible
+     * explanation rather than looking like the screen inventing money.
+     */
+    private static function supplierDiscountNote(Get $get, ?Deal $record): string
+    {
+        $total = self::summarise($get, $record);
+
+        if ($total['needs_cost_rate']) {
+            return 'Set the RMB rate above — the yuan cannot be valued without it.';
+        }
+
+        if ($total['supplier_discount_usd'] <= 0) {
+            return 'Nothing yet.';
+        }
+
+        $parts = [self::money($total['supplier_discount_usd'], 'USD').' off what you pay'];
+
+        $perSupplier = $total['per_supplier_discount_usd'];
+
+        if ($perSupplier > 0) {
+            $parts[] = 'includes '.self::money($perSupplier, 'USD').' agreed on the purchases below';
+        }
+
+        $parts[] = $total['passed_on'] > 0
+            ? 'passed on: '.self::money($total['passed_on'], $total['sell_currency']).' off the customer'
+            : 'kept — it lands in your profit';
+
+        return implode('  ·  ', $parts);
+    }
+
+    /** Your side, with the margin it came out of named beside it. */
+    private static function profitDiscountNote(Get $get, ?Deal $record): string
+    {
+        $total = self::summarise($get, $record);
+
+        if ($total['needs_cost_rate'] || $total['needs_sell_rate']) {
+            return '—';
+        }
+
+        if ($total['profit_given'] <= 0) {
+            return 'Nothing yet.';
+        }
+
+        return self::money($total['profit_given'], $total['sell_currency'])
+            .'  ·  out of '.self::money($total['profit_before_discount_usd'], 'USD').' the items earn';
+    }
+
+    private static function hasSupplierDiscount(Get $get): bool
+    {
+        return (float) $get('supplier_discount_percent') > 0
+            || (float) $get('supplier_discount_amount') > 0;
+    }
+
+    private static function hasProfitDiscount(Get $get): bool
+    {
+        return (float) $get('profit_discount_percent') > 0
+            || (float) $get('profit_discount_amount') > 0;
+    }
+
+    /**
      * What the deal comes to, kept in front of whoever is building it.
      *
      * Two currencies, because the deal lives in two: the goods are bought in
@@ -492,8 +702,8 @@ class DealResource extends Resource
                 Placeholder::make('cost_summary')
                     ->label('Goods cost you')
                     ->visible(fn () => auth()->user()?->can('view_cost'))
-                    ->content(function (Get $get): string {
-                        $total = self::summarise($get);
+                    ->content(function (Get $get, ?Deal $record): string {
+                        $total = self::summarise($get, $record);
 
                         if ($total['needs_cost_rate']) {
                             return 'Set the RMB rate above — the yuan cannot be valued without it.';
@@ -507,6 +717,14 @@ class DealResource extends Resource
 
                         $parts[] = self::money($total['cost_usd'], 'USD');
 
+                        // The discounted figure is the one that matters, so it
+                        // leads; the list price is named after it rather than
+                        // left to look like the answer.
+                        if ($total['supplier_discount_usd'] > 0) {
+                            $parts[] = 'after '.self::money($total['supplier_discount_usd'], 'USD')
+                                .' discount, from '.self::money($total['gross_cost_usd'], 'USD');
+                        }
+
                         return implode('  ·  ', $parts);
                     }),
 
@@ -518,8 +736,8 @@ class DealResource extends Resource
                  */
                 Placeholder::make('customer_summary')
                     ->label('Customer pays')
-                    ->content(function (Get $get): string {
-                        $total = self::summarise($get);
+                    ->content(function (Get $get, ?Deal $record): string {
+                        $total = self::summarise($get, $record);
 
                         $shown = self::money($total['customer_total'], $total['sell_currency']);
 
@@ -541,8 +759,8 @@ class DealResource extends Resource
                 Placeholder::make('profit_summary')
                     ->label('Profit')
                     ->visible(fn () => auth()->user()?->can('view_cost'))
-                    ->content(function (Get $get): string {
-                        $total = self::summarise($get);
+                    ->content(function (Get $get, ?Deal $record): string {
+                        $total = self::summarise($get, $record);
 
                         // Either half missing makes the answer meaningless, and
                         // a meaningless profit is worse than none: it is the one
@@ -554,6 +772,26 @@ class DealResource extends Resource
                         return self::money($total['profit_usd'], 'USD')
                             .'  ·  '.number_format($total['margin'], 1).'% margin';
                     }),
+
+                /*
+                 * A discount larger than the margin it came out of.
+                 *
+                 * Said plainly and not prevented. Selling at a loss to keep a
+                 * customer is a real decision and the system is in no position
+                 * to overrule it — but it must never be something you find out
+                 * about from the profit report a month later, so it is said
+                 * here while the figure can still be changed.
+                 */
+                Placeholder::make('discount_warning')
+                    ->hiddenLabel()
+                    ->columnSpanFull()
+                    ->visible(fn (Get $get, ?Deal $record) => auth()->user()?->can('view_cost')
+                        && self::summarise($get, $record)['exceeds_profit'])
+                    ->content(fn (Get $get, ?Deal $record) => new HtmlString(
+                        '<span class="text-warning-600 dark:text-warning-400 font-medium">'
+                        .'⚠ You are giving away more than the items earn — this deal loses money as it stands.'
+                        .'</span>'
+                    )),
             ]);
     }
 
@@ -564,9 +802,9 @@ class DealResource extends Resource
      * of this business share: yuan out to the supplier, dinars or dollars in
      * from the customer.
      *
-     * @return array{cost_rmb: float, cost_usd: float, customer_total: float, revenue_usd: float, profit_usd: float, margin: float, sell_currency: string, needs_cost_rate: bool, needs_sell_rate: bool}
+     * @return array{cost_rmb: float, cost_usd: float, gross_cost_usd: float, supplier_discount_usd: float, per_supplier_discount_usd: float, passed_on: float, profit_given: float, profit_before_discount_usd: float, customer_discount: float, customer_total: float, revenue_usd: float, profit_usd: float, margin: float, sell_currency: string, needs_cost_rate: bool, needs_sell_rate: bool, exceeds_profit: bool}
      */
-    private static function summarise(Get $get): array
+    private static function summarise(Get $get, ?Deal $record = null): array
     {
         $deal = self::dealFromForm($get);
         $sellCurrency = $deal->sell_currency;
@@ -578,7 +816,9 @@ class DealResource extends Resource
 
         foreach ((array) $get('lines') as $line) {
             $quantity = (float) ($line['quantity'] ?? 0);
-            $currency = $line['cost_currency'] ?: 'CNY';
+            // A row still being filled in carries only the keys that have been
+            // touched, so this cannot assume the currency is among them.
+            $currency = ($line['cost_currency'] ?? null) ?: 'CNY';
             $cost = (float) ($line['unit_cost'] ?? 0) * $quantity;
 
             if ($currency === 'CNY') {
@@ -612,7 +852,37 @@ class DealResource extends Resource
             $get('deal_commission_currency') ?: $sellCurrency,
         ))->toFloat();
 
-        $revenueUsd = $goodsUsd + $commissionUsd;
+        /*
+         * The discounts, worked out by the same class the saved deal uses.
+         *
+         * Not re-derived here: the screen and the record have to agree about
+         * what a concession came to, and two implementations of one percentage
+         * eventually disagree — in the profit box, which is the one figure on
+         * this screen a decision is made on.
+         *
+         * Concessions typed against individual suppliers live on their purchase
+         * documents, which are not part of this form, so they are read from the
+         * saved record. On a deal being created there are none yet.
+         */
+        $perSupplier = Money::of(
+            $record?->purchases->sum('discount_base') ?: 0,
+            'USD',
+        );
+
+        $discounts = DealDiscounts::of(
+            $deal,
+            Money::of($costUsd, 'USD'),
+            Money::of($goods, $sellCurrency),
+            $perSupplier,
+        );
+
+        $customerDiscount = $discounts->customer();
+        $customerDiscountUsd = $deal->toBase($customerDiscount)->toFloat();
+
+        // Both sides move: the supplier's concession comes off what you pay,
+        // and only whatever you chose to pass on comes off what they pay.
+        $netCostUsd = $costUsd - $discounts->supplier->toFloat();
+        $revenueUsd = $goodsUsd + $commissionUsd - $customerDiscountUsd;
 
         // Back into what the customer is billed in, so the commission is part
         // of one figure rather than a number they are told about separately.
@@ -622,14 +892,22 @@ class DealResource extends Resource
 
         return [
             'cost_rmb' => $costRmb,
-            'cost_usd' => $costUsd,
-            'customer_total' => $goods + $commissionInSellCurrency,
+            'cost_usd' => $netCostUsd,
+            'gross_cost_usd' => $costUsd,
+            'supplier_discount_usd' => $discounts->supplier->toFloat(),
+            'per_supplier_discount_usd' => $perSupplier->toFloat(),
+            'passed_on' => $discounts->passedOn->toFloat(),
+            'profit_given' => $discounts->profitGiven->toFloat(),
+            'profit_before_discount_usd' => $discounts->profitBefore->toFloat(),
+            'customer_discount' => $customerDiscount->toFloat(),
+            'customer_total' => $goods + $commissionInSellCurrency - $customerDiscount->toFloat(),
             'revenue_usd' => $revenueUsd,
-            'profit_usd' => $revenueUsd - $costUsd,
-            'margin' => $revenueUsd > 0 ? round(($revenueUsd - $costUsd) / $revenueUsd * 100, 1) : 0.0,
+            'profit_usd' => $revenueUsd - $netCostUsd,
+            'margin' => $revenueUsd > 0 ? round(($revenueUsd - $netCostUsd) / $revenueUsd * 100, 1) : 0.0,
             'sell_currency' => $sellCurrency,
             'needs_cost_rate' => $needsCostRate,
             'needs_sell_rate' => $needsSellRate,
+            'exceeds_profit' => ! $needsCostRate && ! $needsSellRate && $discounts->exceedsProfit($deal),
         ];
     }
 
@@ -927,6 +1205,68 @@ class DealResource extends Resource
     }
 
     /**
+     * How much of the order's cost the deal-wide supplier discount takes off.
+     *
+     * A plain fraction, so a line can show its own share of a discount that is
+     * stored against the whole order. Only the box on this screen is counted —
+     * concessions typed against an individual supplier live on that supplier's
+     * purchase document, which is not part of this form, and each of those is
+     * shown in full on the purchase itself.
+     */
+    private static function orderDiscountRatio(Get $get): float
+    {
+        /*
+         * Nothing typed, nothing to apportion.
+         *
+         * Answered before the rows are walked because this runs once per line
+         * on every render, and on the overwhelming majority of deals — which
+         * carry no discount at all — there is no reason to add the order up at
+         * all, let alone once for each line in it.
+         */
+        if ((float) $get('../../supplier_discount_percent') <= 0
+            && (float) $get('../../supplier_discount_amount') <= 0
+        ) {
+            return 0.0;
+        }
+
+        $deal = self::dealFromForm($get, parent: true);
+
+        $gross = 0.0;
+
+        foreach ((array) $get('../../lines') as $line) {
+            /*
+             * Every key read defensively.
+             *
+             * A row still being filled in has only the keys that have been
+             * touched, so reading `cost_currency` outright threw on a line that
+             * had a description and nothing else — taking the whole screen down
+             * mid-typing rather than showing one blank figure.
+             */
+            $currency = ($line['cost_currency'] ?? null) ?: 'CNY';
+            $cost = (float) ($line['unit_cost'] ?? 0) * (float) ($line['quantity'] ?? 0);
+
+            if ($cost <= 0 || ! self::hasRatesFor($deal, [$currency])) {
+                continue;
+            }
+
+            $gross += $deal->toBase(Money::of($cost, $currency))->toFloat();
+        }
+
+        if ($gross <= 0) {
+            return 0.0;
+        }
+
+        $discounts = DealDiscounts::of(
+            $deal,
+            Money::of($gross, 'USD'),
+            Money::zero($deal->sell_currency),
+            Money::zero('USD'),
+        );
+
+        return $discounts->supplier->toFloat() / $gross;
+    }
+
+    /**
      * What one line comes to, in dollars.
      *
      * Both figures are in dollars even when the customer is billed in dinars,
@@ -970,6 +1310,15 @@ class DealResource extends Resource
             'sell_currency' => $at('sell_currency') ?: 'USD',
             'rmb_usd_rate' => (float) $at('rmb_usd_rate'),
             'iqd_usd_rate' => (float) $at('iqd_usd_rate'),
+
+            // The discount boxes travel with it, so DealDiscounts can be handed
+            // an unsaved deal and answer exactly as it will once saved.
+            'supplier_discount_percent' => (float) $at('supplier_discount_percent'),
+            'supplier_discount_amount' => (float) $at('supplier_discount_amount'),
+            'supplier_discount_currency' => $at('supplier_discount_currency') ?: 'CNY',
+            'pass_supplier_discount_on' => (bool) $at('pass_supplier_discount_on'),
+            'profit_discount_percent' => (float) $at('profit_discount_percent'),
+            'profit_discount_amount' => (float) $at('profit_discount_amount'),
         ]);
     }
 

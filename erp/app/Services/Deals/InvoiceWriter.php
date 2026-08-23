@@ -102,7 +102,16 @@ class InvoiceWriter
                 $subtotal = $subtotal->plus($commission);
             }
 
-            return $this->close($invoice, $deal, $subtotal);
+            /*
+             * Whatever was taken off the whole order, as its own row.
+             *
+             * Not spread back across the unit prices: the customer agreed a
+             * price per piece and the invoice has to go on saying it, or the
+             * document stops reconciling against the quotation they approved.
+             * Taken from the deal's frozen figure so the two agree by
+             * construction rather than by both being calculated correctly.
+             */
+            return $this->close($invoice, $deal, $subtotal, $deal->customerDiscount());
         });
     }
 
@@ -147,6 +156,8 @@ class InvoiceWriter
                 'display_order' => 0,
             ]);
 
+            // No discount here: the deal's discount is against the goods, and
+            // taking it off the freight as well would give it away twice.
             return $this->close($invoice, $deal, $charge);
         });
     }
@@ -194,12 +205,20 @@ class InvoiceWriter
         ]);
     }
 
-    private function close(CustomerInvoice $invoice, Deal $deal, Money $subtotal): CustomerInvoice
-    {
+    private function close(
+        CustomerInvoice $invoice,
+        Deal $deal,
+        Money $subtotal,
+        ?Money $discount = null,
+    ): CustomerInvoice {
+        $discount ??= Money::zero($subtotal->currency);
+        $total = $subtotal->minus($discount);
+
         $invoice->update([
             'subtotal' => $subtotal->amount,
-            'total' => $subtotal->amount,
-            'total_base' => $deal->toBase($subtotal)->amount,
+            'discount' => $discount->amount,
+            'total' => $total->amount,
+            'total_base' => $deal->toBase($total)->amount,
         ]);
 
         /*

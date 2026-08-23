@@ -38,6 +38,7 @@ class DealWriter
 
             $this->freezeBaseAmounts($deal);
             $this->syncPurchases($deal);
+            $this->freezeDiscounts($deal);
 
             return $deal->refresh();
         });
@@ -67,6 +68,55 @@ class DealWriter
                 'sell_total_base' => $deal->toBase($sellTotal)->amount,
             ])->saveQuietly();
         }
+    }
+
+    /**
+     * Stamp what the discounts came to, in the currencies that will be read.
+     *
+     * Last of the three, because both of the others feed it: a discount is a
+     * share of totals that have to be right first, and the per-supplier ones
+     * cannot be valued until `syncPurchases()` has decided which lines belong
+     * to which supplier.
+     *
+     * Frozen for the same reason as everything else here. A percentage left to
+     * recompute would be re-answered against whatever rate the deal is opened
+     * under, so a 5% concession agreed in March would quietly become a
+     * different number of dollars in June — on a deal that has not been
+     * touched, and in the figure the profit report is built from.
+     */
+    /**
+     * Re-answer the discount figures alone.
+     *
+     * A supplier's own concession is typed on their purchase document, which is
+     * saved without going anywhere near the deal form — so without this, the
+     * deal would go on reporting yesterday's profit until somebody happened to
+     * open it and press save. Only the discount half is redone: nothing about
+     * the lines or the purchase grouping has changed.
+     */
+    public function syncDiscounts(Deal $deal): void
+    {
+        DB::transaction(fn () => $this->freezeDiscounts($deal));
+    }
+
+    private function freezeDiscounts(Deal $deal): void
+    {
+        $deal->load(['lines', 'purchases.lines']);
+
+        foreach ($deal->purchases as $purchase) {
+            $purchase->forceFill([
+                'discount_base' => $deal->toBase($purchase->discountTotal())->amount,
+            ])->saveQuietly();
+        }
+
+        $discounts = $deal->computeDiscounts();
+
+        $deal->forceFill([
+            // The deal-wide part only. Each purchase carries its own, and
+            // adding them here as well would take the same money off twice.
+            'supplier_discount_base' => $discounts->dealWideSupplier->amount,
+            'customer_discount' => $discounts->customer()->amount,
+            'customer_discount_base' => $deal->toBase($discounts->customer())->amount,
+        ])->saveQuietly();
     }
 
     /**

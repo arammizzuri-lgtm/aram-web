@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Deals\DealWriter;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +42,28 @@ class DealPurchase extends Model
         static::addGlobalScope('dealStillThere', function (Builder $query): void {
             $query->whereHas('deal');
         });
+
+        /*
+         * A concession typed here has to reach the deal it was given on.
+         *
+         * This document is edited on its own screen, which never touches the
+         * deal form — so without this the deal would go on reporting the profit
+         * it had before the supplier knocked anything off, until somebody
+         * happened to open it and press save.
+         *
+         * DealWriter writes back with `saveQuietly()`, so this cannot loop.
+         */
+        static::saved(function (self $purchase): void {
+            if (! $purchase->wasChanged(['discount_percent', 'discount_amount', 'currency'])) {
+                return;
+            }
+
+            $purchase->loadMissing('deal');
+
+            if ($purchase->deal !== null) {
+                app(DealWriter::class)->syncDiscounts($purchase->deal);
+            }
+        });
     }
 
     public const STATUSES = [
@@ -54,6 +77,7 @@ class DealPurchase extends Model
 
     protected $fillable = [
         'deal_id', 'supplier_id', 'number', 'supplier_reference', 'currency',
+        'discount_percent', 'discount_amount', 'discount_base',
         'status', 'bought_at_risk', 'ordered_at', 'notes',
     ];
 
@@ -62,6 +86,9 @@ class DealPurchase extends Model
         return [
             'ordered_at' => 'date',
             'bought_at_risk' => 'boolean',
+            'discount_percent' => 'decimal:4',
+            'discount_amount' => 'decimal:4',
+            'discount_base' => 'decimal:4',
         ];
     }
 
@@ -115,15 +142,65 @@ class DealPurchase extends Model
         return $total;
     }
 
+    /**
+     * This supplier's concession on their own order, in their own currency.
+     *
+     * A percentage of the goods, a typed sum, or both — a supplier saying "5%
+     * off, and another ¥200 off the carriage" is making one concession in two
+     * parts. Derived rather than stored so that editing a line re-answers it;
+     * the frozen dollar value beside it is what reporting reads.
+     */
+    public function discountTotal(): Money
+    {
+        $goods = $this->goodsTotal();
+
+        $percentage = ((float) $this->discount_percent) > 0
+            ? $goods->times((float) $this->discount_percent / 100, Money::CALC_SCALE)
+            : Money::zero($this->currency);
+
+        return Money::of($percentage->amount, $this->currency)
+            ->plus(Money::of($this->discount_amount ?: 0, $this->currency));
+    }
+
+    /** What you actually owe for the goods, after their discount. */
+    public function netGoodsTotal(): Money
+    {
+        return $this->goodsTotal()->minus($this->discountTotal());
+    }
+
+    /** The discount as it was valued on the day, in USD. */
+    public function discountBase(): Money
+    {
+        return Money::of($this->discount_base, 'USD');
+    }
+
+    public function netGoodsTotalBase(): Money
+    {
+        return $this->goodsTotalBase()->minus($this->discountBase());
+    }
+
+    public function hasDiscount(): bool
+    {
+        return ((float) $this->discount_percent) > 0 || ((float) $this->discount_amount) > 0;
+    }
+
     /** Inspection, packing, the supplier's delivery to the collection point. */
     public function extraCostsBase(): Money
     {
         return Money::of($this->costs->sum('base_amount'), 'USD');
     }
 
+    /**
+     * What this purchase comes to, and therefore what is still owed.
+     *
+     * Net of the discount: the whole point of the supplier knocking money off
+     * is that you send them less, so a total that ignored it would keep the
+     * supplier's balance permanently overstated and "still owed" would never
+     * reach zero however much you paid.
+     */
     public function totalBase(): Money
     {
-        return $this->goodsTotalBase()->plus($this->extraCostsBase());
+        return $this->netGoodsTotalBase()->plus($this->extraCostsBase());
     }
 
     /**
