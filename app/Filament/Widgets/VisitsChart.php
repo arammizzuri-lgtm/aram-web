@@ -3,12 +3,14 @@
 namespace App\Filament\Widgets;
 
 use App\Models\PageView;
+use App\Support\DashboardRange;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Carbon;
 
 class VisitsChart extends ChartWidget
 {
-    protected ?string $heading = 'Visitors — last 30 days';
+    use InteractsWithPageFilters;
 
     protected static ?int $sort = -1;
 
@@ -21,14 +23,21 @@ class VisitsChart extends ChartWidget
         return 'line';
     }
 
+    public function getHeading(): ?string
+    {
+        return 'Visitors — '.DashboardRange::label($this->pageFilters);
+    }
+
     protected function getData(): array
     {
-        $daily = PageView::dailyVisitors(30);
+        [$start, $end] = DashboardRange::resolve($this->pageFilters);
+        $series = PageView::seriesBetween($start, $end);
+        $monthly = $start->diffInDays($end) > 92;
 
         return [
             'datasets' => [[
                 'label' => 'Visitors',
-                'data' => array_values($daily),
+                'data' => array_values($series),
                 'borderColor' => '#F5C518',
                 'backgroundColor' => 'rgba(245, 197, 24, 0.12)',
                 'fill' => true,
@@ -38,8 +47,10 @@ class VisitsChart extends ChartWidget
                 'borderWidth' => 2,
             ]],
             'labels' => array_map(
-                fn ($d) => Carbon::parse($d)->format('M j'),
-                array_keys($daily),
+                fn ($bucket) => $monthly
+                    ? Carbon::parse("{$bucket}-01")->format('M Y')
+                    : Carbon::parse($bucket)->format('M j'),
+                array_keys($series),
             ),
         ];
     }
