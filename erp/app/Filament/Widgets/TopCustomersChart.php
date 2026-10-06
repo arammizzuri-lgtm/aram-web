@@ -3,9 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\Customers\CustomerResource;
+use App\Filament\Widgets\Concerns\HasWidgetRange;
 use App\Models\Customer;
 use App\Services\Reporting\BusinessMetrics;
-use App\Support\DashboardRange;
 use App\Support\Money;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
@@ -30,6 +30,7 @@ use Illuminate\Support\Collection;
  */
 class TopCustomersChart extends Widget
 {
+    use HasWidgetRange;
     use InteractsWithPageFilters;
 
     protected string $view = 'filament.widgets.top-customers';
@@ -48,7 +49,7 @@ class TopCustomersChart extends Widget
      */
     public function rows(): Collection
     {
-        [$from, $to] = DashboardRange::resolve($this->pageFilters);
+        [$from, $to] = $this->activeRange();
 
         $rows = app(BusinessMetrics::class)
             ->profitByCustomer($from, $to)

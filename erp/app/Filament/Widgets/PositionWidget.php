@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Concerns\HasWidgetRange;
 use App\Services\Reporting\BusinessMetrics;
 use App\Support\DashboardRange;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -28,6 +29,7 @@ use Filament\Widgets\Widget;
  */
 class PositionWidget extends Widget
 {
+    use HasWidgetRange;
     use InteractsWithPageFilters;
 
     protected string $view = 'filament.widgets.position';
@@ -42,7 +44,7 @@ class PositionWidget extends Widget
     public function position(): array
     {
         $metrics = app(BusinessMetrics::class);
-        [$from, $to] = DashboardRange::resolve($this->pageFilters);
+        [$from, $to] = $this->activeRange();
         [$prevFrom, $prevTo] = DashboardRange::previous($from, $to);
 
         $canSeeCost = auth()->user()?->can('view_cost') ?? false;
@@ -193,7 +195,7 @@ class PositionWidget extends Widget
         return [
             'flows' => $flows,
             'balances' => $balances,
-            'windowLabel' => DashboardRange::label($this->pageFilters),
+            'windowLabel' => $this->activeLabel(),
         ];
     }
 

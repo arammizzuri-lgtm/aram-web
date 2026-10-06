@@ -1,5 +1,6 @@
 @php
     $rows = $this->rows();
+    $label = $this->activeLabel();
     $signed = fn ($money) => ($money->isNegative() ? '−' : '') . '$' . number_format(abs($money->toFloat()), 2);
 @endphp
 
@@ -7,8 +8,12 @@
     <x-erp.card
         flush
         title="Profit by supplier"
-        hint="Last 90 days, in USD. Goods margin less what it cost to pay them. Freight is not apportioned here — a consignment belongs to deals, not suppliers."
+        :hint="$label . ', in USD. Goods margin less what it cost to pay them. Freight is not apportioned here — a consignment belongs to deals, not suppliers.'"
     >
+        <x-slot name="head">
+            <x-erp.range-picker :value="$this->widgetRange" />
+        </x-slot>
+
         @forelse ($rows as $index => $row)
             <div class="flex items-center gap-4 border-t px-5 py-3" style="border-color: var(--erp-border)">
                 <span class="erp-numeric w-4 shrink-0 text-center"
@@ -48,7 +53,7 @@
                 </span>
             </div>
         @empty
-            <x-erp.empty title="Nothing bought in the last 90 days">
+            <x-erp.empty title="Nothing bought in this window">
                 Suppliers appear here once a deal line names them and the goods have been costed.
             </x-erp.empty>
         @endforelse

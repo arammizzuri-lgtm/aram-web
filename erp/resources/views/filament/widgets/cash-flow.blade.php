@@ -9,8 +9,13 @@
 <div>
     <x-erp.card flush>
         <div class="erp-card-head">
-            <h2 class="erp-card-title">Cash flow — {{ $flow['windowLabel'] }}</h2>
-            <p class="erp-card-hint">What actually moved through the account, not what was earned.</p>
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="erp-card-title">Cash flow — {{ $flow['windowLabel'] }}</h2>
+                    <p class="erp-card-hint">What actually moved through the account, not what was earned.</p>
+                </div>
+                <x-erp.range-picker :value="$this->widgetRange" class="shrink-0" />
+            </div>
         </div>
 
         <div class="erp-figures">

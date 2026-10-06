@@ -2,8 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Concerns\HasWidgetRange;
 use App\Services\Reporting\BusinessMetrics;
-use App\Support\DashboardRange;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 
@@ -21,6 +21,7 @@ use Filament\Widgets\Widget;
  */
 class CashFlowWidget extends Widget
 {
+    use HasWidgetRange;
     use InteractsWithPageFilters;
 
     protected string $view = 'filament.widgets.cash-flow';
@@ -40,14 +41,14 @@ class CashFlowWidget extends Widget
     public function flow(): array
     {
         $metrics = app(BusinessMetrics::class);
-        [$from, $to] = DashboardRange::resolve($this->pageFilters);
+        [$from, $to] = $this->activeRange();
 
         $in = $metrics->cashIn($from, $to);
         $out = $metrics->cashOut($from, $to);
         $net = $in->minus($out);
 
         return [
-            'windowLabel' => DashboardRange::label($this->pageFilters),
+            'windowLabel' => $this->activeLabel(),
             'in' => $in->display(),
             'out' => $out->display(),
             'net' => $this->signed($net->toFloat()),

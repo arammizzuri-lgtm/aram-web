@@ -1,5 +1,6 @@
 @php
     $rows = $this->rows();
+    $label = $this->activeLabel();
     $signed = fn ($money) => ($money->isNegative() ? '−' : '') . '$' . number_format(abs($money->toFloat()), 2);
 @endphp
 
@@ -7,8 +8,12 @@
     <x-erp.card
         flush
         title="Profit by customer"
-        hint="Last 90 days, in USD. Ranked by what they earned, not what they spent."
+        :hint="$label . ', in USD. Ranked by what they earned, not what they spent.'"
     >
+        <x-slot name="head">
+            <x-erp.range-picker :value="$this->widgetRange" />
+        </x-slot>
+
         @forelse ($rows as $index => $row)
             @php $tag = $row['url'] ? 'a' : 'div'; @endphp
 
@@ -43,7 +48,7 @@
                 </span>
             </{{ $tag }}>
         @empty
-            <x-erp.empty title="Nothing earned in the last 90 days">
+            <x-erp.empty title="Nothing earned in this window">
                 Customers appear here once their deals have been delivered and costed.
             </x-erp.empty>
         @endforelse

@@ -2,8 +2,10 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Concerns\HasWidgetRange;
 use App\Models\Deal;
 use App\Support\Money;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 
@@ -28,6 +30,9 @@ use Illuminate\Support\Collection;
  */
 class ProfitByMonthChart extends Widget
 {
+    use HasWidgetRange;
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.profit-by-month';
 
     protected static ?int $sort = 6;
@@ -88,23 +93,43 @@ class ProfitByMonthChart extends Widget
         ];
     }
 
-    /** @return Collection<int, array{label: string, full: string, profit: float}> */
+    /**
+     * One entry per calendar month the window touches, oldest first.
+     *
+     * The window is whatever this widget is looking at — its own or, by default,
+     * the dashboard's. The first and last months are clamped to the window's
+     * edges, so a range that opens mid-month counts only the days it covers
+     * rather than inventing the rest of the month around it.
+     *
+     * @return Collection<int, array{label: string, full: string, profit: float}>
+     */
     private function months(): Collection
     {
-        return collect(range(11, 0))->map(function (int $back): array {
-            $month = now()->subMonths($back)->startOfMonth();
+        [$from, $to] = $this->activeRange();
+
+        $cursor = $from->copy()->startOfMonth();
+        $last = $to->copy()->startOfMonth();
+        $months = collect();
+
+        while ($cursor->lte($last)) {
+            $monthFrom = $cursor->copy()->startOfMonth()->max($from);
+            $monthTo = $cursor->copy()->endOfMonth()->min($to);
 
             $deals = Deal::query()
-                ->whereBetween('deal_date', [$month, $month->copy()->endOfMonth()])
+                ->whereBetween('deal_date', [$monthFrom, $monthTo])
                 ->whereNot('status', 'cancelled')
                 ->with(['lines', 'purchases.costs', 'expenses', 'consignments'])
                 ->get();
 
-            return [
-                'label' => $month->format('M'),
-                'full' => $month->format('F Y'),
+            $months->push([
+                'label' => $cursor->format('M'),
+                'full' => $cursor->format('F Y'),
                 'profit' => round($deals->sum(fn (Deal $deal) => $deal->profitBase()->toFloat()), 2),
-            ];
-        });
+            ]);
+
+            $cursor->addMonth();
+        }
+
+        return $months;
     }
 }

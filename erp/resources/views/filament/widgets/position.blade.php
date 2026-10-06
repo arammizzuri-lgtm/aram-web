@@ -10,8 +10,13 @@
 <div>
     <x-erp.card flush>
         <div class="erp-card-head">
-            <h2 class="erp-card-title">{{ $position['windowLabel'] }}</h2>
-            <p class="erp-card-hint">What the business did across the window.</p>
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="erp-card-title">{{ $position['windowLabel'] }}</h2>
+                    <p class="erp-card-hint">What the business did across the window.</p>
+                </div>
+                <x-erp.range-picker :value="$this->widgetRange" class="shrink-0" />
+            </div>
         </div>
 
         <div class="erp-figures">

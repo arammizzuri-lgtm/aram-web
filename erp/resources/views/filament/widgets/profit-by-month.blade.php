@@ -1,23 +1,28 @@
 @php
     $chart = $this->chart();
+    $label = $this->activeLabel();
     $signed = fn ($money) => ($money->isNegative() ? '−' : '') . '$' . number_format(abs($money->toFloat()), 2);
 @endphp
 
 <div>
-    <x-erp.card title="Profit by month" hint="Twelve months, in USD, after everything each one cost.">
-        {{-- The two things anybody takes from a twelve-month profit chart, said
-             in words rather than left to be worked out off an axis. --}}
+    <x-erp.card title="Profit by month" :hint="$label . ', in USD, after everything each one cost.'">
+        {{-- The two things anybody takes from the chart, said in words rather
+             than left to be worked out off an axis, with the window's own
+             control beside them. --}}
         <x-slot name="head">
-            <div class="text-end">
-                <div class="erp-numeric erp-stat-value" style="font-size: var(--text-figure)">
-                    {{ $signed($chart['total']) }}
-                </div>
-                <div class="erp-stat-hint">
-                    @if ($chart['best'] && $chart['best']['profit'] > 0)
-                        best was {{ $chart['best']['full'] }}
-                    @else
-                        across the year
-                    @endif
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                <x-erp.range-picker :value="$this->widgetRange" />
+                <div class="text-end">
+                    <div class="erp-numeric erp-stat-value" style="font-size: var(--text-figure)">
+                        {{ $signed($chart['total']) }}
+                    </div>
+                    <div class="erp-stat-hint">
+                        @if ($chart['best'] && $chart['best']['profit'] > 0)
+                            best was {{ $chart['best']['full'] }}
+                        @else
+                            across the window
+                        @endif
+                    </div>
                 </div>
             </div>
         </x-slot>
