@@ -5,8 +5,14 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\Consignments\ConsignmentResource;
 use App\Filament\Resources\CustomerPayments\CustomerPaymentResource;
 use App\Filament\Resources\Deals\DealResource;
+use App\Support\DashboardRange;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard as BaseDashboard;
+use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 
 /**
  * The first screen, with the three things you came here to start.
@@ -22,11 +28,46 @@ use Filament\Pages\Dashboard as BaseDashboard;
  */
 class Dashboard extends BaseDashboard
 {
+    use HasFiltersForm;
+
     protected static ?string $title = 'Dashboard';
 
     public function getSubheading(): ?string
     {
         return 'What needs you, where the money is, and what is on.';
+    }
+
+    /**
+     * The one control that sets the window for everything that has one.
+     *
+     * Flows, the customer and supplier rankings and the cash-flow figures move
+     * with this; the balances, the aging and the twelve-month trend do not,
+     * because they answer questions a date range cannot change. Custom dates
+     * only appear once you ask for them, so the ordinary choice is one click.
+     */
+    public function filtersForm(Schema $schema): Schema
+    {
+        return $schema->components([
+            Select::make('range')
+                ->label('Time range')
+                ->options(DashboardRange::options())
+                ->default(DashboardRange::defaultValue())
+                ->selectablePlaceholder(false)
+                ->native(false)
+                ->live(),
+
+            DatePicker::make('startDate')
+                ->label('From')
+                ->native(false)
+                ->visible(fn (Get $get): bool => $get('range') === DashboardRange::CUSTOM)
+                ->required(fn (Get $get): bool => $get('range') === DashboardRange::CUSTOM),
+
+            DatePicker::make('endDate')
+                ->label('To')
+                ->native(false)
+                ->visible(fn (Get $get): bool => $get('range') === DashboardRange::CUSTOM)
+                ->required(fn (Get $get): bool => $get('range') === DashboardRange::CUSTOM),
+        ]);
     }
 
     protected function getHeaderActions(): array

@@ -5,7 +5,9 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
 use App\Services\Reporting\BusinessMetrics;
+use App\Support\DashboardRange;
 use App\Support\Money;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 
@@ -28,9 +30,11 @@ use Illuminate\Support\Collection;
  */
 class TopCustomersChart extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.top-customers';
 
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 7;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -44,8 +48,10 @@ class TopCustomersChart extends Widget
      */
     public function rows(): Collection
     {
+        [$from, $to] = DashboardRange::resolve($this->pageFilters);
+
         $rows = app(BusinessMetrics::class)
-            ->profitByCustomer(now()->subDays(90)->startOfDay(), now()->endOfDay())
+            ->profitByCustomer($from, $to)
             ->take(8);
 
         /*

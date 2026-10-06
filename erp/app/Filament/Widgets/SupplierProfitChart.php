@@ -3,7 +3,9 @@
 namespace App\Filament\Widgets;
 
 use App\Services\Reporting\BusinessMetrics;
+use App\Support\DashboardRange;
 use App\Support\Money;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 
@@ -27,9 +29,11 @@ use Illuminate\Support\Collection;
  */
 class SupplierProfitChart extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.supplier-profit';
 
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 8;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -44,8 +48,10 @@ class SupplierProfitChart extends Widget
      */
     public function rows(): Collection
     {
+        [$from, $to] = DashboardRange::resolve($this->pageFilters);
+
         $rows = app(BusinessMetrics::class)
-            ->profitBySupplier(now()->subDays(90)->startOfDay(), now()->endOfDay())
+            ->profitBySupplier($from, $to)
             ->take(8);
 
         // Bars are drawn against the largest magnitude either way, so a supplier

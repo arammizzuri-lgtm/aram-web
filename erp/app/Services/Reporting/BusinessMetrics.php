@@ -89,6 +89,19 @@ class BusinessMetrics
         return $revenue > 0 ? round($this->profit($from, $to)->toFloat() / $revenue * 100, 1) : 0.0;
     }
 
+    /**
+     * What is left after the overheads the deal costs do not carry.
+     *
+     * `profit()` is gross — revenue less what the goods cost. The rent, the
+     * software, the salaries that no single deal pays for are real and were
+     * never in that figure, so the gross number always flattered the business.
+     * This is the honest bottom line: gross profit less general overheads.
+     */
+    public function operatingProfit(Carbon $from, Carbon $to): Money
+    {
+        return $this->profit($from, $to)->minus($this->overheads($from, $to));
+    }
+
     // -------------------------------------------------------------- balances
 
     /** Everything invoiced and not yet received. */
@@ -155,6 +168,79 @@ class BusinessMetrics
     }
 
     /**
+     * What customers owe you, split by how long it has been owed.
+     *
+     * The same buckets the customer account page uses, summed across everyone,
+     * measured from the invoice date rather than a due date — terms here are a
+     * conversation more often than a number on a document. The rightmost bucket
+     * is the one that turns into a bad debt, which is the reason this exists.
+     *
+     * @return array<string, Money>
+     */
+    public function receivablesAgeing(): array
+    {
+        $buckets = ['current' => 0.0, '30' => 0.0, '60' => 0.0, '90' => 0.0];
+
+        $invoices = CustomerInvoice::query()
+            ->whereNot('status', 'cancelled')
+            ->with('allocations')
+            ->get();
+
+        foreach ($invoices as $invoice) {
+            $outstanding = $invoice->outstandingBase()->toFloat();
+
+            if ($outstanding <= 0.005) {
+                continue;
+            }
+
+            $days = $invoice->invoice_date ? (int) $invoice->invoice_date->diffInDays(now()) : 0;
+            $buckets[$this->ageBucket($days)] += $outstanding;
+        }
+
+        return array_map(fn (float $amount) => Money::of($amount, 'USD'), $buckets);
+    }
+
+    /**
+     * What you owe suppliers, split the same way, measured from the order date.
+     *
+     * @return array<string, Money>
+     */
+    public function payablesAgeing(): array
+    {
+        $buckets = ['current' => 0.0, '30' => 0.0, '60' => 0.0, '90' => 0.0];
+
+        $purchases = DealPurchase::query()
+            ->whereNot('status', 'cancelled')
+            ->with(['lines', 'costs', 'payments'])
+            ->get();
+
+        foreach ($purchases as $purchase) {
+            $outstanding = $purchase->outstandingBase()->toFloat();
+
+            if ($outstanding <= 0.005) {
+                continue;
+            }
+
+            $date = $purchase->ordered_at ?? $purchase->created_at;
+            $days = $date ? (int) $date->diffInDays(now()) : 0;
+            $buckets[$this->ageBucket($days)] += $outstanding;
+        }
+
+        return array_map(fn (float $amount) => Money::of($amount, 'USD'), $buckets);
+    }
+
+    /** Which ageing bucket a number of days owed falls in. */
+    private function ageBucket(int $days): string
+    {
+        return match (true) {
+            $days <= 30 => 'current',
+            $days <= 60 => '30',
+            $days <= 90 => '60',
+            default => '90',
+        };
+    }
+
+    /**
      * What the exchange houses took, across everything.
      *
      * Small on any one payment and invisible in a margin. Reported on its own
@@ -191,6 +277,59 @@ class BusinessMetrics
                 ->sum('base_amount'),
             'USD',
         );
+    }
+
+    // -------------------------------------------------------------- cash flow
+
+    /**
+     * Money that actually came in from customers, net of what went back out.
+     *
+     * Cash, not profit. A deal invoiced this month and paid next belongs to the
+     * month it was paid, because this answers "what is in the account", not
+     * "what did we earn". Refunds are stored as negatives, so the sum nets them
+     * without a second query.
+     */
+    public function cashIn(Carbon $from, Carbon $to): Money
+    {
+        return Money::of(
+            CustomerPayment::query()->whereBetween('paid_at', [$from, $to])->sum('base_amount'),
+            'USD',
+        );
+    }
+
+    /**
+     * Money that actually left: to suppliers, on freight, and on everything else.
+     *
+     * Supplier payments at what they truly cost to send — the exchange house's
+     * cut is money gone, not a footnote. Freight is the forwarder's bill, which
+     * lives on the consignment and nowhere else. Expenses are every other
+     * payment, deal-tied or overhead alike. The three do not overlap, so adding
+     * them is the whole of what went out.
+     */
+    public function cashOut(Carbon $from, Carbon $to): Money
+    {
+        $supplier = $this->sum(
+            SupplierPayment::query()
+                ->whereBetween('paid_at', [$from, $to])
+                ->get()
+                ->map(fn (SupplierPayment $p) => $p->trueCostBase()),
+        );
+
+        $expenses = Money::of(
+            Expense::query()
+                ->whereNot('status', 'draft')
+                ->whereBetween('expense_date', [$from, $to])
+                ->sum('base_amount'),
+            'USD',
+        );
+
+        return $supplier->plus($expenses)->plus($this->freightSpend($from, $to));
+    }
+
+    /** What the account moved by over the window: positive is money gained. */
+    public function cashNet(Carbon $from, Carbon $to): Money
+    {
+        return $this->cashIn($from, $to)->minus($this->cashOut($from, $to));
     }
 
     // ----------------------------------------------------------------- lists

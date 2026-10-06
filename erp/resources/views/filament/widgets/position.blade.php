@@ -10,7 +10,7 @@
 <div>
     <x-erp.card flush>
         <div class="erp-card-head">
-            <h2 class="erp-card-title">Last {{ $position['window'] }} days</h2>
+            <h2 class="erp-card-title">{{ $position['windowLabel'] }}</h2>
             <p class="erp-card-hint">What the business did across the window.</p>
         </div>
 
@@ -22,6 +22,7 @@
                     :hint="$figure['hint'] ?? null"
                     :lead="$figure['lead'] ?? false"
                     :tone="$figure['tone'] ?? null"
+                    :compare="$figure['compare'] ?? null"
                 />
             @endforeach
         </div>

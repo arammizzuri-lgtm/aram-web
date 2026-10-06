@@ -3,6 +3,8 @@
 namespace App\Filament\Widgets;
 
 use App\Services\Reporting\BusinessMetrics;
+use App\Support\DashboardRange;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 
 /**
@@ -26,6 +28,8 @@ use Filament\Widgets\Widget;
  */
 class PositionWidget extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.position';
 
     protected static ?int $sort = 2;
@@ -33,22 +37,13 @@ class PositionWidget extends Widget
     protected int|string|array $columnSpan = 'full';
 
     /**
-     * The window, stated rather than measured back off the dates.
-     *
-     * Deriving it with `diffInDays` gave "Last 31.999999999988 days": the
-     * window runs from the start of a day to the end of another, so the
-     * difference is a float a hair under 31 and no rounding of it is the number
-     * anybody meant. The window is thirty days because this says so.
-     */
-    private const DAYS = 30;
-
-    /**
      * @return array<string, mixed>
      */
     public function position(): array
     {
         $metrics = app(BusinessMetrics::class);
-        [$from, $to] = $metrics->window(self::DAYS);
+        [$from, $to] = DashboardRange::resolve($this->pageFilters);
+        [$prevFrom, $prevTo] = DashboardRange::previous($from, $to);
 
         $canSeeCost = auth()->user()?->can('view_cost') ?? false;
 
@@ -56,37 +51,80 @@ class PositionWidget extends Widget
         $credit = $metrics->customerCredit();
 
         /*
-         * Flows first, and only what the window actually covers.
+         * Flows first, and only what the window actually covers. Each one
+         * carries how it moved against the window before it, because a figure
+         * on its own cannot tell you whether it is the good news or the bad.
          *
          * The assistant sees what was billed and nothing beneath it; the tiles
-         * are dropped rather than blanked, because a row with three figures
-         * reading "—" invites exactly the question the permission exists to
-         * prevent.
+         * are dropped rather than blanked, because a row with figures reading
+         * "—" invites exactly the question the permission exists to prevent.
          */
         $flows = [];
 
         if ($canSeeCost) {
-            $profit = $metrics->profit($from, $to);
+            $operating = $metrics->operatingProfit($from, $to);
+            $gross = $metrics->profit($from, $to);
+            $revenue = $metrics->revenue($from, $to);
+            $overheads = $metrics->overheads($from, $to);
+            $freight = $metrics->freightSpend($from, $to);
             $losses = $metrics->transferLosses($from, $to);
 
             $flows[] = [
-                'label' => 'Profit',
-                'value' => $this->signed($profit->toFloat()),
-                'hint' => $metrics->marginPercent($from, $to).'% margin',
+                'label' => 'Operating profit',
+                'value' => $this->signed($operating->toFloat()),
+                'hint' => $metrics->marginPercent($from, $to).'% gross margin',
                 'lead' => true,
-                'tone' => $profit->isNegative() ? 'critical' : null,
+                'tone' => $operating->isNegative() ? 'critical' : null,
+                'compare' => $this->delta(
+                    $operating->toFloat(),
+                    $metrics->operatingProfit($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: true,
+                ),
+            ];
+
+            $flows[] = [
+                'label' => 'Gross profit',
+                'value' => $this->signed($gross->toFloat()),
+                'hint' => 'before overheads',
+                'tone' => $gross->isNegative() ? 'critical' : null,
+                'compare' => $this->delta(
+                    $gross->toFloat(),
+                    $metrics->profit($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: true,
+                ),
             ];
 
             $flows[] = [
                 'label' => 'Invoiced',
-                'value' => $metrics->revenue($from, $to)->display(),
+                'value' => $revenue->display(),
                 'hint' => 'what customers were billed',
+                'compare' => $this->delta(
+                    $revenue->toFloat(),
+                    $metrics->revenue($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: true,
+                ),
+            ];
+
+            $flows[] = [
+                'label' => 'Overheads',
+                'value' => $overheads->display(),
+                'hint' => 'rent, tools, wages — no single deal pays these',
+                'compare' => $this->delta(
+                    $overheads->toFloat(),
+                    $metrics->overheads($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: false,
+                ),
             ];
 
             $flows[] = [
                 'label' => 'Freight',
-                'value' => $metrics->freightSpend($from, $to)->display(),
+                'value' => $freight->display(),
                 'hint' => 'shipping you paid for',
+                'compare' => $this->delta(
+                    $freight->toFloat(),
+                    $metrics->freightSpend($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: false,
+                ),
             ];
 
             $flows[] = [
@@ -94,13 +132,25 @@ class PositionWidget extends Widget
                 'value' => $losses->display(),
                 'hint' => 'what the exchange took above the rate',
                 'tone' => $losses->isPositive() ? 'warning' : null,
+                'compare' => $this->delta(
+                    $losses->toFloat(),
+                    $metrics->transferLosses($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: false,
+                ),
             ];
         } else {
+            $revenue = $metrics->revenue($from, $to);
+
             $flows[] = [
                 'label' => 'Invoiced',
-                'value' => $metrics->revenue($from, $to)->display(),
+                'value' => $revenue->display(),
                 'hint' => 'what customers were billed',
                 'lead' => true,
+                'compare' => $this->delta(
+                    $revenue->toFloat(),
+                    $metrics->revenue($prevFrom, $prevTo)->toFloat(),
+                    higherIsGood: true,
+                ),
             ];
         }
 
@@ -143,7 +193,40 @@ class PositionWidget extends Widget
         return [
             'flows' => $flows,
             'balances' => $balances,
-            'window' => self::DAYS,
+            'windowLabel' => DashboardRange::label($this->pageFilters),
+        ];
+    }
+
+    /**
+     * How a figure moved against the window before it.
+     *
+     * A percentage needs something to be a percentage *of*: with no prior
+     * activity there is no change to state, so this returns nothing rather than
+     * a division by zero dressed up as "▲∞%". Colour lands only where more is
+     * plainly better or worse — profit rising is good news, profit falling is
+     * not; a change in overheads or freight is reported without a verdict,
+     * because spending more is not wrong on its face.
+     *
+     * @return array{text: string, tone: ?string}|null
+     */
+    private function delta(float $current, float $previous, bool $higherIsGood): ?array
+    {
+        if (abs($previous) < 0.005) {
+            return null;
+        }
+
+        $pct = (int) round(($current - $previous) / abs($previous) * 100);
+
+        if ($pct === 0) {
+            return ['text' => 'level vs the window before', 'tone' => null];
+        }
+
+        $up = $current > $previous;
+        $tone = $higherIsGood ? ($up ? 'good' : 'critical') : null;
+
+        return [
+            'text' => ($up ? '▲' : '▼').abs($pct).'% vs the window before',
+            'tone' => $tone,
         ];
     }
 
