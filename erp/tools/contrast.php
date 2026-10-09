@@ -38,15 +38,28 @@ function contrast(string $a, string $b): float
     return round((max($one, $two) + 0.05) / (min($one, $two) + 0.05), 2);
 }
 
-/** Pull a token out of the stylesheet, from a given block. */
-function token(string $css, string $block, string $name): ?string
+/**
+ * The body of the first rule whose selector list names this selector.
+ *
+ * Accepts a list as well as a lone selector, because the palette is now one
+ * block — `:root, .dark` — rather than a light block and a dark one.
+ */
+function block(string $css, string $selector): ?string
 {
-    if (! preg_match('/'.preg_quote($block, '/').'\s*\{(.*?)\n    \}/s', $css, $found)) {
+    return preg_match('/(?<=[\s,])'.preg_quote($selector, '/').'(?:\s*,[^{]*)?\s*\{(.*?)\n    \}/s', $css, $found)
+        ? $found[1]
+        : null;
+}
+
+/** A solid hex token from a block body; null if absent or not solid. */
+function value(?string $body, string $name): ?string
+{
+    if ($body === null) {
         return null;
     }
 
-    return preg_match('/'.preg_quote($name, '/').':\s*(#[0-9a-fA-F]{6})/', $found[1], $value)
-        ? $value[1]
+    return preg_match('/'.preg_quote($name, '/').':\s*(#[0-9a-fA-F]{6})\b/', $body, $found)
+        ? $found[1]
         : null;
 }
 
@@ -87,18 +100,43 @@ $foregrounds = [
 
 $failures = 0;
 
-foreach (['light' => ':root', 'dark' => '.dark'] as $theme => $block) {
-    $surface = token($css, $block, '--erp-bg-surface')
-        ?? token($css, ':root', '--erp-bg-surface');
+$root = block($css, ':root');
+$dark = block($css, '.dark');
 
-    echo "\n".strtoupper($theme).'  — on surface '.$surface."\n";
+/*
+ * One theme or two. The panel runs dark-only, its palette a single
+ * `:root, .dark` block; measuring that block twice under two names would only
+ * print the same table twice and call half of it "light".
+ */
+$themes = $root !== null && $root === $dark
+    ? ['dark (the only theme)' => $dark]
+    : array_filter(['light' => $root, 'dark' => $dark]);
+
+foreach ($themes as $theme => $body) {
+    /*
+     * What the text actually sits on. On a glass design that is the glass as
+     * it reads over the field — --erp-bg-solid, the flattened colour — since
+     * --erp-bg-surface is translucent and has no single colour to measure.
+     */
+    $surface = value($body, '--erp-bg-solid')
+        ?? value($body, '--erp-bg-surface')
+        ?? value($root, '--erp-bg-surface');
+
+    echo "\n".strtoupper($theme).'  — on surface '.($surface ?? '(none)')."\n";
     echo str_repeat('─', 58)."\n";
+
+    if ($surface === null) {
+        echo "No solid surface colour to measure against.\n";
+        $failures++;
+
+        continue;
+    }
 
     foreach ($foregrounds as $name => $minimum) {
         // A token the dark block does not restate is inherited from :root,
         // which is exactly the mistake worth catching.
-        $inherited = token($css, $block, $name) === null;
-        $colour = token($css, $block, $name) ?? token($css, ':root', $name);
+        $inherited = value($body, $name) === null;
+        $colour = value($body, $name) ?? value($root, $name);
 
         if ($colour === null) {
             continue;

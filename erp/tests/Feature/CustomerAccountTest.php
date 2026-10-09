@@ -409,4 +409,37 @@ class CustomerAccountTest extends TestCase
         $this->assertSame('50.0000', $this->account()->credit($this->customer->fresh())->amount);
         $this->assertSame('50.0000', $this->account()->balance($this->customer->fresh())->amount);
     }
+
+    /**
+     * "Use the credit" with more than one payment holding credit.
+     *
+     * The payments are fetched in one query, and a model that arrives in a
+     * batch will not lazy-load its relations — so reading the customer off
+     * each payment threw a LazyLoadingViolationException and the button failed
+     * outright. With a single payment on the account it worked, which is how it
+     * went unnoticed until a customer had two.
+     */
+    #[Test]
+    public function the_credit_is_used_when_several_payments_hold_it(): void
+    {
+        // Billed before any money arrived, so nothing was there to apply.
+        $this->invoice('D-2026-0001', 300);
+
+        // Recorded without matching, so both sit on the account as credit.
+        $this->pay(100);
+        $this->pay(50);
+
+        $this->assertSame('150.0000', $this->account()->credit($this->customer->fresh())->amount);
+
+        Livewire::test(AccountPage::class, ['record' => $this->customer->getRouteKey()])
+            ->callAction('applyCredit')
+            ->assertHasNoErrors();
+
+        $customer = $this->customer->fresh();
+
+        // All of it went against the invoice; the balance did not move.
+        $this->assertSame('0.0000', $this->account()->credit($customer)->amount);
+        $this->assertSame('150.0000', $this->account()->owed($customer)->amount);
+        $this->assertSame('-150.0000', $this->account()->balance($customer)->amount);
+    }
 }

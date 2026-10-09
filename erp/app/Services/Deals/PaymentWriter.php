@@ -160,9 +160,23 @@ class PaymentWriter
             return [];
         }
 
+        /*
+         * The customer, asked for rather than assumed.
+         *
+         * "Use the credit" hands this every payment on the account, fetched in
+         * one query — and a model that arrives in a batch refuses to lazy-load
+         * its relations here, so reading ->customer off it threw instead of
+         * querying. Loading it explicitly works however the payment was got.
+         */
+        $customer = $payment->loadMissing('customer')->customer;
+
+        if ($customer === null) {
+            return [];
+        }
+
         $suggestion = [];
 
-        foreach ($this->openInvoices($payment->customer) as $invoice) {
+        foreach ($this->openInvoices($customer) as $invoice) {
             if (! $remaining->isPositive()) {
                 break;
             }
@@ -302,7 +316,8 @@ class PaymentWriter
      */
     public function applyCreditTo(CustomerInvoice $invoice): Money
     {
-        $customer = $invoice->customer;
+        // Loaded explicitly for the same reason as in suggestAllocation().
+        $customer = $invoice->loadMissing('customer')->customer;
 
         if ($customer === null || $invoice->status === 'cancelled') {
             return Money::zero('USD');

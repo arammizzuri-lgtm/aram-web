@@ -171,7 +171,7 @@ class TradingComparisonTest extends TestCase
     {
         Livewire::test(SupplierProfitChart::class)
             ->assertOk()
-            ->assertSee('Nothing bought in the last 90 days');
+            ->assertSee('Nothing bought in this window');
     }
 
     // --------------------------------------------------------- how you priced

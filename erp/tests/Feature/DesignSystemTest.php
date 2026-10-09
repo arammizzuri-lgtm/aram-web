@@ -33,7 +33,10 @@ class DesignSystemTest extends TestCase
     {
         // PHP_BINARY, not "php": the interpreter running the suite is not
         // necessarily the one on PATH, and on this machine there is none.
-        $result = Process::path(base_path())->run(PHP_BINARY.' tools/contrast.php');
+        // Passed as an array so no shell parses it — the interpreter here
+        // lives under "C:\Users\Ram Computer\…", and a command string split at
+        // that space never started, failing the test with no output at all.
+        $result = Process::path(base_path())->run([PHP_BINARY, 'tools/contrast.php']);
 
         $this->assertTrue(
             $result->successful(),

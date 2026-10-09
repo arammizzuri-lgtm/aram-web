@@ -92,7 +92,7 @@
 
         --erp-text-primary: #e8edf7;
         --erp-text-secondary: #a8b2c7;
-        --erp-text-muted: #7d889e;
+        --erp-text-muted: #828da3;  /* 4.71:1 on a hovered row, the lightest surface it sits on */
 
         /*
          * Status, each a fill and a text step. On this dark field the fill is

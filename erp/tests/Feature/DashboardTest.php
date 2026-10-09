@@ -13,6 +13,7 @@ use App\Models\Supplier;
 use App\Models\User;
 use App\Services\Deals\DealWriter;
 use App\Services\Reporting\BusinessMetrics;
+use App\Support\DashboardRange;
 use Database\Seeders\FoundationSeeder;
 use Database\Seeders\ReferenceDataSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -152,12 +153,17 @@ class DashboardTest extends TestCase
     {
         $this->deal('D-2026-0001', 'delivered', 500);
 
+        // The flows sit under their window — the dashboard default until the
+        // widget is given its own — and the balances under "Right now". Checked
+        // as headings, because the window names also appear as options in the
+        // widget's own range picker and a bare assertSee would pass on those.
         Livewire::test(PositionWidget::class)
             ->assertOk()
-            ->assertSee('Last 30 days')
-            ->assertSee('Right now')
+            ->assertSeeHtml('<h2 class="erp-card-title">Last 90 days</h2>')
+            ->assertSeeHtml('<h2 class="erp-card-title">Right now</h2>')
             ->assertSee('Owed to you')
-            ->assertSee('Profit');
+            ->assertSee('Operating profit')
+            ->assertSee('Gross profit');
     }
 
     /** Cost is dropped for the assistant, not blanked. */
@@ -176,7 +182,9 @@ class DashboardTest extends TestCase
         Livewire::test(PositionWidget::class)
             ->assertOk()
             ->assertSee('Invoiced')
-            ->assertDontSee('Profit')
+            ->assertDontSee('Operating profit')
+            ->assertDontSee('Gross profit')
+            ->assertDontSee('Overheads')
             ->assertDontSee('Owed to suppliers')
             ->assertDontSee('Bought at your own risk');
     }
@@ -187,8 +195,14 @@ class DashboardTest extends TestCase
      * Both charts are drawn now rather than handed to a charting library, so
      * what they render is markup and can be checked.
      */
+    /**
+     * One column per month the chart's window touches.
+     *
+     * It used to be a fixed twelve months; it now follows its own range, and
+     * the dashboard's until it is given one.
+     */
     #[Test]
-    public function the_monthly_chart_draws_twelve_months_and_states_the_total(): void
+    public function the_monthly_chart_draws_one_column_per_month_of_its_window(): void
     {
         $this->deal('D-2026-0001', 'delivered', 500);
 
@@ -196,13 +210,21 @@ class DashboardTest extends TestCase
 
         $chart->assertOk()->assertSee('Profit by month');
 
-        $data = $chart->instance()->chart();
+        // By default it follows the dashboard: every month the last 90 days touch.
+        [$from, $to] = DashboardRange::resolve(null);
+        $months = $from->copy()->startOfMonth()->diffInMonths($to->copy()->startOfMonth()) + 1;
+
+        $this->assertCount((int) $months, $chart->instance()->chart()['columns']);
+
+        // Given a calendar year of its own, it draws that year's twelve.
+        $data = $chart->set('widgetRange', 'year_'.now()->year)->instance()->chart();
 
         $this->assertCount(12, $data['columns']);
         $this->assertIsFloat($data['zero']);
 
-        // The current month carries the profit, so the run ends non-empty.
-        $this->assertFalse($data['columns']->last()['empty']);
+        // The current month carries the profit.
+        $current = $data['columns']->firstWhere('full', now()->format('F Y'));
+        $this->assertFalse($current['empty']);
     }
 
     /** A young business has mostly empty months and the chart must survive it. */
@@ -230,7 +252,7 @@ class DashboardTest extends TestCase
     {
         Livewire::test(TopCustomersChart::class)
             ->assertOk()
-            ->assertSee('Nothing earned in the last 90 days');
+            ->assertSee('Nothing earned in this window');
     }
 
     /** Both are cost from end to end. */
