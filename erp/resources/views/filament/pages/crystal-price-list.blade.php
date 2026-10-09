@@ -35,7 +35,7 @@
             <div>
                 <label class="erp-label mb-1 block">Order by</label>
                 <div class="flex gap-2">
-                    <select wire:model.live="sort" class="fi-input w-full rounded-lg border px-3 py-2 text-sm"
+                    <select wire:model.live="sort" class="fi-input w-full min-w-0 rounded-lg border px-3 py-2 text-sm"
                             style="border-color: var(--erp-border); background: var(--erp-bg-surface)">
                         @foreach ($this->sortOptions() as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
@@ -43,7 +43,7 @@
                     </select>
 
                     {{-- Sorting the view is temporary; this makes it the saved order. --}}
-                    <x-filament::button wire:click="applySortPermanently" color="gray" size="sm"
+                    <x-filament::button wire:click="applySortPermanently" color="gray" size="sm" class="shrink-0 whitespace-nowrap"
                                         :disabled="$this->sort === 'catalogue'"
                                         title="Save this order as the catalogue order">
                         Save order
@@ -107,11 +107,11 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b" style="border-color: var(--erp-border)">
-                            <th class="sticky start-0 z-10 py-2 text-start font-semibold"
-                                style="background: var(--erp-bg-surface)">Code</th>
-                            <th class="py-2 text-start font-semibold">Colour</th>
+                            <th class="sticky start-0 z-10 py-2 text-start erp-label"
+                                style="background: var(--erp-bg-solid); box-shadow: 1px 0 0 var(--erp-border)">Code</th>
+                            <th class="py-2 text-start erp-label">Colour</th>
                             @foreach ($sizes as $size)
-                                <th class="py-2 text-end font-semibold whitespace-nowrap">{{ $size->label }}</th>
+                                <th class="py-2 text-end erp-label whitespace-nowrap">{{ $size->label }}</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -119,7 +119,7 @@
                         @foreach ($crystals as $crystal)
                             <tr class="border-b" style="border-color: var(--erp-border)">
                                 <td class="sticky start-0 z-10 py-1.5 erp-identifier"
-                                    style="background: var(--erp-bg-surface)">{{ $crystal->crystal_code }}</td>
+                                    style="background: var(--erp-bg-solid); box-shadow: 1px 0 0 var(--erp-border)">{{ $crystal->crystal_code }}</td>
                                 <td class="py-1.5">
                                     <span class="font-medium">{{ $crystal->crystal_name }}</span>
                                     @if ($crystal->finish !== 'plain')

@@ -59,7 +59,7 @@
                         <div class="pointer-events-none absolute inset-x-0 -top-1 z-10 hidden justify-center group-hover:flex">
                             <span class="erp-numeric whitespace-nowrap rounded-md px-1.5 py-0.5"
                                   style="font-size: 10px;
-                                         background: var(--erp-bg-sunken);
+                                         background: var(--erp-bg-solid);
                                          color: var(--erp-text-primary);
                                          border: 1px solid var(--erp-border)">
                                 {{ $column['empty'] ? '—' : ($column['positive'] ? '' : '−') . '$' . number_format(abs($column['profit']), 0) }}

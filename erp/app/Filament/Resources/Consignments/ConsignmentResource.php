@@ -50,7 +50,7 @@ class ConsignmentResource extends Resource
         return $schema->components([
             Section::make('From the forwarder')
                 ->description('Copy these straight from their tracking app.')
-                ->columns(3)
+                ->columns(2)
                 ->schema([
                     TextInput::make('tracking_number')
                         ->label('Tracking no.')

@@ -70,7 +70,7 @@ class PurchaseResource extends Resource
     {
         return $schema->components([
             Section::make()
-                ->columns(3)
+                ->columns(2)
                 ->schema([
                     TextInput::make('supplier_reference')
                         ->label('Their invoice / PI no.')
@@ -105,7 +105,7 @@ class PurchaseResource extends Resource
                     'What this supplier knocked off. It reduces what you owe them and '
                     .'raises the profit on the deal — unless the deal is set to pass it on.'
                 )
-                ->columns(3)
+                ->columns(2)
                 ->schema([
                     TextInput::make('discount_percent')
                         ->label('They took off')

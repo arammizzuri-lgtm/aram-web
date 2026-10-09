@@ -62,7 +62,7 @@ class SupplierResource extends Resource
                 ]),
 
             Section::make('Trading terms')
-                ->columns(3)
+                ->columns(2)
                 ->schema([
                     Select::make('default_currency')
                         ->label('Currency')

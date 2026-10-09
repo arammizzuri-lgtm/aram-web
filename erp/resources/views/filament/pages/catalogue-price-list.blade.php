@@ -100,20 +100,20 @@
                 <table class="w-max min-w-full text-sm">
                     <thead>
                         <tr class="border-b" style="border-color: var(--erp-border)">
-                            <th class="sticky start-0 z-10 px-3 py-2 text-start font-semibold"
-                                style="background: var(--erp-bg-surface)">{{ $section?->item_label }}</th>
+                            <th class="sticky start-0 z-10 px-3 py-2 text-start erp-label"
+                                style="background: var(--erp-bg-solid); box-shadow: 1px 0 0 var(--erp-border)">{{ $section?->item_label }}</th>
                             {{-- Columns come from the section's own field definitions. --}}
                             @foreach ($fields as $field)
-                                <th class="px-3 py-2 text-start font-semibold whitespace-nowrap">
+                                <th class="px-3 py-2 text-start erp-label whitespace-nowrap">
                                     {{ $field['label'] }}
                                     @isset($field['unit'])
                                         <span style="color: var(--erp-text-muted)">({{ $field['unit'] }})</span>
                                     @endisset
                                 </th>
                             @endforeach
-                            <th class="px-3 py-2 text-end font-semibold">MOQ</th>
+                            <th class="px-3 py-2 text-end erp-label">MOQ</th>
                             @foreach ($breaks as $break)
-                                <th class="px-3 py-2 text-end font-semibold whitespace-nowrap">
+                                <th class="px-3 py-2 text-end erp-label whitespace-nowrap">
                                     {{ $break <= 1 ? 'Base' : $qty($break) . '+' }}
                                 </th>
                             @endforeach
@@ -125,7 +125,7 @@
                             <tr class="border-b" style="border-color: var(--erp-border)">
                                 {{-- Code above name: one pinned column instead of two squeezed ones. --}}
                                 <td class="sticky start-0 z-10 px-3 py-1.5 whitespace-nowrap"
-                                    style="background: var(--erp-bg-surface)">
+                                    style="background: var(--erp-bg-solid); box-shadow: 1px 0 0 var(--erp-border)">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium">{{ $item->name }}</span>
                                         @if ($item->name_zh)

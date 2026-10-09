@@ -79,6 +79,14 @@
         --erp-glass-strong: rgba(20, 29, 48, 0.86);
         --erp-glass-raised: rgba(26, 36, 58, 0.72);
 
+        /*
+         * The glass, flattened to the colour it reads as on the field. For the
+         * few things that must be opaque — a pinned column that other columns
+         * scroll beneath, a tooltip over a chart — where a translucent fill
+         * would let the content behind show straight through.
+         */
+        --erp-bg-solid: #0f1626;
+
         --erp-border: rgba(255, 255, 255, 0.08);
         --erp-border-strong: rgba(255, 255, 255, 0.16);
 
@@ -379,6 +387,24 @@
         font-feature-settings: 'tnum';
     }
 
+    /*
+     * The hand-built tables — reports, price lists, the customer statement —
+     * speak the same language as Filament's: a faintly tinted header row and a
+     * row that warms under the pointer. One rule here rather than a style per
+     * page, so a new report table looks right without anyone remembering to.
+     */
+    .fi-main table:not(.fi-ta-table) thead tr {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .fi-main table:not(.fi-ta-table) tbody tr {
+        transition: background-color 140ms cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    .fi-main table:not(.fi-ta-table) tbody tr:hover {
+        background-color: var(--erp-bg-hover);
+    }
+
     .erp-identifier {
         font-family: var(--font-mono);
         font-size: 0.8125rem;
@@ -440,6 +466,12 @@
         font-weight: 650;
         color: var(--erp-text-primary);
         font-variant-numeric: tabular-nums;
+        /*
+         * A figure is one unit. The minus sign and the dollar sign are both
+         * line-break opportunities, so without this a narrow cell sets "−" on
+         * one line and "$1,000.00" on the next — a balance that reads as two.
+         */
+        white-space: nowrap;
     }
 
     /* One figure per screen earns display size and a faint glow of its own. */
@@ -799,6 +831,20 @@
     .erp-stat-value[data-lead] {
         font-size: 1.875rem;
         line-height: 2.25rem;
+    }
+
+    .erp-stat-value:not([data-lead]) {
+        font-size: 1.3125rem;
+        line-height: 1.75rem;
+    }
+
+    /*
+     * On a phone the headline figure takes the whole row. It is the one number
+     * the screen is about, and a half-width cell cannot hold it at display size
+     * — so it gets the room, and the supporting figures pair up beneath it.
+     */
+    .erp-figures > :has(> .erp-stat-value[data-lead]) {
+        grid-column: 1 / -1;
     }
 
     .fi-ta-ctn,

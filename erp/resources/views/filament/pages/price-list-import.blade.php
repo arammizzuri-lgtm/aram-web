@@ -67,12 +67,12 @@
                     <thead>
                         <tr class="border-b" style="border-color: var(--erp-border)">
                             <th class="w-10 py-2"></th>
-                            <th class="py-2 text-start font-semibold">Supplier SKU</th>
-                            <th class="py-2 text-start font-semibold">Product</th>
-                            <th class="py-2 text-end font-semibold">Old</th>
-                            <th class="py-2 text-end font-semibold">New</th>
-                            <th class="py-2 text-end font-semibold">Change</th>
-                            <th class="py-2 text-center font-semibold">Action</th>
+                            <th class="py-2 text-start erp-label">Supplier SKU</th>
+                            <th class="py-2 text-start erp-label">Product</th>
+                            <th class="py-2 text-end erp-label">Old</th>
+                            <th class="py-2 text-end erp-label">New</th>
+                            <th class="py-2 text-end erp-label">Change</th>
+                            <th class="py-2 text-center erp-label">Action</th>
                         </tr>
                     </thead>
                     <tbody>

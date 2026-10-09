@@ -72,7 +72,7 @@
                     <thead>
                         <tr class="border-b" style="border-color: var(--erp-border)">
                             @foreach ($definition['columns'] as $index => $column)
-                                <th @class(['px-3 py-2 font-semibold whitespace-nowrap',
+                                <th @class(['erp-label px-3 py-2.5 whitespace-nowrap',
                                             'text-end' => in_array($index, $numeric, true),
                                             'text-start' => ! in_array($index, $numeric, true)])>
                                     {{ $column }}

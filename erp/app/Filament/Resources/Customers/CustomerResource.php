@@ -65,7 +65,7 @@ class CustomerResource extends Resource
 
             Section::make('Pricing & documents')
                 ->description('Set once here so neither is ever a question while building a deal.')
-                ->columns(3)
+                ->columns(2)
                 ->schema([
                     Select::make('customer_type_id')
                         ->label('Customer type')
