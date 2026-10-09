@@ -41,14 +41,19 @@
     @endif
 
     {{--
-        How it moved against the window before. A hint-sized line, coloured only
-        when the direction is plainly good or bad — otherwise it just points.
+        How it moved against the window before — the figure as a tinted chip,
+        the note beside it kept quiet. The direction colours the chip only when
+        it is plainly good or bad; otherwise the chip just points.
     --}}
     @if ($compare)
-        <div @class([
-            'erp-stat-hint',
-            'erp-good' => ($compare['tone'] ?? null) === 'good',
-            'erp-critical' => ($compare['tone'] ?? null) === 'critical',
-        ])>{{ $compare['text'] }}</div>
+        @php
+            [$deltaPart, $notePart] = array_pad(explode(' vs ', $compare['text'], 2), 2, null);
+        @endphp
+        <div class="mt-2 flex items-center gap-2" style="flex-wrap: wrap">
+            <span class="erp-delta" @if ($compare['tone'] ?? null) data-tone="{{ $compare['tone'] }}" @endif>{{ $deltaPart }}</span>
+            @if ($notePart)
+                <span class="erp-stat-hint" style="margin-top: 0">vs {{ $notePart }}</span>
+            @endif
+        </div>
     @endif
 </div>

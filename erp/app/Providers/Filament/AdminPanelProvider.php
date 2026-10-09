@@ -41,22 +41,21 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName('Aram Mizuri Sourcing')
             ->colors([
-                // Indigo, replacing Filament's default amber: one accent, used only for
-                // primary action, active navigation and focus. Deliberately clear of the
-                // categorical chart hues so the accent never reads as a data series.
-                //
-                // The built-in ramp is used rather than Color::hex('#4f46e5') because
-                // hex() anchors the given colour at shade 500, which pushed every
-                // interactive surface a step too pale. Indigo-600 is #4f46e5 exactly.
-                'primary' => Color::Indigo,
-                'gray' => Color::Zinc,
-                // Status ramps carry the reserved meanings from docs/05-UIUX.md §A1.
-                'success' => Color::hex('#0ca30c'),
-                'warning' => Color::hex('#fab219'),
-                'danger' => Color::hex('#d03b3b'),
-                'info' => Color::hex('#2a78d6'),
+                // Cyan, the one accent of the dark-glass design: primary action,
+                // active navigation and focus. Kept clear of the categorical chart
+                // hues so the accent never reads as a data series.
+                'primary' => Color::Cyan,
+                'gray' => Color::Slate,
+                // Status ramps carry the reserved meanings of the design system:
+                // green gain, amber watch, red loss, blue information.
+                'success' => Color::hex('#34d399'),
+                'warning' => Color::hex('#fbbf24'),
+                'danger' => Color::hex('#f87171'),
+                'info' => Color::hex('#38bdf8'),
             ])
-            ->defaultThemeMode(ThemeMode::System)
+            // Dark-only: the glass aesthetic is a dark one, so the panel commits
+            // to it rather than keeping a light half that would never match.
+            ->defaultThemeMode(ThemeMode::Dark)
             ->sidebarCollapsibleOnDesktop()
             ->maxContentWidth('full')
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])

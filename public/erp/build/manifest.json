@@ -1,27 +1,27 @@
 {
-  "_fonts-CjTUahTj.css": {
-    "file": "assets/fonts-CjTUahTj.css",
-    "src": "_fonts-CjTUahTj.css"
+  "_fonts-D0sbitSK.css": {
+    "file": "assets/fonts-D0sbitSK.css",
+    "src": "_fonts-D0sbitSK.css"
   },
   "_ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2": {
     "file": "assets/ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2",
     "src": "_ibm-plex-sans-arabic-400-normal-Bo5KPYvw.woff2"
   },
-  "_ibm-plex-sans-arabic-400-normal-sbZiljcy.woff": {
-    "file": "assets/ibm-plex-sans-arabic-400-normal-sbZiljcy.woff",
-    "src": "_ibm-plex-sans-arabic-400-normal-sbZiljcy.woff"
+  "_ibm-plex-sans-arabic-400-normal-CFZh1unN.woff": {
+    "file": "assets/ibm-plex-sans-arabic-400-normal-CFZh1unN.woff",
+    "src": "_ibm-plex-sans-arabic-400-normal-CFZh1unN.woff"
   },
-  "_ibm-plex-sans-arabic-500-normal-BKKTaxl1.woff": {
-    "file": "assets/ibm-plex-sans-arabic-500-normal-BKKTaxl1.woff",
-    "src": "_ibm-plex-sans-arabic-500-normal-BKKTaxl1.woff"
+  "_ibm-plex-sans-arabic-500-normal-BletK1Hp.woff": {
+    "file": "assets/ibm-plex-sans-arabic-500-normal-BletK1Hp.woff",
+    "src": "_ibm-plex-sans-arabic-500-normal-BletK1Hp.woff"
   },
   "_ibm-plex-sans-arabic-500-normal-Cd6jVIg7.woff2": {
     "file": "assets/ibm-plex-sans-arabic-500-normal-Cd6jVIg7.woff2",
     "src": "_ibm-plex-sans-arabic-500-normal-Cd6jVIg7.woff2"
   },
-  "_ibm-plex-sans-arabic-600-normal-5MnVa4PS.woff": {
-    "file": "assets/ibm-plex-sans-arabic-600-normal-5MnVa4PS.woff",
-    "src": "_ibm-plex-sans-arabic-600-normal-5MnVa4PS.woff"
+  "_ibm-plex-sans-arabic-600-normal-Dk5eISD_.woff": {
+    "file": "assets/ibm-plex-sans-arabic-600-normal-Dk5eISD_.woff",
+    "src": "_ibm-plex-sans-arabic-600-normal-Dk5eISD_.woff"
   },
   "_ibm-plex-sans-arabic-600-normal-KrqB56Mw.woff2": {
     "file": "assets/ibm-plex-sans-arabic-600-normal-KrqB56Mw.woff2",
@@ -76,7 +76,7 @@
     "src": "_jetbrains-mono-500-normal-CJOVTJB7.woff"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CoxRc597.css",
+    "file": "assets/app-CjNtuDP_.css",
     "name": "app",
     "names": [
       "app.css"
@@ -85,7 +85,7 @@
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-D98MvqXf.css",
+    "file": "assets/theme-mQVVet1m.css",
     "name": "theme",
     "names": [
       "theme.css"

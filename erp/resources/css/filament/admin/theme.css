@@ -2,22 +2,24 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/components/**/*';
 
 /*
- * Import & Wholesale ERP — design system.
+ * Aram Mizuri Sourcing — design system.
  *
- * The token set from docs/05-UIUX.md Part A. Filament supplies the component
- * structure; this file supplies the look. Two rules do most of the work of
- * moving the panel from "admin tool" to "product":
+ * A dark, glass, analytics look: a deep navy field lit from its corners, panels
+ * that read as frosted glass over it, and colour spent only where it carries
+ * meaning — cyan for action, green for gain, red for loss, amber and orange for
+ * the things that want watching.
  *
- *   1. Elevation is a hairline border, not a drop shadow. Only genuinely
- *      floating layers (dropdowns, modals) cast one.
- *   2. Every figure that belongs in a column is tabular and right-aligned,
- *      so decimals line up down the page.
+ * The discipline from the old light system is kept, not discarded:
+ *   1. Elevation is a hairline and a soft lift, never a hard drop shadow.
+ *   2. Every figure in a column is tabular and end-aligned, so decimals line up.
+ *   3. Colour lands where something wants doing. A large number is not an alarm.
  *
- * Colour ramps for primary/gray/success/warning/danger come from the panel's
- * ->colors() call, which generates the --primary-* / --gray-* variables this
- * file builds on.
+ * Filament supplies the structure; this file supplies the surface. Because the
+ * whole panel is built from `fi-*` classes and a handful of custom `erp-*`
+ * ones, restyling here restyles every table, form, modal and page at once.
  */
 
 @theme {
@@ -26,26 +28,19 @@
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     --font-arabic: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
 
-    --radius-sm: 0.375rem; /* 6px  — badges, chips        */
-    --radius-md: 0.5rem;   /* 8px  — buttons, inputs      */
-    --radius-lg: 0.75rem;  /* 12px — cards, panels        */
-    --radius-xl: 1rem;     /* 16px — modals, drawers      */
+    /* Larger radii — the reference language is big, soft cards. */
+    --radius-sm: 0.5rem;   /*  8px — badges, chips           */
+    --radius-md: 0.75rem;  /* 12px — buttons, inputs         */
+    --radius-lg: 1.25rem;  /* 20px — cards, panels           */
+    --radius-xl: 1.5rem;   /* 24px — modals, drawers         */
 
-    /*
-     * Type scale.
-     *
-     * Six steps and no more. Every screen before this picked its own sizes —
-     * `text-xs` here, `text-sm` there, `text-4xl` for one figure — and the
-     * result is a system where nothing looks deliberate because nothing was
-     * chosen twice. Named for the job rather than the size, so the choice at
-     * the point of use is "what is this" and not "how big".
-     */
-    --text-display: 2.125rem;          /* the one figure a screen is about   */
-    --text-display--line-height: 2.5rem;
+    /* Type scale — six steps, named for the job rather than the size. */
+    --text-display: 2.25rem;           /* the one figure a screen is about   */
+    --text-display--line-height: 2.625rem;
     --text-display--letter-spacing: -0.02em;
 
-    --text-figure: 1.375rem;           /* supporting figures, stat tiles     */
-    --text-figure--line-height: 1.75rem;
+    --text-figure: 1.5rem;             /* supporting figures, stat tiles     */
+    --text-figure--line-height: 1.875rem;
     --text-figure--letter-spacing: -0.015em;
 
     --text-title: 0.875rem;            /* card and section headings          */
@@ -53,159 +48,113 @@
 
     --text-label: 0.6875rem;           /* the small caps above a figure      */
     --text-label--line-height: 1rem;
-    --text-label--letter-spacing: 0.06em;
+    --text-label--letter-spacing: 0.07em;
 
     --text-hint: 0.75rem;              /* the sentence under a figure        */
     --text-hint--line-height: 1.125rem;
 
-    /*
-     * Spacing. Card padding, the gap between cards, the gap inside one.
-     * Three names cover nearly every decision on a screen like this.
-     */
-    --erp-pad: 1.25rem;
+    --erp-pad: 1.375rem;
     --erp-gap: 1.5rem;
     --erp-gap-tight: 0.75rem;
 }
 
 @layer base {
-    :root {
-        /* Surfaces — light */
-        --erp-bg-page: #f7f7f8;
-        --erp-bg-surface: #ffffff;
-        --erp-bg-surface-2: #fafafa;
-        --erp-bg-sunken: #f0f0f2;
-        --erp-bg-hover: rgb(0 0 0 / 0.035);
-
-        --erp-border: rgb(9 9 11 / 0.09);
-        --erp-border-strong: rgb(9 9 11 / 0.16);
-
-        --erp-text-primary: #0b0b0c;
-        --erp-text-secondary: #52525b;
-        /* 3.38:1 before — under the floor for anything anyone has to read. */
-        --erp-text-muted: #74747d;
-
-        /*
-         * Status, split by role — the one change that makes these usable.
-         *
-         * A colour needs 3:1 against its surface to work as a *shape* and
-         * 4.5:1 to work as *text*, and no single yellow clears both: at 1.83:1
-         * the old warning was invisible as a figure on white and only just
-         * held up as a bar. So each status is two tokens. The plain name fills
-         * (bars, dots, segments); `-text` is the same hue walked down until it
-         * can be read.
-         *
-         * Only the lightness moves between the pair. The palette's identity is
-         * its hues, and an accessible palette that no longer looks like itself
-         * has traded one problem for another.
-         *
-         * Ratios below are against --erp-bg-surface; `php tools/contrast.php`
-         * re-checks every one of them.
-         */
-        --erp-good: #0ca30c;          /* fill  3.35 */
-        --erp-good-text: #0a860a;     /* text  4.74 */
-        --erp-warning: #c78904;       /* fill  3.00 */
-        --erp-warning-text: #9f6d03;  /* text  4.50 */
-        --erp-serious: #e97243;       /* fill  3.02 */
-        --erp-serious-text: #cd4b18;  /* text  4.55 */
-        --erp-critical: #d03b3b;      /* fill  4.80 */
-        --erp-critical-text: #d03b3b; /* text  4.80 — already clears both */
-
-        /* Chart chrome */
-        --erp-grid: #e1e0d9;
-        --erp-axis: #c3c2b7;
-        --erp-axis-text: #898781;
-        --erp-delta-good: #006300;
-
-        /*
-         * Validated categorical palette (docs/05-UIUX.md §A1). Fixed slot order:
-         * a series keeps its slot no matter how many series are on screen.
-         * On this light surface aqua/yellow/magenta fall below 3:1, so charts
-         * using them must ship direct labels or the table view.
-         */
-        --erp-series-1: #2a78d6;  /* 4.42 */
-        --erp-series-2: #eb6834;  /* 3.20 */
-        --erp-series-3: #1aa674;  /* 3.11 — was 2.82 */
-        --erp-series-4: #c48500;  /* 3.13 — was 2.17 */
-        --erp-series-5: #e56a98;  /* 3.07 — was 2.69 */
-        --erp-series-6: #008300;  /* 4.95 */
-        --erp-series-7: #4a3aa7;  /* 8.56 */
-        --erp-series-8: #e34948;  /* 3.95 */
-
-        --erp-diverging-pos: #2a78d6;
-        --erp-diverging-mid: #f0efec;
-        --erp-diverging-neg: #e34948;
-
-        --erp-shadow-popover: 0 4px 12px rgb(9 9 11 / 0.07), 0 1px 3px rgb(9 9 11 / 0.05);
-        --erp-shadow-modal: 0 16px 48px rgb(9 9 11 / 0.14), 0 2px 8px rgb(9 9 11 / 0.06);
-
-        --erp-row-height: 2.75rem; /* 44px; 36px in compact mode */
-    }
-
+    /*
+     * One palette, dark throughout. Defined on :root rather than scoped to
+     * `.dark` so the surface is the same whatever the toggle last said — the
+     * panel runs dark-only, and a stray light preference cannot half-undo it.
+     */
+    :root,
     .dark {
-        --erp-bg-page: #0d0d0f;
-        --erp-bg-surface: #17171a;
-        --erp-bg-surface-2: #1e1e22;
-        --erp-bg-sunken: #08080a;
-        --erp-bg-hover: rgb(255 255 255 / 0.05);
+        /* The field, and the light on it. */
+        --erp-bg-page: #0a0f1c;
+        --erp-bg-deep: #070b15;
+        --erp-bg-surface: rgba(255, 255, 255, 0.035);
+        --erp-bg-surface-2: rgba(255, 255, 255, 0.06);
+        --erp-bg-sunken: rgba(3, 6, 14, 0.5);
+        --erp-bg-hover: rgba(255, 255, 255, 0.055);
 
-        --erp-border: rgb(255 255 255 / 0.10);
-        --erp-border-strong: rgb(255 255 255 / 0.18);
+        /* Frosted panels. The fill is a tinted navy; the blur does the rest. */
+        --erp-glass: rgba(18, 26, 44, 0.62);
+        --erp-glass-strong: rgba(20, 29, 48, 0.86);
+        --erp-glass-raised: rgba(26, 36, 58, 0.72);
 
-        --erp-text-primary: #f5f5f6;
-        --erp-text-secondary: #a1a1aa;
-        --erp-text-muted: #808089;  /* 4.57 — was #71717a at 3.70 */
+        --erp-border: rgba(255, 255, 255, 0.08);
+        --erp-border-strong: rgba(255, 255, 255, 0.16);
+
+        --erp-text-primary: #e8edf7;
+        --erp-text-secondary: #a8b2c7;
+        --erp-text-muted: #7d889e;
 
         /*
-         * Status, restated.
-         *
-         * These were not here, so all four fell through to the light values —
-         * tuned against white and never checked against #17171a. `critical`
-         * landed at 3.72:1, which is the colour the overdue figure and every
-         * negative profit is printed in: the one number on the screen that has
-         * to be read, in the theme actually being used.
-         *
-         * They are restated in full rather than only where a value changes,
-         * because a status block that inherits half its colours from the other
-         * theme is how this happened in the first place.
+         * Status, each a fill and a text step. On this dark field the fill is
+         * already bright enough to read, so most pairs share a value; where the
+         * text step differs it is lifted for the smaller type.
          */
-        --erp-good: #0ca30c;          /* fill  5.33 */
-        --erp-good-text: #16bd16;     /* text  7.06 */
-        --erp-warning: #fab219;       /* fill  9.75 */
-        --erp-warning-text: #fab219;  /* text  9.75 */
-        --erp-serious: #ec835a;       /* fill  6.78 */
-        --erp-serious-text: #ec835a;  /* text  6.78 */
-        --erp-critical: #d75858;      /* fill  4.62 */
-        --erp-critical-text: #d75858; /* text  4.62 — was #d03b3b at 3.72 */
+        --erp-good: #34d399;          /* profit, settled, positive          */
+        --erp-good-text: #4ade80;
+        --erp-warning: #fbbf24;       /* needs watching                     */
+        --erp-warning-text: #fcd34d;
+        --erp-serious: #fb923c;       /* purchasing, important secondary    */
+        --erp-serious-text: #fdba74;
+        --erp-critical: #f87171;      /* loss, overdue, error, negative     */
+        --erp-critical-text: #fca5a5;
 
-        --erp-grid: #2c2c2a;
-        --erp-axis: #383835;
-        --erp-axis-text: #8f8d86;   /* 5.35 */
-        --erp-delta-good: #16bd16;
+        /* The accents the reference leans on, as usable tokens. */
+        --erp-accent: #22d3ee;        /* cyan — primary action, active nav  */
+        --erp-accent-2: #38bdf8;      /* electric blue                      */
+        --erp-accent-purple: #a78bfa; /* financial metrics, selected        */
 
-        /* Same eight hues, re-stepped for the dark surface — not an auto-flip. */
-        --erp-series-1: #3987e5;
-        --erp-series-2: #d95926;
-        --erp-series-3: #199e70;
-        --erp-series-4: #c98500;
-        --erp-series-5: #d55181;
-        --erp-series-6: #008300;
-        --erp-series-7: #9085e9;
-        --erp-series-8: #e66767;
+        /* Chart chrome, quiet against glass. */
+        --erp-grid: rgba(255, 255, 255, 0.06);
+        --erp-axis: rgba(255, 255, 255, 0.14);
+        --erp-axis-text: #8a93a6;
+        --erp-delta-good: #34d399;
 
-        --erp-diverging-pos: #3987e5;
-        --erp-diverging-mid: #383835;
-        --erp-diverging-neg: #e66767;
+        /*
+         * Categorical palette, re-pitched for the dark field and for the
+         * meanings the brief gives each hue: blue, purple, green, orange lead,
+         * because those are the four the data categories wear.
+         */
+        --erp-series-1: #38bdf8;  /* blue   */
+        --erp-series-2: #a78bfa;  /* purple */
+        --erp-series-3: #34d399;  /* green  */
+        --erp-series-4: #fb923c;  /* orange */
+        --erp-series-5: #f472b6;  /* pink   */
+        --erp-series-6: #22d3ee;  /* cyan   */
+        --erp-series-7: #818cf8;  /* indigo */
+        --erp-series-8: #f87171;  /* red    */
 
-        --erp-shadow-popover: 0 4px 12px rgb(0 0 0 / 0.4), 0 1px 3px rgb(0 0 0 / 0.3);
-        --erp-shadow-modal: 0 16px 48px rgb(0 0 0 / 0.55), 0 2px 8px rgb(0 0 0 / 0.35);
+        --erp-diverging-pos: #22d3ee;
+        --erp-diverging-mid: rgba(255, 255, 255, 0.08);
+        --erp-diverging-neg: #f87171;
+
+        /* Soft lift plus a thin inner highlight — glass, not a dropped box. */
+        --erp-shadow-popover: 0 10px 34px rgba(2, 5, 12, 0.55), 0 2px 8px rgba(2, 5, 12, 0.4);
+        --erp-shadow-modal: 0 28px 80px rgba(2, 5, 12, 0.72), 0 4px 16px rgba(2, 5, 12, 0.5);
+        --erp-glow-primary: 0 0 24px -6px rgba(34, 211, 238, 0.6);
+
+        --erp-row-height: 2.75rem;
+
+        color-scheme: dark;
     }
 
-    /* Sharper text rendering; Inter's optical sizing on by default. */
+    /*
+     * The lit field. A near-black navy with three faint pools of colour at the
+     * edges — cyan top-left, violet top-right, cyan rising from the foot — fixed
+     * so they sit behind the content rather than scrolling with it.
+     */
+    html,
+    body {
+        background-color: var(--erp-bg-page);
+    }
+
     body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
         letter-spacing: -0.006em;
+        color: var(--erp-text-primary);
     }
 
     :is([dir='rtl']) body {
@@ -216,112 +165,206 @@
     h1, h2, h3 {
         letter-spacing: -0.015em;
     }
+
+    /* The atmosphere, painted once on the main container and held still. */
+    .fi-body,
+    .fi-main-ctn,
+    .fi-simple-main-ctn {
+        background-color: var(--erp-bg-page);
+        background-image:
+            radial-gradient(1100px 620px at 12% -12%, rgba(34, 211, 238, 0.10), transparent 60%),
+            radial-gradient(1000px 560px at 100% -8%, rgba(139, 92, 246, 0.12), transparent 55%),
+            radial-gradient(900px 680px at 50% 118%, rgba(34, 211, 238, 0.06), transparent 60%);
+        background-attachment: fixed;
+    }
+
+    /* Thin, dark, out of the way until reached. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.24);
+    }
 }
 
 @layer components {
     /*
-     * Elevation is a hairline, not a shadow. Filament ships soft shadows on
-     * sections and tables by default; flattening them is the single biggest
-     * step from "admin panel" toward a designed product.
+     * Glass. Every panel in the system — Filament's own sections, widgets,
+     * tables and form containers, and the custom cards — is the same frosted
+     * sheet over the lit field: a tinted fill, a blur, a hairline edge, a soft
+     * lift, and a one-pixel inner highlight along the top so the glass catches
+     * the light.
      */
     .fi-section,
-    .fi-ta-ctn,
     .fi-wi,
-    .fi-fo-component-ctn {
+    .fi-ta-ctn,
+    .fi-fo-component-ctn,
+    .erp-card,
+    .erp-stat {
         --tw-shadow: 0 0 rgb(0 0 0 / 0);
-        box-shadow: none;
+        background-color: var(--erp-glass);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        backdrop-filter: blur(18px) saturate(140%);
         border: 1px solid var(--erp-border);
         border-radius: var(--radius-lg);
-        background-color: var(--erp-bg-surface);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 14px 36px -18px rgba(2, 5, 12, 0.8);
     }
 
-    /* Genuinely floating layers still cast one. */
+    /* Genuinely floating layers go more opaque, so text over them stays crisp. */
     .fi-dropdown-panel {
+        background-color: var(--erp-glass-strong);
+        -webkit-backdrop-filter: blur(22px) saturate(150%);
+        backdrop-filter: blur(22px) saturate(150%);
         box-shadow: var(--erp-shadow-popover);
         border: 1px solid var(--erp-border);
         border-radius: var(--radius-lg);
     }
 
     .fi-modal-window {
+        background-color: var(--erp-glass-strong);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        backdrop-filter: blur(24px) saturate(150%);
+        border: 1px solid var(--erp-border);
         box-shadow: var(--erp-shadow-modal);
         border-radius: var(--radius-xl);
     }
 
-    .fi-main-ctn,
-    .fi-body {
-        background-color: var(--erp-bg-page);
+    /* The scrim behind a modal: darken and slightly blur what is left behind. */
+    .fi-modal > .fi-modal-close-overlay,
+    .fi-modal-close-overlay {
+        background-color: rgba(4, 7, 14, 0.6);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
     }
 
-    /* Sidebar: quiet, hairline-separated, with a solid active state. */
+    /* ---------------------------------------------------------- navigation */
+
+    /*
+     * The sidebar is the same glass as everything else, a touch deeper, with a
+     * hairline down its trailing edge.
+     */
+    .fi-sidebar,
+    .fi-topbar > nav,
+    .fi-topbar {
+        background-color: rgba(10, 15, 28, 0.72);
+        -webkit-backdrop-filter: blur(20px) saturate(140%);
+        backdrop-filter: blur(20px) saturate(140%);
+        border-color: var(--erp-border);
+        box-shadow: none;
+    }
+
     .fi-sidebar {
         border-inline-end: 1px solid var(--erp-border);
-        background-color: var(--erp-bg-surface);
     }
 
-    .fi-sidebar-item-label {
-        font-size: 0.875rem;
-        font-weight: 500;
+    .fi-topbar > nav {
+        border-bottom: 1px solid var(--erp-border);
     }
 
     .fi-sidebar-group-label {
         font-size: 0.6875rem;
         font-weight: 600;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.07em;
         text-transform: uppercase;
         color: var(--erp-text-muted);
     }
 
-    .fi-topbar > nav {
-        border-bottom: 1px solid var(--erp-border);
-        background-color: var(--erp-bg-surface);
-        box-shadow: none;
+    .fi-sidebar-item-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--erp-text-secondary);
     }
 
-    /* Table density and rhythm. */
-    .fi-ta-header-cell {
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        color: var(--erp-text-secondary);
-        background-color: var(--erp-bg-surface-2);
+    .fi-sidebar-item-icon {
+        color: var(--erp-text-muted);
+    }
+
+    /* Hover: the glass warms a little. */
+    .fi-sidebar-item-btn:hover,
+    .fi-sidebar-item a:hover {
+        background-color: var(--erp-bg-hover);
+        border-radius: var(--radius-md);
     }
 
     /*
-     * The heading stays while the rows go by.
-     *
-     * A deal list runs past a screenful quickly and Filament does not pin the
-     * header, so by the third scroll you are reading columns you can no longer
-     * name and counting across from the left to work out which is which.
+     * The active page, lit. A cyan wash fading to the right, a bright rail on
+     * the leading edge, and a soft outward glow — the one glowing element the
+     * brief asks for, and the clearest "you are here" on the screen.
      */
+    .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+    .fi-sidebar-item.fi-active a,
+    .fi-sidebar-item-btn.fi-active,
+    .fi-sidebar-item a[aria-current='page'] {
+        background-image: linear-gradient(90deg, rgba(34, 211, 238, 0.20), rgba(34, 211, 238, 0.02));
+        border-radius: var(--radius-md);
+        box-shadow: inset 2px 0 0 var(--erp-accent), 0 0 22px -8px rgba(34, 211, 238, 0.55);
+    }
+
+    .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+    .fi-sidebar-item a[aria-current='page'] .fi-sidebar-item-label {
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+    .fi-sidebar-item a[aria-current='page'] .fi-sidebar-item-icon {
+        color: var(--erp-accent);
+    }
+
+    /* The brand mark, quietly. */
+    .fi-sidebar-header,
+    .fi-sidebar-nav {
+        background-color: transparent;
+    }
+
+    /* ---------------------------------------------------------- data tables */
+
     .fi-ta-header-cell {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--erp-text-muted);
+        background-color: rgba(255, 255, 255, 0.02);
         position: sticky;
         top: 0;
         z-index: 10;
+        border-bottom: 1px solid var(--erp-border);
     }
 
     .fi-ta-row {
         min-height: var(--erp-row-height);
+        border-color: var(--erp-border);
+    }
+
+    /* Separators are the faintest rule; the eye should feel rows, not a grid. */
+    .fi-ta-row:not(:last-child) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.045);
     }
 
     .fi-ta-row:hover {
         background-color: var(--erp-bg-hover);
     }
 
-    /* Keyboard users get the same answer to "which row am I on?" */
     .fi-ta-row:focus-within {
         background-color: var(--erp-bg-hover);
     }
 
-    /*
-     * Every figure in every table, without a single resource being touched.
-     *
-     * Filament marks an end-aligned cell `fi-align-end`, and in this system an
-     * end-aligned cell is a figure — money, a count, a percentage. Tabular
-     * numerals there mean the decimal points sit in one vertical line down the
-     * page, which is the whole reason a column of money is readable at all.
-     * Doing it per column would have meant ten resources and every future one
-     * remembering; doing it here means none of them have to.
-     */
+    /* Figures line up: tabular numerals wherever a cell is a number. */
     .fi-ta-cell.fi-align-end,
     .fi-ta-header-cell.fi-align-end,
     .fi-ta-cell.fi-align-end .fi-ta-text-item-label {
@@ -329,11 +372,6 @@
         font-feature-settings: 'tnum';
     }
 
-    /*
-     * Money and quantity columns. Tabular figures plus right alignment are what
-     * make a column of decimals scannable — without them every row's point sits
-     * somewhere different and the eye has to re-find it.
-     */
     .erp-numeric,
     .fi-ta-text-item-label:where([data-numeric]) {
         font-variant-numeric: tabular-nums;
@@ -341,7 +379,6 @@
         font-feature-settings: 'tnum';
     }
 
-    /* Identifiers read as data, not prose. */
     .erp-identifier {
         font-family: var(--font-mono);
         font-size: 0.8125rem;
@@ -349,28 +386,17 @@
         color: var(--erp-text-secondary);
     }
 
-    /*
-     * The card, and everything that lives on one.
-     *
-     * Nine custom views were each writing `rounded-xl border` with the border
-     * and background colours inlined by hand — the same rule as `.fi-section`
-     * above, restated nine times and free to drift nine ways. This is that rule
-     * with a name, so a page written in plain Blade looks like a page built out
-     * of Filament sections, because it is the same card.
-     */
+    /* ---------------------------------------------------------- the card */
+
     .erp-card {
-        border: 1px solid var(--erp-border);
-        border-radius: var(--radius-lg);
-        background-color: var(--erp-bg-surface);
         overflow: hidden;
     }
 
     .erp-card-head {
-        padding: 1rem var(--erp-pad);
+        padding: 1.1rem var(--erp-pad);
         border-bottom: 1px solid var(--erp-border);
     }
 
-    /* A head with nothing under it needs no rule beneath it. */
     .erp-card-head:last-child {
         border-bottom: 0;
     }
@@ -387,30 +413,13 @@
     }
 
     .erp-card-hint {
-        margin-top: 0.125rem;
+        margin-top: 0.1875rem;
         font-size: var(--text-hint);
         line-height: var(--text-hint--line-height);
         color: var(--erp-text-muted);
     }
 
-    /* The small caps above a figure. Six views were rolling this by hand. */
-    .erp-label {
-        font-size: var(--text-label);
-        line-height: var(--text-label--line-height);
-        font-weight: 600;
-        letter-spacing: var(--text-label--letter-spacing);
-        text-transform: uppercase;
-        color: var(--erp-text-muted);
-    }
-
-    /* Stat tile — the dashboard atom (docs/05-UIUX.md §A5). */
-    .erp-stat {
-        border: 1px solid var(--erp-border);
-        border-radius: var(--radius-lg);
-        background-color: var(--erp-bg-surface);
-        padding: var(--erp-pad);
-    }
-
+    .erp-label,
     .erp-stat-label {
         font-size: var(--text-label);
         line-height: var(--text-label--line-height);
@@ -420,20 +429,25 @@
         color: var(--erp-text-muted);
     }
 
+    .erp-stat {
+        padding: var(--erp-pad);
+    }
+
     .erp-stat-value {
         font-size: var(--text-figure);
         line-height: var(--text-figure--line-height);
         letter-spacing: var(--text-figure--letter-spacing);
-        font-weight: 600;
+        font-weight: 650;
         color: var(--erp-text-primary);
         font-variant-numeric: tabular-nums;
     }
 
-    /* One figure per screen earns display size; the rest are supporting. */
+    /* One figure per screen earns display size and a faint glow of its own. */
     .erp-stat-value[data-lead] {
         font-size: var(--text-display);
         line-height: var(--text-display--line-height);
         letter-spacing: var(--text-display--letter-spacing);
+        font-weight: 700;
     }
 
     .erp-stat-hint {
@@ -445,18 +459,15 @@
 
     .erp-stat-delta {
         font-size: 0.8125rem;
-        font-weight: 500;
+        font-weight: 600;
     }
 
     .erp-stat-delta[data-direction='up'] { color: var(--erp-delta-good); }
     .erp-stat-delta[data-direction='down'] { color: var(--erp-critical-text); }
 
     /*
-     * A row of figures, hairline-separated.
-     *
-     * The separator is the grid's own background showing through a one-pixel
-     * gap, which is why the cells carry a surface colour. It wraps rather than
-     * scrolls: a figure pushed off the side of a card is a figure nobody reads.
+     * A row of figures, hairline-separated — the separator is the grid showing
+     * through a one-pixel gap, so each cell carries its own glass fill.
      */
     .erp-figures {
         display: grid;
@@ -466,14 +477,11 @@
     }
 
     .erp-figures > * {
-        background-color: var(--erp-bg-surface);
+        background-color: var(--erp-glass);
         padding: var(--erp-pad);
     }
 
-    /*
-     * Empty states. A blank panel reads as something failing to load; a
-     * sentence saying what would appear here, and how to make it, does not.
-     */
+    /* Empty states — a sentence, not a blank sheet. */
     .erp-empty {
         padding: 2.5rem var(--erp-pad);
         text-align: center;
@@ -486,70 +494,83 @@
         font-weight: 500;
     }
 
-    /* Status text. Paired with the fills above — see the token block. */
+    /* Status text. */
     .erp-good { color: var(--erp-good-text); }
     .erp-warning { color: var(--erp-warning-text); }
     .erp-serious { color: var(--erp-serious-text); }
     .erp-critical { color: var(--erp-critical-text); }
 
+    /* ---------------------------------------------------------- controls */
+
     /*
-     * Focus, everywhere, on one rule.
-     *
-     * Filament rings some controls and not others. A keyboard user needs the
-     * same answer to "where am I?" on every element, so this states it once
-     * rather than leaving it to each component.
+     * Focus, stated once for everything: a cyan ring, the same answer to "where
+     * am I?" on every control.
      */
     :where(a, button, [role='button'], summary, [tabindex]):focus-visible {
-        outline: 2px solid var(--color-primary-500);
+        outline: 2px solid var(--erp-accent);
         outline-offset: 2px;
         border-radius: var(--radius-sm);
     }
 
-    /* Inputs: hairline at rest, accent ring on focus. */
+    /* Inputs: dark glass, a hairline at rest, a cyan ring when live. */
     .fi-input-wrp {
         border-radius: var(--radius-md);
         box-shadow: none;
         border: 1px solid var(--erp-border);
-        background-color: var(--erp-bg-surface);
+        background-color: var(--erp-bg-sunken);
     }
 
-    /* A hint that the field is live, before it is focused. */
     .fi-input-wrp:hover:not(:focus-within) {
         border-color: var(--erp-border-strong);
     }
 
     .fi-input-wrp:focus-within {
-        border-color: var(--color-primary-500);
-        outline: 2px solid var(--color-primary-500);
+        border-color: var(--erp-accent);
+        outline: 2px solid rgba(34, 211, 238, 0.35);
         outline-offset: 1px;
     }
 
     /*
-     * A field you cannot type in should look like one.
-     *
-     * The deal screen is full of them — the converted price, the line total,
-     * every figure that is a consequence of something typed above it — and
-     * they were indistinguishable from an empty box somebody had forgotten to
-     * fill. Sunk rather than greyed: the value still has to be read, so the
-     * text keeps its contrast and the surface does the saying.
+     * A select's chosen value stays on one line and truncates, rather than
+     * breaking a word down to one letter a row when its column is narrow — the
+     * four-across form sections get tight, and "Closed" stacked vertically is
+     * not a value anybody can read. The value container has to be allowed to
+     * take the width the clear button and chevron leave it, or it collapses to
+     * nothing and the label wraps inside a ten-pixel box.
      */
+    .fi-select-input-btn {
+        min-width: 0;
+    }
+
+    .fi-select-input-value-ctn {
+        flex: 1 1 0%;
+        min-width: 0;
+    }
+
+    .fi-select-input-value-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: normal;
+        min-width: 0;
+    }
+
+    /* In a form, a select never shrinks below a width its value can live in. */
+    .fi-fo-field-wrp .fi-select-input-btn {
+        min-width: 5rem;
+    }
+
+    /* A field you cannot type in should look like one. */
     .fi-input-wrp:has(input:read-only, textarea:read-only),
     .fi-input-wrp:has(input:disabled, textarea:disabled) {
-        background-color: var(--erp-bg-sunken);
+        background-color: rgba(0, 0, 0, 0.25);
         border-style: dashed;
     }
 
-    /*
-     * Field furniture, on the same scale as everything else.
-     *
-     * Labels, hints and errors were each whatever size Filament shipped, which
-     * left a form reading at three sizes that agreed with nothing on the page
-     * around it.
-     */
     .fi-fo-field-label {
         font-size: var(--text-title);
         font-weight: 500;
-        color: var(--erp-text-primary);
+        color: var(--erp-text-secondary);
     }
 
     .fi-fo-field-label-required-mark {
@@ -563,11 +584,6 @@
         color: var(--erp-text-muted);
     }
 
-    /*
-     * An error says what to do about it, so it should be the easiest thing on
-     * the field to find — and the field itself should say it too, because a
-     * red sentence under a normal-looking box is easy to scroll past.
-     */
     .fi-fo-field-wrp-error-message {
         font-size: var(--text-hint);
         line-height: var(--text-hint--line-height);
@@ -579,7 +595,6 @@
         border-color: var(--erp-critical);
     }
 
-    /* Section headings match the cards they sit among. */
     .fi-section-header-heading {
         font-size: var(--text-title);
         line-height: var(--text-title--line-height);
@@ -593,37 +608,125 @@
         color: var(--erp-text-muted);
     }
 
+    /* ---------------------------------------------------------- buttons */
+
     .fi-btn {
         border-radius: var(--radius-md);
-        font-weight: 500;
+        font-weight: 600;
         box-shadow: none;
     }
+
+    /*
+     * The primary button carries the one deliberate glow: a cyan ring and a
+     * soft cast of its own colour, so the main action on any screen is the
+     * thing the eye lands on.
+     */
+    .fi-btn.fi-color-primary {
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.35), var(--erp-glow-primary);
+    }
+
+    .fi-btn.fi-color-primary:hover {
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.5), 0 0 28px -4px rgba(34, 211, 238, 0.7);
+    }
+
+    /* ---------------------------------------------------------- badges */
 
     .fi-badge {
         border-radius: var(--radius-sm);
         font-size: 0.6875rem;
         font-weight: 600;
         letter-spacing: 0.01em;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* The theme toggle is gone — the panel runs dark-only. */
+    .fi-theme-switcher {
+        display: none;
+    }
+
+    /* ---------------------------------------------------------- deltas */
+
+    /*
+     * A change against the window before, as a chip rather than a sentence —
+     * the analytics-dashboard way of saying "and this is the direction". Tinted
+     * to its meaning: green up, red down, quiet grey when it is neither.
+     */
+    .erp-delta {
+        display: inline-flex;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--erp-border);
+        color: var(--erp-text-secondary);
+    }
+
+    .erp-delta[data-tone='good'] {
+        color: var(--erp-good-text);
+        background: rgba(52, 211, 153, 0.12);
+        border-color: rgba(52, 211, 153, 0.28);
+    }
+
+    .erp-delta[data-tone='critical'] {
+        color: var(--erp-critical-text);
+        background: rgba(248, 113, 113, 0.12);
+        border-color: rgba(248, 113, 113, 0.28);
+    }
+
+    /* ---------------------------------------------------------- chart bars */
+
+    /*
+     * A bar is lit by its own colour: a gradient that fades along its length and
+     * a soft glow of the same hue, so the data reads as part of the glass
+     * interface rather than a flat block painted on top of it. The hue comes in
+     * through `--bar`, set where the bar is drawn, so one rule serves every
+     * series.
+     */
+    .erp-bar {
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--bar), color-mix(in srgb, var(--bar) 42%, transparent));
+        box-shadow: 0 0 12px -3px var(--bar);
+    }
+
+    .erp-bar-v {
+        border-radius: 3px;
+        background: linear-gradient(180deg, var(--bar), color-mix(in srgb, var(--bar) 14%, transparent));
+        box-shadow: 0 0 14px -4px var(--bar);
+    }
+
+    /* ---------------------------------------------------------- sign in */
+
+    /*
+     * The first thing anybody sees. The sign-in card is the same glass, lifted
+     * off the lit field with a faint cyan halo so the panel announces itself as
+     * something considered before a single field is filled.
+     */
+    .fi-simple-main {
+        background-color: var(--erp-glass-strong);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        backdrop-filter: blur(24px) saturate(150%);
+        border: 1px solid var(--erp-border);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--erp-shadow-modal), 0 0 70px -24px rgba(34, 211, 238, 0.45);
     }
 }
 
 @layer utilities {
-    /*
-     * Motion: fast and purposeful. Nothing exceeds 250ms except the deliberate
-     * stat count-up. Filament's base layer already collapses these under
-     * prefers-reduced-motion.
-     */
     .erp-transition {
-        transition-duration: 120ms;
+        transition-duration: 140ms;
         transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
     }
 
     .erp-transition-panel {
-        transition-duration: 150ms;
+        transition-duration: 180ms;
         transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Compact density, toggled per user and remembered. */
     .erp-density-compact {
         --erp-row-height: 2.25rem;
     }
@@ -632,74 +735,48 @@
 /*
  * ─────────────────────────────────────────────────────────── motion
  *
- * Motion here confirms rather than decorates. Something that changed under
- * your hand should say so; nothing should be waited on.
- *
- * The whole block sits inside `prefers-reduced-motion: no-preference`, so a
- * reader who has asked their system for stillness gets stillness — not a
- * shortened animation, none. That is the correct reading of the preference and
- * it is also why the rules are additive rather than something to undo.
+ * Motion confirms rather than decorates, and the whole block sits inside
+ * `prefers-reduced-motion: no-preference` so a reader who asked for stillness
+ * gets it. The rules are additive for that reason.
  */
 @media (prefers-reduced-motion: no-preference) {
-    :where(.fi-btn, .fi-ta-row, .fi-sidebar-item, .erp-card, .fi-input-wrp, .fi-badge) {
-        transition-property: background-color, border-color, color, opacity, box-shadow;
-        transition-duration: 120ms;
+    :where(.fi-btn, .fi-ta-row, .fi-sidebar-item, .fi-sidebar-item-btn, .erp-card, .fi-input-wrp, .fi-badge, .fi-dropdown-panel) {
+        transition-property: background-color, border-color, color, opacity, box-shadow, transform;
+        transition-duration: 140ms;
         transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
     }
 
-    /*
-     * A button that has been pressed should feel pressed. One pixel and no
-     * scale: a control that grows under the cursor is a toy.
-     */
+    /* A card lifts a hair toward the reader on hover — a glass panel catching light. */
+    .fi-wi:hover,
+    .erp-card:hover {
+        border-color: var(--erp-border-strong);
+        transform: translateY(-2px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 20px 44px -22px rgba(2, 5, 12, 0.9);
+    }
+
     .fi-btn:active:not(:disabled) {
         transform: translateY(1px);
     }
 
     /*
-     * Content arrives rather than appearing.
-     *
-     * A fade and nothing else, and the missing eight-pixel rise is the whole
-     * story here. This began as `translateY(8px) → none`, which looked better
-     * and broke every modal in the system.
-     *
-     * Filament positions a modal with `fixed inset-0` and renders it inline in
-     * the page, not teleported to the body — so it depends on the viewport
-     * being its containing block. An element carrying a *filling* transform
-     * animation becomes the containing block for its fixed descendants, even
-     * once the animation has settled on `transform: none`. So `inset-0`
-     * resolved against the table's box instead of the screen, and every dialog
-     * opened squeezed into a band the height of whatever it happened to sit
-     * inside, with its buttons below the fold.
-     *
-     * Opacity cannot do that. It makes a stacking context while it is below 1
-     * and nothing at all once it lands on 1, so a fade is safe where a
-     * translate is not. Do not put the rise back — `translate`, `scale` and
-     * `rotate` carry exactly the same consequence as `transform`.
+     * Content arrives rather than appearing — a fade only. Do not add a
+     * translate here: a filling transform animation on a page-level container
+     * reparents every position:fixed modal inside it, which squeezes dialogs
+     * into whatever box they happen to sit in. Opacity cannot do that.
      */
     .fi-page-content > * {
-        animation: erp-fade-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: erp-fade-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
-    /*
-     * Cards further down begin a little later, so a screen resolves top-first
-     * the way it is read. Capped at four: past that the last card is waiting on
-     * a queue, which is the opposite of the point.
-     */
-    .fi-page-content > *:nth-child(2) { animation-delay: 30ms; }
-    .fi-page-content > *:nth-child(3) { animation-delay: 60ms; }
-    .fi-page-content > *:nth-child(n + 4) { animation-delay: 90ms; }
+    .fi-page-content > *:nth-child(2) { animation-delay: 40ms; }
+    .fi-page-content > *:nth-child(3) { animation-delay: 80ms; }
+    .fi-page-content > *:nth-child(n + 4) { animation-delay: 120ms; }
 
-    /* What Livewire is busy with, said in the thing you are waiting on. */
     [wire\:loading] {
         animation: erp-pulse 1.4s ease-in-out infinite;
     }
 }
 
-/*
- * No transform in here, and that is load-bearing rather than an oversight —
- * see the note on .fi-page-content above. A filling transform animation on a
- * page-level container reparents every `position: fixed` modal inside it.
- */
 @keyframes erp-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -712,32 +789,18 @@
 
 /*
  * ─────────────────────────────────────────────────── narrow screens
- *
- * This is a dense system read mostly on a desktop, and it should not pretend
- * otherwise on a phone — but a tracking number gets typed standing in a
- * warehouse, and a balance gets checked in a taxi. The aim is that everything
- * remains usable and nothing is silently cut off.
  */
 @media (max-width: 40rem) {
     :root {
-        --erp-pad: 1rem;
+        --erp-pad: 1.1rem;
         --erp-gap: 1rem;
     }
 
-    /*
-     * A figure is never worth shrinking to the point of being hard to read, so
-     * the display step steps down rather than the layout squeezing.
-     */
     .erp-stat-value[data-lead] {
-        font-size: 1.75rem;
-        line-height: 2.125rem;
+        font-size: 1.875rem;
+        line-height: 2.25rem;
     }
 
-    /*
-     * Anything wide scrolls inside its own edges rather than pushing the page
-     * sideways. A page that scrolls horizontally has lost its left margin, and
-     * with it the reader's place.
-     */
     .fi-ta-ctn,
     .erp-card {
         max-width: 100%;
@@ -748,10 +811,6 @@
         min-width: max-content;
     }
 
-    /*
-     * Touch targets. A row action at 24px is a coin toss with a thumb; the
-     * pointer-coarse query means a mouse is left exactly as it was.
-     */
     @media (pointer: coarse) {
         .fi-ta-actions .fi-btn,
         .fi-ta-actions .fi-icon-btn {

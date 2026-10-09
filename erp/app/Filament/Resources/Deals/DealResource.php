@@ -74,7 +74,7 @@ class DealResource extends Resource
     {
         return $schema->components([
             Section::make('Customer & dates')
-                ->columns(5)
+                ->columns(2)
                 ->schema([
                     Select::make('customer_id')
                         ->label('Customer')

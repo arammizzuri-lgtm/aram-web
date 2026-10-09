@@ -37,9 +37,9 @@
                 </span>
 
                 <span class="h-2 flex-1 overflow-hidden rounded-full" style="background: var(--erp-bg-sunken)">
-                    <span class="block h-full rounded-full"
+                    <span class="erp-bar block h-full"
                           style="width: {{ $row['share'] }}%;
-                                 background: {{ $row['negative'] ? 'var(--erp-series-8)' : 'var(--erp-series-3)' }}"></span>
+                                 --bar: {{ $row['negative'] ? 'var(--erp-series-8)' : 'var(--erp-series-3)' }}"></span>
                 </span>
 
                 <span class="w-16 shrink-0 erp-numeric text-end"

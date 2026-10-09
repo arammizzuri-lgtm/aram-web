@@ -45,13 +45,11 @@
                             <div class="absolute inset-x-0"
                                  style="top: {{ $chart['zero'] }}%; height: 1px; background: var(--erp-axis)"></div>
 
-                            <div class="absolute inset-x-0 rounded-[2px] erp-transition"
+                            <div @class(['absolute inset-x-0 erp-transition', 'erp-bar-v' => ! $column['empty'], 'rounded-[2px]' => $column['empty']])
                                  style="top: {{ $column['top'] }}%;
                                         height: {{ $column['height'] }}%;
-                                        background: {{ $column['empty']
-                                            ? 'var(--erp-border-strong)'
-                                            : ($column['positive'] ? 'var(--erp-series-1)' : 'var(--erp-series-8)') }};
-                                        opacity: {{ $column['empty'] ? '0.5' : '1' }}">
+                                        @if ($column['empty']) background: var(--erp-border-strong); opacity: 0.5;
+                                        @else --bar: {{ $column['positive'] ? 'var(--erp-good)' : 'var(--erp-critical)' }}; @endif">
                                 <title>{{ $column['full'] }}</title>
                             </div>
                         </div>
