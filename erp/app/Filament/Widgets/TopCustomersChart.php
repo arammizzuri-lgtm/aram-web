@@ -4,34 +4,31 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Filament\Widgets\Concerns\HasWidgetRange;
+use App\Filament\Widgets\Concerns\RanksByProfit;
 use App\Models\Customer;
 use App\Services\Reporting\BusinessMetrics;
-use App\Support\Money;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
-use Illuminate\Support\Collection;
 
 /**
- * Which customers actually earned you money.
+ * Which customers actually earned you money — and on what.
  *
- * A ranked list rather than a bar chart, and the change is not cosmetic. With
- * eight names or fewer — which is this business — a bar chart spends a third of
- * a screen to say "this one is bigger", makes you read a figure off an axis by
- * eye, and gives you nowhere to click. A list gives the name, the exact figure,
- * the share and the way through to the account, in a quarter of the height.
+ * A ranked list rather than a bar chart: with a handful of names the ranking is
+ * the point, and a list gives the name, the exact figure and the way through
+ * to the account in a fraction of the height. Each row now shows its profit
+ * inside its revenue, because the two disagree often enough to matter — a
+ * customer who buys a lot at a thin margin is a long bar with little in it.
  *
- * A chart earns its space when the shape of the data is the point. Here the
- * ranking is the point, and a ranking is a list.
- *
- * Ranked by profit rather than revenue, because the two disagree often enough
- * to matter — a customer who buys a lot at a thin margin can outrank one who
- * quietly makes you more. Losses stay in the list, marked, rather than being
- * sorted out of sight: they are the rows worth finding.
+ * Ranked by profit rather than revenue, and losses stay in the list, marked,
+ * rather than being sorted out of sight: they are the rows worth finding. The
+ * strip above says how concentrated the profit is, which is the one thing a
+ * list of figures makes you add up yourself.
  */
 class TopCustomersChart extends Widget
 {
     use HasWidgetRange;
     use InteractsWithPageFilters;
+    use RanksByProfit;
 
     protected string $view = 'filament.widgets.top-customers';
 
@@ -45,49 +42,36 @@ class TopCustomersChart extends Widget
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return array<string, mixed>
      */
-    public function rows(): Collection
+    public function ranking(): array
     {
         [$from, $to] = $this->activeRange();
 
         $rows = app(BusinessMetrics::class)
             ->profitByCustomer($from, $to)
-            ->take(8);
+            // A deal with nothing on it yet is a customer with nothing to rank.
+            ->filter(fn (array $row) => $row['revenue'] > 0 || abs($row['profit']) >= 0.005)
+            ->values();
 
         /*
-         * The bar is drawn against the largest magnitude in the list, so a loss
-         * of 400 and a profit of 400 read as equally significant. Scaling a
-         * loss against the biggest *profit* would make a bad month look small.
+         * The row is a way in, not only a figure. Matched by name because that
+         * is what the report carries — looked up in one query for the whole
+         * list — and a customer since renamed simply does not link, which is
+         * better than linking to the wrong account.
          */
-        $widest = max(1.0, $rows->max(fn (array $row) => abs((float) $row['profit'])) ?: 1.0);
+        $accounts = Customer::query()
+            ->whereIn('name', $rows->take($this->listed)->pluck('customer'))
+            ->pluck('id', 'name');
 
-        return $rows->map(fn (array $row) => [
-            'customer' => $row['customer'] ?? 'Unknown',
-            'profit' => Money::of($row['profit'], 'USD'),
-            'negative' => (float) $row['profit'] < 0,
-            'share' => max(2, round(abs((float) $row['profit']) / $widest * 100)),
-            'url' => $this->accountUrl($row['customer'] ?? null),
-        ]);
-    }
-
-    /**
-     * The row is a way in, not only a figure.
-     *
-     * Matched by name because that is what the report carries; a customer since
-     * renamed simply does not link, which is better than linking to the wrong
-     * account.
-     */
-    private function accountUrl(?string $name): ?string
-    {
-        if ($name === null) {
-            return null;
-        }
-
-        $customer = Customer::query()->where('name', $name)->first();
-
-        return $customer
-            ? CustomerResource::getUrl('account', ['record' => $customer])
+        $url = fn (array $row): ?string => isset($accounts[$row['customer']])
+            ? CustomerResource::getUrl('account', ['record' => $accounts[$row['customer']]])
             : null;
+
+        return [
+            'rows' => $this->profitRows($rows, 'customer', $url),
+            'strip' => $this->shareStrip($rows, 'customer', 'customers'),
+            'table' => $this->profitTable($rows, 'customer', 'Customer'),
+        ];
     }
 }

@@ -120,18 +120,30 @@
         --erp-delta-good: #34d399;
 
         /*
-         * Categorical palette, re-pitched for the dark field and for the
-         * meanings the brief gives each hue: blue, purple, green, orange lead,
-         * because those are the four the data categories wear.
+         * Categorical palette — the validated dark steps, in their fixed order.
+         *
+         * The redesign first swapped these for brighter neon tones, which
+         * looked livelier and failed colour-blind separation: blue and violet
+         * fell to ΔE 5.2 for deuteranopia, under the floor of 8, and every slot
+         * sat above the dark lightness band. These are the steps the palette
+         * was validated with, re-checked against this navy surface:
+         *
+         *     validate_palette.js --mode dark --surface #0f1626
+         *     adjacent CVD ΔE 8.4 · normal 19.3 · first three all-pairs 9.4
+         *
+         * Fixed order, never cycled; past eight series, fold into "Other".
          */
-        --erp-series-1: #38bdf8;  /* blue   */
-        --erp-series-2: #a78bfa;  /* purple */
-        --erp-series-3: #34d399;  /* green  */
-        --erp-series-4: #fb923c;  /* orange */
-        --erp-series-5: #f472b6;  /* pink   */
-        --erp-series-6: #22d3ee;  /* cyan   */
-        --erp-series-7: #818cf8;  /* indigo */
-        --erp-series-8: #f87171;  /* red    */
+        --erp-series-1: #3987e5;  /* blue    */
+        --erp-series-2: #d95926;  /* orange  */
+        --erp-series-3: #199e70;  /* aqua    */
+        --erp-series-4: #c98500;  /* yellow  */
+        --erp-series-5: #d55181;  /* magenta */
+        --erp-series-6: #008300;  /* green   */
+        --erp-series-7: #9085e9;  /* violet  */
+        --erp-series-8: #e66767;  /* red     */
+
+        /* The neutral a de-emphasised mark wears: context, not data. */
+        --erp-muted-fill: rgba(148, 163, 184, 0.30);
 
         --erp-diverging-pos: #22d3ee;
         --erp-diverging-mid: rgba(255, 255, 255, 0.08);
@@ -710,25 +722,149 @@
         border-color: rgba(248, 113, 113, 0.28);
     }
 
-    /* ---------------------------------------------------------- chart bars */
+    /* ---------------------------------------------------------- charts */
 
-    /*
-     * A bar is lit by its own colour: a gradient that fades along its length and
-     * a soft glow of the same hue, so the data reads as part of the glass
-     * interface rather than a flat block painted on top of it. The hue comes in
-     * through `--bar`, set where the bar is drawn, so one rule serves every
-     * series.
-     */
-    .erp-bar {
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--bar), color-mix(in srgb, var(--bar) 42%, transparent));
-        box-shadow: 0 0 12px -3px var(--bar);
+    /* Alpine marks what it has not started yet; nothing flashes before it does. */
+    [x-cloak] {
+        display: none !important;
     }
 
-    .erp-bar-v {
+    /*
+     * Chart or table — the same figures two ways. A two-button switch rather
+     * than a link, because it changes the view and not the page.
+     */
+    .erp-toggle {
+        display: inline-flex;
+        padding: 2px;
+        border: 1px solid var(--erp-border);
+        border-radius: var(--radius-md);
+        background-color: var(--erp-bg-sunken);
+    }
+
+    .erp-toggle > button {
+        font-size: var(--text-hint);
+        line-height: 1.25rem;
+        padding: 0.125rem 0.625rem;
+        border-radius: calc(var(--radius-md) - 2px);
+        color: var(--erp-text-muted);
+        transition: background-color 140ms, color 140ms;
+    }
+
+    .erp-toggle > button:hover {
+        color: var(--erp-text-secondary);
+    }
+
+    .erp-toggle > button[aria-pressed='true'] {
+        color: var(--erp-text-primary);
+        background-color: var(--erp-glass-raised);
+    }
+
+    /*
+     * The hover card over a mark. Opaque, so the bars behind cannot show
+     * through it; never in the pointer's way; above the mark by default, below
+     * it when the mark sits too near the top of the plot to fit above.
+     */
+    .erp-tip {
+        position: absolute;
+        z-index: 20;
+        pointer-events: none;
+        transform: translate(-50%, calc(-100% - 10px));
+        min-width: 9rem;
+        max-width: 18rem;
+        padding: 0.5rem 0.625rem;
+        border: 1px solid var(--erp-border-strong);
+        border-radius: var(--radius-md);
+        background-color: var(--erp-bg-solid);
+        box-shadow: var(--erp-shadow-popover);
+        font-size: var(--text-hint);
+        line-height: var(--text-hint--line-height);
+        color: var(--erp-text-secondary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .erp-tip[data-below] {
+        transform: translate(-50%, 10px);
+    }
+
+    .erp-tip > :first-child {
+        color: var(--erp-text-primary);
+        font-weight: 600;
+    }
+
+    /*
+     * A mark is a thin, solid shape in its own colour, the colour arriving
+     * through `--bar`. No glow by default — a field of glowing blocks reads
+     * loud — but a mark answers the pointer with a soft light of its own hue,
+     * which is the one place the glow earns its keep.
+     */
+    .erp-mark {
+        cursor: pointer;
+        outline: none;
+    }
+
+    .erp-fill {
+        background-color: var(--bar);
+        transition: box-shadow 140ms, filter 140ms;
+    }
+
+    .erp-mark:hover .erp-fill,
+    .erp-mark:focus-visible .erp-fill,
+    .erp-fill.erp-mark:hover,
+    .erp-fill.erp-mark:focus-visible {
+        box-shadow: 0 0 12px -2px var(--bar);
+        filter: brightness(1.12);
+    }
+
+    .erp-mark:focus-visible {
+        outline: 2px solid var(--erp-accent);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
+
+    /* The empty part of a horizontal bar: the scale the fill is read against. */
+    .erp-track {
+        position: relative;
+        height: 0.5rem;
+        border-radius: 999px;
+        background-color: var(--erp-bg-sunken);
+        overflow: hidden;
+    }
+
+    .erp-track > * {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        border-radius: 999px;
+    }
+
+    /* A colour key: a small rounded swatch beside its name. */
+    .erp-swatch {
+        display: inline-block;
+        width: 0.625rem;
+        height: 0.625rem;
         border-radius: 3px;
-        background: linear-gradient(180deg, var(--bar), color-mix(in srgb, var(--bar) 14%, transparent));
-        box-shadow: 0 0 14px -4px var(--bar);
+        background-color: var(--bar);
+        flex-shrink: 0;
+    }
+
+    /* Gridlines and the zero line — solid hairlines, one shade off the glass. */
+    .erp-gridline {
+        position: absolute;
+        inset-inline: 0;
+        height: 1px;
+        background-color: var(--erp-grid);
+    }
+
+    .erp-gridline[data-zero] {
+        background-color: var(--erp-axis);
+    }
+
+    .erp-axis-label {
+        font-size: 0.6875rem;
+        line-height: 1rem;
+        color: var(--erp-axis-text);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
     }
 
     /* ---------------------------------------------------------- sign in */
@@ -845,6 +981,29 @@
      */
     .erp-figures > :has(> .erp-stat-value[data-lead]) {
         grid-column: 1 / -1;
+    }
+
+    /*
+     * A month's figure drawn over its column needs the column to be wide
+     * enough to hold it. On a phone it is not, so the chart keeps the total
+     * and the months answer on touch and in the table.
+     */
+    [data-step-label] {
+        display: none;
+    }
+
+    /*
+     * On a phone a card's head stacks: the title and its sentence take the row,
+     * and the controls — a range, the Chart/Table switch, a total — sit beneath
+     * them. Side by side, the controls kept their width and squeezed the title
+     * to a word a line.
+     */
+    .erp-card-head > .flex {
+        flex-wrap: wrap;
+    }
+
+    .erp-card-head > .flex > :first-child {
+        flex-basis: 100%;
     }
 
     .fi-ta-ctn,

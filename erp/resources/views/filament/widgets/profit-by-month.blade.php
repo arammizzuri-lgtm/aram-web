@@ -1,28 +1,30 @@
+{{--
+    How the profit was built — a waterfall, month by month, ending in the total.
+
+    Each column stands where the last one ended. A hairline carries the running
+    total across the gap to the next, so an empty month reads as a flat stretch
+    and a losing one as a drop. Hover a month for what it was made of; click it
+    for its deals.
+--}}
 @php
     $chart = $this->chart();
     $label = $this->activeLabel();
-    $signed = fn ($money) => ($money->isNegative() ? '−' : '') . '$' . number_format(abs($money->toFloat()), 2);
 @endphp
 
 <div>
-    <x-erp.card title="Profit by month" :hint="$label . ', in USD, after everything each one cost.'">
-        {{-- The two things anybody takes from the chart, said in words rather
-             than left to be worked out off an axis, with the window's own
-             control beside them. --}}
-        <x-slot name="head">
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                <x-erp.range-picker :value="$this->widgetRange" />
-                <div class="text-end">
-                    <div class="erp-numeric erp-stat-value" style="font-size: var(--text-figure)">
-                        {{ $signed($chart['total']) }}
-                    </div>
-                    <div class="erp-stat-hint">
-                        @if ($chart['best'] && $chart['best']['profit'] > 0)
-                            best was {{ $chart['best']['full'] }}
-                        @else
-                            across the window
-                        @endif
-                    </div>
+    <x-erp.chart
+        title="How the profit was built"
+        :hint="$label . ', in USD. Each month steps up by what it earned and down by what it lost; the last column is the total.'"
+    >
+        <x-slot name="controls">
+            <x-erp.range-picker :value="$this->widgetRange" />
+        </x-slot>
+
+        <x-slot name="figure">
+            <div class="text-end">
+                <div @class(['erp-stat-value', 'erp-critical' => $chart['total'] < 0])>{{ $chart['totalText'] }}</div>
+                <div class="erp-stat-hint">
+                    {{ $chart['best'] ? 'best was '.$chart['best'] : 'across the window' }}
                 </div>
             </div>
         </x-slot>
@@ -32,50 +34,82 @@
                 Months fill in here as deals are delivered and costed.
             </x-erp.empty>
         @else
-            <div class="flex items-stretch gap-1" style="height: 9rem">
-                @foreach ($chart['columns'] as $column)
-                    {{-- Each column is its own strip, so the months are evenly
-                         spaced whatever the card width and the label sits under
-                         its own bar without any axis arithmetic. --}}
-                    <div class="group relative flex-1">
-                        <div class="relative h-full">
-                            {{-- Zero, drawn once per column so it runs the full
-                                 width without a separate absolutely-placed rule
-                                 that could fall out of step with the bars. --}}
-                            <div class="absolute inset-x-0"
-                                 style="top: {{ $chart['zero'] }}%; height: 1px; background: var(--erp-axis)"></div>
+            <div class="flex gap-3 px-5 pt-8">
+                {{-- The scale, one round figure per gridline. --}}
+                <div class="relative w-11 shrink-0" style="height: 14rem" aria-hidden="true">
+                    @foreach ($chart['ticks'] as $tick)
+                        <span class="erp-axis-label absolute end-0" style="top: {{ $tick['y'] }}%; transform: translateY(-50%)">{{ $tick['label'] }}</span>
+                    @endforeach
+                </div>
 
-                            <div @class(['absolute inset-x-0 erp-transition', 'erp-bar-v' => ! $column['empty'], 'rounded-[2px]' => $column['empty']])
-                                 style="top: {{ $column['top'] }}%;
-                                        height: {{ $column['height'] }}%;
-                                        @if ($column['empty']) background: var(--erp-border-strong); opacity: 0.5;
-                                        @else --bar: {{ $column['positive'] ? 'var(--erp-good)' : 'var(--erp-critical)' }}; @endif">
-                                <title>{{ $column['full'] }}</title>
-                            </div>
-                        </div>
+                <div class="relative flex-1" style="height: 14rem">
+                    @foreach ($chart['ticks'] as $tick)
+                        <div class="erp-gridline" style="top: {{ $tick['y'] }}%" @if ($tick['zero']) data-zero @endif></div>
+                    @endforeach
 
-                        {{-- The figure on hover. Twelve labels at once would be
-                             noise; one, when asked for, is an answer. --}}
-                        <div class="pointer-events-none absolute inset-x-0 -top-1 z-10 hidden justify-center group-hover:flex">
-                            <span class="erp-numeric whitespace-nowrap rounded-md px-1.5 py-0.5"
-                                  style="font-size: 10px;
-                                         background: var(--erp-bg-solid);
-                                         color: var(--erp-text-primary);
-                                         border: 1px solid var(--erp-border)">
-                                {{ $column['empty'] ? '—' : ($column['positive'] ? '' : '−') . '$' . number_format(abs($column['profit']), 0) }}
-                            </span>
-                        </div>
+                    <div class="absolute inset-0 flex" style="gap: 6px">
+                        @foreach ($chart['columns'] as $column)
+                            <a href="{{ $column['url'] }}"
+                               class="erp-mark relative h-full flex-1"
+                               aria-label="{{ implode('. ', $column['tip']) }}"
+                               x-on:mouseenter="show($event, @js($column['tip']))"
+                               x-on:mouseleave="hide()"
+                               x-on:focus="show($event, @js($column['tip']))"
+                               x-on:blur="hide()">
+                                @unless ($column['empty'])
+                                    <div data-anchor class="erp-fill absolute"
+                                         style="inset-inline: 16%; top: {{ $column['top'] }}%; height: {{ $column['height'] }}%; border-radius: 3px; --bar: {{ $column['colour'] }}"></div>
+
+                                    @if ($chart['labelled'] || $column['kind'] === 'total')
+                                        <span class="erp-axis-label absolute inset-x-0 text-center"
+                                              @if ($column['kind'] === 'step') data-step-label @endif
+                                              style="top: calc({{ $column['up'] ? $column['top'] : $column['top'] + $column['height'] }}% {{ $column['up'] ? '- 1.15rem' : '+ 0.25rem' }}); color: {{ $column['kind'] === 'total' ? 'var(--erp-text-primary)' : 'var(--erp-text-secondary)' }}">{{ $column['label'] }}</span>
+                                    @endif
+                                @endunless
+
+                                {{-- The running total, carried across to the next column. --}}
+                                @if ($column['kind'] === 'step')
+                                    <div class="absolute" style="left: 84%; width: calc(32% + 6px); top: {{ $column['level'] }}%; height: 1px; background-color: var(--erp-axis)"></div>
+                                @endif
+                            </a>
+                        @endforeach
                     </div>
-                @endforeach
+                </div>
             </div>
 
-            <div class="mt-2 flex gap-1">
-                @foreach ($chart['columns'] as $column)
-                    <div class="flex-1 text-center" style="font-size: 10px; color: var(--erp-axis-text)">
-                        {{ $column['label'] }}
-                    </div>
-                @endforeach
+            <div class="flex gap-3 px-5 pt-2" aria-hidden="true">
+                <div class="w-11 shrink-0"></div>
+                <div class="flex flex-1" style="gap: 6px">
+                    @foreach ($chart['columns'] as $column)
+                        <span class="erp-axis-label flex-1 text-center"
+                              @if ($column['kind'] === 'total') style="color: var(--erp-text-secondary); font-weight: 600" @endif>{{ $column['axis'] }}</span>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 pt-3 pb-4 erp-stat-hint" style="margin-top: 0">
+                <span class="inline-flex items-center gap-1.5"><span class="erp-swatch" style="--bar: var(--erp-good)"></span>Earned</span>
+                <span class="inline-flex items-center gap-1.5"><span class="erp-swatch" style="--bar: var(--erp-critical)"></span>Lost</span>
+                <span class="inline-flex items-center gap-1.5"><span class="erp-swatch" style="--bar: var(--erp-series-1)"></span>Total</span>
+                <span>· Click a month for its deals</span>
             </div>
         @endif
-    </x-erp.card>
+
+        <x-slot name="table">
+            <x-erp.data-table
+                :columns="[
+                    ['label' => 'Month'],
+                    ['label' => 'Deals', 'numeric' => true],
+                    ['label' => 'Revenue', 'numeric' => true],
+                    ['label' => 'Cost', 'numeric' => true],
+                    ['label' => 'Profit', 'numeric' => true],
+                    ['label' => 'Margin', 'numeric' => true],
+                    ['label' => 'Running total', 'numeric' => true],
+                ]"
+                :rows="$chart['table']"
+                :footer="$chart['footer']"
+                empty="No profit recorded in this window."
+            />
+        </x-slot>
+    </x-erp.chart>
 </div>

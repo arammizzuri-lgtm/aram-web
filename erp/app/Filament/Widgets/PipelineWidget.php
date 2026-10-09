@@ -35,7 +35,7 @@ class PipelineWidget extends Widget
         return app(BusinessMetrics::class)->pipeline()->map(fn (array $stage) => [
             ...$stage,
             'url' => DealResource::getUrl('index', [
-                'tableFilters' => ['status' => ['values' => [$stage['stage']]]],
+                'filters' => ['status' => ['values' => [$stage['stage']]]],
             ]),
         ]);
     }

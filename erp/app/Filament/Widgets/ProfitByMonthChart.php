@@ -2,31 +2,30 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\Deals\DealResource;
 use App\Filament\Widgets\Concerns\HasWidgetRange;
-use App\Models\Deal;
-use App\Support\Money;
+use App\Services\Reporting\BusinessMetrics;
+use App\Support\ChartFormat;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Carbon;
 
 /**
- * Profit per month, twelve months back.
+ * How the profit for the window was built, month by month.
  *
- * Drawn rather than charted, for the same reason the customer account is. The
- * charting library gave a canvas a third of a screen tall to show one bar,
- * with a y-axis of eight gridlines standing over eleven empty months — a chart
- * whose furniture outweighed its data, telling you about itself rather than
- * about the business. A young business has mostly empty months and the design
- * has to be honest about that instead of inflating one column to fill a box.
+ * A waterfall rather than a row of bars, because the question the owner opens
+ * it with is "how did we get to this total?" — and a bar per month answers a
+ * different one. Each month starts where the last one ended and steps up by
+ * what it earned or down by what it lost, so a bad month is a visible drop in
+ * the run rather than a short bar that reads as merely smaller. The last column
+ * is the total itself, standing on zero.
  *
- * So: a compact strip of columns against a zero line, with the total and the
- * best month stated in words above it, because those are the two things anybody
- * actually takes from a twelve-month profit chart. Every column carries its own
- * figure for a hover.
+ * Drawn in markup rather than handed to a charting library, for the reason the
+ * card says in its docblock history: a young business has mostly empty months,
+ * and the drawing has to be honest about that instead of inflating one column
+ * to fill a box. An empty month is a flat stretch of the line, not a gap.
  *
- * Polarity is the point — above the line or below it — with position doing the
- * work and colour only confirming it. That is what keeps it readable for
- * someone who cannot tell the two colours apart.
+ * Hover any month for what it was made of; click it for its deals.
  */
 class ProfitByMonthChart extends Widget
 {
@@ -50,86 +49,157 @@ class ProfitByMonthChart extends Widget
      */
     public function chart(): array
     {
-        $months = $this->months();
-        $values = $months->pluck('profit')->all();
+        [$from, $to] = $this->activeRange();
 
-        $high = max(max($values), 0.0);
-        $low = min(min($values), 0.0);
-        $span = ($high - $low) ?: 1.0;
+        $months = app(BusinessMetrics::class)->profitByMonth($from, $to);
+        $multiYear = $from->year !== $to->year;
 
-        // Headroom, so the tallest column is never flush with the edge.
-        $high += $span * 0.15;
-        $low -= $span * 0.08;
-        $span = $high - $low;
-
-        $zero = round((1 - ((0 - $low) / $span)) * 100, 2);
-
-        $columns = $months->map(function (array $month) use ($low, $span, $zero): array {
-            $y = round((1 - (($month['profit'] - $low) / $span)) * 100, 2);
-            $positive = $month['profit'] >= 0;
+        // Where each month starts and ends: the run the waterfall draws.
+        $running = 0.0;
+        $steps = $months->map(function (array $month) use (&$running, $multiYear): array {
+            $start = $running;
+            $running = round($running + $month['profit'], 2);
 
             return [
                 ...$month,
-                /*
-                 * Percentages of the plot rather than pixels, so the columns
-                 * keep their proportions at any card width and the whole thing
-                 * scales without a redraw.
-                 */
-                'top' => $positive ? $y : $zero,
-                // A month at exactly zero still gets a hairline, so the run of
-                // months reads as a run rather than as gaps.
-                'height' => max(0.6, abs($zero - $y)),
-                'positive' => $positive,
-                'empty' => abs($month['profit']) < 0.005,
+                'start' => $start,
+                'end' => $running,
+                'axis' => $month['month']->format($multiYear ? "M 'y" : 'M'),
             ];
         });
 
+        $total = $running;
+        $revenue = round($steps->sum('revenue'), 2);
+        $deals = (int) $steps->sum('deals');
+
+        [$low, $high, $step] = $this->scale(
+            min(0.0, $steps->min('start') ?? 0.0, $steps->min('end') ?? 0.0),
+            max(0.0, $steps->max('start') ?? 0.0, $steps->max('end') ?? 0.0),
+        );
+
+        // Percent from the top of the plot: the drawing is all relative, so it
+        // keeps its shape at any card width without a redraw.
+        $y = fn (float $value): float => round(($high - $value) / ($high - $low) * 100, 2);
+
+        $columns = $steps->map(fn (array $s): array => [
+            'kind' => 'step',
+            'axis' => $s['axis'],
+            'empty' => abs($s['profit']) < 0.005,
+            'up' => $s['profit'] >= 0,
+            'top' => $y(max($s['start'], $s['end'])),
+            'height' => max(abs($y($s['start']) - $y($s['end'])), 0.8),
+            'level' => $y($s['end']),
+            'colour' => $s['profit'] >= 0 ? 'var(--erp-good)' : 'var(--erp-critical)',
+            'label' => ChartFormat::compact($s['profit'], signed: true),
+            'url' => $this->dealsBetween($s['from'], $s['to']),
+            'tip' => $this->monthTip($s),
+        ])->values();
+
+        $columns->push([
+            'kind' => 'total',
+            'axis' => 'Total',
+            'empty' => abs($total) < 0.005,
+            'up' => $total >= 0,
+            'top' => $y(max(0.0, $total)),
+            'height' => max(abs($y(0.0) - $y($total)), 0.8),
+            'level' => $y($total),
+            'colour' => $total >= 0 ? 'var(--erp-series-1)' : 'var(--erp-critical)',
+            'label' => ChartFormat::compact($total),
+            'url' => $this->dealsBetween($from, $to),
+            'tip' => array_values(array_filter([
+                'Total, '.$this->activeLabel(),
+                ($total >= 0 ? 'Profit ' : 'Loss ').ChartFormat::money($total),
+                'Revenue '.ChartFormat::money($revenue).' · cost '.ChartFormat::money($steps->sum('cost')),
+                'Margin '.ChartFormat::percent($revenue > 0 ? $total / $revenue * 100 : 0).' · '.$deals.' '.str('deal')->plural($deals),
+            ])),
+        ]);
+
+        $ticks = [];
+        for ($value = $low; $value <= $high + $step / 1000; $value += $step) {
+            $ticks[] = ['y' => $y($value), 'label' => ChartFormat::compact($value), 'zero' => abs($value) < $step / 1000];
+        }
+
+        $best = $steps->where('profit', '>', 0)->sortByDesc('profit')->first();
+
         return [
+            'anything' => $steps->contains(fn (array $s) => abs($s['profit']) >= 0.005),
             'columns' => $columns,
-            'zero' => $zero,
-            'total' => Money::of(array_sum($values), 'USD'),
-            'best' => $months->sortByDesc('profit')->first(),
-            'anything' => collect($values)->contains(fn (float $value) => abs($value) > 0.005),
+            'ticks' => $ticks,
+            // On a long run the per-step figures crowd; hover and the table carry
+            // them then, and only the total is written on the chart.
+            'labelled' => $steps->filter(fn (array $s) => abs($s['profit']) >= 0.005)->count() <= 12,
+            'total' => $total,
+            'totalText' => ChartFormat::money($total),
+            'best' => $best ? $best['full'] : null,
+            'table' => $steps->map(fn (array $s) => [
+                $s['full'],
+                (string) $s['deals'],
+                ChartFormat::money($s['revenue']),
+                ChartFormat::money($s['cost']),
+                ChartFormat::money($s['profit'], signed: true),
+                ChartFormat::percent($s['margin']),
+                ChartFormat::money($s['end']),
+            ])->all(),
+            'footer' => [
+                'Total',
+                (string) $deals,
+                ChartFormat::money($revenue),
+                ChartFormat::money($steps->sum('cost')),
+                ChartFormat::money($total, signed: true),
+                ChartFormat::percent($revenue > 0 ? $total / $revenue * 100 : 0),
+                '',
+            ],
         ];
     }
 
     /**
-     * One entry per calendar month the window touches, oldest first.
+     * What a month was made of, for its hover card.
      *
-     * The window is whatever this widget is looking at — its own or, by default,
-     * the dashboard's. The first and last months are clamped to the window's
-     * edges, so a range that opens mid-month counts only the days it covers
-     * rather than inventing the rest of the month around it.
-     *
-     * @return Collection<int, array{label: string, full: string, profit: float}>
+     * @param  array<string, mixed>  $s
+     * @return array<int, string>
      */
-    private function months(): Collection
+    private function monthTip(array $s): array
     {
-        [$from, $to] = $this->activeRange();
-
-        $cursor = $from->copy()->startOfMonth();
-        $last = $to->copy()->startOfMonth();
-        $months = collect();
-
-        while ($cursor->lte($last)) {
-            $monthFrom = $cursor->copy()->startOfMonth()->max($from);
-            $monthTo = $cursor->copy()->endOfMonth()->min($to);
-
-            $deals = Deal::query()
-                ->whereBetween('deal_date', [$monthFrom, $monthTo])
-                ->whereNot('status', 'cancelled')
-                ->with(['lines', 'purchases.costs', 'expenses', 'consignments'])
-                ->get();
-
-            $months->push([
-                'label' => $cursor->format('M'),
-                'full' => $cursor->format('F Y'),
-                'profit' => round($deals->sum(fn (Deal $deal) => $deal->profitBase()->toFloat()), 2),
-            ]);
-
-            $cursor->addMonth();
+        if ($s['deals'] === 0) {
+            return [$s['full'], 'No deals this month', 'Running total '.ChartFormat::money($s['end'])];
         }
 
-        return $months;
+        return [
+            $s['full'],
+            ($s['profit'] >= 0 ? 'Earned ' : 'Lost ').ChartFormat::money(abs($s['profit'])),
+            'Revenue '.ChartFormat::money($s['revenue']).' · cost '.ChartFormat::money($s['cost']),
+            'Margin '.ChartFormat::percent($s['margin']).' · '.$s['deals'].' '.str('deal')->plural($s['deals']),
+            'Running total '.ChartFormat::money($s['end']),
+        ];
+    }
+
+    /** The deals list, narrowed to the days a column covers. */
+    private function dealsBetween(Carbon $from, Carbon $to): string
+    {
+        return DealResource::getUrl('index', [
+            'filters' => ['deal_date' => ['from' => $from->toDateString(), 'until' => $to->toDateString()]],
+        ]);
+    }
+
+    /**
+     * Round gridline values — 0, 2.5k, 5k — and the span they cover.
+     *
+     * The plot runs from one gridline to another, so the tallest step never
+     * sits flush with the edge and every line on it is a number worth reading.
+     *
+     * @return array{0: float, 1: float, 2: float}
+     */
+    private function scale(float $low, float $high): array
+    {
+        $rough = max($high - $low, 1.0) / 4;
+        $magnitude = 10 ** floor(log10($rough));
+        $step = collect([1, 2, 2.5, 5, 10])
+            ->map(fn (float|int $m) => $m * $magnitude)
+            ->first(fn (float|int $s) => $s >= $rough);
+
+        $min = floor($low / $step) * $step;
+        $max = ceil($high / $step) * $step;
+
+        return [(float) $min, (float) ($max > $min ? $max : $min + $step), (float) $step];
     }
 }

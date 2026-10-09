@@ -208,22 +208,23 @@ class DashboardTest extends TestCase
 
         $chart = Livewire::test(ProfitByMonthChart::class);
 
-        $chart->assertOk()->assertSee('Profit by month');
+        $chart->assertOk()->assertSee('How the profit was built');
 
-        // By default it follows the dashboard: every month the last 90 days touch.
+        // By default it follows the dashboard: every month the last 90 days
+        // touch, then the total the run builds to.
         [$from, $to] = DashboardRange::resolve(null);
         $months = $from->copy()->startOfMonth()->diffInMonths($to->copy()->startOfMonth()) + 1;
 
-        $this->assertCount((int) $months, $chart->instance()->chart()['columns']);
+        $this->assertCount((int) $months + 1, $chart->instance()->chart()['columns']);
 
-        // Given a calendar year of its own, it draws that year's twelve.
+        // Given a calendar year of its own, it draws that year's twelve and the total.
         $data = $chart->set('widgetRange', 'year_'.now()->year)->instance()->chart();
 
-        $this->assertCount(12, $data['columns']);
-        $this->assertIsFloat($data['zero']);
+        $this->assertCount(13, $data['columns']);
+        $this->assertSame('total', $data['columns']->last()['kind']);
 
         // The current month carries the profit.
-        $current = $data['columns']->firstWhere('full', now()->format('F Y'));
+        $current = $data['columns']->first(fn (array $c) => $c['tip'][0] === now()->format('F Y'));
         $this->assertFalse($current['empty']);
     }
 

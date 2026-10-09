@@ -38,6 +38,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -1410,6 +1411,28 @@ class DealResource extends Resource
                     ->relationship('customer', 'name')
                     ->searchable()
                     ->preload(),
+
+                /*
+                 * Deals in a stretch of time.
+                 *
+                 * What a month on the dashboard's profit chart opens: click
+                 * August and this is August's deals, which is the only honest
+                 * answer to "why that month?". By the date the deal was struck —
+                 * the date every profit report counts it on.
+                 */
+                Filter::make('deal_date')
+                    ->label('Deal date')
+                    ->schema([
+                        DatePicker::make('from')->label('Deals from'),
+                        DatePicker::make('until')->label('Deals until'),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('deal_date', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('deal_date', '<=', $date)))
+                    ->indicateUsing(fn (array $data): array => array_values(array_filter([
+                        ($data['from'] ?? null) ? 'From '.\Illuminate\Support\Carbon::parse($data['from'])->format('j M Y') : null,
+                        ($data['until'] ?? null) ? 'Until '.\Illuminate\Support\Carbon::parse($data['until'])->format('j M Y') : null,
+                    ]))),
 
                 /*
                  * Where deleted deals went.

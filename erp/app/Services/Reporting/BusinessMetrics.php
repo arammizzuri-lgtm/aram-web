@@ -12,6 +12,7 @@ use App\Models\Deal;
 use App\Models\DealLine;
 use App\Models\DealPurchase;
 use App\Models\Expense;
+use App\Models\PriceListSection;
 use App\Models\SupplierPayment;
 use App\Services\Deals\DealProgress;
 use App\Support\Money;
@@ -694,7 +695,7 @@ class BusinessMetrics
             ->whereHas('deal', fn ($q) => $q
                 ->whereBetween('deal_date', [$from, $to])
                 ->whereNot('status', 'cancelled'))
-            ->with('deal')
+            ->with('deal.purchases')
             ->get()
             ->groupBy('description')
             ->map(fn (Collection $lines, string $description) => [
@@ -709,7 +710,155 @@ class BusinessMetrics
             ->values();
     }
 
+    /**
+     * Each calendar month the window touches, with what it earned and why.
+     *
+     * One query for the whole window, grouped here, rather than one per month:
+     * the chart this feeds can draw a year at a time. The first and last months
+     * are clamped to the window's edges, so a range that opens mid-month counts
+     * only the days it covers — and `from`/`to` say exactly which days those are.
+     *
+     * @return Collection<int, array{month: Carbon, from: Carbon, to: Carbon, label: string, full: string, deals: int, revenue: float, cost: float, profit: float, margin: float}>
+     */
+    public function profitByMonth(Carbon $from, Carbon $to): Collection
+    {
+        $byMonth = $this->profitByDeal($from, $to)
+            ->groupBy(fn (array $deal) => substr((string) $deal['date'], 0, 7));
+
+        $months = collect();
+        $cursor = $from->copy()->startOfMonth();
+        $last = $to->copy()->startOfMonth();
+
+        while ($cursor->lte($last)) {
+            $deals = $byMonth->get($cursor->format('Y-m'), collect());
+            $revenue = round($deals->sum('revenue'), 2);
+            $profit = round($deals->sum('profit'), 2);
+
+            $months->push([
+                'month' => $cursor->copy(),
+                'from' => $cursor->copy()->startOfMonth()->max($from),
+                'to' => $cursor->copy()->endOfMonth()->min($to),
+                'label' => $cursor->format('M'),
+                'full' => $cursor->format('F Y'),
+                'deals' => $deals->count(),
+                'revenue' => $revenue,
+                'cost' => round($deals->sum('cost'), 2),
+                'profit' => $profit,
+                'margin' => $revenue > 0 ? round($profit / $revenue * 100, 1) : 0.0,
+            ]);
+
+            $cursor->addMonth();
+        }
+
+        return $months;
+    }
+
+    /**
+     * Profit by line of business — Crystals, Textile, Packaging, Furniture.
+     *
+     * A line knows its section by whatever it was picked from: a product
+     * carries one, a catalogue item carries one, a crystal belongs to Crystals.
+     * A line typed in by hand belongs to none, and is counted on its own rather
+     * than guessed into a section.
+     *
+     * Per-line profit is approximate on a deal with a lump commission, which
+     * belongs to the deal rather than to any one line; the flag says so.
+     *
+     * @return Collection<int, array{section_id: ?int, category: string, lines: int, deals: int, revenue: float, cost: float, profit: float, margin: float, approximate: bool}>
+     */
+    public function profitByCategory(Carbon $from, Carbon $to): Collection
+    {
+        $sections = PriceListSection::query()->orderBy('sort_order')->get(['id', 'code', 'name']);
+        $crystals = $sections->firstWhere('code', 'crystals')?->id;
+
+        return DealLine::query()
+            ->whereHas('deal', fn ($q) => $q
+                ->whereBetween('deal_date', [$from, $to])
+                ->whereNot('status', 'cancelled'))
+            ->with(['deal.purchases', 'product:id,price_list_section_id', 'catalogueItem:id,price_list_section_id'])
+            ->get()
+            ->groupBy(fn (DealLine $line) => (int) ($line->product?->price_list_section_id
+                ?? $line->catalogueItem?->price_list_section_id
+                ?? ($line->crystal_product_id ? $crystals : null)
+                ?? 0))
+            ->map(function (Collection $lines, int $sectionId) use ($sections): array {
+                $revenue = $lines->sum(fn (DealLine $line) => $line->sellTotalBase()->toFloat());
+                $profit = $lines->sum(fn (DealLine $line) => $line->profitBase()->toFloat());
+
+                return [
+                    'section_id' => $sectionId ?: null,
+                    'category' => $sections->firstWhere('id', $sectionId)?->name ?? 'Not linked to a product',
+                    'lines' => $lines->count(),
+                    'deals' => $lines->pluck('deal_id')->unique()->count(),
+                    'revenue' => round($revenue, 2),
+                    'cost' => round($lines->sum(fn (DealLine $line) => $line->costTotalBase()->toFloat()), 2),
+                    'profit' => round($profit, 2),
+                    'margin' => $revenue > 0 ? round($profit / $revenue * 100, 1) : 0.0,
+                    'approximate' => $lines->contains(fn (DealLine $line) => $line->deal?->perLineProfitIsApproximate()),
+                ];
+            })
+            ->sortByDesc('profit')
+            ->values();
+    }
+
+    /**
+     * What was sold and what was bought, by the currency it changed hands in.
+     *
+     * Each currency is given both ways — the amount in its own money and that
+     * amount at the frozen dollar figure — because converting quietly is how a
+     * yuan exposure ends up reading as a dollar one. Goods only on the selling
+     * side: a deal's commission and discount are not in any one line's currency.
+     *
+     * @return array{sold: Collection<int, array{currency: string, original: float, base: float, share: float}>, bought: Collection<int, array{currency: string, original: float, base: float, share: float}>}
+     */
+    public function currencyExposure(Carbon $from, Carbon $to): array
+    {
+        $deals = Deal::query()
+            ->whereBetween('deal_date', [$from, $to])
+            ->whereNot('status', 'cancelled')
+            ->with('lines')
+            ->get();
+
+        $sold = $deals
+            ->groupBy(fn (Deal $deal) => $deal->sell_currency ?: 'USD')
+            ->map(fn (Collection $group, string $currency) => [
+                'currency' => $currency,
+                'original' => round($group->sum(fn (Deal $deal) => $deal->goodsRevenue()->toFloat()), 2),
+                'base' => round($group->sum(fn (Deal $deal) => $deal->goodsRevenueBase()->toFloat()), 2),
+            ]);
+
+        $bought = $deals
+            ->flatMap(fn (Deal $deal) => $deal->lines)
+            ->groupBy(fn (DealLine $line) => $line->cost_currency ?: 'USD')
+            ->map(fn (Collection $group, string $currency) => [
+                'currency' => $currency,
+                'original' => round($group->sum(fn (DealLine $line) => $line->costTotal()->toFloat()), 2),
+                'base' => round($group->sum(fn (DealLine $line) => $line->costTotalBase()->toFloat()), 2),
+            ]);
+
+        return ['sold' => $this->withShares($sold), 'bought' => $this->withShares($bought)];
+    }
+
     // --------------------------------------------------------------- helpers
+
+    /**
+     * Each currency's share of its side, in one fixed order.
+     *
+     * Fixed rather than largest-first, so the sold and bought bars line their
+     * currencies up in the same place and a currency keeps its colour.
+     *
+     * @param  Collection<string, array{currency: string, original: float, base: float}>  $rows
+     */
+    private function withShares(Collection $rows): Collection
+    {
+        $total = $rows->sum('base');
+        $order = ['USD' => 0, 'CNY' => 1, 'IQD' => 2];
+
+        return $rows
+            ->map(fn (array $row) => [...$row, 'share' => $total > 0 ? round($row['base'] / $total * 100, 1) : 0.0])
+            ->sortBy(fn (array $row) => $order[$row['currency']] ?? 9)
+            ->values();
+    }
 
     /** @param  iterable<Money>  $amounts */
     private function sum(iterable $amounts): Money
