@@ -64,6 +64,9 @@ class PortfolioController extends Controller
             // page carries its own data-en/data-ku pair, but these strings have
             // no markup to live in until something is actually slow.
             'ui' => SiteText::jsStrings(),
+            // CARTO basemap key, appended to every tile URL (see cartoTiles in
+            // script.js). It is a public, domain-restricted key by design.
+            'cartoKey' => config('services.carto.basemaps_key'),
         ];
 
         return view('portfolio', compact('projects', 'clients', 'categories', 'content', 'payload', 'stats'));

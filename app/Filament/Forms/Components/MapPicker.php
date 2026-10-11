@@ -20,8 +20,6 @@ class MapPicker extends Field
 
     public int $zoom = 8;
 
-    public string $tiles = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -40,8 +38,16 @@ class MapPicker extends Field
         return $this->zoom;
     }
 
-    public function getTiles(): string
+    /**
+     * The keyed CARTO tile URL, or null when CARTO_BASEMAPS_KEY is unset —
+     * keyless CARTO tiles are only an "API KEY REQUIRED" watermark.
+     */
+    public function getTiles(): ?string
     {
-        return $this->tiles;
+        $key = config('services.carto.basemaps_key');
+
+        return $key
+            ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key='.rawurlencode($key)
+            : null;
     }
 }

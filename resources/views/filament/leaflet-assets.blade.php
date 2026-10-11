@@ -65,9 +65,11 @@
                     scrollWheelZoom: true,
                 }).setView(has ? [this.lat, this.lng] : config.center, has ? 15 : config.zoom);
 
-                L.tileLayer(config.tiles, {
-                    subdomains: 'abcd', maxZoom: 19, detectRetina: true,
-                }).addTo(map);
+                if (config.tiles) {
+                    L.tileLayer(config.tiles, {
+                        subdomains: 'abcd', maxZoom: 19, detectRetina: true,
+                    }).addTo(map);
+                }
 
                 this.map = map;
                 if (has) this._drawMarker(this.lat, this.lng);

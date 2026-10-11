@@ -28,6 +28,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Raster basemap tiles for every Leaflet map (public site + admin pin
+    // picker). Since 25 Sep 2026 CARTO watermarks keyless tiles with
+    // "API KEY REQUIRED"; a free key comes from https://carto.com/basemaps/apikey
+    'carto' => [
+        'basemaps_key' => env('CARTO_BASEMAPS_KEY'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

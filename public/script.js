@@ -170,6 +170,23 @@ function trackImage(img, frame, opts) {
 }
 
 /**
+ * A CARTO raster basemap layer for one of the page's maps, or null.
+ *
+ * Since 25 Sep 2026 CARTO serves keyless raster tiles as an "API KEY
+ * REQUIRED" watermark, so every tile URL carries the key from
+ * CARTO_BASEMAPS_KEY. With no key set there is no basemap at all: the gold
+ * outline and pins on the dark container beat a wall of watermarks.
+ */
+function cartoTiles(style, opts) {
+    const key = (window.__SITE__ || {}).cartoKey;
+    if (!key || typeof L === 'undefined') return null;
+    return L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/' + style
+        + '/{z}/{x}/{y}{r}.png?key=' + encodeURIComponent(key), Object.assign({
+        subdomains: 'abcd', maxZoom: 18,
+    }, opts));
+}
+
+/**
  * Cover a Leaflet container until its first tiles arrive.
  *
  * All three maps on this page pull tiles from a CDN, so on a slow line the
@@ -906,10 +923,8 @@ function imgVariant(proj, size, i) {
         dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
         boxZoom: false, keyboard: false, touchZoom: false, tap: false,
     }).setView(OFFICE, 15);
-    const tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd', maxZoom: 18,
-    }).addTo(map);
-    mapSkeleton(el, tiles);
+    const tiles = cartoTiles('dark_all');
+    if (tiles) { tiles.addTo(map); mapSkeleton(el, tiles); }
     L.marker(OFFICE, {
         interactive: false,
         icon: L.divIcon({
@@ -2049,10 +2064,8 @@ const PROJECT_COORDS = [
             boxZoom: false, keyboard: false, touchZoom: false, tap: false,
             inertia: false, fadeAnimation: false,
         });
-        var miniTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            subdomains: 'abcd', maxZoom: 18,
-        }).addTo(miniMap);
-        mapSkeleton(miniCanvas, miniTiles);
+        var miniTiles = cartoTiles('dark_all');
+        if (miniTiles) { miniTiles.addTo(miniMap); mapSkeleton(miniCanvas, miniTiles); }
         miniMarker = L.marker([0, 0], {
             interactive: false,
             icon: L.divIcon({
@@ -2786,20 +2799,18 @@ const PROJECT_COORDS = [
     // 60fps. Tiles that are already dark cost nothing; `opacity` over the black
     // container keeps them as deep as the filter did and is a compositor
     // property, not a repaint.
-    const baseTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    const baseTiles = cartoTiles('dark_nolabels', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 18,
         opacity: 0.92,
         // Don't churn through tile requests mid-gesture; settle first, then load.
         updateWhenZooming: false,
         updateWhenIdle: isTouchDevice,
         keepBuffer: 2,
-    }).addTo(map);
+    });
 
     // This map is a full-bleed section — an empty one is a screen-height hole
     // in the page, so it is the one that most needs to say what it is doing.
-    mapSkeleton(mapEl, baseTiles);
+    if (baseTiles) { baseTiles.addTo(map); mapSkeleton(mapEl, baseTiles); }
 
     /* ── Kurdistan outline ──────────────────────────────────────────────
        The border used to be SVG paths with an feMorphology filter over them,
