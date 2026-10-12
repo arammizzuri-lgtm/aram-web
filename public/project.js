@@ -48,7 +48,7 @@
         }
         L.marker(at, {
             interactive: false,
-            icon: L.divIcon({ className: '', html: '<span class="pp-pin"></span>', iconSize: [18, 18], iconAnchor: [9, 9] }),
+            icon: L.divIcon({ className: '', html: '<span class="pp-pin"></span>', iconSize: [22, 22], iconAnchor: [11, 11] }),
         }).addTo(map);
 
         // Leaflet measures its box once; measure again when it scrolls into view.
