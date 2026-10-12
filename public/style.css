@@ -2043,6 +2043,175 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     margin-top: 16px; font-size: 13px; color: #4ecb71;
     letter-spacing: .04em;
 }
+.form-success.is-error { color: #ff8f7a; }
+
+/* ── Enquiry form: grid, choices, the folding details ───────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+.form-field--full { grid-column: 1 / -1; }
+.form-field select {
+    width: 100%; font-family: var(--font); font-size: 15px; font-weight: 300;
+    color: var(--text); cursor: none; outline: none;
+    -webkit-appearance: none; appearance: none;
+    background: rgba(255,255,255,.03)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23F5C518' stroke-width='1.4'/%3E%3C/svg%3E")
+        no-repeat right 16px center;
+    border: 1px solid rgba(255,255,255,.1); border-radius: 12px;
+    padding: 23px 40px 9px 16px;
+    transition: border-color .25s, background-color .25s, box-shadow .25s;
+}
+.form-field select option { background: #141414; color: var(--text); }
+.form-field select:focus {
+    border-color: rgba(245,197,24,.5); background-color: rgba(245,197,24,.04);
+    box-shadow: 0 0 0 3px rgba(245,197,24,.1);
+}
+/* a select always shows a value, so its label always sits up top */
+.form-field--select label { transform: translateY(-9px) scale(.74); }
+.form-field--select select:focus + label { color: var(--gold); }
+/* number fields: no spinner arrows in the glass */
+.form-field input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.form-field input[type="number"]::-webkit-inner-spin-button,
+.form-field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+.form-field.is-invalid input,
+.form-field.is-invalid select,
+.form-field.is-invalid textarea { border-color: rgba(255,143,122,.7); box-shadow: 0 0 0 3px rgba(255,143,122,.12); }
+.form-field.is-invalid label { color: #ff8f7a; }
+
+.form-note { margin: -6px 2px 16px; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,.38); }
+
+.form-more { margin: 0 0 16px; }
+.form-more__toggle {
+    display: inline-flex; align-items: center; gap: 10px;
+    list-style: none; cursor: none;
+    font-size: 12px; letter-spacing: .06em; color: rgba(245,197,24,.8);
+    padding: 4px 2px; transition: color .25s;
+}
+.form-more__toggle::-webkit-details-marker { display: none; }
+.form-more__toggle::before {
+    content: '+'; display: inline-grid; place-items: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1px solid rgba(245,197,24,.4); font-size: 14px; line-height: 1;
+    transition: transform .3s var(--ease-out);
+}
+.form-more[open] .form-more__toggle::before { transform: rotate(45deg); }
+.form-more__toggle:hover { color: var(--gold); }
+.form-more[open] > .form-grid { margin-top: 14px; animation: formMoreIn .45s var(--ease-out); }
+@keyframes formMoreIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* which project the enquiry is about */
+.form-about {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 18px; padding: 10px 12px 10px 16px; border-radius: 12px;
+    background: rgba(245,197,24,.07); border: 1px solid rgba(245,197,24,.25);
+    font-size: 13px;
+}
+.form-about[hidden] { display: none; }
+.form-about__label { font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: rgba(245,197,24,.75); }
+.form-about__name { flex: 1; min-width: 0; color: #fff; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.form-about__clear {
+    flex: none; width: 26px; height: 26px; border-radius: 50%; cursor: none;
+    background: none; border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.6);
+    font-size: 11px; transition: color .25s, border-color .25s;
+}
+.form-about__clear:hover { color: var(--gold); border-color: rgba(245,197,24,.5); }
+
+/* spam trap: present for bots, nowhere for people */
+.form-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.contact__form.is-sending .form-submit { opacity: .7; pointer-events: none; }
+
+/* Kurdish: labels sit where the writing starts */
+[dir="rtl"] .form-field label { left: auto; right: 17px; transform-origin: right center; }
+[dir="rtl"] .form-field select { background-position: left 16px center; padding: 23px 16px 9px 40px; }
+[dir="rtl"] .form-about { padding: 10px 16px 10px 12px; }
+[dir="rtl"] .form-about__label, [dir="rtl"] .cmethod__label { letter-spacing: 0; font-size: 12px; }
+
+@media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+}
+
+/* the floating button (engage.css) keeps this page's custom cursor, and
+   steps away while a project is open — the overlay has its own WhatsApp */
+.wa-fab { cursor: none; }
+body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
+
+/* ── WhatsApp as a contact method ─────────────────────────── */
+.cmethod--link { cursor: none; }
+.cmethod--link:hover, .cmethod--link:focus-visible {
+    border-color: rgba(37,211,102,.4); background: rgba(37,211,102,.05);
+    transform: translateX(5px); outline: none;
+}
+[dir="rtl"] .cmethod--link:hover, [dir="rtl"] .cmethod--link:focus-visible { transform: translateX(-5px); }
+.cmethod--wa .cmethod__icon { color: #25D366; background: rgba(37,211,102,.09); border-color: rgba(37,211,102,.28); }
+.cmethod--wa .cmethod__icon svg { width: 20px; height: 20px; }
+.cmethod--wa:hover .cmethod__icon { box-shadow: 0 0 18px rgba(37,211,102,.3); }
+.cmethod--wa .cmethod__hint { color: #25D366; border-color: rgba(37,211,102,.3); }
+
+/* ── Overlay: act on the open project ─────────────────────── */
+.od-cta {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .5s, transform .5s var(--ease-out);
+}
+.proj-overlay.open .od-cta { opacity: 1; transform: none; transition-delay: 1.32s; }
+.od-cta__btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    height: 42px; padding: 0 18px; border-radius: 100px; cursor: none;
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500;
+    transition: transform .25s var(--ease-out), box-shadow .25s, background .25s;
+}
+.od-cta__btn--primary { background: var(--gold); color: var(--black); box-shadow: 0 8px 24px rgba(245,197,24,.22); }
+.od-cta__btn--primary:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(245,197,24,.34); }
+.od-cta__btn--wa { color: #25D366; border: 1px solid rgba(37,211,102,.35); background: rgba(37,211,102,.06); }
+.od-cta__btn--wa:hover { background: rgba(37,211,102,.12); }
+.od-cta__btn--wa svg { width: 16px; height: 16px; }
+[dir="rtl"] .od-cta__btn { letter-spacing: 0; font-size: 13px; }
+[dir="rtl"] .od-cta__arrow { display: inline-block; transform: scaleX(-1); }
+
+/* ── Client quotes ────────────────────────────────────────── */
+.quotes {
+    background: var(--black);
+    padding: clamp(72px, 12vh, 130px) clamp(16px, 5vw, 40px);
+    text-align: center;
+    border-bottom: 1px solid rgba(245,197,24,.1);
+}
+/* a language with no quotes in it shows no band at all */
+[dir="ltr"] .quotes:not([data-has-en]), [dir="rtl"] .quotes:not([data-has-ku]) { display: none; }
+.quotes__title { font-size: clamp(26px, 3vw, 40px); font-weight: 200; color: #fff; margin: 12px 0 clamp(36px, 6vh, 56px); }
+.quotes__stage { display: grid; max-width: 920px; margin: 0 auto; }
+.quote {
+    grid-area: 1 / 1; margin: 0;
+    opacity: 0; visibility: hidden; transform: translateY(8px);
+    transition: opacity .8s var(--ease-out), transform .8s var(--ease-out), visibility 0s .8s;
+}
+.quote.is-active { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+[dir="ltr"] .quote:not([data-has-en]), [dir="rtl"] .quote:not([data-has-ku]) { display: none; }
+.quote__text {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(20px, 2.3vw, 31px); line-height: 1.55; color: rgba(255,255,255,.88);
+}
+.quote__text::before { content: '“'; color: var(--gold); margin-inline-end: .08em; }
+.quote__text::after  { content: '”'; color: var(--gold); margin-inline-start: .08em; }
+[dir="rtl"] .quote__text { font-style: normal; line-height: 1.9; }
+[dir="rtl"] .quote__text::before { content: '«'; }
+[dir="rtl"] .quote__text::after  { content: '»'; }
+.quote__by { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 28px; }
+.quote__name { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .quote__name { letter-spacing: 0; font-size: 15px; }
+.quote__role { font-size: 13px; color: rgba(255,255,255,.45); }
+.quote__project {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; cursor: none;
+    font-size: 12px; color: rgba(255,255,255,.55);
+    border-bottom: 1px solid rgba(245,197,24,.3); padding-bottom: 2px; transition: color .25s;
+}
+.quote__project:hover { color: var(--gold); }
+.quote__arrow { font-variant-emoji: text; }
+.quotes__dots { display: flex; justify-content: center; gap: 10px; margin-top: 34px; min-height: 8px; }
+.quotes__dot {
+    width: 8px; height: 8px; border-radius: 50%; padding: 0; cursor: none;
+    background: rgba(255,255,255,.18); border: 0; transition: background .3s, transform .3s;
+}
+.quotes__dot.is-active { background: var(--gold); transform: scale(1.25); }
 
 /* ---- Footer -------------------------------------------- */
 .footer { background: var(--black); padding: 64px 40px 40px; }

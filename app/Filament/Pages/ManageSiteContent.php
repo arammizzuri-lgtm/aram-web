@@ -118,6 +118,8 @@ class ManageSiteContent extends Page
                 $this->text('contact_email_new', 'Email address (value)', true),
                 $this->text('contact_phone', 'Phone 01 — number (value)'),
                 $this->text('contact_phone2', 'Phone 02 — number (value)'),
+                $this->text('contact_whatsapp', 'WhatsApp number (value) — every WhatsApp button stays hidden while this is empty', true)
+                    ->placeholder('+964 750 000 0000'),
             ],
             'Footer' => [
                 $this->text('footer_kurdish', 'Kurdish signature', true, true),

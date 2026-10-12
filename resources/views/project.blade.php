@@ -111,6 +111,7 @@
         <link rel="preload" as="image" href="{{ $images[0] }}" @if ($srcset(0)) imagesrcset="{{ $srcset(0) }}" imagesizes="100vw" @endif>
     @endif
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
+    <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     @if ($hasMap)
         <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
     @endif
@@ -214,6 +215,23 @@
             </section>
         @endif
 
+        @if ($quotes->isNotEmpty())
+            <section class="pp-quotes">
+                <h2 class="pp-label">{{ bival('quotes_label') }}</h2>
+                @foreach ($quotes as $q)
+                    <figure class="pp-quote-card">
+                        <blockquote dir="auto">{{ $q->quote($lang) }}</blockquote>
+                        <figcaption>
+                            <span class="pp-quote-card__name"><bdi>{{ $q->personName($lang) }}</bdi></span>
+                            @if (filled($q->attribution($lang)))
+                                <span class="pp-quote-card__role"><bdi>{{ $q->attribution($lang) }}</bdi></span>
+                            @endif
+                        </figcaption>
+                    </figure>
+                @endforeach
+            </section>
+        @endif
+
         @if ($hasMap)
             <section class="pp-map">
                 <h2 class="pp-label">{{ bival('pp_on_map') }}</h2>
@@ -233,10 +251,24 @@
             <p class="pp-label">{{ bival('contact_label') }}</p>
             <h2 class="pp-cta__title">{{ bival('pp_cta_title') }}</h2>
             <p class="pp-cta__text">{{ bival('pp_cta_text') }}</p>
-            <a class="pp-btn" href="{{ site_url('/') }}#contact">
-                <span>{{ bival('pp_cta_button') }}</span>
-                <span class="pp-arrow" aria-hidden="true">→</span>
-            </a>
+            @php
+                // the chat opens already naming this project
+                $waText = fn (string $l) => str_replace('{project}', $l === 'ku' ? ($project->name_ku ?: $project->name) : $project->name,
+                    $l === 'ku' ? \App\Support\SiteText::ku('wa_text_project') : \App\Support\SiteText::en('wa_text_project'));
+            @endphp
+            <div class="pp-cta__actions">
+                {{-- the form on the homepage, told which project this was about --}}
+                <a class="pp-btn" href="{{ site_url('/') }}?project={{ $project->slug }}#contact">
+                    <span>{{ bival('pp_cta_button') }}</span>
+                    <span class="pp-arrow" aria-hidden="true">→</span>
+                </a>
+                @if ($wa = whatsapp_url($waText($lang)))
+                    <a class="pp-btn pp-btn--wa" href="{{ $wa }}" target="_blank" rel="noopener">
+                        @include('partials.icon-whatsapp')
+                        <span>{{ bival('wa_cta') }}</span>
+                    </a>
+                @endif
+            </div>
         </section>
 
         @php
@@ -308,9 +340,12 @@
         <button class="pp-lightbox__btn pp-lightbox__next" type="button" aria-label="Next image">→</button>
     </dialog>
 
+    @include('partials.whatsapp-fab', ['text' => ['en' => $waText('en'), 'ku' => $waText('ku')], 'hideOver' => '.pp-cta'])
+
     @if ($hasMap)
         <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}"></script>
     @endif
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
+    <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
 </body>
 </html>

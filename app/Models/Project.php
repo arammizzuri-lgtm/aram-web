@@ -164,6 +164,12 @@ class Project extends Model
         return url(($lang === 'ku' ? '/ku' : '').'/projects/'.$this->slug);
     }
 
+    /** Clients' words about this project (shown on its page). */
+    public function testimonials(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Testimonial::class);
+    }
+
     /** Only published projects, in display order — used by the public site. */
     public function scopePublishedOrdered($query)
     {

@@ -55,6 +55,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
+    <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     {{-- Leaflet is served from our own origin, not unpkg.com.
 
          A stylesheet in the head blocks script execution until it resolves,
@@ -381,6 +382,44 @@
     </section>
 
     <!-- ========== SELECTED WORK ========== -->
+    {{-- ========== CLIENT QUOTES ==========
+         One quote at a time, turning over on its own (engage.js). Each quote
+         is shown only in the language it was given in — the language toggle
+         hides the rest — and the whole band only exists in a language that
+         has at least one. --}}
+    @php
+        $quotesEn = $quotes->filter(fn ($q) => filled($q->quote_en));
+        $quotesKu = $quotes->filter(fn ($q) => filled($q->quote_ku));
+    @endphp
+    @if ($quotes->isNotEmpty())
+        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ($quotesKu->isNotEmpty()) data-has-ku @endif>
+            <p class="section-label section-label--center" {!! bitext('quotes_label') !!}>{{ bival('quotes_label') }}</p>
+            <h2 class="quotes__title" {!! bitext('quotes_title') !!}>{{ bival('quotes_title') }}</h2>
+            <div class="quotes__stage" id="quotesStage" aria-live="polite">
+                @foreach ($quotes as $q)
+                    <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled($q->quote_ku)) data-has-ku @endif>
+                        <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ $q->quote('ku') }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
+                        <figcaption class="quote__by">
+                            <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ $q->personName('ku') }}">{{ $q->personName(site_lang()) }}</span>
+                            @php $roleEn = $q->attribution('en'); $roleKu = $q->attribution('ku'); @endphp
+                            @if (filled($roleEn) || filled($roleKu))
+                                <span class="quote__role" data-en="{{ $roleEn }}" data-ku="{{ $roleKu }}">{{ site_lang() === 'ku' ? $roleKu : $roleEn }}</span>
+                            @endif
+                            @if ($q->project?->hasPage())
+                                <a class="quote__project" href="{{ $q->project->pageUrl(site_lang()) }}"
+                                   data-href-en="{{ $q->project->pageUrl('en') }}" data-href-ku="{{ $q->project->pageUrl('ku') }}">
+                                    <span data-en="{{ $q->project->name }}" data-ku="{{ $q->project->name_ku ?: $q->project->name }}">{{ bi($q->project->name, $q->project->name_ku) }}</span>
+                                    <span class="quote__arrow" aria-hidden="true">↗&#xFE0E;</span>
+                                </a>
+                            @endif
+                        </figcaption>
+                    </figure>
+                @endforeach
+            </div>
+            <div class="quotes__dots" id="quotesDots" aria-hidden="true"></div>
+        </section>
+    @endif
+
     <section class="pg" id="projects">
 
         <div class="pg__head">
@@ -439,7 +478,8 @@
                      lets search engines find every project page from here.
                      Not draggable, or a mouse drag along the row would pick up the
                      link instead of scrolling it. --}}
-                <a class="pgc__link" href="{{ $project->pageUrl(site_lang()) }}" draggable="false" aria-label="{{ bi($project->name, $project->name_ku) }}"></a>
+                <a class="pgc__link" href="{{ $project->pageUrl(site_lang()) }}" draggable="false" aria-label="{{ bi($project->name, $project->name_ku) }}"
+                   data-href-en="{{ $project->pageUrl('en') }}" data-href-ku="{{ $project->pageUrl('ku') }}"></a>
             </article>
             @endforeach
 
@@ -717,6 +757,22 @@
                 <h2 class="contact__title" dir="auto" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! bi(setting('contact_title_en'), setting('contact_title_ku')) !!}</h2>
 
                 <ul class="contact__methods">
+                    {{-- WhatsApp first — it is how most clients here would rather
+                         start. Hidden until a number is set in Site Content. --}}
+                    @if ($waUrl = whatsapp_url(bival('wa_text')))
+                        <li>
+                            <a class="cmethod cmethod--link cmethod--wa" href="{{ $waUrl }}" target="_blank" rel="noopener"
+                               data-href-en="{{ whatsapp_url(\App\Support\SiteText::en('wa_text')) }}"
+                               data-href-ku="{{ whatsapp_url(\App\Support\SiteText::ku('wa_text')) }}">
+                                <span class="cmethod__icon">@include('partials.icon-whatsapp')</span>
+                                <span class="cmethod__text">
+                                    <span class="cmethod__label" {!! bitext('wa_label') !!}>{{ bival('wa_label') }}</span>
+                                    <span class="cmethod__value" dir="ltr">{{ setting('contact_whatsapp') }}</span>
+                                </span>
+                                <span class="cmethod__hint"><span {!! bitext('wa_cta') !!}>{{ bival('wa_cta') }}</span> ↗&#xFE0E;</span>
+                            </a>
+                        </li>
+                    @endif
                     {{-- one email, two lines — the address itself lives on the map card below --}}
                     <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new', 'Info@arammizzuri.com') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new', 'Info@arammizzuri.com') }}">
                         <span class="cmethod__icon">
@@ -767,22 +823,75 @@
                 </div>
             </div>
 
+            {{-- The enquiry form. Name and one way to reply (e-mail or phone) are
+                 all it asks for; the project details fold away so a quick
+                 question stays quick. "About" is set when the visitor comes
+                 from a project — its page (?project=slug) or the overlay —
+                 so the studio knows what they were looking at. --}}
+            @php
+                $choices = fn (array $options) => collect($options)->map(fn ($o, $key) =>
+                    '<option value="'.e($key).'" data-en="'.e($o['en']).'" data-ku="'.e($o['ku']).'">'.e(bi($o['en'], $o['ku'])).'</option>'
+                )->implode('');
+                $choose = '<option value="" '.bitext('form_choose').'>'.e(bival('form_choose')).'</option>';
+            @endphp
             <form class="contact__form" id="contactForm" novalidate>
-                <div class="form-field">
-                    <input type="text" id="cf-name" name="name" placeholder=" " required autocomplete="off">
-                    <label for="cf-name" {!! bitext('form_name') !!}>{{ bival('form_name') }}</label>
+                <div class="form-about" id="formAbout" hidden>
+                    <span class="form-about__label" {!! bitext('form_about') !!}>{{ bival('form_about') }}</span>
+                    <span class="form-about__name" id="formAboutName" dir="auto"></span>
+                    <button type="button" class="form-about__clear" id="formAboutClear" aria-label="Remove">✕</button>
                 </div>
-                <div class="form-field">
-                    <input type="email" id="cf-email" name="email" placeholder=" " required autocomplete="off">
-                    <label for="cf-email" {!! bitext('form_email') !!}>{{ bival('form_email') }}</label>
+                <input type="hidden" name="about" id="cf-about">
+
+                <div class="form-grid">
+                    <div class="form-field form-field--full">
+                        <input type="text" id="cf-name" name="name" placeholder=" " required autocomplete="name">
+                        <label for="cf-name" {!! bitext('form_name') !!}>{{ bival('form_name') }}</label>
+                    </div>
+                    <div class="form-field">
+                        <input type="tel" id="cf-phone" name="phone" placeholder=" " autocomplete="tel" inputmode="tel" dir="ltr">
+                        <label for="cf-phone" {!! bitext('form_phone') !!}>{{ bival('form_phone') }}</label>
+                    </div>
+                    <div class="form-field">
+                        <input type="email" id="cf-email" name="email" placeholder=" " autocomplete="email" dir="ltr">
+                        <label for="cf-email" {!! bitext('form_email') !!}>{{ bival('form_email') }}</label>
+                    </div>
+                    <p class="form-note form-field--full" id="cfReach" {!! bitext('form_reach') !!}>{{ bival('form_reach') }}</p>
+                    <div class="form-field form-field--select form-field--full">
+                        <select id="cf-type" name="type">{!! $choose !!}{!! $choices(\App\Support\Enquiry::types()) !!}</select>
+                        <label for="cf-type" {!! bitext('form_project') !!}>{{ bival('form_project') }}</label>
+                    </div>
                 </div>
-                <div class="form-field">
-                    <input type="text" id="cf-project" name="project" placeholder=" " autocomplete="off">
-                    <label for="cf-project" {!! bitext('form_project') !!}>{{ bival('form_project') }}</label>
-                </div>
+
+                <details class="form-more" id="formMore">
+                    <summary class="form-more__toggle"><span {!! bitext('form_more') !!}>{{ bival('form_more') }}</span></summary>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <input type="text" id="cf-city" name="city" placeholder=" " autocomplete="address-level2">
+                            <label for="cf-city" {!! bitext('form_city') !!}>{{ bival('form_city') }}</label>
+                        </div>
+                        <div class="form-field">
+                            <input type="number" id="cf-plot" name="plot_area" placeholder=" " min="1" step="1" inputmode="numeric" dir="ltr">
+                            <label for="cf-plot" {!! bitext('form_plot') !!}>{{ bival('form_plot') }}</label>
+                        </div>
+                        <div class="form-field form-field--select">
+                            <select id="cf-budget" name="budget">{!! $choose !!}{!! $choices(\App\Support\Enquiry::budgets()) !!}</select>
+                            <label for="cf-budget" {!! bitext('form_budget') !!}>{{ bival('form_budget') }}</label>
+                        </div>
+                        <div class="form-field form-field--select">
+                            <select id="cf-timeline" name="timeline">{!! $choose !!}{!! $choices(\App\Support\Enquiry::timelines()) !!}</select>
+                            <label for="cf-timeline" {!! bitext('form_timeline') !!}>{{ bival('form_timeline') }}</label>
+                        </div>
+                    </div>
+                </details>
+
                 <div class="form-field form-field--grow">
                     <textarea id="cf-message" name="message" placeholder=" " rows="4"></textarea>
                     <label for="cf-message" {!! bitext('form_message') !!}>{{ bival('form_message') }}</label>
+                </div>
+                {{-- Spam trap: off-screen and out of the tab order, so only bots fill it. --}}
+                <div class="form-hp" aria-hidden="true">
+                    <label for="cf-website">Website</label>
+                    <input type="text" id="cf-website" name="website" tabindex="-1" autocomplete="off">
                 </div>
                 <button type="submit" class="form-submit">
                     <span class="form-submit__label" {!! bitext('form_send') !!}>{{ bival('form_send') }}</span>
@@ -922,6 +1031,22 @@
 
                     <p class="od-desc" id="overlayDesc"></p>
 
+                    {{-- The two ways to act on what was just seen. Both carry the
+                         open project: the form gets it as "About", the WhatsApp
+                         message names it (set in populateOverlay). --}}
+                    <div class="od-cta">
+                        <a class="od-cta__btn od-cta__btn--primary" id="overlayEnquire" href="{{ site_url('/') }}#contact">
+                            <span {!! bitext('pp_cta_button') !!}>{{ bival('pp_cta_button') }}</span>
+                            <span class="od-cta__arrow" aria-hidden="true">→</span>
+                        </a>
+                        @if (whatsapp_url())
+                            <a class="od-cta__btn od-cta__btn--wa" id="overlayWa" href="{{ whatsapp_url() }}" target="_blank" rel="noopener">
+                                @include('partials.icon-whatsapp')
+                                <span {!! bitext('wa_label') !!}>{{ bival('wa_label') }}</span>
+                            </a>
+                        @endif
+                    </div>
+
                 </div>
             </div>
 
@@ -960,11 +1085,14 @@
          iPad and iPhone. The same outline is now composited on a viewport-sized
          canvas — see KurdistanOutline in script.js. --}}
 
+    @include('partials.whatsapp-fab', ['text' => ['en' => \App\Support\SiteText::en('wa_text'), 'ku' => \App\Support\SiteText::ku('wa_text')], 'hideOver' => '#map, #contact'])
+
     {{-- Self-hosted — see the note beside the Leaflet stylesheets above. --}}
     <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}"></script>
     <script src="{{ asset('vendor/leaflet-gesture-handling.min.js') }}?v={{ filemtime(public_path('vendor/leaflet-gesture-handling.min.js')) }}"></script>
     <script>window.__SITE__ = {!! \Illuminate\Support\Js::from($payload) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
+    <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     <script src="{{ asset('vendor/three.min.js') }}" defer></script>
     <script src="{{ asset('hero3d.js') }}?v={{ filemtime(public_path('hero3d.js')) }}" defer></script>
 </body>

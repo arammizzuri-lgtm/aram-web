@@ -16,7 +16,7 @@ class RecentMessages extends Widget
     protected function getViewData(): array
     {
         return [
-            'messages' => ContactMessage::query()->latest()->limit(5)->get(),
+            'messages' => ContactMessage::query()->with('project')->latest()->limit(5)->get(),
         ];
     }
 }

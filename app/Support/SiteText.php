@@ -76,6 +76,12 @@ class SiteText
                 'clients_hint'    => ['Hint', 'click a logo to see all partners', 'کرتە لە لۆگۆیەک بکە بۆ بینینی هەموو هاوبەشەکان'],
             ],
 
+            // Shown only once at least one quote is published (Client quotes).
+            'Client quotes' => [
+                'quotes_label' => ['Section label', 'In Their Words', 'بە وتەی خۆیان'],
+                'quotes_title' => ['Title', 'What our clients say', 'کڕیارەکانمان چی دەڵێن'],
+            ],
+
             'Projects gallery' => [
                 'pg_label'           => ['Section label', 'Selected Work', 'کارە هەڵبژێردراوەکان'],
                 'pg_title'           => ['Title', 'Projects', 'پرۆژەکان'],
@@ -144,7 +150,20 @@ class SiteText
                 'contact_visits'     => ['Map — visiting note', 'Visits are by appointment only', 'سەردانکردن تەنها بە ژوانی پێشوەختەیە'],
                 'form_name'          => ['Form — name label', 'Your Name', 'ناوت'],
                 'form_email'         => ['Form — email label', 'Email Address', 'ناونیشانی ئیمەیڵ'],
-                'form_project'       => ['Form — project label', 'Project Type', 'جۆری پڕۆژە'],
+                'form_project'       => ['Form — project type label', 'Project Type', 'جۆری پڕۆژە'],
+                'form_phone'         => ['Form — phone label', 'Phone / WhatsApp', 'تەلەفۆن / واتسئاپ'],
+                'form_reach'         => ['Form — note under email & phone', 'An email or a phone number is enough — whichever suits you.', 'ئیمەیڵ یان ژمارەی تەلەفۆن بەسە — هەرکامیان بۆت گونجاوە.', 'area'],
+                'form_city'          => ['Form — city label', 'City / site', 'شار / شوێنی زەوی'],
+                'form_plot'          => ['Form — plot area label', 'Plot area (m²)', 'ڕووبەری زەوی (م²)'],
+                'form_budget'        => ['Form — budget label', 'Estimated budget', 'بودجەی خەمڵێنراو'],
+                'form_timeline'      => ['Form — timeline label', 'When would you like to start?', 'کەی دەتەوێت دەست پێبکەیت؟'],
+                'form_choose'        => ['Form — empty choice', 'Choose…', 'هەڵبژێرە…'],
+                'form_more'          => ['Form — "more details" toggle', 'Add project details (optional)', 'زانیاریی پرۆژە زیاد بکە (ئارەزوومەندانە)'],
+                'form_about'         => ['Form — "about this project" chip', 'About', 'دەربارەی'],
+                'wa_label'           => ['WhatsApp — label', 'WhatsApp', 'واتسئاپ'],
+                'wa_cta'             => ['WhatsApp — button', 'Chat on WhatsApp', 'لە واتسئاپ قسە بکە'],
+                'wa_text'            => ['WhatsApp — first message', "Hello Aram Mizuri Architecture, I'd like to talk about a project.", 'سڵاو، دەمەوێت دەربارەی پرۆژەیەک قسە بکەم.', 'area'],
+                'wa_text_project'    => ['WhatsApp — first message from a project ({project} = its name)', 'Hello, I saw “{project}” on your website and would like to talk about something similar.', 'سڵاو، پرۆژەی «{project}»م لە ماڵپەڕەکەتان بینی و دەمەوێت دەربارەی شتێکی هاوشێوە قسە بکەم.', 'area'],
                 'form_message'       => ['Form — message label', 'Tell us about your project', 'دەربارەی پڕۆژەکەت پێمان بڵێ'],
                 'form_send'          => ['Form — send button', 'Send Message', 'ناردنی نامە'],
                 'form_success'       => ['Form — success message', "✓ Message received — we'll be in touch soon.", '✓ نامەکەت گەیشت — بەم زووانە پەیوەندیت پێوە دەکەین.', 'area'],
@@ -207,6 +226,8 @@ class SiteText
                 'map_failed'       => ['Map — could not load', 'The map could not be loaded.', 'نەتوانرا نەخشەکە باربکرێت.'],
                 'form_sending'     => ['Form — sending', 'Sending…', 'دەنێردرێت…'],
                 'form_failed'      => ['Form — failed', '⚠ Something went wrong — please email us directly.', '⚠ هەڵەیەک ڕوویدا — تکایە ڕاستەوخۆ ئیمەیڵمان بۆ بنێرە.', 'area'],
+                'form_need_contact' => ['Form — no email or phone given', 'Please leave an email or a phone number so we can reply.', 'تکایە ئیمەیڵ یان ژمارەی تەلەفۆنێک بنووسە بۆ ئەوەی وەڵامت بدەینەوە.', 'area'],
+                'form_check'       => ['Form — a field needs fixing', 'Please check the highlighted field.', 'تکایە ئەو خانەیە بپشکنە کە دیاری کراوە.'],
             ],
         ];
     }

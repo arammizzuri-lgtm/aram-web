@@ -236,7 +236,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- Map ---------------------------------------------------- */
 .pp-map { max-width: var(--wide); margin: 0 auto; padding: clamp(56px, 10vh, 112px) var(--gutter) 0; }
 .pp-map__frame {
-    position: relative; height: clamp(300px, 46vh, 460px);
+    /* Leaflet stacks its panes at z-index 200–1000; isolate them in here, or
+       the map scrolls over the fixed top bar */
+    position: relative; isolation: isolate; height: clamp(300px, 46vh, 460px);
     border-radius: 18px; overflow: hidden;
     border: 1px solid var(--line); background: #0d0d0d;
 }
@@ -281,6 +283,32 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 [dir="rtl"] .pp-btn { letter-spacing: 0; font-size: 14px; }
 .pp-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(245,197,24,.32); }
+
+.pp-cta__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.pp-btn--wa {
+    background: rgba(37,211,102,.08); color: #25D366;
+    border: 1px solid rgba(37,211,102,.4); box-shadow: none;
+}
+.pp-btn--wa:hover { background: rgba(37,211,102,.14); box-shadow: 0 12px 30px rgba(37,211,102,.18); }
+.pp-btn--wa svg { width: 18px; height: 18px; }
+
+/* ---- Client quotes -------------------------------------------- */
+.pp-quotes { max-width: 960px; margin: 0 auto; padding: clamp(64px, 11vh, 120px) var(--gutter) 0; }
+.pp-quote-card { margin: 0 0 40px; }
+.pp-quote-card:last-child { margin-bottom: 0; }
+.pp-quote-card blockquote {
+    font-size: clamp(20px, 2.2vw, 30px); line-height: 1.55; font-weight: 200;
+    font-style: italic; color: #fff;
+}
+.pp-quote-card blockquote::before { content: '“'; color: var(--gold); }
+.pp-quote-card blockquote::after  { content: '”'; color: var(--gold); }
+[dir="rtl"] .pp-quote-card blockquote { font-style: normal; font-weight: 400; line-height: 1.9; }
+[dir="rtl"] .pp-quote-card blockquote::before { content: '«'; }
+[dir="rtl"] .pp-quote-card blockquote::after  { content: '»'; }
+.pp-quote-card figcaption { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 18px; font-size: 13px; }
+.pp-quote-card__name { color: var(--gold); letter-spacing: .2em; text-transform: uppercase; font-size: 11px; }
+[dir="rtl"] .pp-quote-card__name { letter-spacing: 0; font-size: 14px; }
+.pp-quote-card__role { color: var(--muted); }
 
 /* ---- Previous / next ----------------------------------------- */
 .pp-pager { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); border-top: 1px solid var(--line); }

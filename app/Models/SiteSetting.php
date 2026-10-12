@@ -26,6 +26,23 @@ class SiteSetting extends Model
         });
     }
 
+    /**
+     * Settings that are the studio's business, not the page's: the e-mail
+     * alert recipients and the mailbox the alerts are sent from. Anything
+     * under this prefix is kept out of what the public site is given.
+     */
+    public const PRIVATE_PREFIX = 'alerts_';
+
+    /** Every setting the public site may see — allKeyed() minus the private ones. */
+    public static function publicKeyed(): array
+    {
+        return array_filter(
+            static::allKeyed(),
+            fn ($key) => ! str_starts_with((string) $key, self::PRIVATE_PREFIX),
+            ARRAY_FILTER_USE_KEY,
+        );
+    }
+
     /** Read one value with a fallback default. */
     public static function get(string $key, $default = null)
     {

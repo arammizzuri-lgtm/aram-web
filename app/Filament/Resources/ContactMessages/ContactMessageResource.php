@@ -18,7 +18,7 @@ class ContactMessageResource extends Resource
 {
     protected static ?string $model = ContactMessage::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -26,9 +26,11 @@ class ContactMessageResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    protected static ?string $navigationLabel = 'Messages';
+    protected static ?string $navigationLabel = 'Enquiries';
 
-    protected static ?string $modelLabel = 'message';
+    protected static ?string $modelLabel = 'enquiry';
+
+    protected static ?string $pluralModelLabel = 'enquiries';
 
     public static function form(Schema $schema): Schema
     {
@@ -40,7 +42,7 @@ class ContactMessageResource extends Resource
         return ContactMessagesTable::configure($table);
     }
 
-    /** Messages are only created by the public contact form. */
+    /** Enquiries are only created by the public form. */
     public static function canCreate(): bool
     {
         return false;

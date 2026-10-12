@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Models\Status;
+use App\Models\Testimonial;
 use App\Support\SiteText;
 
 /**
@@ -19,8 +20,10 @@ class PortfolioController extends Controller
     {
         $projects = Project::publishedOrdered()->get();
         $clients = Client::publishedOrdered()->get();
+        $quotes = Testimonial::publishedOrdered()->with(['client', 'project'])->get();
         $categories = Category::ordered()->get();
-        $content = SiteSetting::allKeyed();
+        // never allKeyed(): this goes to the browser in window.__SITE__
+        $content = SiteSetting::publicKeyed();
         $stats = $this->portfolioStats($projects);
 
         $payload = [
@@ -69,12 +72,18 @@ class PortfolioController extends Controller
             // The page title in both languages, for the language toggle and
             // for the overlay, which titles the tab after the open project.
             'titles' => ['en' => SiteText::en('seo_title'), 'ku' => SiteText::ku('seo_title')],
+            // The overlay's WhatsApp button opens a chat that names the open
+            // project. Null while no number is set, which hides the button.
+            'whatsapp' => ($wa = phone_digits(setting('contact_whatsapp'))) ? [
+                'number' => $wa,
+                'project' => ['en' => SiteText::en('wa_text_project'), 'ku' => SiteText::ku('wa_text_project')],
+            ] : null,
             // CARTO basemap key, appended to every tile URL (see cartoTiles in
             // script.js). It is a public, domain-restricted key by design.
             'cartoKey' => config('services.carto.basemaps_key'),
         ];
 
-        return view('portfolio', compact('projects', 'clients', 'categories', 'content', 'payload', 'stats'));
+        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'content', 'payload', 'stats'));
     }
 
     /**

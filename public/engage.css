@@ -1,0 +1,38 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — engage.css
+   The floating WhatsApp button, shared by the homepage and project pages
+   (behaviour in engage.js). Colours fall back to literals so it renders
+   the same under either page's stylesheet.
+   ========================================================= */
+
+.wa-fab {
+    position: fixed; z-index: 790;               /* under the nav (900) and every overlay */
+    bottom: max(20px, env(safe-area-inset-bottom));
+    inset-inline-end: 20px;
+    display: inline-flex; align-items: center; gap: 0;
+    height: 56px; min-width: 56px; padding: 0 16px; border-radius: 100px;
+    background: #25D366; color: #fff; text-decoration: none;
+    box-shadow: 0 10px 30px rgba(37,211,102,.32), 0 2px 8px rgba(0,0,0,.35);
+    opacity: 0; transform: translateY(16px) scale(.9);
+    transition: opacity .45s, transform .45s cubic-bezier(.16,1,.3,1), gap .35s, box-shadow .3s;
+}
+.wa-fab.is-ready { opacity: 1; transform: none; }
+.wa-fab.is-away  { opacity: 0; transform: translateY(16px) scale(.9); pointer-events: none; }
+.wa-fab svg { flex: none; width: 24px; height: 24px; }
+
+/* The label opens out on hover (pointer devices only): the button says what
+   it does without having to sit on the page as a wide pill. */
+.wa-fab__label {
+    max-width: 0; overflow: hidden; white-space: nowrap;
+    font: 500 13px/1 'Inter', 'Vazirmatn', sans-serif;
+    transition: max-width .4s cubic-bezier(.16,1,.3,1);
+}
+@media (hover: hover) {
+    .wa-fab:hover { gap: 10px; box-shadow: 0 14px 38px rgba(37,211,102,.42), 0 2px 8px rgba(0,0,0,.35); }
+    .wa-fab:hover .wa-fab__label { max-width: 220px; }
+}
+.wa-fab:focus-visible { outline: 2px solid #F5C518; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .wa-fab, .wa-fab__label { transition: none; }
+}

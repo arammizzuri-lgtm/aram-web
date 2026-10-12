@@ -36,8 +36,12 @@ class ProjectPageController extends Controller
             ->sortByDesc(fn (Project $p) => count(array_intersect($keys, $p->categoryKeys())))
             ->take(3)->values();
 
+        // what clients said about this one, in the language of the page
+        $quotes = $project->testimonials()->publishedOrdered()->inLanguage(site_lang())->with('client')->get();
+
         return view('project', [
             'project' => $project,
+            'quotes' => $quotes,
             'prev' => $prev,
             'next' => $next,
             'more' => $more,

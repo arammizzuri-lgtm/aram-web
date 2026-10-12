@@ -826,6 +826,12 @@ function buildKurdishSun(container, opts = {}) {
             el.setAttribute('placeholder', isKu ? el.dataset.kuPh : el.dataset.enPh);
         });
 
+        // and links whose target depends on the language — a WhatsApp chat
+        // that opens with a message in it, a project page (data-href-en/-ku)
+        document.querySelectorAll('[data-href-en][data-href-ku]').forEach(el => {
+            el.setAttribute('href', isKu ? el.dataset.hrefKu : el.dataset.hrefEn);
+        });
+
         // let JS-rendered UI (e.g. the open project overlay) re-render its language
         document.dispatchEvent(new Event('langchange'));
     }
@@ -1165,28 +1171,123 @@ function imgVariant(proj, size, i) {
     if (img) trackImage(img, img.closest('.about__portrait'));
 })();
 
-/* ---- Contact Form -------------------------------------- */
+/* ---- Enquiry form ---------------------------------------
+   Name plus one way to reply — e-mail or phone, whichever the visitor
+   prefers; the project details fold away so a quick question stays quick.
+   A visitor who comes from a project (its page links here with
+   ?project=slug; the overlay calls setEnquiryAbout) sees which project the
+   enquiry will be about, and can take it off. */
 (function initForm() {
     const form    = document.getElementById('contactForm');
     const success = document.getElementById('formSuccess');
     if (!form) return;
 
+    const field      = name => form.querySelector('[name="' + name + '"]');
+    const aboutEl    = document.getElementById('formAbout');
+    const aboutName  = document.getElementById('formAboutName');
+    const aboutInput = document.getElementById('cf-about');
+    const more       = document.getElementById('formMore');
+    const isKu       = () => document.documentElement.getAttribute('dir') === 'rtl';
+
+    // One line under the button reports both outcomes. Its own bilingual pair
+    // is the success message; a failure repoints the pair (so a language
+    // switch keeps the right message) and a later success puts it back.
+    const okPair = success ? { en: success.dataset.en, ku: success.dataset.ku } : null;
+    let hideTimer = null;
+    function report(key) {
+        if (!success) return;
+        const row = key ? ((((window.__SITE__ || {}).ui || {})[key]) || {}) : okPair;
+        success.dataset.en = row.en || '';
+        success.dataset.ku = row.ku || row.en || '';
+        success.textContent = isKu() ? success.dataset.ku : success.dataset.en;
+        success.classList.toggle('is-error', !!key);
+        success.hidden = false;
+        clearTimeout(hideTimer);
+        if (!key) hideTimer = setTimeout(() => { success.hidden = true; }, 6000);
+    }
+
+    /* ---- "About" a project ---- */
+    function setAbout(proj) {
+        if (!aboutEl || !proj || !proj.slug) return;
+        aboutInput.value      = proj.slug;
+        aboutName.dataset.en  = proj.name;
+        aboutName.dataset.ku  = proj.name_ku || proj.name;
+        aboutName.textContent = isKu() ? aboutName.dataset.ku : aboutName.dataset.en;
+        aboutEl.hidden = false;
+    }
+    function clearAbout() {
+        if (!aboutEl) return;
+        aboutInput.value = '';
+        aboutEl.hidden = true;
+    }
+    window.setEnquiryAbout = setAbout;
+    const clearBtn = document.getElementById('formAboutClear');
+    if (clearBtn) clearBtn.addEventListener('click', clearAbout);
+
+    // Arrived from a project's own page: /?project=slug#contact
+    const params = new URLSearchParams(location.search);
+    const fromSlug = params.get('project');
+    if (fromSlug) {
+        const proj = ((window.__SITE__ || {}).projects || []).find(p => p.slug === fromSlug);
+        if (proj) setAbout(proj);
+        // the address only needs to say where the visitor is, not where from
+        params.delete('project');
+        const qs = params.toString();
+        if (window.history && history.replaceState) {
+            history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+        }
+    }
+
+    /* ---- Checking before sending ---- */
+    function flag(el) {
+        const wrap = el && el.closest('.form-field');
+        if (wrap) wrap.classList.add('is-invalid');
+    }
+    form.addEventListener('input', e => {
+        const wrap = e.target.closest('.form-field');
+        if (wrap) wrap.classList.remove('is-invalid');
+        // either one of the pair answers for both
+        if (e.target.name === 'email' || e.target.name === 'phone') {
+            [field('email'), field('phone')].forEach(el => {
+                const w = el && el.closest('.form-field');
+                if (w) w.classList.remove('is-invalid');
+            });
+        }
+    });
+
+    function check() {
+        const name = field('name'), email = field('email'), phone = field('phone');
+        if (!name.value.trim()) { flag(name); name.focus(); return 'form_check'; }
+        if (!email.value.trim() && !phone.value.trim()) {
+            flag(email); flag(phone); phone.focus();
+            return 'form_need_contact';
+        }
+        if (email.value.trim() && !email.checkValidity()) { flag(email); email.focus(); return 'form_check'; }
+        return null;
+    }
+
     form.addEventListener('submit', e => {
         e.preventDefault();
+        const problem = check();
+        if (problem) { report(problem); return; }
+
         const btn      = form.querySelector('.form-submit__label');
         const original = btn.textContent;
         const token    = document.querySelector('meta[name="csrf-token"]');
-        // Was hard-coded English, so a Kurdish visitor was dropped into
-        // English at the one moment they most need to understand what is
-        // happening — the send they are waiting on.
         btn.textContent = uiText('form_sending');
+        form.classList.add('is-sending');
 
+        const value = name => ((field(name) || {}).value || '').trim();
         const payload = {
-            name:    (form.querySelector('[name="name"]')    || {}).value || '',
-            email:   (form.querySelector('[name="email"]')   || {}).value || '',
-            project: (form.querySelector('[name="project"]') || {}).value || '',
-            message: (form.querySelector('[name="message"]') || {}).value || '',
+            name: value('name'), email: value('email'), phone: value('phone'),
+            type: value('type'), city: value('city'), plot_area: value('plot_area'),
+            budget: value('budget'), timeline: value('timeline'),
+            about: value('about'), message: value('message'),
+            website: value('website'),                       // the spam trap
+            lang: isKu() ? 'ku' : 'en',
+            page: location.pathname,
         };
+        Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
 
         fetch('/contact', {
             method: 'POST',
@@ -1198,30 +1299,29 @@ function imgVariant(proj, size, i) {
             body: JSON.stringify(payload),
         })
         .then(res => {
-            if (!res.ok) throw new Error('Request failed (' + res.status + ')');
+            if (res.status === 422) {
+                // the server disagreed with a field: point at it
+                return res.json().then(body => {
+                    const errors = (body && body.errors) || {};
+                    Object.keys(errors).forEach(k => flag(field(k)));
+                    throw new Error(errors.email && errors.phone ? 'form_need_contact' : 'form_check');
+                });
+            }
+            if (!res.ok) throw new Error('form_failed');
             return res.json().catch(() => ({}));
         })
         .then(() => {
-            btn.textContent = original;
             form.reset();
-            if (success) {
-                success.hidden = false;
-                setTimeout(() => { success.hidden = true; }, 5000);
-            }
+            clearAbout();
+            if (more) more.open = false;
+            report(null);
         })
-        .catch(() => {
+        .catch(err => {
+            report(err && /^form_/.test(err.message) ? err.message : 'form_failed');
+        })
+        .finally(() => {
             btn.textContent = original;
-            if (success) {
-                // Repoint the element's own bilingual pair rather than just
-                // its text, or the next language toggle would swap this error
-                // back to the success message it is standing in for.
-                const ui = (window.__SITE__ || {}).ui || {};
-                const row = ui.form_failed || {};
-                success.dataset.en = row.en || '';
-                success.dataset.ku = row.ku || row.en || '';
-                success.textContent = uiText('form_failed');
-                success.hidden = false;
-            }
+            form.classList.remove('is-sending');
         });
     });
 })();
@@ -2390,6 +2490,15 @@ const PROJECT_COORDS = [
         var pos = galleryIdx.indexOf(index);
         counterEl.textContent = (pos === -1 ? 1 : pos + 1) + ' / ' + (galleryIdx.length || 1);
 
+        // The WhatsApp chat it opens names this project, in the reader's language
+        var wa = (window.__SITE__ || {}).whatsapp;
+        var waBtn = document.getElementById('overlayWa');
+        if (waBtn && wa && wa.number) {
+            var template = (isKu ? wa.project.ku : wa.project.en) || wa.project.en || '';
+            var waName = (isKu && proj.name_ku) ? proj.name_ku : proj.name;
+            waBtn.href = 'https://wa.me/' + wa.number + '?text=' + encodeURIComponent(template.replace('{project}', waName));
+        }
+
         // Location mini-map
         updateMiniMap(index, proj);
 
@@ -2572,6 +2681,19 @@ const PROJECT_COORDS = [
 
     /* ---- Controls ---------------------------------------- */
     closeBtn && closeBtn.addEventListener('click', closeOverlay);
+    // "Start a project": the form is told which project this was about, the
+    // overlay steps back, and the page moves down to the form.
+    const enquireBtn = document.getElementById('overlayEnquire');
+    enquireBtn && enquireBtn.addEventListener('click', e => {
+        e.preventDefault();
+        const proj = PROJECT_DATA[currentProjIdx];
+        if (proj && typeof window.setEnquiryAbout === 'function') window.setEnquiryAbout(proj);
+        closeOverlay();
+        setTimeout(() => {
+            const contact = document.getElementById('contact');
+            if (contact) contact.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 420);
+    });
     // click the blurred backdrop (outside the card) to dismiss
     overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
     projPrevBtn && projPrevBtn.addEventListener('click', e => { e.stopPropagation(); stepProject(-1); });

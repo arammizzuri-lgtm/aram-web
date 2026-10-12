@@ -57,6 +57,45 @@ if (! function_exists('carto_tiles')) {
     }
 }
 
+if (! function_exists('phone_digits')) {
+    /**
+     * A phone number as wa.me and tel: links want it: international digits
+     * only. "+964 (0) 750…", "00964 750…" and a local "0750…" all become
+     * "964750…"; anything without digits is null.
+     */
+    function phone_digits(?string $phone): ?string
+    {
+        $raw = (string) $phone;
+        // the "(0)" in "+964 (0) 750…" is the trunk prefix, dialled only at home
+        $digits = preg_replace('/\D+/', '', str_replace('(0)', '', $raw));
+        if ($digits === '') {
+            return null;
+        }
+        if (str_starts_with($digits, '00')) {
+            return substr($digits, 2);
+        }
+        if (str_starts_with($digits, '07') && strlen($digits) === 11) {
+            return '964'.substr($digits, 1);
+        }
+
+        return $digits;
+    }
+}
+
+if (! function_exists('whatsapp_url')) {
+    /**
+     * A wa.me link that opens a chat with the studio, its first message
+     * already written — or null while no WhatsApp number is set (Site Content
+     * → Contact), so every WhatsApp button simply stays hidden until then.
+     */
+    function whatsapp_url(?string $text = null): ?string
+    {
+        $digits = phone_digits(setting('contact_whatsapp'));
+
+        return $digits ? 'https://wa.me/'.$digits.(filled($text) ? '?text='.rawurlencode($text) : '') : null;
+    }
+}
+
 if (! function_exists('bi')) {
     /**
      * The current language's half of an English/Kurdish pair — for the values
