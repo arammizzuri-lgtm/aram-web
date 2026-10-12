@@ -42,8 +42,15 @@ class SiteText
                 'stat_area'      => ['Stat label — Area', 'm² Designed', 'م² دیزاینکراو'],
             ],
 
+            // What Google shows for the homepage, and what a shared link to it
+            // previews with. Project pages make their own from the project.
+            'Search & sharing' => [
+                'seo_title'       => ['Page title (browser tab, Google, link previews)', 'Aram Mizuri Architecture | Erbil, Kurdistan', 'تەڵارسازیی ئارام مزووری | هەولێر، کوردستان'],
+                'seo_description' => ['Description (Google, link previews — about 150 characters)', 'Aram Mizuri Architecture — a leading architectural practice based in Erbil, Kurdistan Region. Residential, cultural, commercial and urban design.', 'تەڵارسازیی ئارام مزووری — ئۆفیسێکی پێشەنگی تەڵارسازی لە هەولێر، هەرێمی کوردستان. دیزاینی نیشتەجێبوون، کولتووری، بازرگانی و شارستانی.', 'area'],
+            ],
+
             'Hero' => [
-                'hero_eyebrow'      => ['Eyebrow', 'Erbil · Kurdistan · Est. 2022', 'هەولێر · کوردستان · دامەزراوە ٢٠٢٢'],
+                'hero_eyebrow'      =>['Eyebrow', 'Erbil · Kurdistan · Est. 2022', 'هەولێر · کوردستان · دامەزراوە ٢٠٢٢'],
                 'hero_title_line1'  => ['Title — line 1 (append " by …" for the gold sub)', 'Architecture by', 'تەڵارسازی لەلایەن', 'area'],
                 'hero_title_line2'  => ['Title — line 2 (gold accent)', 'Aram Mizuri', 'ئارام مزووری'],
                 'hero_sub'          => ['Subtitle', 'Shaping the built environment of Erbil — and beyond.', 'شێوەدانی ژینگەی بنیاتنراوی هەولێر — و دوورتر.', 'area'],
@@ -150,6 +157,24 @@ class SiteText
                 'overlay_year'     => ['Spec — Year', 'Year', 'ساڵ'],
                 'overlay_typology' => ['Spec — Typology', 'Typology', 'جۆر'],
                 'overlay_plot'     => ['Spec — Plot Area', 'Plot Area', 'ڕووبەری زەوی'],
+            ],
+
+            // A project's own page (/projects/…). Its spec labels are the
+            // overlay's above, so the two always name things the same way.
+            'Project page' => [
+                'pp_all_projects' => ['Back link', 'All projects', 'هەموو پرۆژەکان'],
+                'pp_status'       => ['Spec — Status', 'Status', 'دۆخ'],
+                'pp_category'     => ['Spec — Category', 'Category', 'پۆل'],
+                'pp_materials'    => ['Materials heading', 'Materials', 'کەرەستەکان'],
+                'pp_on_map'       => ['Map heading', 'On the map', 'لەسەر نەخشە'],
+                'pp_share'        => ['Share button', 'Share', 'هاوبەشکردن'],
+                'pp_copied'       => ['Share — link copied', 'Link copied', 'بەستەرەکە کۆپی کرا'],
+                'pp_cta_title'    => ['Call to action — title', 'Planning something similar?', 'پلانی شتێکی هاوشێوەت هەیە؟'],
+                'pp_cta_text'     => ['Call to action — text', "Tell us about your site and what you have in mind — we'll get back to you.", 'دەربارەی شوێنەکەت و ئەوەی لە بیرتدایە پێمان بڵێ — بەم زووانە وەڵامت دەدەینەوە.', 'area'],
+                'pp_cta_button'   => ['Call to action — button', 'Start a project', 'دەستپێکردنی پرۆژە'],
+                'pp_prev'         => ['Previous project', 'Previous', 'پێشوو'],
+                'pp_next'         => ['Next project', 'Next', 'دواتر'],
+                'pp_more'         => ['More projects heading', 'More projects', 'پرۆژەی زیاتر'],
             ],
 
             'Footer' => [

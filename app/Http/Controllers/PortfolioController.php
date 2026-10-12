@@ -26,6 +26,8 @@ class PortfolioController extends Controller
         $payload = [
             'projects' => $projects->map(fn (Project $p) => [
                 'num' => $p->num,
+                // the overlay puts /projects/{slug} in the address bar
+                'slug' => $p->hasPage() ? $p->slug : null,
                 'name' => $p->name,
                 'name_ku' => $p->name_ku,
                 'category' => $p->category,          // primary — kept for the map card
@@ -64,6 +66,9 @@ class PortfolioController extends Controller
             // page carries its own data-en/data-ku pair, but these strings have
             // no markup to live in until something is actually slow.
             'ui' => SiteText::jsStrings(),
+            // The page title in both languages, for the language toggle and
+            // for the overlay, which titles the tab after the open project.
+            'titles' => ['en' => SiteText::en('seo_title'), 'ku' => SiteText::ku('seo_title')],
             // CARTO basemap key, appended to every tile URL (see cartoTiles in
             // script.js). It is a public, domain-restricted key by design.
             'cartoKey' => config('services.carto.basemaps_key'),

@@ -98,6 +98,13 @@ class ProjectsTable
                 // every data column fits on screen without sideways scrolling.
                 EditAction::make()->iconButton(),
                 ActionGroup::make([
+                    // The project's own public page, for checking it or
+                    // copying the link to send someone.
+                    Action::make('viewPage')
+                        ->label('View page on site')
+                        ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
+                        ->url(fn (Project $record): ?string => $record->hasPage() ? $record->pageUrl() : null, shouldOpenInNewTab: true)
+                        ->visible(fn (Project $record): bool => $record->hasPage()),
                     // Jump a project straight to either end of the running
                     // order. Dragging handles the nudges; these are for "put
                     // this one first/last" and still work while filtered.

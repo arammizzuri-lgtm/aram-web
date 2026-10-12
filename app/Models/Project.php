@@ -24,9 +24,9 @@ class Project extends Model
     public const SIZES = ['default', 'wide', 'large'];
 
     protected $fillable = [
-        'num', 'name', 'name_ku', 'category', 'categories', 'status', 'size', 'area', 'typology',
+        'num', 'name', 'slug', 'name_ku', 'category', 'categories', 'status', 'size', 'area', 'typology',
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
-        'desc', 'desc_ku', 'narrative', 'materials',
+        'desc', 'desc_ku', 'narrative', 'narrative_ku', 'materials',
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
         'sort_order', 'is_published', 'map_only',
     ];
@@ -66,6 +66,12 @@ class Project extends Model
 
         // Keep the display `location` string composed from the structured parts.
         static::saving(function (Project $p) {
+            // The slug is the project's public address. It is made once, from
+            // the name, and then left alone — renaming a project must not break
+            // the links already sent around. Typing one in the admin wins.
+            $base = Str::slug((string) $p->slug) ?: static::slugCandidate((string) $p->name, (string) $p->num);
+            $p->slug = static::uniqueSlug($base, $p->getKey());
+
             $composed = collect([$p->neighbourhood, $p->city, $p->country])
                 ->filter(fn ($v) => filled($v))->implode(', ');
             if ($composed !== '') {
@@ -115,6 +121,47 @@ class Project extends Model
     public static function formatNum(int $n): string
     {
         return str_pad((string) $n, 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * The slug a project's name would take before any clash is resolved:
+     * "Mountain Villa — Shaqlawa" -> "mountain-villa-shaqlawa". A name with
+     * nothing that transliterates falls back to its display number.
+     */
+    public static function slugCandidate(string $name, string $num = ''): string
+    {
+        return Str::slug($name) ?: rtrim('project-'.Str::slug($num), '-');
+    }
+
+    /** $base, or $base-2, $base-3… — whichever no other project holds yet. */
+    public static function uniqueSlug(string $base, $ignoreId = null): string
+    {
+        $taken = static::query()
+            ->where(fn ($q) => $q->where('slug', $base)->orWhere('slug', 'like', $base.'-%'))
+            ->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))
+            ->pluck('slug')->all();
+
+        $slug = $base;
+        for ($n = 2; in_array($slug, $taken, true); $n++) {
+            $slug = $base.'-'.$n;
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Whether the project has a public page of its own. The same projects the
+     * homepage overlay can open: published, not map-only, with a photo to show.
+     */
+    public function hasPage(): bool
+    {
+        return $this->is_published && ! $this->map_only && filled($this->slug) && $this->coverImage() !== null;
+    }
+
+    /** Absolute URL of the project's page, in English or Kurdish. */
+    public function pageUrl(string $lang = 'en'): string
+    {
+        return url(($lang === 'ku' ? '/ku' : '').'/projects/'.$this->slug);
     }
 
     /** Only published projects, in display order — used by the public site. */
@@ -242,6 +289,9 @@ class Project extends Model
                 ProjectImage::derivatives($disk->path($img), $targets);
             }
         }
+
+        // After the loop, so the card can be cut from the fresh large derivative.
+        $this->generateSocialImage();
     }
 
     /**
@@ -347,6 +397,36 @@ class Project extends Model
         return Status::meta()[$this->status]['tone'] ?? 'done';
     }
 
+    /**
+     * The status in words, in either language. Statuses carry no Kurdish name
+     * of their own, so the three standard ones are translated here — the same
+     * table the overlay uses (STATUS_KU in script.js) — and any other shows as
+     * named.
+     */
+    public function statusLabel(string $lang = 'en'): string
+    {
+        $ku = [
+            'Completed' => 'تەواوبوو',
+            'Under Construction' => 'لەژێر بنیاتنان',
+            'Concept / Planning' => 'بیرۆکە و پلاندانان',
+        ];
+
+        return $lang === 'ku' && isset($ku[$this->status]) ? $ku[$this->status] : (string) $this->status;
+    }
+
+    /**
+     * Category labels in either language, primary first. A category with no
+     * Kurdish name keeps its English one.
+     *
+     * @return array<int, string>
+     */
+    public function categoryLabelsIn(string $lang = 'en'): array
+    {
+        $ku = $lang === 'ku' ? Category::kurdishMap() : [];
+
+        return array_map(fn ($k) => $ku[$k] ?? self::categoryKeyLabel($k), $this->categoryKeys());
+    }
+
     public function statusBadge(): string
     {
         return Status::meta()[$this->status]['badge'] ?? (string) $this->status;
@@ -447,5 +527,63 @@ class Project extends Model
     public function coverPosition(): string
     {
         return ($this->cover_x ?? 50).'% '.($this->cover_y ?? 50).'%';
+    }
+
+    /**
+     * Disk path of the link-preview card for the current cover and focal
+     * point, or null when the cover is not an upload of ours. Both are in the
+     * file name, so moving either makes a new card under a new URL — which is
+     * also what makes WhatsApp and Facebook let go of the old preview.
+     */
+    private function socialImageRel(): ?string
+    {
+        $cover = $this->coverImage();
+        if (! self::isUpload($cover)) {
+            return null;
+        }
+
+        return 'projects/og/'.pathinfo($cover, PATHINFO_FILENAME)
+            .'-'.($this->cover_x ?? 50).'-'.($this->cover_y ?? 50).'.jpg';
+    }
+
+    /**
+     * Make the link-preview card if it is not on disk yet. Cut from the large
+     * WebP derivative when there is one — a fraction of the original's decode
+     * time, and already turned upright.
+     */
+    public function generateSocialImage(): void
+    {
+        $rel = $this->socialImageRel();
+        $disk = Storage::disk('public');
+        if ($rel === null || $disk->exists($rel)) {
+            return;
+        }
+
+        $cover = $this->coverImage();
+        $lg = self::variantRel($cover, 'lg');
+        $source = $lg !== null && $disk->exists($lg) ? $lg : $cover;
+        if ($disk->exists($source)) {
+            ProjectImage::socialCard($disk->path($source), $disk->path($rel), (int) ($this->cover_x ?? 50), (int) ($this->cover_y ?? 50));
+        }
+    }
+
+    /**
+     * Absolute URL of the image a shared link to this project previews with:
+     * the 1200x630 card, built on first use, or — for a cover we can't process
+     * (an external URL) or a host without GD — the cover itself.
+     */
+    public function socialImageUrl(): ?string
+    {
+        $rel = $this->socialImageRel();
+        if ($rel !== null) {
+            $this->generateSocialImage();
+            if (Storage::disk('public')->exists($rel)) {
+                return self::resolveImage($rel);
+            }
+        }
+
+        $cover = $this->coverImage();
+
+        return $cover ? $this->variantUrl($cover, 'lg') : null;
     }
 }

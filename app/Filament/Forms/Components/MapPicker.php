@@ -44,10 +44,6 @@ class MapPicker extends Field
      */
     public function getTiles(): ?string
     {
-        $key = config('services.carto.basemaps_key');
-
-        return $key
-            ? 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key='.rawurlencode($key)
-            : null;
+        return carto_tiles('dark_all');
     }
 }

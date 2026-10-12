@@ -1181,6 +1181,10 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 .pgc--large { grid-row: span 2; grid-column: span 2; }
 .pgc--wide  { grid-column: span 2; }
 .pgc.pg-hidden { display: none; }
+/* The card's real link, laid over the whole tile (see the markup). It keeps
+   the custom cursor, and shows a gold edge when reached by keyboard. */
+.pgc__link { position: absolute; inset: 0; z-index: 4; cursor: none; -webkit-user-drag: none; }
+.pgc__link:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 
 .pgc__inner {
     position: absolute;

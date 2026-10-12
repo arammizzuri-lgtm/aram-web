@@ -24,6 +24,22 @@ function uiText(key) {
     return document.documentElement.getAttribute('dir') === 'rtl' ? (row.ku || row.en) : row.en;
 }
 
+/**
+ * Rewrite the address bar into the language now showing: /… is English,
+ * /ku/… Kurdish. The toggle switches in place rather than loading a new page,
+ * so every history entry made before a switch still carries the old
+ * language — this is what puts it right when one of them is landed on.
+ */
+function syncLangAddress() {
+    if (!window.history || !history.replaceState) return;
+    const isKu = document.documentElement.getAttribute('dir') === 'rtl';
+    const bare = location.pathname.replace(/^\/ku(?=\/|$)/, '') || '/';
+    const want = isKu ? (bare === '/' ? '/ku' : '/ku' + bare) : bare;
+    if (want !== location.pathname) {
+        history.replaceState(history.state, '', want + location.search + location.hash);
+    }
+}
+
 /** Bytes as a short human string — "7.9 MB", "812 KB". */
 function formatBytes(n) {
     if (!n && n !== 0) return '';
@@ -775,7 +791,9 @@ function buildKurdishSun(container, opts = {}) {
     const btn     = document.getElementById('langToggle'); // nav pill (desktop)
     const heroBtn = document.getElementById('heroLang');   // hero pill (mobile)
     if (!btn && !heroBtn) return;
-    let isKu = false;
+    // The server sends the page already in its language (/ is English, /ku
+    // Kurdish), so the toggle starts from whatever arrived.
+    let isKu = document.documentElement.getAttribute('dir') === 'rtl';
 
     function toggle() {
         isKu = !isKu;
@@ -785,6 +803,11 @@ function buildKurdishSun(container, opts = {}) {
         // direction
         document.documentElement.setAttribute('dir', isKu ? 'rtl' : 'ltr');
         document.documentElement.setAttribute('lang', isKu ? 'ku' : 'en');
+
+        // Keep the address in step — /… ⇄ /ku/… — so a reload, a bookmark or
+        // a copied link stays in the language being read. The switch itself
+        // stays instant: no new page, just the address rewritten in place.
+        syncLangAddress();
 
         // swap text on all elements that carry data-en / data-ku
         document.querySelectorAll('[data-en][data-ku]').forEach(el => {
@@ -2426,14 +2449,47 @@ const PROJECT_COORDS = [
         setTimeout(() => allCards.forEach(c => { c.style.transitionDelay = ''; }), total * 25 + 600);
     }
 
+    /* ---- Address bar --------------------------------------
+       An open project owns the address bar — /projects/{slug}, or /ku/… — so
+       it can be copied, shared, reloaded or bookmarked, and that address is
+       the project's own page on the server. Opening pushes one history entry;
+       stepping to another project replaces it, so Back closes the overlay
+       instead of walking back through every project looked at; closing pops
+       the entry again. */
+    function projectPath(proj) {
+        if (!proj || !proj.slug) return null;
+        return (document.documentElement.getAttribute('dir') === 'rtl' ? '/ku' : '') + '/projects/' + proj.slug;
+    }
+
+    function syncAddress(mode) {
+        const proj = PROJECT_DATA[currentProjIdx];
+        const path = projectPath(proj);
+        if (!path || !window.history || !history.pushState) return;
+        const state = { project: proj.slug };
+        if (mode === 'push') history.pushState(state, '', path);
+        else history.replaceState(state, '', path);
+    }
+
+    // "Name — Aram Mizuri Architecture", as the project page titles itself;
+    // the homepage's own title with no project.
+    function siteTitle(proj) {
+        const ui = (window.__SITE__ || {}).titles || {};
+        const isKu = document.documentElement.getAttribute('dir') === 'rtl';
+        const home = (isKu ? ui.ku : ui.en) || document.title;
+        if (!proj) return home;
+        return ((isKu && proj.name_ku) ? proj.name_ku : proj.name) + ' — ' + home.split('|')[0].trim();
+    }
+
     /* ---- Open -------------------------------------------- */
-    function openOverlay(index) {
+    function openOverlay(index, fromHistory) {
         // Nothing to show for a map-only / image-less project.
         if (!isGalleryProject(PROJECT_DATA[index])) return;
         currentProjIdx = index;
         isOpen = true;
         populateOverlay(index);
         staggerCards(index);
+        if (!fromHistory) syncAddress('push');
+        document.title = siteTitle(PROJECT_DATA[index]);
         setTimeout(() => {
             overlay.classList.add('open');
             overlay.setAttribute('aria-hidden', 'false');
@@ -2442,19 +2498,28 @@ const PROJECT_COORDS = [
     }
 
     /* ---- Close ------------------------------------------- */
-    function closeOverlay() {
+    function closeOverlay(fromHistory) {
         if (!isOpen) return;
+        // The entry is ours: stepping back off it is the close, and popstate
+        // brings us back here to finish it with the address already restored.
+        if (fromHistory !== true && history.state && history.state.project) {
+            history.back();
+            return;
+        }
         isOpen = false;
         overlay.classList.remove('open');
         overlay.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+        document.title = siteTitle(null);
         restoreCards();
     }
 
     /* ---- Switch project ---------------------------------- */
-    function switchProject(newIndex) {
+    function switchProject(newIndex, fromHistory) {
         if (!isGalleryProject(PROJECT_DATA[newIndex])) return;
         currentProjIdx = newIndex;
+        if (!fromHistory) syncAddress('replace');
+        document.title = siteTitle(PROJECT_DATA[newIndex]);
         // Briefly collapse open state so CSS stagger animations replay
         overlay.classList.remove('open');
         requestAnimationFrame(() => {
@@ -2484,7 +2549,11 @@ const PROJECT_COORDS = [
     /* ---- Wire grid cards --------------------------------- */
     allCards = Array.from(document.querySelectorAll('.pgc'));
     allCards.forEach(card => {
-        card.addEventListener('click', () => {
+        card.addEventListener('click', e => {
+            // A modified click is a request for the project page itself — a
+            // new tab or window — so the card's link is left to do its job.
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
             const idx = parseInt(card.dataset.index, 10);
             if (isNaN(idx)) return;
             if (isOpen && currentProjIdx === idx) return;
@@ -2569,6 +2638,21 @@ const PROJECT_COORDS = [
     // Re-render the open project in the new language when the site is toggled.
     document.addEventListener('langchange', function () {
         if (isOpen) populateOverlay(currentProjIdx);
+        document.title = siteTitle(isOpen ? PROJECT_DATA[currentProjIdx] : null);
+    });
+
+    // Back and Forward move between "a project open" and "the page", and the
+    // overlay follows: back onto a project's entry reopens it, off one closes.
+    window.addEventListener('popstate', function (e) {
+        syncLangAddress();
+        const slug = e.state && e.state.project;
+        const idx = slug ? PROJECT_DATA.findIndex(function (p) { return p.slug === slug; }) : -1;
+        if (idx !== -1 && isGalleryProject(PROJECT_DATA[idx])) {
+            if (!isOpen) openOverlay(idx, true);
+            else if (idx !== currentProjIdx) switchProject(idx, true);
+        } else if (isOpen) {
+            closeOverlay(true);
+        }
     });
 
     window.openProjectOverlay  = openOverlay;

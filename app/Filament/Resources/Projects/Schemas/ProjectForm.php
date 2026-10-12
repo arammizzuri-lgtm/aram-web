@@ -33,6 +33,15 @@ class ProjectForm
                         ->label('Name (Kurdish)')
                         ->maxLength(160)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    TextInput::make('slug')
+                        ->label('Page address')
+                        ->prefix(fn (): string => url('/projects').'/')
+                        ->maxLength(191)
+                        ->unique(ignoreRecord: true)
+                        ->placeholder('made from the English name')
+                        ->helperText('The project’s own page, in English; the Kurdish page is the same address under /ku. '
+                            .'Filled in from the name when the project is first saved. Changing it breaks links that have already been shared.')
+                        ->columnSpanFull(),
                     TextInput::make('num')
                         ->label('Display number')->maxLength(10)
                         // Pre-filled with the next number in upload order, so the
@@ -104,7 +113,10 @@ class ProjectForm
                     Textarea::make('desc')->label('Description (English)')->rows(5),
                     Textarea::make('desc_ku')->label('Description (Kurdish)')->rows(5)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
-                    Textarea::make('narrative')->label('Architect’s narrative')->rows(4)->columnSpanFull(),
+                    Textarea::make('narrative')->label('Architect’s narrative (English)')->rows(4)
+                        ->helperText('Shown as a quote on the project’s page. Each language shows only its own — leave one empty to show none there.'),
+                    Textarea::make('narrative_ku')->label('Architect’s narrative (Kurdish)')->rows(4)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
                     TagsInput::make('materials')->placeholder('Add a material and press Enter')->columnSpanFull(),
                 ]),
 

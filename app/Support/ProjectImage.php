@@ -152,4 +152,63 @@ class ProjectImage
 
         return $img;
     }
+
+    /** Link-preview (og:image) size — the 1.91:1 frame every platform crops to. */
+    public const SOCIAL_W = 1200;
+
+    public const SOCIAL_H = 630;
+
+    /**
+     * Build the image a shared link previews with: a 1200x630 JPEG cut from
+     * the source around its focal point.
+     *
+     * JPEG rather than WebP because WhatsApp, the way most of this studio's
+     * links travel, does not reliably preview WebP. Cropping here rather than
+     * letting each platform do it keeps the subject in frame: left to
+     * themselves they cut from the centre, which takes the top off a tower.
+     *
+     * @param  int  $focalX  focal point across, in % (0 = left edge)
+     * @param  int  $focalY  focal point down, in % (0 = top edge)
+     */
+    public static function socialCard(string $srcAbs, string $destAbs, int $focalX = 50, int $focalY = 50): bool
+    {
+        if (! is_file($srcAbs) || ! function_exists('imagecreatefromstring') || ! function_exists('imagejpeg')) {
+            return false;
+        }
+
+        $src = @imagecreatefromstring((string) file_get_contents($srcAbs));
+        if ($src === false) {
+            return false;
+        }
+        $src = self::applyExifOrientation($src, $srcAbs);
+
+        $sw = imagesx($src);
+        $sh = imagesy($src);
+        $ratio = self::SOCIAL_W / self::SOCIAL_H;
+
+        // The largest 1.91:1 window that fits, slid toward the focal point and
+        // kept inside the picture.
+        if ($sw / $sh > $ratio) {
+            $cw = (int) round($sh * $ratio);
+            $ch = $sh;
+        } else {
+            $cw = $sw;
+            $ch = (int) round($sw / $ratio);
+        }
+        $cx = (int) round(min(max($sw * $focalX / 100 - $cw / 2, 0), $sw - $cw));
+        $cy = (int) round(min(max($sh * $focalY / 100 - $ch / 2, 0), $sh - $ch));
+
+        $dst = imagecreatetruecolor(self::SOCIAL_W, self::SOCIAL_H);
+        // JPEG has no transparency: lay transparent sources on the site's black
+        imagefill($dst, 0, 0, imagecolorallocate($dst, 9, 9, 9));
+        imagecopyresampled($dst, $src, 0, 0, $cx, $cy, self::SOCIAL_W, self::SOCIAL_H, $cw, $ch);
+        imagedestroy($src);
+
+        @mkdir(dirname($destAbs), 0775, true);
+        imageinterlace($dst, true);   // progressive: the preview sharpens as it arrives
+        $ok = imagejpeg($dst, $destAbs, 82);
+        imagedestroy($dst);
+
+        return (bool) $ok;
+    }
 }

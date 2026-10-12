@@ -16,15 +16,68 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('site_lang')) {
+    /**
+     * The language this page is rendered in: 'ku' for everything under /ku
+     * (set by the SiteLanguage middleware), 'en' everywhere else.
+     */
+    function site_lang(): string
+    {
+        return app()->getLocale() === 'ku' ? 'ku' : 'en';
+    }
+}
+
+if (! function_exists('site_url')) {
+    /**
+     * Absolute URL of a public path in the given language (default: the
+     * current one) — "/projects/x" becomes "/ku/projects/x" in Kurdish.
+     */
+    function site_url(string $path = '/', ?string $lang = null): string
+    {
+        $path = '/'.ltrim($path, '/');
+
+        return url(($lang ?? site_lang()) === 'ku' ? rtrim('/ku'.$path, '/') : $path);
+    }
+}
+
+if (! function_exists('carto_tiles')) {
+    /**
+     * Leaflet URL template for a CARTO raster basemap style, carrying the
+     * studio's key — or null without one, since keyless CARTO tiles are only
+     * an "API KEY REQUIRED" watermark. The browser maps build theirs the same
+     * way (cartoTiles in script.js).
+     */
+    function carto_tiles(string $style = 'dark_all'): ?string
+    {
+        $key = config('services.carto.basemaps_key');
+
+        return $key
+            ? 'https://{s}.basemaps.cartocdn.com/rastertiles/'.$style.'/{z}/{x}/{y}{r}.png?key='.rawurlencode($key)
+            : null;
+    }
+}
+
+if (! function_exists('bi')) {
+    /**
+     * The current language's half of an English/Kurdish pair — for the values
+     * that come from the database rather than SiteText. A blank Kurdish value
+     * falls back to the English one, as the language toggle does.
+     */
+    function bi(?string $en, ?string $ku): string
+    {
+        return site_lang() === 'ku' && filled($ku) ? (string) $ku : (string) $en;
+    }
+}
+
 if (! function_exists('bival')) {
     /**
-     * The English value of a bilingual string (its initial on-screen text
-     * before the language toggle runs). Echo raw with {!! !!} — values may
+     * The value of a bilingual string in the page's language — its on-screen
+     * text before the language toggle runs. Echo raw with {!! !!} — values may
      * carry intended <em>/<br>. Resolves via SiteText (settings → default).
      */
     function bival(string $key): string
     {
-        return SiteText::en($key);
+        return site_lang() === 'ku' ? SiteText::ku($key) : SiteText::en($key);
     }
 }
 

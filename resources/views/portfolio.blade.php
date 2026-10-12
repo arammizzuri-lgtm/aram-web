@@ -1,32 +1,41 @@
+@php
+    // English at /, Kurdish at /ku — the page arrives in its language, so
+    // search engines and link previews read the version they were sent to.
+    $isKu = site_lang() === 'ku';
+    $seoTitle = bival('seo_title');
+    $seoDescription = bival('seo_description');
+    $ogImage = asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg'));
+@endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ site_lang() }}" dir="{{ $isKu ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aram Mizuri Architecture | Erbil, Kurdistan</title>
-    <meta name="description" content="Aram Mizuri Architecture — a leading architectural practice based in Erbil, Kurdistan Region. Residential, cultural, commercial and urban design.">
+    <title>{{ $seoTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}">
+    @include('partials.seo-alternates', ['path' => '/'])
 
     {{-- Social link preview (Facebook / WhatsApp / iMessage / LinkedIn / X).
          The image is the studio's hero mark; ?v busts the aggressive caches
          these platforms keep, whenever the file is re-generated. Absolute URLs
          come from APP_URL, so that must be the live domain in production. --}}
-    @php $ogImage = asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg')); @endphp
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Aram Mizuri Architecture">
-    <meta property="og:title" content="Aram Mizuri Architecture | Erbil, Kurdistan">
-    <meta property="og:description" content="A leading architectural practice based in Erbil, Kurdistan Region — residential, cultural, commercial and urban design.">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:url" content="{{ site_url('/') }}">
     <meta property="og:image" content="{{ $ogImage }}">
     <meta property="og:image:secure_url" content="{{ $ogImage }}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Aram Mizuri Architecture — Erbil, Kurdistan">
+    <meta property="og:image:alt" content="{{ $seoTitle }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Aram Mizuri Architecture | Erbil, Kurdistan">
-    <meta name="twitter:description" content="A leading architectural practice based in Erbil, Kurdistan Region — residential, cultural, commercial and urban design.">
+    <meta name="twitter:title" content="{{ $seoTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
     <meta name="twitter:image" content="{{ $ogImage }}">
-    <meta name="twitter:image:alt" content="Aram Mizuri Architecture — Erbil, Kurdistan">
+    <meta name="twitter:image:alt" content="{{ $seoTitle }}">
+    @include('partials.studio-schema', ['image' => $ogImage, 'description' => $seoDescription])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,7 +107,7 @@
             <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
             <span class="nav__sep"></span>
             {{-- label flips between "کوردی" and "English", so it needs its own direction --}}
-            <button class="lang-toggle" id="langToggle" dir="auto" title="Switch to Kurdish / گۆڕانی زمان">کوردی</button>
+            <button class="lang-toggle" id="langToggle" dir="auto" title="Switch to Kurdish / گۆڕانی زمان">{{ site_lang() === 'ku' ? 'English' : 'کوردی' }}</button>
         </div>
 
         <button class="nav__hamburger" id="hamburger" aria-label="Menu">
@@ -143,8 +152,8 @@
                 [$l1MainKu, $l1ByKu] = $splitBy(setting('hero_title_line1_ku'));
             @endphp
             <h1 class="hero__title">
-                <span class="hero__line"><span class="hero__line-in"><span dir="auto" data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ $l1MainEn }}</span><span class="hero__by" dir="auto" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ $l1ByEn }}</span></span></span>
-                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" dir="auto" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ setting('hero_title_line2_en') }}</span></span>
+                <span class="hero__line"><span class="hero__line-in"><span dir="auto" data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ bi($l1MainEn, $l1MainKu) }}</span><span class="hero__by" dir="auto" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ bi($l1ByEn, $l1ByKu) }}</span></span></span>
+                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" dir="auto" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ bi(setting('hero_title_line2_en'), setting('hero_title_line2_ku')) }}</span></span>
             </h1>
 
             {{-- Practice figures — rendered as the 3D glass card ring in
@@ -155,11 +164,11 @@
                 $areaSuf = trim(preg_replace('/[\d.,]/', '', $stats['area_short']));
             @endphp
             <div id="heroStatsData" class="sr-only">
-                <span data-value="{{ $stats['projects'] }}" dir="auto" data-en="Projects" data-ku="پرۆژە">{{ $stats['projects'] }} Projects</span>
-                <span data-value="{{ (int) setting('about_stat2_num') }}" dir="auto" data-en="Clients" data-ku="کڕیار">{{ (int) setting('about_stat2_num') }} Clients</span>
-                <span data-value="{{ $stats['cities'] }}" dir="auto" data-en="Cities" data-ku="شار">{{ $stats['cities'] }} Cities</span>
-                <span data-value="{{ $stats['countries'] }}" dir="auto" data-en="Countries" data-ku="وڵات">{{ $stats['countries'] }} Countries</span>
-                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" dir="auto" data-en="m² Designed" data-ku="م² دیزاینکراو">{{ $stats['area_short'] }} m² Designed</span>
+                <span data-value="{{ $stats['projects'] }}" dir="auto" data-en="Projects" data-ku="پرۆژە">{{ $stats['projects'] }} {{ bi('Projects', 'پرۆژە') }}</span>
+                <span data-value="{{ (int) setting('about_stat2_num') }}" dir="auto" data-en="Clients" data-ku="کڕیار">{{ (int) setting('about_stat2_num') }} {{ bi('Clients', 'کڕیار') }}</span>
+                <span data-value="{{ $stats['cities'] }}" dir="auto" data-en="Cities" data-ku="شار">{{ $stats['cities'] }} {{ bi('Cities', 'شار') }}</span>
+                <span data-value="{{ $stats['countries'] }}" dir="auto" data-en="Countries" data-ku="وڵات">{{ $stats['countries'] }} {{ bi('Countries', 'وڵات') }}</span>
+                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" dir="auto" data-en="m² Designed" data-ku="م² دیزاینکراو">{{ $stats['area_short'] }} {{ bi('m² Designed', 'م² دیزاینکراو') }}</span>
             </div>
         </div>
 
@@ -167,7 +176,7 @@
              desktop (clear of the ring); on phones they stay in the flow
              right under the headline. --}}
         <div class="hero__foot">
-            <p class="hero__sub" dir="auto" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ setting('hero_sub_en') }}</p>
+            <p class="hero__sub" dir="auto" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ bi(setting('hero_sub_en'), setting('hero_sub_ku')) }}</p>
             <div class="hero__actions">
                 <a href="#projects" class="hero__go" id="heroGo">
                     <span class="hero__go-label" {!! bitext('hero_cta') !!}>{{ bival('hero_cta') }}</span>
@@ -184,7 +193,7 @@
         {{-- Mobile-only language switch — a small fixed KU/EN badge in the
              top-left corner (the nav bar and its کوردی pill are hidden
              below 768px). Label managed by initLang in script.js. --}}
-        <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">KU</button>
+        <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">{{ site_lang() === 'ku' ? 'EN' : 'KU' }}</button>
     </section>
 
     <!-- ========== STATS BAND ========== -->
@@ -214,7 +223,7 @@
                     <div class="statbar__item" style="--i: {{ $loop->index }}">
                         <span class="statbar__num" data-n="0{{ $st['s'] }}" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
                         <span class="statbar__rule" aria-hidden="true"></span>
-                        <span class="statbar__label" dir="auto" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ $st['en'] }}</span>
+                        <span class="statbar__label" dir="auto" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ bi($st['en'], $st['ku']) }}</span>
                     </div>
                 @endforeach
             </div>
@@ -269,19 +278,19 @@
                 {{-- spec grid shown only for map-only (image-less) projects --}}
                 <dl class="map-card__specs" id="mapCardSpecs">
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Type" data-ku="جۆر">Type</dt>
+                        <dt dir="auto" data-en="Type" data-ku="جۆر">{{ bi('Type', 'جۆر') }}</dt>
                         <dd id="mcSpecType"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Year" data-ku="ساڵ">Year</dt>
+                        <dt dir="auto" data-en="Year" data-ku="ساڵ">{{ bi('Year', 'ساڵ') }}</dt>
                         <dd id="mcSpecYear"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Plot Area" data-ku="ڕووبەری زەوی">Plot Area</dt>
+                        <dt dir="auto" data-en="Plot Area" data-ku="ڕووبەری زەوی">{{ bi('Plot Area', 'ڕووبەری زەوی') }}</dt>
                         <dd id="mcSpecArea"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Location" data-ku="شوێن">Location</dt>
+                        <dt dir="auto" data-en="Location" data-ku="شوێن">{{ bi('Location', 'شوێن') }}</dt>
                         <dd id="mcSpecLoc"></dd>
                     </div>
                 </dl>
@@ -343,7 +352,7 @@
                         <div class="client-logo" @if($dup) aria-hidden="true" @endif>
                             {!! $clientMark($c) !!}
                             <span class="client-logo__name">{{ $c->name }}</span>
-                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
+                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ bi($c->sub_en, $c->sub_ku) }}</span>
                         </div>
                     @endforeach
                 @endforeach
@@ -363,7 +372,7 @@
                         <div class="clients-modal__tile" style="--i: {{ $loop->index }}">
                             {!! $clientMark($c) !!}
                             <span class="client-logo__name">{{ $c->name }}</span>
-                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ $c->sub_en }}</span>
+                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ bi($c->sub_en, $c->sub_ku) }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -381,7 +390,7 @@
             </div>
             <div class="pg__head-right">
                 <div class="pg__search-wrap">
-                    <input class="pg__search" id="pgSearch" type="search" placeholder="Search projects…" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">
+                    <input class="pg__search" id="pgSearch" type="search" placeholder="{{ bi('Search projects…', 'گەڕان بۆ پرۆژەکان…') }}" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">
                     <span class="pg__search-icon" aria-hidden="true">↗&#xFE0E;</span>
                 </div>
                 {{-- Filter row is generated from the database-managed categories
@@ -390,7 +399,7 @@
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
                     <button class="pgf-btn active" data-filter="all" {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
                     @foreach($categories as $cat)
-                    <button class="pgf-btn" data-filter="{{ $cat->key }}" dir="auto" data-en="{{ $cat->name }}" data-ku="{{ $cat->name_ku ?: $cat->name }}">{{ $cat->name }}</button>
+                    <button class="pgf-btn" data-filter="{{ $cat->key }}" dir="auto" data-en="{{ $cat->name }}" data-ku="{{ $cat->name_ku ?: $cat->name }}">{{ bi($cat->name, $cat->name_ku) }}</button>
                     @endforeach
                 </div>
             </div>
@@ -418,12 +427,19 @@
                         <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ $project->statusBadge() }}</div>
                         <div class="pgc__info">
                             <div class="pgc__num">{{ $project->num }}</div>
-                            <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ $project->name }}</h3>
+                            <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ bi($project->name, $project->name_ku) }}</h3>
                             <p class="pgc__meta">{{ $project->metaLabel() }}</p>
                         </div>
                         <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗&#xFE0E;</span></span>
                     </div>
                 </div>
+                {{-- The card's own address. A plain click still opens the overlay
+                     (which then shows this same address); the link is what lets a
+                     visitor open the project in a new tab or copy it, and what
+                     lets search engines find every project page from here.
+                     Not draggable, or a mouse drag along the row would pick up the
+                     link instead of scrolling it. --}}
+                <a class="pgc__link" href="{{ $project->pageUrl(site_lang()) }}" draggable="false" aria-label="{{ bi($project->name, $project->name_ku) }}"></a>
             </article>
             @endforeach
 
@@ -444,7 +460,7 @@
         <p class="pg__more" id="pgMore" aria-hidden="true">
             <span class="pg__more-label"
                   dir="auto" data-en="slide for more — {{ $galleryCount }} projects"
-                  data-ku="ڕایبکێشە بۆ زیاتر — {{ $galleryCount }} پرۆژە">slide for more — {{ $galleryCount }} projects</span>
+                  data-ku="ڕایبکێشە بۆ زیاتر — {{ $galleryCount }} پرۆژە">{{ bi('slide for more — '.$galleryCount.' projects', 'ڕایبکێشە بۆ زیاتر — '.$galleryCount.' پرۆژە') }}</span>
             <span class="pg__more-arrow">⟶</span>
         </p>
 
@@ -465,9 +481,9 @@
 
             <div class="about__top">
                 <div class="about__text">
-                    <p class="section-label" dir="auto" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ setting('about_label_en') }}</p>
+                    <p class="section-label" dir="auto" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ bi(setting('about_label_en'), setting('about_label_ku')) }}</p>
                     <h2 class="about__heading" dir="auto" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
-                        {!! setting('about_heading_en') !!}
+                        {!! bi(setting('about_heading_en'), setting('about_heading_ku')) !!}
                     </h2>
                     <p class="about__bio" {!! bitext('about_bio_1') !!}>
                         {{ bival('about_bio_1') }}
@@ -548,8 +564,8 @@
                             <svg class="service__icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $s['icon'] !!}</svg>
                             <span class="service__num">0{{ $i + 1 }}</span>
                         </div>
-                        <h3 class="service__name" dir="auto" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ $s['en'] }}</h3>
-                        <p class="service__desc" dir="auto" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ $s['den'] }}</p>
+                        <h3 class="service__name" dir="auto" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ bi($s['en'], $s['ku']) }}</h3>
+                        <p class="service__desc" dir="auto" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ bi($s['den'], $s['dku']) }}</p>
                     </div>
                 @endforeach
             </div>
@@ -568,8 +584,8 @@
 
             <!-- Sticky narrative rail -->
             <aside class="process__aside">
-                <p class="section-label" dir="auto" data-en="{{ setting('process_label_en') }}" data-ku="{{ setting('process_label_ku') }}">{{ setting('process_label_en') }}</p>
-                <h2 class="process__title" dir="auto" data-en="{{ setting('process_title_en') }}" data-ku="{{ setting('process_title_ku') }}">{{ setting('process_title_en') }}</h2>
+                <p class="section-label" dir="auto" data-en="{{ setting('process_label_en') }}" data-ku="{{ setting('process_label_ku') }}">{{ bi(setting('process_label_en'), setting('process_label_ku')) }}</p>
+                <h2 class="process__title" dir="auto" data-en="{{ setting('process_title_en') }}" data-ku="{{ setting('process_title_ku') }}">{{ bi(setting('process_title_en'), setting('process_title_ku')) }}</h2>
 
                 <div class="process__meter">
                     <div class="process__count">
@@ -603,7 +619,7 @@
                 <li class="process__item" data-step="0">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="01" data-ku="٠١">01</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="01" data-ku="٠١">{{ bi('01', '٠١') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase1') !!}>{{ bival('process_phase1') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step1_title') !!}>{{ bival('process_step1_title') }}</h3>
@@ -615,7 +631,7 @@
                 <li class="process__item" data-step="1">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="02" data-ku="٠٢">02</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="02" data-ku="٠٢">{{ bi('02', '٠٢') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase2') !!}>{{ bival('process_phase2') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step2_title') !!}>{{ bival('process_step2_title') }}</h3>
@@ -627,7 +643,7 @@
                 <li class="process__item" data-step="2">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="03" data-ku="٠٣">03</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="03" data-ku="٠٣">{{ bi('03', '٠٣') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase3') !!}>{{ bival('process_phase3') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step3_title') !!}>{{ bival('process_step3_title') }}</h3>
@@ -639,7 +655,7 @@
                 <li class="process__item" data-step="3">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="04" data-ku="٠٤">04</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="04" data-ku="٠٤">{{ bi('04', '٠٤') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase4') !!}>{{ bival('process_phase4') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step4_title') !!}>{{ bival('process_step4_title') }}</h3>
@@ -659,7 +675,7 @@
         </div>
         <div class="heritage__inner">
             <div class="heritage__text reveal">
-                <p class="section-label section-label--light" dir="auto" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ setting('heritage_label_en') }}</p>
+                <p class="section-label section-label--light" dir="auto" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ bi(setting('heritage_label_en'), setting('heritage_label_ku')) }}</p>
                 <h2 class="heritage__title" {!! bitext('heritage_title') !!}>
                     {!! nl2br(e(bival('heritage_title'))) !!}
                 </h2>
@@ -697,8 +713,8 @@
         <div class="contact__inner">
 
             <div class="contact__info">
-                <p class="section-label" dir="auto" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ setting('contact_label_en') }}</p>
-                <h2 class="contact__title" dir="auto" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! setting('contact_title_en') !!}</h2>
+                <p class="section-label" dir="auto" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ bi(setting('contact_label_en'), setting('contact_label_ku')) }}</p>
+                <h2 class="contact__title" dir="auto" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! bi(setting('contact_title_en'), setting('contact_title_ku')) !!}</h2>
 
                 <ul class="contact__methods">
                     {{-- one email, two lines — the address itself lives on the map card below --}}
