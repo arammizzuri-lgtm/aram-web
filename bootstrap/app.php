@@ -38,7 +38,11 @@ return Application::configure(basePath: dirname(__DIR__))
             | Request::HEADER_X_FORWARDED_PROTO);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Whenever the caller asks for JSON, too — the enquiry form does. Without
+        // that, a rejected enquiry was answered with a redirect, which fetch
+        // followed to the homepage and took for a success: the visitor was
+        // told "received" for a message that was never saved.
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();
