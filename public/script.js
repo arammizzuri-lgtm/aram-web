@@ -2355,6 +2355,24 @@ function projCoords(proj) {
         });
     });
 
+    /* ---- Links to the project page's film / slider / progress ----
+       The overlay has already put this project's address in the bar, so a
+       plain link to that same address + "#film" is, to the browser, only a
+       jump within the current page — the homepage, which has no #film — and
+       nothing happens. So: put the homepage address back on this history
+       entry, close the overlay, and then go to the project page for real.
+       Ctrl/⌘-click is left alone: a new tab loads the page properly anyway. */
+    const extrasBox = document.getElementById('overlayExtras');
+    extrasBox && extrasBox.addEventListener('click', e => {
+        const a = e.target.closest('a[data-extra]');
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        const home = document.documentElement.getAttribute('dir') === 'rtl' ? '/ku' : '/';
+        if (window.history && history.replaceState) history.replaceState(null, '', home);
+        closeOverlay(true);
+        window.location.assign(a.href);
+    });
+
     /* ---- Controls ---------------------------------------- */
     closeBtn && closeBtn.addEventListener('click', closeOverlay);
     // "Start a project": the form is told which project this was about, the

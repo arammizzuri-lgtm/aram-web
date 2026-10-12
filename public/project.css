@@ -231,6 +231,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .pp-status__updated { color: var(--muted); text-transform: none; letter-spacing: .02em; }
 .pp-status__updated:hover { color: var(--gold); }
 
+/* Sections the homepage overlay links straight to (#render-vs-built, #film,
+   #progress): land with their heading clear of the fixed top bar. */
+.pp-compare, .pp-media, .pp-progress { scroll-margin-top: 84px; }
+
 /* ---- Render vs. built ------------------------------------------ */
 .pp-compare { max-width: var(--wide); margin: 0 auto; padding: 0 var(--gutter) clamp(56px, 10vh, 112px); }
 .pp-compare__frame {
