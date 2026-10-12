@@ -22,6 +22,7 @@ class ProjectOrderingTest extends TestCase
     {
         return collect(range(1, $count))->map(fn ($i) => Project::create([
             'name' => "Project {$i}",
+            'category' => 'residential',
             'status' => 'Completed',
             'size' => 'default',
             'city' => 'Erbil',
