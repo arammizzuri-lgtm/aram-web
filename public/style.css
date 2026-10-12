@@ -23,18 +23,10 @@
     --nav-h:       104px;
 }
 
-/* ---- Kurdish display font (Xoshnûs) --------------------
-   Drop your licensed Xoshnûs font file into public/fonts/ named
-   "kurdish.woff2" (or kurdish.ttf) and it is used automatically for
-   all Kurdish text. Until the file exists, Vazirmatn is the fallback,
-   so the missing-file request is harmless. */
-@font-face {
-    font-family: 'XoshnusKurdish';
-    src: url('/fonts/kurdish.woff2') format('woff2'),
-         url('/fonts/kurdish.ttf')   format('truetype');
-    font-weight: 100 900;
-    font-display: swap;
-}
+/* The licensed Xoshnûs face ('XoshnusKurdish' in --font-ku) is declared in
+   the page head, and only when public/fonts/kurdish.woff2 or .ttf exists —
+   see resources/views/partials/kurdish-font.blade.php. Declared here, a
+   missing file cost every Kurdish page two 404 requests. */
 /* SiRWAN_6 — decorative Kurdish face used only for the gold "ئارام مزووری"
    signature on the English hero (see .hero__line-in--accent below). */
 @font-face {

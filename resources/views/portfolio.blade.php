@@ -56,6 +56,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
+    @include('partials.kurdish-font')
     {{-- Leaflet is served from our own origin, not unpkg.com.
 
          A stylesheet in the head blocks script execution until it resolves,
@@ -1007,7 +1008,7 @@
                     </div>
 
                     <div class="od-num" id="overlayNum"></div>
-                    <h1 class="od-name" id="overlayName"></h1>
+                    <h2 class="od-name" id="overlayName"></h2>
 
                     <div class="od-rule"></div>
 
@@ -1111,7 +1112,10 @@
     {{-- Self-hosted — see the note beside the Leaflet stylesheets above. --}}
     <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}"></script>
     <script src="{{ asset('vendor/leaflet-gesture-handling.min.js') }}?v={{ filemtime(public_path('vendor/leaflet-gesture-handling.min.js')) }}"></script>
-    <script>window.__SITE__ = {!! \Illuminate\Support\Js::from($payload) !!};</script>
+    {{-- Plain JSON, Kurdish left as Kurdish: Js::from() wrapped it in a string
+         and escaped every letter as \uXXXX, which made this block 60% larger.
+         The HEX flags keep it inert inside <script> (no "</script>", no quotes). --}}
+    <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     <script src="{{ asset('vendor/three.min.js') }}" defer></script>

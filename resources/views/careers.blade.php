@@ -57,6 +57,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('careers.css') }}?v={{ filemtime(public_path('careers.css')) }}">
+    @include('partials.kurdish-font')
 </head>
 <body class="pp pp--careers">
 
