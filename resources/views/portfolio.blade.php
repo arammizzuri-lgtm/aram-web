@@ -1031,6 +1031,24 @@
 
                     <p class="od-desc" id="overlayDesc"></p>
 
+                    {{-- What the project's own page has beyond these photos: links
+                         straight to it, shown only for the parts this project has
+                         (set in populateOverlay from its "extras"). --}}
+                    <div class="od-extras" id="overlayExtras" hidden>
+                        <a class="od-extra" data-extra="film" data-anchor="film" href="#" hidden>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                            <span {!! bitext('pp_film') !!}>{{ bival('pp_film') }}</span>
+                        </a>
+                        <a class="od-extra" data-extra="compare" data-anchor="render-vs-built" href="#" hidden>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M12 3v18"/></svg>
+                            <span {!! bitext('pp_compare') !!}>{{ bival('pp_compare') }}</span>
+                        </a>
+                        <a class="od-extra" data-extra="progress" data-anchor="progress" href="#" hidden>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V10l6-5 6 5v10"/><path d="M10 20v-5h4v5"/></svg>
+                            <span {!! bitext('pp_progress') !!}>{{ bival('pp_progress') }}</span>
+                        </a>
+                    </div>
+
                     {{-- The two ways to act on what was just seen. Both carry the
                          open project: the form gets it as "About", the WhatsApp
                          message names it (set in populateOverlay). --}}

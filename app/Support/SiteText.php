@@ -194,6 +194,15 @@ class SiteText
                 'pp_prev'         => ['Previous project', 'Previous', 'پێشوو'],
                 'pp_next'         => ['Next project', 'Next', 'دواتر'],
                 'pp_more'         => ['More projects heading', 'More projects', 'پرۆژەی زیاتر'],
+                'pp_compare'      => ['Render vs. built — heading', 'From render to reality', 'لە دیزاینەوە بۆ ڕاستی'],
+                'pp_render'       => ['Render vs. built — render label', 'Render', 'دیزاین'],
+                'pp_built'        => ['Render vs. built — photo label', 'Built', 'بنیاتنراو'],
+                'pp_compare_hint' => ['Render vs. built — hint', 'Drag to compare', 'ڕایبکێشە بۆ بەراوردکردن'],
+                'pp_progress'     => ['Progress — heading', 'Construction progress', 'پێشکەوتنی بنیاتنان'],
+                'pp_updated'      => ['Progress — "updated" note', 'Updated', 'نوێکرایەوە'],
+                'pp_film'         => ['Film & tours — heading', 'Film & 360° tours', 'ڤیدیۆ و گەشتی ٣٦٠°'],
+                'pp_play'         => ['Film — play button', 'Play the film', 'ڤیدیۆکە لێبدە'],
+                'pp_tour'         => ['360° tour — start button', 'Start the 360° tour', 'گەشتی ٣٦٠° دەستپێبکە'],
             ],
 
             'Footer' => [

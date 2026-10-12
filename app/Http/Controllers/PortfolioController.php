@@ -18,7 +18,7 @@ class PortfolioController extends Controller
 {
     public function index()
     {
-        $projects = Project::publishedOrdered()->get();
+        $projects = Project::publishedOrdered()->withCount('updates')->get();
         $clients = Client::publishedOrdered()->get();
         $quotes = Testimonial::publishedOrdered()->with(['client', 'project'])->get();
         $categories = Category::ordered()->get();
@@ -60,6 +60,12 @@ class PortfolioController extends Controller
                 'imgs_lg' => $p->map_only ? [] : $p->orderedVariantUrls('lg'),
                 'imgs_sm' => $p->map_only ? [] : $p->orderedVariantUrls('sm'),
                 'map_only' => (bool) $p->map_only,
+                // what the project page has beyond photos — the overlay links to each
+                'extras' => [
+                    'film' => $p->mediaItems() !== [],
+                    'compare' => filled($p->compare_before) && filled($p->compare_after),
+                    'progress' => $p->updates_count > 0,
+                ],
             ])->values()->all(),
             'content' => $content,
             'stats' => $stats,

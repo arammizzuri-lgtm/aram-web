@@ -96,6 +96,29 @@ if (! function_exists('whatsapp_url')) {
     }
 }
 
+if (! function_exists('site_date')) {
+    /**
+     * A date as the page's reader writes it: "12 October 2026", or in
+     * Kurdish "١٢ی تشرینی یەکەمی ٢٠٢٦" — Sorani month names and the
+     * Eastern Arabic digits the rest of the Kurdish site uses.
+     * $monthOnly gives "October 2026" / "تشرینی یەکەمی ٢٠٢٦".
+     */
+    function site_date(\DateTimeInterface $date, ?string $lang = null, bool $monthOnly = false): string
+    {
+        if (($lang ?? site_lang()) !== 'ku') {
+            return $date->format($monthOnly ? 'F Y' : 'j F Y');
+        }
+
+        $months = ['کانوونی دووەم', 'شوبات', 'ئازار', 'نیسان', 'ئایار', 'حوزەیران',
+            'تەممووز', 'ئاب', 'ئەیلوول', 'تشرینی یەکەم', 'تشرینی دووەم', 'کانوونی یەکەم'];
+        $digits = fn (string $s) => strtr($s, ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
+            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']);
+        $text = $months[(int) $date->format('n') - 1].'ی '.$digits($date->format('Y'));
+
+        return $monthOnly ? $text : $digits($date->format('j')).'ی '.$text;
+    }
+}
+
 if (! function_exists('bi')) {
     /**
      * The current language's half of an English/Kurdish pair — for the values

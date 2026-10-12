@@ -2147,6 +2147,25 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .cmethod--wa:hover .cmethod__icon { box-shadow: 0 0 18px rgba(37,211,102,.3); }
 .cmethod--wa .cmethod__hint { color: #25D366; border-color: rgba(37,211,102,.3); }
 
+/* ── Overlay: what the project page has beyond its photos ─── */
+.od-extras {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .5s, transform .5s var(--ease-out);
+}
+.proj-overlay.open .od-extras { opacity: 1; transform: none; transition-delay: 1.28s; }
+.od-extras[hidden], .od-extra[hidden] { display: none; }
+.od-extra {
+    display: inline-flex; align-items: center; gap: 8px; cursor: none;
+    padding: 8px 14px; border-radius: 100px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    font-size: 11px; color: rgba(255,255,255,.8);
+    transition: border-color .25s, color .25s, background .25s;
+}
+.od-extra:hover { border-color: rgba(245,197,24,.5); color: var(--gold); background: rgba(245,197,24,.06); }
+.od-extra svg { width: 14px; height: 14px; fill: none; stroke: var(--gold); stroke-width: 1.6; }
+.od-extra[data-extra="film"] svg { fill: var(--gold); stroke: none; }
+
 /* ── Overlay: act on the open project ─────────────────────── */
 .od-cta {
     display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px;

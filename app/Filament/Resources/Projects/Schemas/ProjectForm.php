@@ -7,6 +7,7 @@ use App\Filament\Forms\Components\MapPicker;
 use App\Models\Category;
 use App\Models\Project;
 use App\Models\Status;
+use App\Support\Embed;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -154,6 +155,45 @@ class ProjectForm
                     CoverPicker::make('cover_picker')
                         ->label('Card cover & focal point')
                         ->columnSpanFull(),
+                ]),
+
+            Section::make('Render vs. built')
+                ->description('A render and a photograph of the finished building from the same angle. The project page lays one over the other with a slider between them. Shown only when both are set.')
+                ->columns(2)
+                ->collapsible()
+                ->schema([
+                    FileUpload::make('compare_before')->label('Render')
+                        ->image()->directory('projects/compare')->disk('public')->visibility('public')
+                        ->imagePreviewHeight('160')->openable(),
+                    FileUpload::make('compare_after')->label('Built (photograph)')
+                        ->image()->directory('projects/compare')->disk('public')->visibility('public')
+                        ->imagePreviewHeight('160')->openable(),
+                ]),
+
+            Section::make('Film & 360° tours')
+                ->description('Paste the link from the address bar of YouTube, Vimeo, Matterport or Kuula. Nothing is uploaded here — the video stays where it is hosted and plays on the project page only when a visitor presses play.')
+                ->collapsible()
+                ->schema([
+                    Repeater::make('media')->label('')
+                        ->schema([
+                            TextInput::make('url')->label('Link')->required()->url()
+                                ->placeholder('https://www.youtube.com/watch?v=…')
+                                ->rule(fn () => function (string $attribute, $value, \Closure $fail) {
+                                    if (! Embed::parse($value)) {
+                                        $fail('This link is not one the site can play. Use a YouTube, Vimeo, Matterport or Kuula address.');
+                                    }
+                                })
+                                ->columnSpanFull(),
+                            TextInput::make('caption_en')->label('Caption (English)')->maxLength(160),
+                            TextInput::make('caption_ku')->label('Caption (Kurdish)')->maxLength(160)
+                                ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                        ])
+                        ->columns(2)
+                        ->addActionLabel('Add a film or tour')
+                        ->reorderable()->collapsible()->defaultItems(0)
+                        ->itemLabel(fn (array $state): ?string => Embed::parse($state['url'] ?? null)
+                            ? ucfirst(Embed::parse($state['url'])['provider']).($state['caption_en'] ? ' — '.$state['caption_en'] : '')
+                            : null),
                 ]),
         ]);
     }

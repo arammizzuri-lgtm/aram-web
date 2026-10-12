@@ -87,8 +87,13 @@
             next.src = images[(cur + 1) % images.length];
         }
 
+        const all = images;
         document.querySelectorAll('[data-open]').forEach(function (btn) {
             btn.addEventListener('click', function () {
+                // a button inside a set of its own (a progress update's photos)
+                // steps through that set; any other, through the project's
+                const holder = btn.closest('[data-images]:not(dialog)');
+                try { images = holder ? JSON.parse(holder.dataset.images) : all; } catch (e) { images = all; }
                 show(parseInt(btn.dataset.open, 10) || 0);
                 box.showModal();
             });
@@ -115,6 +120,54 @@
             if (Math.abs(dx) > 45) show(cur + ((dx < 0) !== rtl ? 1 : -1));
         });
     })();
+
+    /* ---- Render vs. built -----------------------------------
+       Press anywhere on the picture and drag: the dividing line follows the
+       pointer. The hidden range input carries the value for the keyboard
+       (and for screen readers), and both stay in step. */
+    document.querySelectorAll('.pp-compare__frame').forEach(function (frame) {
+        const range = frame.querySelector('.pp-compare__range');
+        if (!range) return;
+        const set = function () { frame.style.setProperty('--pos', range.value + '%'); };
+        const follow = function (e) {
+            const box = frame.getBoundingClientRect();
+            range.value = Math.max(0, Math.min(100, (e.clientX - box.left) / box.width * 100));
+            set();
+        };
+        let dragging = false;
+        frame.addEventListener('pointerdown', function (e) {
+            dragging = true;
+            frame.setPointerCapture(e.pointerId);
+            follow(e);
+        });
+        frame.addEventListener('pointermove', function (e) { if (dragging) follow(e); });
+        ['pointerup', 'pointercancel'].forEach(function (ev) {
+            frame.addEventListener(ev, function () { dragging = false; });
+        });
+        range.addEventListener('input', set);
+        set();
+    });
+
+    /* ---- Film & 360° tours -------------------------------
+       A poster until pressed. Only then is the player itself loaded — so a
+       visitor who never presses play downloads nothing from YouTube or
+       Matterport, and the page stays light. */
+    document.querySelectorAll('.pp-embed__frame[data-embed]').forEach(function (frame) {
+        const btn = frame.querySelector('.pp-embed__play');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            const iframe = document.createElement('iframe');
+            iframe.src = frame.dataset.embed;
+            iframe.title = frame.dataset.title || '';
+            iframe.allow = 'autoplay; fullscreen; picture-in-picture; xr-spatial-tracking; gyroscope; accelerometer';
+            iframe.allowFullscreen = true;
+            iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+            frame.innerHTML = '';
+            frame.appendChild(iframe);
+            frame.classList.add('is-playing');
+            iframe.focus();
+        });
+    });
 
     /* ---- Share ------------------------------------------
        The phone's own share sheet where there is one (WhatsApp, Instagram,

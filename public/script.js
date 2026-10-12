@@ -2490,6 +2490,19 @@ const PROJECT_COORDS = [
         var pos = galleryIdx.indexOf(index);
         counterEl.textContent = (pos === -1 ? 1 : pos + 1) + ' / ' + (galleryIdx.length || 1);
 
+        // Links to what its own page has beyond these photos: film, the
+        // render-vs-built slider, construction progress
+        var extrasEl = document.getElementById('overlayExtras');
+        if (extrasEl) {
+            var extras = proj.extras || {}, any = false;
+            extrasEl.querySelectorAll('[data-extra]').forEach(function (a) {
+                var on = !!extras[a.dataset.extra] && !!projectPath(proj);
+                a.hidden = !on;
+                if (on) { a.href = projectPath(proj) + '#' + a.dataset.anchor; any = true; }
+            });
+            extrasEl.hidden = !any;
+        }
+
         // The WhatsApp chat it opens names this project, in the reader's language
         var wa = (window.__SITE__ || {}).whatsapp;
         var waBtn = document.getElementById('overlayWa');

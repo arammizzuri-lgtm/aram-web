@@ -161,6 +161,9 @@
             <div class="pp-story">
                 <p class="pp-status pp-status--{{ $project->statusClass() }}">
                     <span class="pp-status__dot" aria-hidden="true"></span>{{ $project->statusLabel($lang) }}
+                    @if ($updates->isNotEmpty())
+                        <a class="pp-status__updated" href="#progress">· {{ bival('pp_updated') }} {{ site_date($updates->first()->date, $lang, true) }}</a>
+                    @endif
                 </p>
                 @if (filled($desc))
                     <p class="pp-desc" dir="auto">{{ $desc }}</p>
@@ -195,6 +198,29 @@
             @endif
         </section>
 
+        {{-- Render over photograph, with a slider between them. The range input
+             lies over the whole frame, invisible: it is what the pointer drags
+             and what the keyboard steps, so the slider is accessible with no
+             code of its own; project.js only moves the dividing line. Held
+             left-to-right in both languages, so "render" is always the left. --}}
+        @if ($compare)
+            <section class="pp-compare" id="render-vs-built">
+                <h2 class="pp-label">{{ bival('pp_compare') }}</h2>
+                <div class="pp-compare__frame" dir="ltr" style="--pos: 50%">
+                    <img class="pp-compare__img" src="{{ $compare['after'] }}" alt="{{ $name }} — {{ bival('pp_built') }}" loading="lazy" decoding="async">
+                    <div class="pp-compare__before" aria-hidden="true">
+                        <img class="pp-compare__img" src="{{ $compare['before'] }}" alt="" loading="lazy" decoding="async">
+                    </div>
+                    <span class="pp-compare__tag pp-compare__tag--before">{{ bival('pp_render') }}</span>
+                    <span class="pp-compare__tag pp-compare__tag--after">{{ bival('pp_built') }}</span>
+                    <span class="pp-compare__handle" aria-hidden="true"></span>
+                    <input class="pp-compare__range" type="range" min="0" max="100" value="50" step="0.5"
+                           aria-label="{{ bival('pp_render') }} / {{ bival('pp_built') }}">
+                </div>
+                <p class="pp-compare__hint">{{ bival('pp_compare_hint') }}</p>
+            </section>
+        @endif
+
         @if (count($images) > 1)
             @php $rest = count($images) - 1; @endphp
             <section class="pp-gallery" aria-label="{{ $name }}">
@@ -212,6 +238,68 @@
                         </button>
                     </figure>
                 @endforeach
+            </section>
+        @endif
+
+        {{-- Film and 360° tours. Each shows a poster and a button; the player
+             (and everything it loads from YouTube, Vimeo…) arrives only when
+             the visitor presses it — project.js swaps the poster for it. --}}
+        @if ($media)
+            <section class="pp-media" id="film">
+                <h2 class="pp-label">{{ bival('pp_film') }}</h2>
+                <div class="pp-media__grid{{ count($media) === 1 ? ' pp-media__grid--one' : '' }}">
+                    @foreach ($media as $m)
+                        @php $caption = $lang === 'ku' && filled($m['caption_ku']) ? $m['caption_ku'] : $m['caption_en']; @endphp
+                        <figure class="pp-embed pp-embed--{{ $m['kind'] }}">
+                            <div class="pp-embed__frame" data-embed="{{ $m['embed'] }}" data-title="{{ $caption ?: $name }}">
+                                <img class="pp-embed__poster" src="{{ $m['thumb'] ?? ($thumbs[0] ?? $images[0] ?? '') }}" alt="" loading="lazy" decoding="async">
+                                <button class="pp-embed__play" type="button">
+                                    @if ($m['kind'] === 'tour')
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><path d="M12 3v18"/></svg>
+                                    @else
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                                    @endif
+                                    <span>{{ bival($m['kind'] === 'tour' ? 'pp_tour' : 'pp_play') }}</span>
+                                </button>
+                            </div>
+                            @if (filled($caption))
+                                <figcaption dir="auto">{{ $caption }}</figcaption>
+                            @endif
+                        </figure>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        {{-- Construction progress, newest first: a dated line and the site photos
+             of each visit. The photos open in the same viewer as the gallery,
+             as a set of their own (data-images). --}}
+        @if ($updates->isNotEmpty())
+            <section class="pp-progress" id="progress">
+                <h2 class="pp-label">{{ bival('pp_progress') }}</h2>
+                <ol class="pp-timeline">
+                    @foreach ($updates as $u)
+                        @php $big = $u->imageUrls('lg'); $small = $u->imageUrls('thumb'); @endphp
+                        <li class="pp-step">
+                            <time class="pp-step__date" datetime="{{ $u->date->toDateString() }}">{{ site_date($u->date, $lang) }}</time>
+                            @if (filled($u->title($lang)))
+                                <h3 class="pp-step__title" dir="auto">{{ $u->title($lang) }}</h3>
+                            @endif
+                            @if (filled($u->note($lang)))
+                                <p class="pp-step__note" dir="auto">{{ $u->note($lang) }}</p>
+                            @endif
+                            @if ($big)
+                                <div class="pp-step__photos" data-images='@json($big)'>
+                                    @foreach ($small as $i => $src)
+                                        <button class="pp-step__photo" type="button" data-open="{{ $i }}" aria-label="{{ site_date($u->date, $lang) }} — {{ $i + 1 }} / {{ count($small) }}">
+                                            <img src="{{ $src }}" alt="" loading="lazy" decoding="async">
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
             </section>
         @endif
 

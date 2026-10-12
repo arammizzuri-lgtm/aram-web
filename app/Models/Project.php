@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Embed;
 use App\Support\ProjectImage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class Project extends Model
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
         'desc', 'desc_ku', 'narrative', 'narrative_ku', 'materials',
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
+        'compare_before', 'compare_after', 'media',
         'sort_order', 'is_published', 'map_only',
     ];
 
@@ -42,6 +44,7 @@ class Project extends Model
         'materials' => 'array',
         'related' => 'array',
         'imgs' => 'array',
+        'media' => 'array',
         'is_published' => 'boolean',
         'map_only' => 'boolean',
         'sort_order' => 'integer',
@@ -170,6 +173,45 @@ class Project extends Model
         return $this->hasMany(Testimonial::class);
     }
 
+    /** Construction progress, newest first. */
+    public function updates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProjectUpdate::class)->orderByDesc('date')->orderByDesc('id');
+    }
+
+    /**
+     * The render and the photograph of the same view, at display size — or
+     * null unless both are set.
+     *
+     * @return array{before: string, after: string}|null
+     */
+    public function compareUrls(): ?array
+    {
+        if (blank($this->compare_before) || blank($this->compare_after)) {
+            return null;
+        }
+
+        return [
+            'before' => self::variantUrlOf($this->compare_before, 'lg'),
+            'after' => self::variantUrlOf($this->compare_after, 'lg'),
+        ];
+    }
+
+    /**
+     * Film and 360° tours, each with its player address and caption — only
+     * the links App\Support\Embed recognises; anything else is left out.
+     *
+     * @return array<int, array{provider: string, kind: string, id: string, embed: string, thumb: ?string, caption_en: ?string, caption_ku: ?string}>
+     */
+    public function mediaItems(): array
+    {
+        return collect((array) $this->media)
+            ->map(fn ($row) => ($e = Embed::parse($row['url'] ?? null))
+                ? $e + ['caption_en' => $row['caption_en'] ?? null, 'caption_ku' => $row['caption_ku'] ?? null]
+                : null)
+            ->filter()->values()->all();
+    }
+
     /** Only published projects, in display order — used by the public site. */
     public function scopePublishedOrdered($query)
     {
@@ -275,8 +317,23 @@ class Project extends Model
     /** Build any missing derivatives for this project's uploaded images. */
     public function generateThumbnails(): void
     {
+        self::buildVariants([...(array) $this->imgs, $this->compare_before, $this->compare_after]);
+
+        // After the variants, so the card can be cut from the fresh large derivative.
+        $this->generateSocialImage();
+    }
+
+    /**
+     * Build any missing derivatives for a list of uploads — a project's
+     * photos, its render/built pair, a progress update's site photos.
+     * External URLs and files not on disk are skipped.
+     *
+     * @param  iterable<int, ?string>  $imgs
+     */
+    public static function buildVariants(iterable $imgs): void
+    {
         $disk = Storage::disk('public');
-        foreach ((array) $this->imgs as $img) {
+        foreach ($imgs as $img) {
             if (! self::isUpload($img) || ! $disk->exists($img)) {
                 continue;
             }
@@ -295,9 +352,6 @@ class Project extends Model
                 ProjectImage::derivatives($disk->path($img), $targets);
             }
         }
-
-        // After the loop, so the card can be cut from the fresh large derivative.
-        $this->generateSocialImage();
     }
 
     /**
@@ -306,6 +360,12 @@ class Project extends Model
      * slow-but-correct image rather than a broken one.
      */
     public function variantUrl(?string $img, string $size): ?string
+    {
+        return self::variantUrlOf($img, $size);
+    }
+
+    /** variantUrl() for an image that is not one of a project's own photos. */
+    public static function variantUrlOf(?string $img, string $size): ?string
     {
         $rel = self::variantRel($img, $size);
         if ($rel !== null && Storage::disk('public')->exists($rel)) {
