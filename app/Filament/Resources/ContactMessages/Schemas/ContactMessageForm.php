@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ContactMessages\Schemas;
 
 use App\Enums\LeadStatus;
 use App\Models\ContactMessage;
+use App\Support\TrafficSource;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
@@ -44,6 +45,8 @@ class ContactMessageForm
                             ->formatStateUsing(fn (ContactMessage $r) => $r->timelineLabel()),
                         TextEntry::make('project.name')->label('Was looking at')->placeholder('—')
                             ->url(fn (ContactMessage $r) => $r->project?->hasPage() ? $r->project->pageUrl($r->lang ?? 'en') : null, true),
+                        TextEntry::make('source')->label('Came to the site from')->placeholder('—')
+                            ->formatStateUsing(fn (?string $state) => TrafficSource::label($state)),
                         TextEntry::make('lang')->label('Wrote in')->placeholder('—')
                             ->formatStateUsing(fn (?string $state) => ['en' => 'English', 'ku' => 'Kurdish'][$state] ?? $state),
                         // line breaks kept, everything else escaped

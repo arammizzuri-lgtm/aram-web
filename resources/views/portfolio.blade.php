@@ -761,7 +761,7 @@
                          start. Hidden until a number is set in Site Content. --}}
                     @if ($waUrl = whatsapp_url(bival('wa_text')))
                         <li>
-                            <a class="cmethod cmethod--link cmethod--wa" href="{{ $waUrl }}" target="_blank" rel="noopener"
+                            <a class="cmethod cmethod--link cmethod--wa" href="{{ $waUrl }}" target="_blank" rel="noopener" data-wa="contact"
                                data-href-en="{{ whatsapp_url(\App\Support\SiteText::en('wa_text')) }}"
                                data-href-ku="{{ whatsapp_url(\App\Support\SiteText::ku('wa_text')) }}">
                                 <span class="cmethod__icon">@include('partials.icon-whatsapp')</span>
@@ -920,6 +920,9 @@
 
             <div class="footer__col footer__col--links">
                 <nav class="footer__social">
+                    <a href="{{ site_url('/careers') }}" class="footer__link"
+                       data-href-en="{{ site_url('/careers', 'en') }}" data-href-ku="{{ site_url('/careers', 'ku') }}"
+                       {!! bitext('careers_link') !!}>{{ bival('careers_link') }}</a>
                     @foreach (socials() as $s)
                         @php $u = trim($s['url']); $ext = $u !== '' && $u !== '#'; @endphp
                         <a href="{{ $u !== '' ? $u : '#' }}" class="footer__link"@if($ext) target="_blank" rel="noopener"@endif>{{ $s['label'] }}</a>
@@ -1058,7 +1061,7 @@
                             <span class="od-cta__arrow" aria-hidden="true">→</span>
                         </a>
                         @if (whatsapp_url())
-                            <a class="od-cta__btn od-cta__btn--wa" id="overlayWa" href="{{ whatsapp_url() }}" target="_blank" rel="noopener">
+                            <a class="od-cta__btn od-cta__btn--wa" id="overlayWa" href="{{ whatsapp_url() }}" target="_blank" rel="noopener" data-wa="overlay">
                                 @include('partials.icon-whatsapp')
                                 <span {!! bitext('wa_label') !!}>{{ bival('wa_label') }}</span>
                             </a>

@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Http\Controllers\ApplicationCvController;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use Filament\Enums\ThemeMode;
@@ -18,6 +19,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -78,6 +80,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            // An applicant's CV, behind the panel login (see ApplicationCvController).
+            ->authenticatedRoutes(function () {
+                Route::get('cv/{application}', ApplicationCvController::class)->name('application-cv');
+            });
     }
 }

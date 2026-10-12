@@ -1,0 +1,114 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — careers.css
+   The careers page (/careers), on top of project.css (which gives it the
+   tokens, the top bar, the footer and the buttons).
+   ========================================================= */
+
+.pp--careers main { padding-top: clamp(110px, 18vh, 170px); }
+
+/* ---- Introduction ------------------------------------------------ */
+.cr-hero { max-width: 900px; margin: 0 auto; padding: 0 var(--gutter); }
+.cr-hero__title {
+    font-size: clamp(38px, 6vw, 80px); font-weight: 200; color: #fff;
+    letter-spacing: -.025em; line-height: 1.05;
+}
+[dir="rtl"] .cr-hero__title { letter-spacing: 0; line-height: 1.3; font-weight: 400; }
+.cr-hero__intro { margin-top: 24px; max-width: 60ch; font-size: clamp(16px, 1.4vw, 19px); line-height: 1.8; font-weight: 300; color: rgba(255,255,255,.7); }
+
+/* ---- Open positions ----------------------------------------------- */
+.cr-openings { max-width: 900px; margin: 0 auto; padding: clamp(56px, 10vh, 104px) var(--gutter) 0; }
+.cr-job {
+    padding: 28px 30px; margin-bottom: 14px; border-radius: 18px;
+    background: rgba(255,255,255,.035); border: 1px solid var(--line);
+    scroll-margin-top: 100px;
+}
+.cr-job:target { border-color: rgba(245,197,24,.5); }
+.cr-job__title { font-size: clamp(20px, 2vw, 26px); font-weight: 300; color: #fff; }
+.cr-job__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.cr-chip {
+    padding: 4px 12px; border-radius: 100px; font-size: 11px; letter-spacing: .08em;
+    color: var(--gold); background: rgba(245,197,24,.08); border: 1px solid rgba(245,197,24,.25);
+}
+[dir="rtl"] .cr-chip { letter-spacing: 0; font-size: 12px; }
+.cr-job__summary { margin-top: 16px; font-size: 15px; line-height: 1.75; font-weight: 300; color: rgba(255,255,255,.75); }
+.cr-job__more { margin-top: 14px; }
+.cr-job__more summary {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+    font-size: 13px; color: rgba(245,197,24,.85);
+}
+.cr-job__more summary::-webkit-details-marker { display: none; }
+.cr-job__more summary::before { content: '+'; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(245,197,24,.4); transition: transform .3s; }
+.cr-job__more[open] summary::before { transform: rotate(45deg); }
+.cr-job__body { margin-top: 14px; font-size: 15px; line-height: 1.8; font-weight: 300; color: rgba(255,255,255,.72); }
+.cr-job__body p { white-space: pre-line; margin-bottom: 12px; }
+.cr-job__body ul { margin: 0 0 14px; padding-inline-start: 20px; }
+.cr-job__body li { margin-bottom: 4px; }
+.cr-job__body li::marker { color: var(--gold); }
+.cr-job__apply {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 20px;
+    height: 42px; padding: 0 20px; border-radius: 100px;
+    border: 1px solid rgba(245,197,24,.45); color: var(--gold);
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    transition: background .25s;
+}
+.cr-job__apply:hover { background: rgba(245,197,24,.08); }
+[dir="rtl"] .cr-job__apply { letter-spacing: 0; font-size: 14px; }
+.cr-none { font-size: 16px; line-height: 1.8; font-weight: 300; color: var(--muted); max-width: 60ch; }
+
+/* ---- Application form ---------------------------------------------- */
+.cr-apply { max-width: 900px; margin: 0 auto; padding: clamp(64px, 11vh, 120px) var(--gutter); scroll-margin-top: 80px; }
+.cr-apply__title { font-size: clamp(28px, 3.4vw, 44px); font-weight: 200; color: #fff; margin-bottom: 28px; }
+[dir="rtl"] .cr-apply__title { font-weight: 400; }
+.cr-form {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px 14px;
+    padding: clamp(24px, 3vw, 40px); border-radius: 22px;
+    background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.09);
+}
+.cr-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.cr-field--full { grid-column: 1 / -1; }
+.cr-field label, .cr-field__label { font-size: 12px; letter-spacing: .04em; color: var(--muted); }
+.cr-field input, .cr-field select, .cr-field textarea {
+    width: 100%; font: 300 15px/1.5 var(--font); color: var(--text);
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
+    padding: 13px 15px; outline: none; transition: border-color .25s, box-shadow .25s;
+}
+.cr-field select { -webkit-appearance: none; appearance: none; cursor: pointer;
+    background: rgba(255,255,255,.03) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23F5C518' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 15px center;
+    padding-inline-end: 40px; }
+[dir="rtl"] .cr-field select { background-position: left 15px center; }
+.cr-field select option { background: #141414; }
+.cr-field textarea { resize: vertical; min-height: 120px; }
+.cr-field input:focus, .cr-field select:focus, .cr-field textarea:focus {
+    border-color: rgba(245,197,24,.5); box-shadow: 0 0 0 3px rgba(245,197,24,.1);
+}
+.cr-field.is-invalid input, .cr-field.is-invalid select, .cr-field.is-invalid textarea, .cr-field.is-invalid .cr-file {
+    border-color: rgba(255,143,122,.7); box-shadow: 0 0 0 3px rgba(255,143,122,.12);
+}
+.cr-field.is-invalid label, .cr-field.is-invalid .cr-field__label { color: #ff8f7a; }
+
+/* the file input is hidden behind a label that looks like the other fields */
+.cr-file__input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.cr-file {
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    padding: 16px 18px; border-radius: 12px;
+    border: 1px dashed rgba(245,197,24,.4); background: rgba(245,197,24,.04);
+    color: rgba(255,255,255,.8); font-size: 14px; transition: background .25s, border-color .25s;
+}
+.cr-file:hover { background: rgba(245,197,24,.08); }
+.cr-file__input:focus-visible + .cr-file, .cr-field--file:focus-within .cr-file { outline: 2px solid var(--gold); outline-offset: 3px; }
+.cr-file svg { flex: none; width: 22px; height: 22px; fill: none; stroke: var(--gold); stroke-width: 1.5; }
+.cr-file__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-file.has-file { border-style: solid; }
+
+.cr-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.cr-form__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 6px; }
+.cr-form__send { border: 0; cursor: pointer; }
+.cr-form.is-sending .cr-form__send { opacity: .7; pointer-events: none; }
+.cr-form__status { font-size: 14px; color: #4ecb71; max-width: 60ch; }
+.cr-form__status.is-error { color: #ff8f7a; }
+
+@media (max-width: 640px) {
+    .cr-form { grid-template-columns: 1fr; }
+    .cr-job { padding: 22px 20px; }
+}

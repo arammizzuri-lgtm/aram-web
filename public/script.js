@@ -2510,6 +2510,7 @@ const PROJECT_COORDS = [
             var template = (isKu ? wa.project.ku : wa.project.en) || wa.project.en || '';
             var waName = (isKu && proj.name_ku) ? proj.name_ku : proj.name;
             waBtn.href = 'https://wa.me/' + wa.number + '?text=' + encodeURIComponent(template.replace('{project}', waName));
+            waBtn.dataset.waProject = proj.slug || '';
         }
 
         // Location mini-map
@@ -2612,6 +2613,8 @@ const PROJECT_COORDS = [
         staggerCards(index);
         if (!fromHistory) syncAddress('push');
         document.title = siteTitle(PROJECT_DATA[index]);
+        // counted for the dashboard's "most opened projects" (engage.js)
+        if (!fromHistory && window.siteTrack) window.siteTrack('project_open', { project: PROJECT_DATA[index].slug });
         setTimeout(() => {
             overlay.classList.add('open');
             overlay.setAttribute('aria-hidden', 'false');
@@ -2642,6 +2645,7 @@ const PROJECT_COORDS = [
         currentProjIdx = newIndex;
         if (!fromHistory) syncAddress('replace');
         document.title = siteTitle(PROJECT_DATA[newIndex]);
+        if (!fromHistory && window.siteTrack) window.siteTrack('project_open', { project: PROJECT_DATA[newIndex].slug });
         // Briefly collapse open state so CSS stagger animations replay
         overlay.classList.remove('open');
         requestAnimationFrame(() => {

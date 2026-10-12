@@ -66,4 +66,19 @@
 .aram-msg__name { color: #e7e7e7; font-weight: 500; font-size: 0.9rem; transition: color .15s; }
 .aram-msg__meta { color: #888; font-size: 0.78rem; }
 .aram-msg__empty { color: #888; font-size: 0.86rem; padding: 0.9rem 0 0.3rem; }
+
+/* ───────── Insight tables (most viewed projects, traffic sources) ───────── */
+.aram-card__note { font-size: 0.75rem; color: #777; }
+.aram-card__foot { margin-top: 0.9rem; font-size: 0.74rem; line-height: 1.5; color: #777; }
+.aram-card__foot code { color: #c9a000; font-size: 0.72rem; }
+.aram-stat-table { width: 100%; border-collapse: collapse; margin-top: 0.6rem; font-size: 0.86rem; }
+.aram-stat-table th { text-align: left; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; color: #777; padding: 0.35rem 0.4rem 0.55rem; }
+.aram-stat-table td { padding: 0.6rem 0.4rem; border-top: 1px solid rgba(255, 255, 255, 0.05); vertical-align: top; color: #d8d8d8; }
+.aram-stat-table .is-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: 1%; }
+.aram-stat-table td.is-good { color: #4ecb71; font-weight: 600; }
+.aram-stat-table__name { display: block; color: #e7e7e7; font-weight: 500; text-decoration: none; }
+a.aram-stat-table__name:hover { color: #f5c518; }
+.aram-stat-table__sub { display: block; margin-top: 0.25rem; font-size: 0.74rem; color: #777; }
+.aram-bar { display: block; height: 4px; margin-top: 0.4rem; border-radius: 4px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
+.aram-bar > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #c9a000, #f5c518); }
 </style>

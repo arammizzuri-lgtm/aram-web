@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -13,9 +14,31 @@ class PageView extends Model
 {
     public const UPDATED_AT = null; // we only record created_at
 
-    protected $fillable = ['visitor_hash', 'path', 'referrer', 'created_at'];
+    protected $fillable = ['visitor_hash', 'path', 'referrer', 'source', 'created_at'];
 
     protected $casts = ['created_at' => 'datetime'];
+
+    /**
+     * A one-way daily fingerprint: the same visitor on the same day hashes the
+     * same, and nothing about them can be read back out of it.
+     */
+    public static function visitorHash(Request $request): string
+    {
+        return hash('sha256', implode('|', [
+            $request->ip(),
+            $request->userAgent(),
+            now()->toDateString(),
+            config('app.key'),
+        ]));
+    }
+
+    /** Crawlers, link-preview fetchers and monitors — not people. */
+    public static function isBot(Request $request): bool
+    {
+        $ua = strtolower((string) $request->userAgent());
+
+        return $ua === '' || (bool) preg_match('/bot|crawl|spider|slurp|bing|google|preview|monitor|headless|whatsapp\/|facebookexternalhit/i', $ua);
+    }
 
     /** Unique visitors between two moments (inclusive). */
     public static function visitorsBetween(Carbon $start, Carbon $end): int

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobOpening;
 use App\Models\Project;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use XMLWriter;
 
 /**
@@ -44,6 +46,8 @@ class SeoController extends Controller
         foreach ($projects as $project) {
             $this->page($xml, '/projects/'.$project->slug, $project->updated_at, $project->orderedVariantUrls('lg'));
         }
+
+        $this->page($xml, '/careers', JobOpening::query()->max('updated_at') ? Carbon::parse(JobOpening::query()->max('updated_at')) : null);
 
         $xml->endElement();
         $xml->endDocument();

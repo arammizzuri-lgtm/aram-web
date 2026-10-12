@@ -118,19 +118,7 @@
 </head>
 <body class="pp">
 
-    <header class="pp-top">
-        <a class="pp-brand" href="{{ site_url('/') }}">
-            <span class="pp-brand__name">{{ bival('brand_name') }}</span>
-            <span class="pp-brand__sub">{{ bival('brand_sub') }}</span>
-        </a>
-        <nav class="pp-top__nav">
-            <a class="pp-top__link" href="{{ site_url('/') }}#projects">
-                <span class="pp-arrow pp-arrow--back" aria-hidden="true">←</span>
-                <span>{{ bival('pp_all_projects') }}</span>
-            </a>
-            <a class="pp-lang" href="{{ $project->pageUrl($other) }}" hreflang="{{ $other }}" lang="{{ $other }}" dir="auto">{{ $isKu ? 'English' : 'کوردی' }}</a>
-        </nav>
-    </header>
+    @include('partials.page-top', ['otherUrl' => $project->pageUrl($other)])
 
     <main>
         <section class="pp-hero">
@@ -351,7 +339,7 @@
                     <span class="pp-arrow" aria-hidden="true">→</span>
                 </a>
                 @if ($wa = whatsapp_url($waText($lang)))
-                    <a class="pp-btn pp-btn--wa" href="{{ $wa }}" target="_blank" rel="noopener">
+                    <a class="pp-btn pp-btn--wa" href="{{ $wa }}" target="_blank" rel="noopener" data-wa="project" data-wa-project="{{ $project->slug }}">
                         @include('partials.icon-whatsapp')
                         <span>{{ bival('wa_cta') }}</span>
                     </a>
@@ -399,25 +387,7 @@
         @endif
     </main>
 
-    <footer class="pp-foot">
-        <div class="pp-foot__brand">
-            <a href="{{ site_url('/') }}">{{ bival('footer_logo') }}</a>
-            <span>{{ bival('footer_tagline') }}</span>
-        </div>
-        @php
-            $email = setting('contact_email_new', 'Info@arammizzuri.com');
-            $phone = setting('contact_phone', '+964 (0) 782 445 4414');
-        @endphp
-        <div class="pp-foot__links">
-            <a href="mailto:{{ $email }}">{{ $email }}</a>
-            <a href="tel:{{ preg_replace('/[^\d+]/', '', str_replace('(0)', '', $phone)) }}" dir="ltr">{{ $phone }}</a>
-            @foreach (socials() as $s)
-                @if (preg_match('#^https?://#i', trim($s['url'])))
-                    <a href="{{ trim($s['url']) }}" target="_blank" rel="noopener">{{ $s['label'] }}</a>
-                @endif
-            @endforeach
-        </div>
-    </footer>
+    @include('partials.page-foot')
 
     {{-- Full-screen photo viewer for the gallery (project.js). --}}
     <dialog class="pp-lightbox" id="ppLightbox" data-images='@json($images)' aria-label="{{ $name }}">
@@ -428,7 +398,7 @@
         <button class="pp-lightbox__btn pp-lightbox__next" type="button" aria-label="Next image">→</button>
     </dialog>
 
-    @include('partials.whatsapp-fab', ['text' => ['en' => $waText('en'), 'ku' => $waText('ku')], 'hideOver' => '.pp-cta'])
+    @include('partials.whatsapp-fab', ['text' => ['en' => $waText('en'), 'ku' => $waText('ku')], 'hideOver' => '.pp-cta', 'waProject' => $project->slug])
 
     @if ($hasMap)
         <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}"></script>

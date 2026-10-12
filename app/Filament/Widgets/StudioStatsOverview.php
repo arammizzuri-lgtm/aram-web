@@ -2,9 +2,11 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Models\ContactMessage;
 use App\Models\PageView;
 use App\Support\DashboardRange;
+use App\Support\Insights;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -18,13 +20,13 @@ class StudioStatsOverview extends StatsOverviewWidget
     protected function getStats(): array
     {
         [$start, $end] = DashboardRange::resolve($this->pageFilters);
-        $monthly = $start->diffInDays($end) > 92;
 
         $series = PageView::seriesBetween($start, $end);
         $spark = array_values($series);
         $visitors = PageView::visitorsBetween($start, $end);
         $views = PageView::pageViewsBetween($start, $end);
-        $avgPerBucket = round($visitors / max(count($series), 1), 1);
+        $taps = Insights::whatsappTaps($start, $end);
+        $enquiries = ContactMessage::query()->whereBetween('created_at', [$start, $end])->count();
         $unread = ContactMessage::query()->where('is_read', false)->count();
 
         return [
@@ -34,22 +36,23 @@ class StudioStatsOverview extends StatsOverviewWidget
                 ->chart($spark)
                 ->color('warning'),
 
-            Stat::make('Daily average', (string) $avgPerBucket)
-                ->description($monthly ? 'visitors per month' : 'visitors per day')
-                ->descriptionIcon('heroicon-m-calendar-days')
-                ->chart($spark)
-                ->color('primary'),
-
             Stat::make('Page views', (string) $views)
                 ->description('total loads')
                 ->descriptionIcon('heroicon-m-chart-bar')
                 ->chart($spark)
+                ->color('primary'),
+
+            // every WhatsApp button pressed, on any page (engage.js)
+            Stat::make('WhatsApp taps', (string) $taps)
+                ->description('chats started from the site')
+                ->descriptionIcon('heroicon-m-chat-bubble-bottom-center-text')
                 ->color('success'),
 
-            Stat::make('Unread messages', (string) $unread)
-                ->description($unread > 0 ? 'need a reply' : 'all caught up')
+            Stat::make('Enquiries', (string) $enquiries)
+                ->description($unread > 0 ? $unread.' unread — need a reply' : 'all read')
                 ->descriptionIcon('heroicon-m-envelope')
-                ->color($unread > 0 ? 'danger' : 'gray'),
+                ->color($unread > 0 ? 'danger' : 'gray')
+                ->url(ContactMessageResource::getUrl()),
         ];
     }
 }

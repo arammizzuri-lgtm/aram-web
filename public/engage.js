@@ -10,6 +10,29 @@
 
     const isKu = () => document.documentElement.getAttribute('dir') === 'rtl';
 
+    /* ---- Counting --------------------------------------------
+       A small anonymous ping for what a page view cannot show — a project
+       opened in the overlay, a WhatsApp button pressed. sendBeacon hands it
+       to the browser to deliver even as the visitor leaves for WhatsApp, and
+       never holds anything up; if it is lost, nothing on the page notices. */
+    window.siteTrack = function (type, data) {
+        try {
+            const body = new FormData();
+            body.append('type', type);
+            Object.keys(data || {}).forEach(k => { if (data[k]) body.append(k, data[k]); });
+            if (!(navigator.sendBeacon && navigator.sendBeacon('/t', body))) {
+                fetch('/t', { method: 'POST', body: body, keepalive: true, credentials: 'same-origin' }).catch(() => {});
+            }
+        } catch (e) { /* counting must never get in the way */ }
+    };
+
+    // Every WhatsApp button on the page, wherever it sits (data-wa says where)
+    document.addEventListener('click', e => {
+        const a = e.target.closest && e.target.closest('a[href^="https://wa.me/"]');
+        if (!a) return;
+        window.siteTrack('whatsapp_click', { placement: a.dataset.wa, project: a.dataset.waProject });
+    }, true);
+
     /* ---- Floating WhatsApp button ------------------------
        Steps aside while one of the sections named in data-hide-over fills
        the bottom of the screen, where the button sits: where it would cover

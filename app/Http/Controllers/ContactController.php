@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\TrackPageView;
 use App\Mail\NewEnquiry;
 use App\Models\ContactMessage;
 use App\Models\Project;
@@ -59,6 +60,8 @@ class ContactController extends Controller
                 : null,
             'page' => $data['page'] ?? null,
             'lang' => $data['lang'] ?? null,
+            // where this visitor first came from (TrackPageView)
+            'source' => $request->session()->get(TrackPageView::SESSION_KEY),
             'message' => $data['message'] ?? '',
             'ip_address' => $request->ip(),
         ]);

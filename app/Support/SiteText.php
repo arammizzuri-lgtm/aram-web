@@ -205,6 +205,32 @@ class SiteText
                 'pp_tour'         => ['360° tour — start button', 'Start the 360° tour', 'گەشتی ٣٦٠° دەستپێبکە'],
             ],
 
+            // The careers page (/careers). Positions themselves are managed
+            // under Careers → Positions; this is the wording around them.
+            'Careers' => [
+                'careers_link'      => ['Footer link', 'Careers', 'هەلی کار'],
+                'careers_home'      => ['Back link', 'Home', 'پەڕەی سەرەکی'],
+                'careers_label'     => ['Page label', 'Careers', 'هەلی کار'],
+                'careers_title'     => ['Title', 'Build with us', 'لەگەڵمان بنیات بنێ'],
+                'careers_intro'     => ['Introduction', 'We are a studio in Erbil designing homes, towers and public places across Kurdistan. If you care about good architecture and want to learn by building it, we would like to hear from you.', 'ئێمە ستۆدیۆیەکین لە هەولێر کە خانوو، تاوەر و شوێنی گشتی لە سەرانسەری کوردستان دیزاین دەکەین. ئەگەر تەڵارسازیی باش بۆت گرنگە و دەتەوێت بە بنیاتنانی فێر ببیت، حەز دەکەین گوێمان لێت بێت.', 'area'],
+                'careers_open'      => ['Open positions heading', 'Open positions', 'هەلی کاری بەردەست'],
+                'careers_none'      => ['No positions note', 'There are no open positions right now — but good people are always welcome. Send us an open application below.', 'لە ئێستادا هیچ هەلی کارێکی بەردەست نییە — بەڵام کەسانی باش هەمیشە بەخێرهاتنیان دەکرێت. لە خوارەوە داواکارییەکی گشتیمان بۆ بنێرە.', 'area'],
+                'careers_closes'    => ['Closing date label', 'Apply by', 'دوا وادە'],
+                'careers_more'      => ['Card — read more', 'Read more', 'زیاتر بخوێنەوە'],
+                'careers_apply_role' => ['Card — apply button', 'Apply for this role', 'داوای ئەم کارە بکە'],
+                'careers_form'      => ['Form heading', 'Apply', 'داواکاری پێشکەش بکە'],
+                'careers_position'  => ['Form — position', 'Position', 'پۆست'],
+                'careers_general'   => ['Form — open application', 'Open application', 'داواکاریی گشتی'],
+                'careers_portfolio' => ['Form — portfolio link', 'Portfolio link (optional)', 'بەستەری پۆرتفۆلیۆ (ئارەزوومەندانە)'],
+                'careers_message'   => ['Form — message', 'Tell us about yourself', 'دەربارەی خۆت پێمان بڵێ'],
+                'careers_cv'        => ['Form — CV', 'Your CV — PDF, up to 8 MB', 'سیڤییەکەت — PDF، تا ٨ مێگابایت'],
+                'careers_cv_choose' => ['Form — choose file', 'Choose a PDF…', 'فایلێکی PDF هەڵبژێرە…'],
+                'careers_send'      => ['Form — send button', 'Send application', 'ناردنی داواکاری'],
+                'careers_success'   => ['Form — received', "✓ Application received — thank you. We read every one, and will be in touch if there is a fit.", '✓ داواکارییەکەت گەیشت — سوپاس. هەموویان دەخوێنینەوە و ئەگەر گونجاو بوو پەیوەندیت پێوە دەکەین.', 'area'],
+                'careers_cv_needed' => ['Form — CV missing or not a PDF', 'Please attach your CV as a PDF.', 'تکایە سیڤییەکەت وەک PDF هاوپێچ بکە.'],
+                'careers_cv_big'    => ['Form — CV too large', 'That file is larger than 8 MB.', 'ئەو فایلە لە ٨ مێگابایت گەورەترە.'],
+            ],
+
             'Footer' => [
                 'footer_logo'    => ['Logo text', 'ARAM MIZURI', 'ئارام مزووری'],
                 'footer_tagline' => ['Tagline', 'Architecture · Erbil · Kurdistan', 'تەڵارسازی · هەولێر · کوردستان'],

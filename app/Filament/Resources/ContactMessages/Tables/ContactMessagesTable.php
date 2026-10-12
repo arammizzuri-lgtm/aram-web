@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ContactMessages\Tables;
 use App\Enums\LeadStatus;
 use App\Models\ContactMessage;
 use App\Support\Enquiry;
+use App\Support\TrafficSource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -44,6 +45,8 @@ class ContactMessagesTable
                     ->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('project.name')->label('Came from')->placeholder('—')
                     ->limit(28)->toggleable(),
+                TextColumn::make('source')->label('Came from')->placeholder('—')
+                    ->formatStateUsing(fn (?string $state) => TrafficSource::label($state))->toggleable(),
                 TextColumn::make('message')->limit(50)->wrap()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')->label('Received')->since()->sortable()
                     ->dateTimeTooltip('j M Y, H:i', 'Asia/Baghdad'),
@@ -52,6 +55,7 @@ class ContactMessagesTable
                 SelectFilter::make('project_type')->label('Type')
                     ->options(fn () => Enquiry::englishOptions(Enquiry::types())),
                 SelectFilter::make('budget')->options(Enquiry::englishOptions(Enquiry::budgets())),
+                SelectFilter::make('source')->label('Came from')->options(TrafficSource::labels()),
                 SelectFilter::make('timeline')->options(Enquiry::englishOptions(Enquiry::timelines())),
                 TernaryFilter::make('is_read')->label('Opened'),
             ])

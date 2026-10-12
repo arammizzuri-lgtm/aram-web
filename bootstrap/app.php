@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
         ]);
 
+        // The dashboard pings (routes/web.php, /t) carry no CSRF token.
+        $middleware->validateCsrfTokens(except: ['t']);
+
         // The site sits behind Cloudflare, so every request reaches the origin
         // from a Cloudflare IP. Trust those proxies (and only those) so
         // $request->ip() / scheme / host resolve to the real visitor — keeping

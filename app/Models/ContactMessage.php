@@ -18,7 +18,7 @@ class ContactMessage extends Model
 {
     protected $fillable = [
         'name', 'email', 'phone', 'project_type', 'city', 'plot_area', 'budget', 'timeline',
-        'project_id', 'page', 'lang', 'message', 'status', 'notes', 'is_read', 'ip_address',
+        'project_id', 'page', 'lang', 'source', 'message', 'status', 'notes', 'is_read', 'ip_address',
     ];
 
     protected $attributes = [
