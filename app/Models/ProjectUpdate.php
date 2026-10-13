@@ -7,15 +7,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * One step in a project's construction: when, what happened, and a few site
- * photographs. Shown newest first on the project's page.
+ * photographs. Shown newest first on the project's page — unless it is
+ * private, when only the project's client rooms show it.
  */
 class ProjectUpdate extends Model
 {
-    protected $fillable = ['project_id', 'date', 'title_en', 'title_ku', 'note_en', 'note_ku', 'images'];
+    protected $fillable = ['project_id', 'date', 'title_en', 'title_ku', 'note_en', 'note_ku', 'images', 'is_private'];
 
     protected $casts = [
         'date' => 'date',
         'images' => 'array',
+        'is_private' => 'boolean',
     ];
 
     protected static function booted(): void

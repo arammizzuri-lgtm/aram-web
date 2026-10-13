@@ -42,7 +42,7 @@ class ProjectPageController extends Controller
         return view('project', [
             'project' => $project,
             'quotes' => $quotes,
-            'updates' => $project->updates()->get(),
+            'updates' => $project->publicUpdates()->get(),
             'media' => $project->mediaItems(),
             'compare' => $project->compareUrls(),
             'prev' => $prev,

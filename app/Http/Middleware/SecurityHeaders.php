@@ -19,7 +19,11 @@ class SecurityHeaders
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        // a default: a page that must leave no referrer at all (a client room,
+        // PrivatePage) has already said so, and runs before this
+        if (! $response->headers->has('Referrer-Policy')) {
+            $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        }
         $response->headers->set('X-Permitted-Cross-Domain-Policies', 'none');
 
         return $response;

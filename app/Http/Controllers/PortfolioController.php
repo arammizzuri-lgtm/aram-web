@@ -17,7 +17,7 @@ class PortfolioController extends Controller
 {
     public function index()
     {
-        $projects = Project::publishedOrdered()->withCount('updates')->get();
+        $projects = Project::publishedOrdered()->withCount('publicUpdates')->get();
         $clients = Client::publishedOrdered()->get();
         $quotes = Testimonial::publishedOrdered()->with(['client', 'project'])->get();
         $categories = Category::ordered()->get();
@@ -60,7 +60,7 @@ class PortfolioController extends Controller
                 'extras' => [
                     'film' => $p->mediaItems() !== [],
                     'compare' => filled($p->compare_before) && filled($p->compare_after),
-                    'progress' => $p->updates_count > 0,
+                    'progress' => $p->public_updates_count > 0,
                 ],
             ])->values()->all(),
             'stats' => $stats,

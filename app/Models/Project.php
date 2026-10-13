@@ -173,10 +173,22 @@ class Project extends Model
         return $this->hasMany(Testimonial::class);
     }
 
-    /** Construction progress, newest first. */
+    /** Construction progress, newest first — the private updates included. */
     public function updates(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ProjectUpdate::class)->orderByDesc('date')->orderByDesc('id');
+    }
+
+    /** The progress the public site shows: everything not marked private. */
+    public function publicUpdates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->updates()->where('is_private', false);
+    }
+
+    /** Its clients' private rooms. */
+    public function rooms(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ClientRoom::class);
     }
 
     /**

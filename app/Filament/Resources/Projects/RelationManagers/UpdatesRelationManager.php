@@ -10,15 +10,18 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 /**
  * Construction progress, under the project it belongs to: a dated note and
- * a few site photographs per visit. Shown newest first on the project page.
+ * a few site photographs per visit. Shown newest first on the project page —
+ * or, marked private, only in the project's client rooms.
  */
 class UpdatesRelationManager extends RelationManager
 {
@@ -48,6 +51,9 @@ class UpdatesRelationManager extends RelationManager
                 ->panelLayout('grid')->imagePreviewHeight('110')->openable()
                 ->maxFiles(12)
                 ->columnSpanFull(),
+            Toggle::make('is_private')->label('Private — only in this project\'s client rooms')
+                ->helperText('Left off, the update is on the project\'s public page too (if the project is published).')
+                ->columnSpanFull(),
         ]);
     }
 
@@ -65,6 +71,9 @@ class UpdatesRelationManager extends RelationManager
                     ->description(fn (ProjectUpdate $r) => $r->note_en ? \Illuminate\Support\Str::limit($r->note_en, 80) : null),
                 TextColumn::make('photos')->label('Photos')
                     ->state(fn (ProjectUpdate $r) => count((array) $r->images)),
+                IconColumn::make('is_private')->label('Private')->boolean()
+                    ->trueIcon('heroicon-o-lock-closed')->falseIcon('heroicon-o-globe-alt')
+                    ->trueColor('warning')->falseColor('gray'),
             ])
             ->headerActions([
                 CreateAction::make()->label('Add progress update'),
@@ -74,6 +83,6 @@ class UpdatesRelationManager extends RelationManager
                 DeleteAction::make(),
             ])
             ->emptyStateHeading('No progress updates yet')
-            ->emptyStateDescription('For a project being built: add a dated note and a few site photos after each visit. They appear on the project page, newest first.');
+            ->emptyStateDescription('For a project being built: add a dated note and a few site photos after each visit. They appear on the project page, newest first — or, marked private, only in its client rooms.');
     }
 }

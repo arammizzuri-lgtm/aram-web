@@ -5,8 +5,10 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectPageController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
+use App\Http\Middleware\PrivatePage;
 use App\Http\Middleware\SiteLanguage;
 use App\Http\Middleware\TrackPageView;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +38,29 @@ $pages = function (string $lang) {
 
 $pages('en');
 Route::prefix('ku')->name('ku.')->group(fn () => $pages('ku'));
+
+/*
+| A client's private room: a secret link and a PIN (RoomController). In both
+| languages like every page, but never counted in the visitor numbers (its
+| address is the secret) and sent as a PrivatePage.
+*/
+$rooms = function (string $lang) {
+    Route::middleware([SiteLanguage::class.':'.$lang, PrivatePage::class])
+        ->prefix('room/{token}')->where(['token' => '[A-Za-z0-9]{40}'])
+        ->group(function () {
+            Route::get('/', [RoomController::class, 'show'])->name('room');
+            Route::post('/pin', [RoomController::class, 'unlock'])->middleware('throttle:30,1')->name('room.unlock');
+            Route::post('/drawings/{drawing}', [RoomController::class, 'decide'])->whereNumber('drawing')
+                ->middleware('throttle:30,1')->name('room.decide');
+            Route::post('/updates/{update}/comments', [RoomController::class, 'comment'])->whereNumber('update')
+                ->middleware('throttle:30,1')->name('room.comment');
+            Route::get('/drawings/{drawing}', [RoomController::class, 'drawing'])->whereNumber('drawing')->name('room.drawing');
+            Route::get('/receipts/{payment}', [RoomController::class, 'receipt'])->whereNumber('payment')->name('room.receipt');
+        });
+};
+
+$rooms('en');
+Route::prefix('ku')->name('ku.')->group(fn () => $rooms('ku'));
 
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
