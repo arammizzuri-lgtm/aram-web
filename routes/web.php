@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectPageController;
@@ -33,6 +34,14 @@ $pages = function (string $lang) {
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
         // a visitor's hearted projects, or a list someone shared with them
         Route::get('/saved', [SavedController::class, 'index'])->name('saved');
+        // "What will your house cost?"
+        Route::get('/estimate', [EstimateController::class, 'index'])->name('estimate');
+    });
+
+    // The estimator's live result, as each answer changes — not a page view.
+    Route::middleware(SiteLanguage::class.':'.$lang)->group(function () {
+        Route::get('/estimate/calc', [EstimateController::class, 'calc'])
+            ->middleware('throttle:120,1')->name('estimate.calc');
     });
 };
 

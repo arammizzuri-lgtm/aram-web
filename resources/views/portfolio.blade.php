@@ -107,6 +107,10 @@
             <a href="#services" class="nav__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
             <a href="#process"  class="nav__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
             <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
+            @if (\App\Support\CostEstimate::enabled())
+                <a href="{{ site_url('/estimate') }}" class="nav__link"
+                   data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
+            @endif
             {{-- The visitor's hearted projects (saved.js), once there are any --}}
             <a href="{{ site_url('/saved') }}" class="nav__link nav__saved" data-saved-link hidden>
                 @include('partials.icon-heart')
@@ -135,6 +139,10 @@
         <a href="#services" class="mobile-menu__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
         <a href="#process"  class="mobile-menu__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
         <a href="#contact"  class="mobile-menu__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
+        @if (\App\Support\CostEstimate::enabled())
+            <a href="{{ site_url('/estimate') }}" class="mobile-menu__link"
+               data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
+        @endif
     </div>
 
     <!-- ========== HERO ========== -->
@@ -761,6 +769,26 @@
         </div>
     </section>
 
+    {{-- ========== COST ESTIMATE ==========
+         One line and a button to the estimator (/estimate), just before the
+         contact form: the question most people come with, answered first. --}}
+    @if (\App\Support\CostEstimate::enabled())
+        <section class="est-band" id="estimate">
+            <div class="est-band__inner">
+                <div class="est-band__text">
+                    <p class="section-label" {!! bitext('est_label') !!}>{{ bival('est_label') }}</p>
+                    <h2 class="est-band__title" {!! bitext('est_band_title') !!}>{{ bival('est_band_title') }}</h2>
+                    <p class="est-band__sub" {!! bitext('est_band_text') !!}>{{ bival('est_band_text') }}</p>
+                </div>
+                <a class="est-band__btn" href="{{ site_url('/estimate') }}"
+                   data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}">
+                    <span {!! bitext('est_band_btn') !!}>{{ bival('est_band_btn') }}</span>
+                    <span class="est-band__arrow" aria-hidden="true">→</span>
+                </a>
+            </div>
+        </section>
+    @endif
+
     <!-- ========== CONTACT ========== -->
     <section class="contact" id="contact">
         <div class="contact__bg" aria-hidden="true">
@@ -948,6 +976,11 @@
                     <a href="{{ site_url('/careers') }}" class="footer__link"
                        data-href-en="{{ site_url('/careers', 'en') }}" data-href-ku="{{ site_url('/careers', 'ku') }}"
                        {!! bitext('careers_link') !!}>{{ bival('careers_link') }}</a>
+                    @if (\App\Support\CostEstimate::enabled())
+                        <a href="{{ site_url('/estimate') }}" class="footer__link"
+                           data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}"
+                           {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
+                    @endif
                     @foreach (socials() as $s)
                         @php $u = trim($s['url']); $ext = $u !== '' && $u !== '#'; @endphp
                         <a href="{{ $u !== '' ? $u : '#' }}" class="footer__link"@if($ext) target="_blank" rel="noopener"@endif>{{ $s['label'] }}</a>

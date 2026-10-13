@@ -115,6 +115,20 @@ class Insights
             ->values()->all();
     }
 
+    /**
+     * Cost estimates worked out in a window (once per visit to the
+     * estimator), and how many were sent to the studio with an enquiry.
+     *
+     * @return array{run: int, sent: int}
+     */
+    public static function estimates(Carbon $start, Carbon $end): array
+    {
+        return [
+            'run' => SiteEvent::query()->where('type', SiteEvent::ESTIMATE)->whereBetween('created_at', [$start, $end])->count(),
+            'sent' => ContactMessage::query()->whereNotNull('estimate')->whereBetween('created_at', [$start, $end])->count(),
+        ];
+    }
+
     /** WhatsApp taps in a window, from every button. */
     public static function whatsappTaps(Carbon $start, Carbon $end): int
     {

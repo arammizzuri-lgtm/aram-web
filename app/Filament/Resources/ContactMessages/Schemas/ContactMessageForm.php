@@ -45,6 +45,12 @@ class ContactMessageForm
                             ->formatStateUsing(fn (ContactMessage $r) => $r->timelineLabel()),
                         TextEntry::make('project.name')->label('Was looking at')->placeholder('—')
                             ->url(fn (ContactMessage $r) => $r->project?->hasPage() ? $r->project->pageUrl($r->lang ?? 'en') : null, true),
+                        TextEntry::make('estimate')->label('Their estimate')->placeholder('—')
+                            ->visible(fn (ContactMessage $r) => filled($r->estimateLabel()))
+                            ->state(fn (ContactMessage $r) => $r->estimateLabel()
+                                ? '<b>'.e($r->estimateLabel()).'</b><br>'.e(\App\Support\CostEstimate::summary($r->estimate))
+                                : null)
+                            ->html()->columnSpanFull(),
                         TextEntry::make('saved_projects')->label('Had saved')->placeholder('—')
                             ->state(fn (ContactMessage $r) => $r->savedProjects()
                                 ->map(fn ($p) => $p->hasPage()

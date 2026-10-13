@@ -6,6 +6,7 @@ use App\Http\Middleware\TrackPageView;
 use App\Mail\NewEnquiry;
 use App\Models\ContactMessage;
 use App\Models\Project;
+use App\Support\CostEstimate;
 use App\Support\Enquiry;
 use App\Support\SavedProjects;
 use App\Support\StudioMail;
@@ -44,12 +45,25 @@ class ContactController extends Controller
             'about' => ['nullable', 'string', 'max:191'],      // slug of the project they were viewing
             'saved' => ['nullable', 'array', 'max:'.SavedProjects::MAX],   // slugs of the projects they had saved
             'saved.*' => ['nullable', 'string', 'max:191'],
+            // the cost estimator's answers (worked out again below, never taken as sent)
+            'estimate' => ['nullable', 'array'],
+            'estimate.*' => ['nullable', 'string', 'max:20'],
             'message' => ['nullable', 'string', 'max:5000'],
             'lang' => ['nullable', Rule::in(['en', 'ku'])],
             'page' => ['nullable', 'string', 'max:255'],
         ]);
 
         $saved = SavedProjects::projects(SavedProjects::slugs($data['saved'] ?? []))->pluck('id')->all();
+
+        // Sent from the estimator: the estimate, at today's rates, and what it
+        // says about the project wherever the visitor did not say it themselves.
+        $inputs = filled($data['estimate'] ?? null) ? CostEstimate::inputs($data['estimate']) : null;
+        $estimate = $inputs ? CostEstimate::calculate($inputs) : null;
+        if ($estimate) {
+            $data['plot_area'] ??= $inputs['plot'] ?: null;
+            $data['budget'] ??= CostEstimate::budgetBand($estimate);
+            $data['type'] ??= array_key_exists('residential', Enquiry::types()) ? 'residential' : null;
+        }
 
         $enquiry = ContactMessage::create([
             'name' => $data['name'],
@@ -64,6 +78,7 @@ class ContactController extends Controller
                 ? Project::query()->where('slug', $data['about'])->value('id')
                 : null,
             'saved_projects' => $saved ?: null,
+            'estimate' => $estimate,
             'page' => $data['page'] ?? null,
             'lang' => $data['lang'] ?? null,
             // where this visitor first came from (TrackPageView)

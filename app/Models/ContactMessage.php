@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\LeadStatus;
+use App\Support\CostEstimate;
 use App\Support\Enquiry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +20,7 @@ class ContactMessage extends Model
 {
     protected $fillable = [
         'name', 'email', 'phone', 'project_type', 'city', 'plot_area', 'budget', 'timeline',
-        'project_id', 'saved_projects', 'page', 'lang', 'source', 'message', 'status', 'notes', 'is_read', 'ip_address',
+        'project_id', 'saved_projects', 'estimate', 'page', 'lang', 'source', 'message', 'status', 'notes', 'is_read', 'ip_address',
     ];
 
     protected $attributes = [
@@ -30,6 +31,7 @@ class ContactMessage extends Model
         'is_read' => 'boolean',
         'plot_area' => 'integer',
         'saved_projects' => 'array',
+        'estimate' => 'array',
         'status' => LeadStatus::class,
     ];
 
@@ -54,6 +56,17 @@ class ContactMessage extends Model
         $found = Project::query()->whereIn('id', $ids)->get()->keyBy('id');
 
         return collect($ids)->map(fn ($id) => $found[$id] ?? null)->filter()->values();
+    }
+
+    /** "$180,000 – $220,000 to build · design fee $9,000 – $17,600", from the estimator. */
+    public function estimateLabel(): ?string
+    {
+        if (empty($this->estimate['construction'])) {
+            return null;
+        }
+
+        return CostEstimate::usdRange($this->estimate['construction']).' to build'
+            .(empty($this->estimate['fee']) ? '' : ' · design fee '.CostEstimate::usdRange($this->estimate['fee']));
     }
 
     public function typeLabel(): ?string

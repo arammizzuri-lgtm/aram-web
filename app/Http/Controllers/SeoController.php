@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobOpening;
 use App\Models\Project;
+use App\Support\CostEstimate;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use XMLWriter;
@@ -48,6 +49,10 @@ class SeoController extends Controller
         }
 
         $this->page($xml, '/careers', JobOpening::query()->max('updated_at') ? Carbon::parse(JobOpening::query()->max('updated_at')) : null);
+
+        if (CostEstimate::enabled()) {
+            $this->page($xml, '/estimate', null);
+        }
 
         $xml->endElement();
         $xml->endDocument();

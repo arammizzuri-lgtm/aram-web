@@ -17,6 +17,9 @@ class StudioStatsOverview extends StatsOverviewWidget
 
     protected static ?int $sort = -2;
 
+    /** Five figures, side by side on a wide screen. */
+    protected int|array|null $columns = ['@xl' => 5, '!@lg' => 5];
+
     protected function getStats(): array
     {
         [$start, $end] = DashboardRange::resolve($this->pageFilters);
@@ -28,6 +31,7 @@ class StudioStatsOverview extends StatsOverviewWidget
         $taps = Insights::whatsappTaps($start, $end);
         $enquiries = ContactMessage::query()->whereBetween('created_at', [$start, $end])->count();
         $unread = ContactMessage::query()->where('is_read', false)->count();
+        $estimates = Insights::estimates($start, $end);
 
         return [
             Stat::make('Visitors', (string) $visitors)
@@ -53,6 +57,12 @@ class StudioStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-m-envelope')
                 ->color($unread > 0 ? 'danger' : 'gray')
                 ->url(ContactMessageResource::getUrl()),
+
+            // "What will your house cost?" worked out, and sent on to the studio
+            Stat::make('Estimates', (string) $estimates['run'])
+                ->description($estimates['sent'].' sent with an enquiry')
+                ->descriptionIcon('heroicon-m-calculator')
+                ->color($estimates['sent'] > 0 ? 'success' : 'gray'),
         ];
     }
 }

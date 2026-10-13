@@ -12,6 +12,9 @@
         <a href="mailto:{{ $footEmail }}">{{ $footEmail }}</a>
         <a href="tel:{{ preg_replace('/[^\d+]/', '', str_replace('(0)', '', $footPhone)) }}" dir="ltr">{{ $footPhone }}</a>
         <a href="{{ site_url('/careers') }}">{{ bival('careers_link') }}</a>
+        @if (\App\Support\CostEstimate::enabled())
+            <a href="{{ site_url('/estimate') }}">{{ bival('est_nav') }}</a>
+        @endif
         @foreach (socials() as $s)
             @if (preg_match('#^https?://#i', trim($s['url'])))
                 <a href="{{ trim($s['url']) }}" target="_blank" rel="noopener">{{ $s['label'] }}</a>
