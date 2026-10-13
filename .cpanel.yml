@@ -17,6 +17,12 @@ deployment:
     - cd $DEPLOYPATH && php artisan config:clear
     - test -f $DEPLOYPATH/database/database.sqlite || /bin/touch $DEPLOYPATH/database/database.sqlite
     - cd $DEPLOYPATH && (grep -q '^APP_KEY=$' .env && php artisan key:generate --force || true)
+    # A copy of the database before migrate changes it: a migration that fails
+    # halfway cannot be repaired on a host with no shell, only undone by putting
+    # the copy back. The last 10 are kept in storage/app/private/backups and can
+    # be downloaded from the admin (Manage → Backups). Non-fatal: a failed copy
+    # leaves the deploy exactly as it was before backups existed.
+    - cd $DEPLOYPATH && (php artisan backup:db --label=deploy || true)
     - cd $DEPLOYPATH && php artisan migrate --force
     - cd $DEPLOYPATH && (test -L public/storage || php artisan storage:link)
     # Backfill WebP derivatives for images uploaded before the resizing feature.
@@ -63,6 +69,9 @@ deployment:
     # allow for one; matching only '^APP_KEY=$' would silently skip this
     # and leave the application with no key at all.
     - cd $DEPLOYPATH/erp && (grep -qE '^APP_KEY=[[:space:]]*(#.*)?$' .env && php artisan key:generate --force || true)
+    # The same copy-before-migrate for the ERP's database (the site's command
+    # does it; it works on any SQLite file).
+    - cd $DEPLOYPATH && (php artisan backup:db --source=erp/database/database.sqlite --dir=erp/storage/app/private/backups --label=deploy || true)
     - cd $DEPLOYPATH/erp && php artisan migrate --force
     - cd $DEPLOYPATH/erp && (test -L ../public/erp/storage || php artisan storage:link)
     # Seeds reference data into an empty database and creates the account

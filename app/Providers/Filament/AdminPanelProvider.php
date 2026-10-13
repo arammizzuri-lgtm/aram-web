@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Http\Controllers\ApplicationCvController;
+use App\Http\Controllers\BackupController;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use Filament\Enums\ThemeMode;
@@ -81,9 +82,12 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            // An applicant's CV, behind the panel login (see ApplicationCvController).
+            // Private files, behind the panel login: an applicant's CV, and the
+            // database copies on Manage → Backups.
             ->authenticatedRoutes(function () {
                 Route::get('cv/{application}', ApplicationCvController::class)->name('application-cv');
+                Route::get('backups/now', [BackupController::class, 'fresh'])->name('backup-fresh');
+                Route::get('backups/{name}', [BackupController::class, 'download'])->name('backup-download');
             });
     }
 }

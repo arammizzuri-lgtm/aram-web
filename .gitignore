@@ -33,6 +33,10 @@ Thumbs.db
 /storage/framework/views/
 /storage/framework/testing/
 
+# The private disk: CVs, client-room files and database backups — personal
+# data that must never be committed.
+/storage/app/private/
+
 # ── ERP mount (public/erp is the ERP's public directory) ──
 /public/erp/hot
 /public/erp/storage
