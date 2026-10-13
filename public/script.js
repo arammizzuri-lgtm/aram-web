@@ -1283,6 +1283,8 @@ function imgVariant(proj, size, i) {
             type: value('type'), city: value('city'), plot_area: value('plot_area'),
             budget: value('budget'), timeline: value('timeline'),
             about: value('about'), message: value('message'),
+            // the projects they saved, as the form's chip shows them (saved.js)
+            saved: window.siteSaved ? window.siteSaved.forEnquiry() : [],
             website: value('website'),                       // the spam trap
             lang: isKu() ? 'ku' : 'en',
             page: location.pathname,
@@ -1313,6 +1315,7 @@ function imgVariant(proj, size, i) {
         .then(() => {
             form.reset();
             clearAbout();
+            if (window.siteSaved) window.siteSaved.enquirySent();
             if (more) more.open = false;
             report(null);
         })
@@ -2170,6 +2173,34 @@ function projCoords(proj) {
             var waName = (isKu && proj.name_ku) ? proj.name_ku : proj.name;
             waBtn.href = 'https://wa.me/' + wa.number + '?text=' + encodeURIComponent(template.replace('{project}', waName));
             waBtn.dataset.waProject = proj.slug || '';
+        }
+
+        // Keep it or pass it on — the heart (saved.js) and the share buttons
+        // (engage.js) point at this project's own page, in the reader's language
+        var shareRow = document.getElementById('overlayShareRow');
+        if (shareRow) {
+            var path = projectPath(proj);
+            shareRow.hidden = !path;
+            if (path) {
+                var shareUrl  = location.origin + path;
+                var shareName = (isKu && proj.name_ku) ? proj.name_ku : proj.name;
+                var shareText = ((window.__SITE__ || {}).share || {});
+                var saveBtn = document.getElementById('overlaySave');
+                var shareWa = document.getElementById('overlayShareWa');
+                var shareBtn = document.getElementById('overlayShare');
+                if (saveBtn) saveBtn.dataset.save = proj.slug;
+                if (shareWa) {
+                    shareWa.href = 'https://wa.me/?text=' + encodeURIComponent(((isKu ? shareText.ku : shareText.en) || shareText.en || '{url}')
+                        .replace('{project}', shareName).replace('{url}', shareUrl));
+                    shareWa.dataset.shareProject = proj.slug;
+                }
+                if (shareBtn) {
+                    shareBtn.dataset.shareUrl = shareUrl;
+                    shareBtn.dataset.shareTitle = siteTitle(proj);
+                    shareBtn.dataset.shareProject = proj.slug;
+                }
+                if (window.siteSaved) window.siteSaved.refresh();
+            }
         }
 
         // Location mini-map

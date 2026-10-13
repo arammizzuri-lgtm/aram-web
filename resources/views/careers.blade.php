@@ -57,6 +57,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('careers.css') }}?v={{ filemtime(public_path('careers.css')) }}">
+    <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     @include('partials.kurdish-font')
 </head>
 <body class="pp pp--careers">
@@ -178,5 +179,6 @@
     @include('partials.page-foot')
 
     <script src="{{ asset('careers.js') }}?v={{ filemtime(public_path('careers.js')) }}" defer></script>
+    @include('partials.saved-script')
 </body>
 </html>

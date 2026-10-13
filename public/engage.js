@@ -1,9 +1,10 @@
 /* =========================================================
    ARAM MIZURI ARCHITECTURE — engage.js
-   The parts of a page that invite a visitor to get in touch: the floating
-   WhatsApp button, and the client quotes that turn over one at a time.
-   Loaded on the homepage and on project pages; each part does nothing on a
-   page that lacks its markup.
+   The parts of a page that invite a visitor to get in touch, or to pass a
+   project on: the floating WhatsApp button, the share buttons, and the
+   client quotes that turn over one at a time. Loaded on the homepage, the
+   project pages and the saved list; each part does nothing on a page that
+   lacks its markup.
    ========================================================= */
 (function () {
     'use strict';
@@ -26,12 +27,75 @@
         } catch (e) { /* counting must never get in the way */ }
     };
 
-    // Every WhatsApp button on the page, wherever it sits (data-wa says where)
+    // Every WhatsApp button on the page, wherever it sits (data-wa says where).
+    // Sharing on WhatsApp is not a chat with the studio: it is counted below.
     document.addEventListener('click', e => {
         const a = e.target.closest && e.target.closest('a[href^="https://wa.me/"]');
-        if (!a) return;
+        if (!a || a.hasAttribute('data-share')) return;
         window.siteTrack('whatsapp_click', { placement: a.dataset.wa, project: a.dataset.waProject });
     }, true);
+
+    // Every share button: on WhatsApp, the phone's share sheet, or a copied link
+    document.addEventListener('click', e => {
+        const el = e.target.closest && e.target.closest('[data-share]');
+        if (!el) return;
+        window.siteTrack('share', { placement: el.dataset.shareAt, project: el.dataset.shareProject });
+    }, true);
+
+    /* ---- Sharing -----------------------------------------
+       [data-share="whatsapp"] is a wa.me link with no number in it, so
+       WhatsApp asks whom to send it to. [data-share="link"] opens the phone's
+       own share sheet (Telegram, Viber, Instagram…) where there is one, and
+       copies the link where there is not — so on a computer it reads "Copy
+       link", kept as the label's language pair for the homepage's toggle. */
+    (function initShare() {
+        const buttons = document.querySelectorAll('[data-share="link"]');
+        if (!buttons.length) return;
+        const canShare = typeof navigator.share === 'function';
+        const pick = (el, name) => (isKu() ? el.dataset[name + 'Ku'] : el.dataset[name + 'En']) || el.dataset[name + 'En'] || '';
+
+        function copy(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+            return new Promise((resolve, reject) => {
+                const ta = document.createElement('textarea');
+                ta.value = text; ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch (err) { /* reported below */ }
+                document.body.removeChild(ta);
+                ok ? resolve() : reject();
+            });
+        }
+
+        buttons.forEach(btn => {
+            const label = btn.querySelector('[data-share-label]');
+            if (!canShare && label) {
+                label.dataset.en = btn.dataset.copyEn;
+                label.dataset.ku = btn.dataset.copyKu;
+                label.textContent = pick(btn, 'copy');
+            }
+            let timer = null;
+            btn.addEventListener('click', () => {
+                const url = btn.dataset.shareUrl || location.href;
+                if (canShare) {
+                    navigator.share({ title: btn.dataset.shareTitle || document.title, url: url })
+                        .catch(() => { /* dismissed — nothing to do */ });
+                    return;
+                }
+                copy(url).then(() => {
+                    if (!label) return;
+                    label.textContent = pick(btn, 'copied');
+                    btn.classList.add('is-done');
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        label.textContent = isKu() ? label.dataset.ku : label.dataset.en;
+                        btn.classList.remove('is-done');
+                    }, 2200);
+                }, () => window.prompt('', url));
+            });
+        });
+    })();
 
     /* ---- Floating WhatsApp button ------------------------
        Steps aside while one of the sections named in data-hide-over fills

@@ -1,8 +1,9 @@
 /* =========================================================
    ARAM MIZURI ARCHITECTURE — project.js
-   The project page (/projects/{slug}): its location map, the full-screen
-   photo viewer, and the share button. Everything else on the page is plain
-   server-rendered HTML that works without this file.
+   The project page (/projects/{slug}): its location map and the full-screen
+   photo viewer. (Its share buttons are engage.js's, its heart saved.js's.)
+   Everything else on the page is plain server-rendered HTML that works
+   without this file.
    ========================================================= */
 (function () {
     'use strict';
@@ -168,33 +169,4 @@
             iframe.focus();
         });
     });
-
-    /* ---- Share ------------------------------------------
-       The phone's own share sheet where there is one (WhatsApp, Instagram,
-       Messages…); elsewhere, the link goes to the clipboard. */
-    (function initShare() {
-        const btn = document.getElementById('ppShare');
-        if (!btn) return;
-        const label = btn.querySelector('.pp-share__label');
-        const idle = label.textContent;
-
-        function confirm() {
-            label.textContent = btn.dataset.copied;
-            btn.classList.add('is-done');
-            setTimeout(function () { label.textContent = idle; btn.classList.remove('is-done'); }, 2200);
-        }
-
-        btn.addEventListener('click', function () {
-            const data = { title: btn.dataset.title, url: btn.dataset.url };
-            if (navigator.share) {
-                navigator.share(data).catch(function () { /* dismissed — nothing to do */ });
-                return;
-            }
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(data.url).then(confirm, function () { window.prompt('', data.url); });
-            } else {
-                window.prompt('', data.url);
-            }
-        });
-    })();
 })();

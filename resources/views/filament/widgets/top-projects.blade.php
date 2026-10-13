@@ -11,6 +11,8 @@
                     <tr>
                         <th>Project</th>
                         <th class="is-num" title="Opened in the homepage popup + visits to its own page">Views</th>
+                        <th class="is-num" title="Hearts: visitors who kept it in their Saved list">Saved</th>
+                        <th class="is-num" title="Sent on by visitors: on WhatsApp, the phone's share menu, or a copied link">Shared</th>
                         <th class="is-num">WhatsApp</th>
                         <th class="is-num">Enquiries</th>
                     </tr>
@@ -24,6 +26,8 @@
                                 <span class="aram-stat-table__sub">{{ $r['opens'] }} in the popup · {{ $r['pages'] }} on its page</span>
                             </td>
                             <td class="is-num">{{ $r['views'] }}</td>
+                            <td class="is-num">{{ $r['saves'] ?: '—' }}</td>
+                            <td class="is-num">{{ $r['shares'] ?: '—' }}</td>
                             <td class="is-num">{{ $r['whatsapp'] ?: '—' }}</td>
                             <td class="is-num {{ $r['enquiries'] ? 'is-good' : '' }}">{{ $r['enquiries'] ?: '—' }}</td>
                         </tr>

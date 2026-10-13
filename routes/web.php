@@ -5,6 +5,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectPageController;
+use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
 use App\Http\Middleware\SiteLanguage;
 use App\Http\Middleware\TrackPageView;
@@ -28,6 +29,8 @@ $pages = function (string $lang) {
             ->where('slug', '[a-z0-9-]+')
             ->name('project');
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
+        // a visitor's hearted projects, or a list someone shared with them
+        Route::get('/saved', [SavedController::class, 'index'])->name('saved');
     });
 };
 

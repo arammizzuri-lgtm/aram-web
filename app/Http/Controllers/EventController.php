@@ -12,8 +12,9 @@ use Illuminate\Validation\Rule;
 
 /**
  * Receives the small anonymous pings the pages send with navigator.sendBeacon
- * — a project opened in the overlay, a WhatsApp button pressed — so the
- * dashboard can count what page views alone cannot see.
+ * — a project opened in the overlay, a WhatsApp button pressed, a project
+ * saved or shared — so the dashboard can count what page views alone cannot
+ * see.
  *
  * Always answers 204 and never fails loudly: nothing a visitor does may be
  * held up by the counting of it.
@@ -27,7 +28,7 @@ class EventController extends Controller
         }
 
         $data = validator($request->all(), [
-            'type' => ['required', Rule::in([SiteEvent::PROJECT_OPEN, SiteEvent::WHATSAPP_CLICK])],
+            'type' => ['required', Rule::in(SiteEvent::TYPES)],
             'project' => ['nullable', 'string', 'max:191'],
             'placement' => ['nullable', Rule::in(SiteEvent::PLACEMENTS)],
         ]);

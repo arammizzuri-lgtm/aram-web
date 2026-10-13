@@ -107,11 +107,21 @@
             <a href="#services" class="nav__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
             <a href="#process"  class="nav__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
             <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
+            {{-- The visitor's hearted projects (saved.js), once there are any --}}
+            <a href="{{ site_url('/saved') }}" class="nav__link nav__saved" data-saved-link hidden>
+                @include('partials.icon-heart')
+                <span {!! bitext('saved_nav') !!}>{{ bival('saved_nav') }}</span>
+                <span class="nav__saved-n" data-saved-count></span>
+            </a>
             <span class="nav__sep"></span>
             {{-- label flips between "کوردی" and "English", so it needs its own direction --}}
             <button class="lang-toggle" id="langToggle" dir="auto" title="Switch to Kurdish / گۆڕانی زمان">{{ site_lang() === 'ku' ? 'English' : 'کوردی' }}</button>
         </div>
 
+        <a href="{{ site_url('/saved') }}" class="nav__saved-m" data-saved-link hidden aria-label="{{ bival('saved_nav') }}">
+            @include('partials.icon-heart')
+            <span data-saved-count></span>
+        </a>
         <button class="nav__hamburger" id="hamburger" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
@@ -481,6 +491,13 @@
                      link instead of scrolling it. --}}
                 <a class="pgc__link" href="{{ $project->pageUrl(site_lang()) }}" draggable="false" aria-label="{{ bi($project->name, $project->name_ku) }}"
                    data-href-en="{{ $project->pageUrl('en') }}" data-href-ku="{{ $project->pageUrl('ku') }}"></a>
+                {{-- Save it to the visitor's list (saved.js) — above the link, and
+                     handled before the card, so it never opens the project too. --}}
+                @if ($project->hasPage())
+                    <button class="pgc__save" type="button" data-save="{{ $project->slug }}" data-save-at="grid" aria-pressed="false" aria-label="{{ bival('save_add') }}">
+                        @include('partials.icon-heart')
+                    </button>
+                @endif
             </article>
             @endforeach
 
@@ -842,6 +859,13 @@
                     <button type="button" class="form-about__clear" id="formAboutClear" aria-label="Remove">✕</button>
                 </div>
                 <input type="hidden" name="about" id="cf-about">
+                {{-- Their saved projects go with the enquiry (saved.js) — shown, so
+                     nothing is sent they cannot see, and ✕ to leave them off. --}}
+                <div class="form-about form-saved" id="formSaved" hidden>
+                    <span class="form-about__label">@include('partials.icon-heart')<span {!! bitext('form_saved') !!}>{{ bival('form_saved') }}</span></span>
+                    <span class="form-about__name" id="formSavedNames" dir="auto"></span>
+                    <button type="button" class="form-about__clear" id="formSavedClear" aria-label="Remove">✕</button>
+                </div>
 
                 <div class="form-grid">
                     <div class="form-field form-field--full">
@@ -1069,6 +1093,22 @@
                         @endif
                     </div>
 
+                    {{-- Keep this one (saved.js), or pass it on (engage.js). Pointed
+                         at the open project in populateOverlay; hidden for one
+                         without a page of its own to link to. --}}
+                    <div class="od-share" id="overlayShareRow" hidden>
+                        <button class="od-share__btn od-share__btn--save" id="overlaySave" type="button" data-save="" data-save-at="overlay" aria-pressed="false">
+                            @include('partials.icon-heart')
+                            <span data-save-label>{{ bival('save_add') }}</span>
+                        </button>
+                        <a class="od-share__btn od-share__btn--wa" id="overlayShareWa" href="#" target="_blank" rel="noopener" data-share="whatsapp" data-share-at="overlay">
+                            @include('partials.icon-whatsapp')
+                            <span {!! bitext('share_wa') !!}>{{ bival('share_wa') }}</span>
+                        </a>
+                        @include('partials.share-link', ['shareClass' => 'od-share__btn', 'shareAt' => 'overlay', 'shareProject' => '',
+                            'shareUrl' => site_url('/'), 'shareTitle' => bival('seo_title'), 'shareId' => 'overlayShare'])
+                    </div>
+
                 </div>
             </div>
 
@@ -1118,6 +1158,7 @@
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
+    @include('partials.saved-script')
     <script src="{{ asset('vendor/three.min.js') }}" defer></script>
     <script src="{{ asset('hero3d.js') }}?v={{ filemtime(public_path('hero3d.js')) }}" defer></script>
 </body>

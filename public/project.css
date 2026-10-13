@@ -89,6 +89,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .pp-lang { color: var(--gold); border-color: rgba(245,197,24,.35); text-transform: none; letter-spacing: 0; font-size: 13px; }
 .pp-top__link:hover, .pp-lang:hover { border-color: var(--gold); color: var(--gold); }
 [dir="rtl"] .pp-top__link { letter-spacing: 0; font-size: 13px; }
+/* "Saved (n)": the visitor's hearted projects, once there are any (saved.js) */
+.pp-saved { gap: 6px; padding: 0 13px; color: var(--gold); border-color: rgba(245,197,24,.35); }
+.pp-saved .icon-heart { width: 14px; height: 14px; fill: var(--gold); stroke: var(--gold); }
+.pp-saved__n { font-size: 12px; letter-spacing: 0; }
 
 /* ---- Hero ------------------------------------------------- */
 .pp-hero {
@@ -187,16 +191,21 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     background: rgba(245,197,24,.07); border: 1px solid rgba(245,197,24,.22);
     color: rgba(245,197,24,.85);
 }
-.pp-share {
+/* Save it (the heart), share it on WhatsApp, or share / copy its link */
+.pp-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; }
+.pp-act {
     display: inline-flex; align-items: center; gap: 10px;
-    margin-top: 40px; height: 42px; padding: 0 20px; border-radius: 100px;
+    height: 42px; padding: 0 18px; border-radius: 100px;
     border: 1px solid rgba(255,255,255,.16);
     font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
-    transition: border-color .25s, color .25s;
+    transition: border-color .25s, color .25s, background .25s;
 }
-[dir="rtl"] .pp-share { letter-spacing: 0; font-size: 13px; }
-.pp-share:hover, .pp-share.is-done { border-color: var(--gold); color: var(--gold); }
-.pp-share svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+[dir="rtl"] .pp-act { letter-spacing: 0; font-size: 13px; }
+.pp-act:hover, .pp-act.is-done { border-color: var(--gold); color: var(--gold); }
+.pp-act--save.is-saved { border-color: rgba(245,197,24,.5); color: var(--gold); background: rgba(245,197,24,.08); }
+.pp-act--wa { color: #25D366; border-color: rgba(37,211,102,.35); }
+.pp-act--wa:hover { color: #25D366; border-color: #25D366; background: rgba(37,211,102,.08); }
+.pp-act--wa svg { width: 16px; height: 16px; }
 
 .pp-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
 .pp-fact {
@@ -489,6 +498,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     .pp-brand__sub { display: none; }
     .pp-top__link span:last-child { display: none; }       /* the arrow alone is enough */
     .pp-top__link { width: 36px; padding: 0; justify-content: center; }
+    .pp-top .pp-saved { width: auto; padding: 0 11px; }    /* ...but the count is the point */
+    .pp-top .pp-saved .pp-saved__n { display: inline; }
     .pp-hero { height: 78vh; min-height: 460px; }
     .pp-hero__photos { bottom: auto; top: 76px; }
     .pp-gallery { grid-template-columns: 1fr; gap: 8px; }

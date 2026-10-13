@@ -168,11 +168,24 @@
                         @endforeach
                     </ul>
                 @endif
-                <button class="pp-share" type="button" id="ppShare"
-                        data-title="{{ $title }}" data-url="{{ site_url($path) }}" data-copied="{{ bival('pp_copied') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>
-                    <span class="pp-share__label">{{ bival('pp_share') }}</span>
-                </button>
+                {{-- Keep it (the heart — saved.js), or pass it on: on WhatsApp,
+                     which asks whom to send it to, or anywhere else (engage.js). --}}
+                @php
+                    $shareText = str_replace(['{project}', '{url}'], [$name, site_url($path)], bival('share_wa_text'));
+                @endphp
+                <div class="pp-actions">
+                    <button class="pp-act pp-act--save" type="button" data-save="{{ $project->slug }}" data-save-at="project" aria-pressed="false">
+                        @include('partials.icon-heart')
+                        <span data-save-label>{{ bival('save_add') }}</span>
+                    </button>
+                    <a class="pp-act pp-act--wa" href="https://wa.me/?text={{ rawurlencode($shareText) }}" target="_blank" rel="noopener"
+                       data-share="whatsapp" data-share-at="project" data-share-project="{{ $project->slug }}">
+                        @include('partials.icon-whatsapp')
+                        <span>{{ bival('share_wa') }}</span>
+                    </a>
+                    @include('partials.share-link', ['shareClass' => 'pp-act', 'shareAt' => 'project', 'shareProject' => $project->slug,
+                        'shareUrl' => site_url($path), 'shareTitle' => $title])
+                </div>
             </div>
 
             @if ($facts)
@@ -406,5 +419,6 @@
     @endif
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
+    @include('partials.saved-script')
 </body>
 </html>

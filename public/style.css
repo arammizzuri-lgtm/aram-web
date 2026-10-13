@@ -577,6 +577,27 @@ img { display: block; max-width: 100%; }
 }
 .nav__link:hover::after { width: 100%; }
 .nav__sep { width: 1px; height: 15px; background: rgba(255,255,255,.16); }
+
+/* "Saved (n)": the visitor's hearted projects, once there are any (saved.js).
+   In the bar on desktop; beside the menu button on phones, where the bar
+   folds away. */
+.nav__saved { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); cursor: none; }
+.nav__saved .icon-heart { width: 13px; height: 13px; fill: var(--gold); stroke: var(--gold); }
+.nav__saved-n {
+    display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: rgba(245,197,24,.16); font-size: 10px; letter-spacing: 0;
+}
+.nav__saved-m { display: none; }
+@media (max-width: 768px) {
+    .nav__saved-m:not([hidden]) {
+        display: inline-flex; align-items: center; gap: 5px;
+        position: absolute; top: 12px; right: 58px;
+        height: 30px; padding: 0 11px; border-radius: 100px;
+        background: rgba(245,197,24,.12); border: 1px solid rgba(245,197,24,.32);
+        color: var(--gold); font-size: 12px;
+    }
+    .nav__saved-m .icon-heart { width: 13px; height: 13px; fill: var(--gold); stroke: var(--gold); }
+}
 .lang-toggle {
     background: rgba(245,197,24,.14); color: var(--gold);
     border: 1px solid rgba(245,197,24,.32); border-radius: 100px;
@@ -1278,6 +1299,26 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 .pgc:hover .pgc__cta { opacity: 1; transform: scale(1); }
 .pgc__cta:hover { background: rgba(255,255,255,.18); }
+
+/* The heart (saved.js): beside the arrow on hover, and always there once
+   saved. On touch, with no hover and no arrow, it holds the corner. */
+.pgc__save {
+    position: absolute; top: 16px; inset-inline-end: 60px; z-index: 5;
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; cursor: none;
+    background: rgba(7,7,12,.4); color: #fff;
+    border: 1px solid rgba(255,255,255,.18);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    opacity: 0; transform: scale(.72);
+    transition: opacity .3s, transform .36s cubic-bezier(.34,1.5,.64,1), border-color .2s, color .2s;
+}
+.pgc:hover .pgc__save, .pgc__save:focus-visible, .pgc__save.is-saved { opacity: 1; transform: none; }
+.pgc__save:hover { border-color: var(--gold); color: var(--gold); }
+.pgc__save.is-saved { border-color: rgba(245,197,24,.5); background: rgba(7,7,12,.55); }
+.pgc__save .icon-heart { width: 16px; height: 16px; }
+@media (hover: none) {
+    .pgc__save { top: 12px; inset-inline-end: 12px; opacity: 1; transform: none; }
+}
 .pgc__cta-arrow {
     font-size: 16px; color: rgba(255,255,255,.85);
     transition: transform .22s var(--ease-out);
@@ -2106,6 +2147,8 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: 11px; transition: color .25s, border-color .25s;
 }
 .form-about__clear:hover { color: var(--gold); border-color: rgba(245,197,24,.5); }
+.form-saved .form-about__label { display: inline-flex; align-items: center; gap: 6px; }
+.form-saved .icon-heart { width: 12px; height: 12px; fill: var(--gold); stroke: var(--gold); }
 
 /* spam trap: present for bots, nowhere for people */
 .form-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
@@ -2178,6 +2221,28 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .od-cta__btn--wa svg { width: 16px; height: 16px; }
 [dir="rtl"] .od-cta__btn { letter-spacing: 0; font-size: 13px; }
 [dir="rtl"] .od-cta__arrow { display: inline-block; transform: scaleX(-1); }
+
+/* Keep it (the heart) or pass it on (engage.js): quieter than the two
+   calls to action above it */
+.od-share {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .5s, transform .5s var(--ease-out);
+}
+.proj-overlay.open .od-share { opacity: 1; transform: none; transition-delay: 1.36s; }
+.od-share[hidden] { display: none; }
+.od-share__btn {
+    display: inline-flex; align-items: center; gap: 6px; cursor: none;
+    height: 34px; padding: 0 11px; border-radius: 100px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.13);
+    color: rgba(255,255,255,.8); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+    transition: border-color .25s, color .25s, background .25s;
+}
+[dir="rtl"] .od-share__btn { letter-spacing: 0; font-size: 12px; }
+.od-share__btn:hover, .od-share__btn.is-done { border-color: rgba(245,197,24,.5); color: var(--gold); }
+.od-share__btn svg { width: 14px; height: 14px; }
+.od-share__btn--wa:hover { border-color: rgba(37,211,102,.5); color: #25D366; }
+.od-share__btn--save.is-saved { color: var(--gold); border-color: rgba(245,197,24,.45); background: rgba(245,197,24,.08); }
 
 /* ── Client quotes ────────────────────────────────────────── */
 .quotes {

@@ -45,6 +45,13 @@ class ContactMessageForm
                             ->formatStateUsing(fn (ContactMessage $r) => $r->timelineLabel()),
                         TextEntry::make('project.name')->label('Was looking at')->placeholder('—')
                             ->url(fn (ContactMessage $r) => $r->project?->hasPage() ? $r->project->pageUrl($r->lang ?? 'en') : null, true),
+                        TextEntry::make('saved_projects')->label('Had saved')->placeholder('—')
+                            ->state(fn (ContactMessage $r) => $r->savedProjects()
+                                ->map(fn ($p) => $p->hasPage()
+                                    ? '<a href="'.e($p->pageUrl($r->lang ?? 'en')).'" target="_blank" rel="noopener" style="text-decoration:underline">'.e($p->name).'</a>'
+                                    : e($p->name))
+                                ->implode(' · ') ?: null)
+                            ->html()->columnSpanFull(),
                         TextEntry::make('source')->label('Came to the site from')->placeholder('—')
                             ->formatStateUsing(fn (?string $state) => TrafficSource::label($state)),
                         TextEntry::make('lang')->label('Wrote in')->placeholder('—')

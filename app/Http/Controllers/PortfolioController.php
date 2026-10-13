@@ -79,6 +79,9 @@ class PortfolioController extends Controller
                 'number' => $wa,
                 'project' => ['en' => SiteText::en('wa_text_project'), 'ku' => SiteText::ku('wa_text_project')],
             ] : null,
+            // Sharing the open project on WhatsApp: the message, with its name
+            // and link put in ({project}, {url}).
+            'share' => ['en' => SiteText::en('share_wa_text'), 'ku' => SiteText::ku('share_wa_text')],
             // CARTO basemap key, appended to every tile URL (see cartoTiles in
             // script.js). It is a public, domain-restricted key by design.
             'cartoKey' => config('services.carto.basemaps_key'),

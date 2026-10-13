@@ -11,6 +11,7 @@
         'Budget' => $e->budgetLabel(),
         'Timeline' => $e->timelineLabel(),
         'Was looking at' => $e->project?->name,
+        'Had saved' => $e->savedProjects()->pluck('name')->implode(' · '),
         'Wrote in' => $e->lang === 'ku' ? 'Kurdish' : ($e->lang === 'en' ? 'English' : null),
     ], 'filled');
     $btn = 'display:inline-block;margin:0 8px 8px 0;padding:11px 18px;border-radius:8px;font:600 13px/1 -apple-system,Segoe UI,Arial,sans-serif;text-decoration:none;';

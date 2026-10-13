@@ -56,10 +56,10 @@ class Insights
 
     /**
      * The projects people look at most — opened in the homepage overlay or
-     * read on their own page — with the WhatsApp taps and enquiries each led
-     * to.
+     * read on their own page — with how often each was saved (the heart) and
+     * shared, and the WhatsApp taps and enquiries each led to.
      *
-     * @return array<int, array{project: Project, opens: int, pages: int, views: int, whatsapp: int, enquiries: int}>
+     * @return array<int, array{project: Project, opens: int, pages: int, views: int, saves: int, shares: int, whatsapp: int, enquiries: int}>
      */
     public static function topProjects(Carbon $start, Carbon $end, int $limit = 8): array
     {
@@ -84,22 +84,27 @@ class Insights
             ->pluck('c', 'project_id');
         $opens = $events(SiteEvent::PROJECT_OPEN);
         $whatsapp = $events(SiteEvent::WHATSAPP_CLICK);
+        $saves = $events(SiteEvent::SAVE);
+        $shares = $events(SiteEvent::SHARE);
 
         $enquiries = ContactMessage::query()->whereBetween('created_at', [$start, $end])
             ->whereNotNull('project_id')
             ->selectRaw('project_id, count(*) as c')->groupBy('project_id')
             ->pluck('c', 'project_id');
 
-        $rows = collect(array_unique([...array_keys($pages), ...$opens->keys(), ...$whatsapp->keys(), ...$enquiries->keys()]))
+        $rows = collect(array_unique([...array_keys($pages), ...$opens->keys(), ...$whatsapp->keys(),
+            ...$saves->keys(), ...$shares->keys(), ...$enquiries->keys()]))
             ->map(fn ($id) => [
                 'id' => (int) $id,
                 'opens' => (int) ($opens[$id] ?? 0),
                 'pages' => (int) ($pages[$id] ?? 0),
+                'saves' => (int) ($saves[$id] ?? 0),
+                'shares' => (int) ($shares[$id] ?? 0),
                 'whatsapp' => (int) ($whatsapp[$id] ?? 0),
                 'enquiries' => (int) ($enquiries[$id] ?? 0),
             ])
             ->map(fn ($r) => $r + ['views' => $r['opens'] + $r['pages']])
-            ->sortByDesc(fn ($r) => [$r['views'], $r['enquiries'], $r['whatsapp']])
+            ->sortByDesc(fn ($r) => [$r['views'], $r['enquiries'], $r['saves'], $r['whatsapp']])
             ->take($limit)->values();
 
         $projects = Project::query()->whereIn('id', $rows->pluck('id'))->get()->keyBy('id');

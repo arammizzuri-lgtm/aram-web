@@ -205,6 +205,30 @@ class SiteText
                 'pp_tour'         => ['360° tour — start button', 'Start the 360° tour', 'گەشتی ٣٦٠° دەستپێبکە'],
             ],
 
+            // The heart on every project, the "Saved" list it builds (/saved)
+            // and the share buttons. {project} is a project's name, {url} the
+            // link being shared.
+            'Saved & sharing' => [
+                'saved_nav'          => ['Top bar — saved projects', 'Saved', 'پاشەکەوتکراو'],
+                'save_add'           => ['Heart — save', 'Save', 'پاشەکەوتکردن'],
+                'save_added'         => ['Heart — saved', 'Saved', 'پاشەکەوتکرا'],
+                'saved_label'        => ['Saved page — label', 'Saved projects', 'پرۆژە پاشەکەوتکراوەکان'],
+                'saved_title'        => ['Saved page — title (your own list)', 'Your shortlist', 'لیستە کورتەکەت'],
+                'saved_title_shared' => ['Saved page — title (a list someone shared)', 'Projects shared with you', 'ئەو پرۆژانەی بۆت نێردراون'],
+                'saved_intro'        => ['Saved page — introduction', 'Tap the heart on any project to keep it here. Send the list to the studio, or share it with your family on WhatsApp.', 'دڵ لەسەر هەر پرۆژەیەک دابگرە بۆ ئەوەی لێرە بمێنێتەوە. لیستەکە بۆ ستۆدیۆ بنێرە، یان لە واتسئاپ لەگەڵ خێزانەکەت هاوبەشی بکە.', 'area'],
+                'saved_intro_shared' => ['Saved page — introduction (a list someone shared)', 'Someone picked these projects by Aram Mizuri Architecture for you.', 'کەسێک ئەم پرۆژانەی تەڵارسازیی ئارام مزووری بۆ تۆ هەڵبژاردووە.', 'area'],
+                'saved_empty'        => ['Saved page — nothing saved', 'Nothing saved yet — tap the heart on a project you like and it will wait for you here.', 'هێشتا هیچت پاشەکەوت نەکردووە — دڵ لەسەر ئەو پرۆژەیە دابگرە کە بەدڵتە و لێرە چاوەڕێت دەکات.', 'area'],
+                'saved_browse'       => ['Saved page — browse button', 'Browse projects', 'سەیری پرۆژەکان بکە'],
+                'saved_ask'          => ['Saved page — ask button', 'Ask the studio about these', 'دەربارەی ئەمانە لە ستۆدیۆ بپرسە'],
+                'saved_keep'         => ['Saved page — keep a shared list', 'Save these to my list', 'ئەمانە بۆ لیستەکەی خۆم پاشەکەوت بکە'],
+                'saved_kept'         => ['Saved page — shared list kept', 'Added to your list', 'زیادکرا بۆ لیستەکەت'],
+                'saved_wa_text'      => ['WhatsApp — sharing a saved list ({url})', 'A few projects by Aram Mizuri Architecture I like: {url}', 'چەند پرۆژەیەکی تەڵارسازیی ئارام مزووری کە بەدڵمن: {url}', 'area'],
+                'share_wa'           => ['Share — on WhatsApp', 'Share on WhatsApp', 'لە واتسئاپ هاوبەشی بکە'],
+                'share_wa_text'      => ['WhatsApp — sharing a project ({project}, {url})', 'Have a look at “{project}” by Aram Mizuri Architecture: {url}', 'سەیری «{project}» بکە، کارێکی تەڵارسازیی ئارام مزووری: {url}', 'area'],
+                'share_copy'         => ['Share — copy link (computers, where there is no share menu)', 'Copy link', 'کۆپیکردنی بەستەر'],
+                'form_saved'         => ['Enquiry form — saved projects chip', 'Saved', 'پاشەکەوتکراو'],
+            ],
+
             // The careers page (/careers). Positions themselves are managed
             // under Careers → Positions; this is the wording around them.
             'Careers' => [

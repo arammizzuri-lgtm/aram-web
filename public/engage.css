@@ -1,8 +1,8 @@
 /* =========================================================
    ARAM MIZURI ARCHITECTURE — engage.css
-   The floating WhatsApp button, shared by the homepage and project pages
-   (behaviour in engage.js). Colours fall back to literals so it renders
-   the same under either page's stylesheet.
+   What the homepage and the standalone pages share: the floating WhatsApp
+   button (engage.js), and the hearts and share icons (saved.js). Colours
+   are literals so they render the same under either page's stylesheet.
    ========================================================= */
 
 .wa-fab {
@@ -35,4 +35,25 @@
 
 @media (prefers-reduced-motion: reduce) {
     .wa-fab, .wa-fab__label { transition: none; }
+}
+
+/* ---- Hearts and share icons (saved.js, engage.js) --------------
+   Shared by every page that has them. A heart is an outline until its
+   project is saved, then filled gold, with a small pop as it turns on;
+   "Saved (n)" in a top bar gives a nudge when the list grows. */
+.icon-heart {
+    flex: none; width: 16px; height: 16px;
+    fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round;
+    transition: fill .25s, stroke .25s;
+}
+.is-saved .icon-heart { fill: #F5C518; stroke: #F5C518; }
+.is-pop .icon-heart { animation: heartPop .45s cubic-bezier(.16,1,.3,1); }
+@keyframes heartPop { 40% { transform: scale(1.4); } }
+.icon-share { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+[data-saved-link][hidden] { display: none !important; }
+.is-bump { animation: savedBump .5s cubic-bezier(.16,1,.3,1); }
+@keyframes savedBump { 40% { transform: scale(1.14); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .is-pop .icon-heart, .is-bump { animation: none; }
 }

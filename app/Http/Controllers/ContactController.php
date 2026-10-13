@@ -7,6 +7,7 @@ use App\Mail\NewEnquiry;
 use App\Models\ContactMessage;
 use App\Models\Project;
 use App\Support\Enquiry;
+use App\Support\SavedProjects;
 use App\Support\StudioMail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,10 +42,14 @@ class ContactController extends Controller
             'budget' => ['nullable', Rule::in(array_keys(Enquiry::budgets()))],
             'timeline' => ['nullable', Rule::in(array_keys(Enquiry::timelines()))],
             'about' => ['nullable', 'string', 'max:191'],      // slug of the project they were viewing
+            'saved' => ['nullable', 'array', 'max:'.SavedProjects::MAX],   // slugs of the projects they had saved
+            'saved.*' => ['nullable', 'string', 'max:191'],
             'message' => ['nullable', 'string', 'max:5000'],
             'lang' => ['nullable', Rule::in(['en', 'ku'])],
             'page' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $saved = SavedProjects::projects(SavedProjects::slugs($data['saved'] ?? []))->pluck('id')->all();
 
         $enquiry = ContactMessage::create([
             'name' => $data['name'],
@@ -58,6 +63,7 @@ class ContactController extends Controller
             'project_id' => filled($data['about'] ?? null)
                 ? Project::query()->where('slug', $data['about'])->value('id')
                 : null,
+            'saved_projects' => $saved ?: null,
             'page' => $data['page'] ?? null,
             'lang' => $data['lang'] ?? null,
             // where this visitor first came from (TrackPageView)

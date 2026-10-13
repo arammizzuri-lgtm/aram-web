@@ -6,19 +6,20 @@ use App\Enums\LeadStatus;
 use App\Support\Enquiry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 /**
  * ContactMessage
  *
  * An enquiry from the public form — who, how to reach them, what they want to
- * build, which project brought them — and, once it is in the admin, where it
- * stands (status) and what has been said (notes).
+ * build, which project brought them and which they had saved — and, once it
+ * is in the admin, where it stands (status) and what has been said (notes).
  */
 class ContactMessage extends Model
 {
     protected $fillable = [
         'name', 'email', 'phone', 'project_type', 'city', 'plot_area', 'budget', 'timeline',
-        'project_id', 'page', 'lang', 'source', 'message', 'status', 'notes', 'is_read', 'ip_address',
+        'project_id', 'saved_projects', 'page', 'lang', 'source', 'message', 'status', 'notes', 'is_read', 'ip_address',
     ];
 
     protected $attributes = [
@@ -28,6 +29,7 @@ class ContactMessage extends Model
     protected $casts = [
         'is_read' => 'boolean',
         'plot_area' => 'integer',
+        'saved_projects' => 'array',
         'status' => LeadStatus::class,
     ];
 
@@ -35,6 +37,23 @@ class ContactMessage extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * The projects they had saved (hearted) when they wrote, in their order;
+     * any deleted since are left out.
+     *
+     * @return Collection<int, Project>
+     */
+    public function savedProjects(): Collection
+    {
+        $ids = array_map('intval', $this->saved_projects ?? []);
+        if ($ids === []) {
+            return collect();
+        }
+        $found = Project::query()->whereIn('id', $ids)->get()->keyBy('id');
+
+        return collect($ids)->map(fn ($id) => $found[$id] ?? null)->filter()->values();
     }
 
     public function typeLabel(): ?string
