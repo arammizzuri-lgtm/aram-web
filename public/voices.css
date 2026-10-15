@@ -30,13 +30,10 @@
     background: radial-gradient(circle at 36% 30%, #F7F3EB 0%, #ECE6DB 62%, #DED7CA 100%);
     box-shadow: 0 22px 50px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.05);
 }
+/* The finished drawing as a plain image, until the page has the strokes to
+   draw it with (pencil.js) — then blank paper, for the pencil to start on. */
 .cv__sketch, .cv__draw { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.cv__sketch { transition: opacity .6s; }
-.cv__draw { opacity: 0; }
-/* once the page can draw it, the finished drawing steps back to a ghost
-   beneath — a trace on the paper for the pencil to follow */
-.cv.is-ready .cv__sketch { opacity: .08; }
-.cv.is-ready .cv__draw { opacity: 1; }
+.cv.is-ready .cv__sketch { visibility: hidden; }
 
 .cv__orbit {
     position: absolute; inset: 0;
@@ -144,6 +141,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cv__tilt, .cv__play, .cv__bar, .cv__sketch { transition: none; }
+    .cv__tilt, .cv__play, .cv__bar { transition: none; }
     .cv__orbit, .cv__seal, .cv.is-playing .cv-read__wave { animation: none; }
 }

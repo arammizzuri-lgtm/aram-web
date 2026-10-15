@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Testimonials\Schemas;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\Testimonial;
-use App\Support\PortraitSketch;
 use App\Support\ReadAloud;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -13,13 +12,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ViewField;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
 class TestimonialForm
@@ -101,19 +99,12 @@ class TestimonialForm
                         ->imageResizeMode('contain')->imageResizeTargetWidth('1200')->imageResizeTargetHeight('1200')
                         ->imageResizeUpscale(false)
                         ->maxSize(12288)
-                        ->helperText('Crop it close around the face (the pencil icon). A well-lit photo against a plain wall draws best.'),
-                    // the drawing beside the photo it was made from, with the pencil that drew it
-                    Group::make([
-                        TextEntry::make('sketch_preview')->label('The drawing')
-                            ->visible(fn (?Testimonial $record) => filled($record?->portrait))
-                            ->state(fn (Testimonial $record) => $record->portrait_sketch
-                                ? new HtmlString('<img src="'.e(Storage::disk('public')->url($record->portrait_sketch)).'" alt="" width="200" height="200" style="border-radius:50%;background:#EFEBE3;box-shadow:0 0 0 1px rgba(0,0,0,.12)">')
-                                : 'This photo could not be drawn — try another one (JPEG, PNG or WebP).'),
-                        Select::make('sketch_detail')->label('Pencil')
-                            ->options(PortraitSketch::details())->default('balanced')
-                            ->selectablePlaceholder(false)->native(false)
-                            ->helperText('Too faint, or too busy? Change this and save: it is drawn again.'),
-                    ]),
+                        ->helperText('Crop it close around the face (the pencil icon). A well-lit photo, facing the camera, draws best. Save, and it is drawn here.'),
+                    // drawn in this browser from the saved photo, beside it (portrait-drawer.js)
+                    ViewField::make('drawing')->label('The drawing')
+                        ->view('filament.portrait-drawer')
+                        ->visible(fn (?Testimonial $record) => filled($record?->portrait))
+                        ->dehydrated(false),
                 ]),
         ]);
     }

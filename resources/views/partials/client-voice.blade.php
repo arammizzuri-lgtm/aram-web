@@ -29,10 +29,9 @@
             <div class="cv__portrait">
                 <div class="cv__tilt">
                     <div class="cv__paper">
-                        <img class="cv__sketch" src="{{ $cvSketch }}" width="560" height="560" loading="lazy" decoding="async"
+                        <img class="cv__sketch" src="{{ $cvSketch }}" width="512" height="512" loading="lazy" decoding="async"
                              alt="{{ bi('Pencil portrait of '.$cvNameEn, 'وێنەی قەڵەمڕەساسی '.$cvNameKu) }}"
                              data-alt-en="Pencil portrait of {{ $cvNameEn }}" data-alt-ku="وێنەی قەڵەمڕەساسی {{ $cvNameKu }}">
-                        <canvas class="cv__draw" width="560" height="560" aria-hidden="true"></canvas>
                     </div>
                     <div class="cv__orbit" aria-hidden="true">
                         <svg class="cv__ring" viewBox="0 0 240 240">

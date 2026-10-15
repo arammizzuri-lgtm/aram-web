@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\PortraitSketch;
+use App\Support\PortraitDrawing;
 use App\Support\ReadAloud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,8 +17,10 @@ use RuntimeException;
  *
  * It can also carry the client's voice note and a pencil portrait drawn from
  * their photo. The photo is kept on the private disk and never published;
- * the drawing is made from it on save. Neither voice nor drawing is shown
- * until the client's agreement is ticked (media_consent).
+ * the drawing is made from it in the admin's browser, stroke by stroke
+ * (public/portrait-drawer.js), and written here as an SVG drawing
+ * (App\Support\PortraitDrawing). Neither voice nor drawing is shown until
+ * the client's agreement is ticked (media_consent).
  *
  * Without a voice note of their own, a quote can be read aloud by a computer
  * voice, said as much on the page (App\Support\ReadAloud): English by the
@@ -44,15 +46,13 @@ class Testimonial extends Model
     protected static function booted(): void
     {
         static::created(function (Testimonial $t) {
-            if ($t->portrait) {
-                $t->redrawPortrait();
-            }
             $t->refreshReading();
         });
 
         static::updated(function (Testimonial $t) {
-            // Read before the redraw below, whose own save forgets what changed.
+            // Read before the saves below, which forget what changed.
             $reread = $t->wasChanged(['quote_ku', 'voice', 'media_consent']);
+            $newPhoto = $t->wasChanged('portrait');
 
             // a voice or photo replaced or removed: the old file goes with it.
             $oldVoice = $t->getOriginal('voice');
@@ -60,13 +60,14 @@ class Testimonial extends Model
                 Storage::disk('public')->delete($oldVoice);
             }
             $oldPhoto = $t->getOriginal('portrait');
-            if ($t->wasChanged('portrait') && $oldPhoto) {
+            if ($newPhoto && $oldPhoto) {
                 Storage::disk(self::PHOTO_DISK)->delete($oldPhoto);
             }
 
-            // a new photo, or the same one drawn with a different pencil
-            if ($t->wasChanged(['portrait', 'sketch_detail'])) {
-                $t->redrawPortrait();
+            // a drawing of another photo is not a drawing of this one: the
+            // admin draws the new one when the quote is next opened
+            if ($newPhoto) {
+                $t->dropDrawing();
             }
 
             // new Kurdish words, or the client's own voice come or gone
@@ -88,29 +89,42 @@ class Testimonial extends Model
     }
 
     /**
-     * Draw (or redraw) the pencil portrait from the photo, or drop it when
-     * the photo has gone. Each drawing gets a new name, so a redrawn one is
-     * never served from a cache as the old.
+     * Keep the portrait drawn in the admin: $payload is its strokes (see
+     * App\Support\PortraitDrawing), drawn with the pencil $detail. Each
+     * drawing gets a new name, so a redrawn one is never served from a cache
+     * as the old. Throws InvalidArgumentException for anything but strokes.
+     *
+     * @param  array<string, mixed>  $payload
      */
-    public function redrawPortrait(): void
+    public function storeDrawing(array $payload, string $detail = 'balanced'): void
     {
+        $svg = PortraitDrawing::svg($payload);
         $old = $this->portrait_sketch;
-        $new = null;
+        $rel = 'testimonials/drawings/'.Str::random(32).'.svg';
+        Storage::disk('public')->put($rel, $svg);
 
-        if ($this->portrait) {
-            $ext = function_exists('imagewebp') ? 'webp' : 'png';
-            $rel = 'testimonials/sketches/'.Str::random(32).'.'.$ext;
-            $photo = Storage::disk(self::PHOTO_DISK)->path($this->portrait);
-            if (PortraitSketch::generate($photo, Storage::disk('public')->path($rel), $this->sketch_detail ?: 'balanced')) {
-                $new = $rel;
-            }
-        }
-
-        $this->portrait_sketch = $new;
-        $this->saveQuietly();
-        if ($old && $old !== $new) {
+        $this->forceFill([
+            'portrait_sketch' => $rel,
+            'sketch_detail' => in_array($detail, ['soft', 'balanced', 'strong'], true) ? $detail : 'balanced',
+        ])->saveQuietly();
+        if ($old) {
             Storage::disk('public')->delete($old);
         }
+    }
+
+    private function dropDrawing(): void
+    {
+        if (! $this->portrait_sketch) {
+            return;
+        }
+        Storage::disk('public')->delete($this->portrait_sketch);
+        $this->forceFill(['portrait_sketch' => null])->saveQuietly();
+    }
+
+    /** Whether the photo still waits to be drawn — in the admin, when the quote is opened. */
+    public function needsDrawing(): bool
+    {
+        return filled($this->portrait) && ! str_ends_with((string) $this->portrait_sketch, '.svg');
     }
 
     /**
@@ -196,7 +210,8 @@ class Testimonial extends Model
     /** The pencil portrait's address, once the client has agreed to it being shown. */
     public function sketchUrl(): ?string
     {
-        return $this->media_consent && $this->portrait_sketch ? asset('storage/'.$this->portrait_sketch) : null;
+        return $this->media_consent && $this->portrait && str_ends_with((string) $this->portrait_sketch, '.svg')
+            ? asset('storage/'.$this->portrait_sketch) : null;
     }
 
     /** The voice note's address, once the client has agreed to it being heard. */

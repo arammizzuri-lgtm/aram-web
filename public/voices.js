@@ -18,7 +18,6 @@
     const isKu = () => document.documentElement.getAttribute('dir') === 'rtl';
     const pick = (el, name) => el.dataset[name + (isKu() ? 'Ku' : 'En')] || el.dataset[name + 'En'] || '';
     const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
-    const smooth = t => t * t * (3 - 2 * t);
 
     // On the homepage the quotes take turns in one place (engage.js): only
     // the one on show counts as visible.
@@ -28,114 +27,69 @@
     };
 
     /* ---- The drawing ------------------------------------------
-       The drawing's pixels go down in an order a hand might follow: the
-       darkest lines first (the outline and the features), the shading
-       last, starting at the face and working outwards region by region.
-       Every pixel gets a moment between 0 and 1, spread evenly over the
-       drawing, and render(p) shows the pixels whose moment has come — each
-       fading in over a short stretch, so the lines grow rather than pop. */
+       The portrait is an SVG of strokes in the order they were drawn
+       (App\Support\PortraitDrawing). It is fetched and set on the paper,
+       and pencil.js draws it line after line: guide lines, the outline, the
+       features, the hair, the shading. Until then — and without
+       JavaScript — the finished drawing shows as a plain image. */
     function Drawing(card) {
         const img = card.querySelector('.cv__sketch');
-        const canvas = card.querySelector('.cv__draw');
-        if (!img || !canvas || !canvas.getContext) return null;
-        const ctx = canvas.getContext('2d');
-        const n = canvas.width;
-        let alpha, order, moment, out, ready = null, frame = 0, shown = -1;
+        const paper = card.querySelector('.cv__paper');
+        if (!img || !paper || typeof window.pencil !== 'function' || !window.fetch || !window.DOMParser) return null;
+        let pen = null, ready = null, frame = 0;
 
-        function prepare() {
-            const off = document.createElement('canvas');
-            off.width = off.height = n;
-            const octx = off.getContext('2d', { willReadFrequently: true });
-            octx.drawImage(img, 0, 0, n, n);
-            const src = octx.getImageData(0, 0, n, n);
-            const px = src.data;
-
-            alpha = new Uint8ClampedArray(n * n);
-            const inked = [];
-            for (let i = 0; i < n * n; i++) {
-                alpha[i] = px[i * 4 + 3];
-                px[i * 4 + 3] = 0;                     // the drawing starts as blank paper
-                if (alpha[i] > 3) inked.push(i);
-            }
-            order = Uint32Array.from(inked);
-            out = src;
-
-            // regions: smooth value noise over a coarse grid of random heights
-            const G = 6, grid = [];
-            for (let k = 0; k < (G + 1) * (G + 1); k++) grid.push(Math.random());
-            const at = (gx, gy) => grid[gy * (G + 1) + gx];
-
-            const raw = new Float32Array(order.length);
-            let lo = Infinity, hi = -Infinity;
-            for (let k = 0; k < order.length; k++) {
-                const i = order[k], x = i % n, y = (i / n) | 0;
-                const dx = x / n - 0.5, dy = y / n - 0.42;
-                const fromFace = Math.min(1, Math.sqrt(dx * dx + dy * dy) / 0.6);
-                const gx = x / n * G, gy = y / n * G, x0 = gx | 0, y0 = gy | 0;
-                const fx = smooth(gx - x0), fy = smooth(gy - y0);
-                const top = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * fx;
-                const bottom = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * fx;
-                const region = top + (bottom - top) * fy;
-                const v = 0.5 * (1 - alpha[i] / 255) + 0.28 * fromFace + 0.22 * region;
-                raw[k] = v;
-                if (v < lo) lo = v;
-                if (v > hi) hi = v;
-            }
-
-            // spread evenly: each pixel's moment is its rank among them all
-            const B = 1024, hist = new Uint32Array(B), span = (hi - lo) || 1;
-            const bin = v => Math.min(B - 1, ((v - lo) / span * B) | 0);
-            for (let k = 0; k < raw.length; k++) hist[bin(raw[k])]++;
-            const before = new Float32Array(B);
-            for (let b = 1; b < B; b++) before[b] = before[b - 1] + hist[b - 1];
-            moment = new Float32Array(raw.length);
-            for (let k = 0; k < raw.length; k++) moment[k] = before[bin(raw[k])] / raw.length;
-        }
-
-        function render(p) {
-            p = clamp01(p);
-            if (Math.abs(p - shown) < 0.002 && p > 0 && p < 1) return;
-            shown = p;
-            const data = out.data, soft = 0.07, edge = p * (1 + soft);
-            for (let k = 0; k < order.length; k++) {
-                const i = order[k], f = (edge - moment[k]) / soft;
-                data[i * 4 + 3] = f <= 0 ? 0 : f >= 1 ? alpha[i] : alpha[i] * f;
-            }
-            ctx.putImageData(out, 0, 0);
-        }
-
-        // Ready once the drawing's image has arrived; null if it never can be
-        // (the canvas is then never shown, and the plain image stays).
+        // Ready once the drawing has arrived and is on the paper, unseen;
+        // false if it never can be (the plain image then stays).
         function whenReady() {
             if (!ready) {
-                ready = (img.decode ? img.decode() : Promise.resolve())
-                    .then(() => { prepare(); render(still ? 1 : 0); card.classList.add('is-ready'); return true; })
+                ready = fetch(img.currentSrc || img.src, { credentials: 'same-origin' })
+                    .then(r => (r.ok ? r.text() : Promise.reject()))
+                    .then(text => {
+                        const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+                        const svg = doc.documentElement;
+                        if (!svg || svg.nodeName.toLowerCase() !== 'svg') throw new Error('not a drawing');
+                        const drawn = document.importNode(svg, true);
+                        drawn.setAttribute('class', 'cv__draw');
+                        drawn.setAttribute('aria-hidden', 'true');
+                        paper.appendChild(drawn);
+                        pen = window.pencil(drawn);
+                        pen.render(still ? 1 : 0);
+                        card.classList.add('is-ready');
+                        return true;
+                    })
                     .catch(() => false);
             }
             return ready;
         }
 
+        function stop() {
+            cancelAnimationFrame(frame);
+            card.classList.remove('is-drawing');
+        }
+
         return {
             whenReady,
-            // draws itself over a few seconds — unless the voice is drawing it
+            // draws itself, at an even pace — unless a voice is drawing it
             sketch() {
                 if (still) return;
                 whenReady().then(ok => {
                     if (!ok || card.classList.contains('is-playing')) return;
-                    cancelAnimationFrame(frame);
-                    const t0 = performance.now(), length = 3400;
+                    stop();
+                    card.classList.add('is-drawing');
+                    const t0 = performance.now(), length = 7500;
                     const step = now => {
                         const t = clamp01((now - t0) / length);
-                        render(1 - Math.pow(1 - t, 1.7));
+                        pen.render(t);
                         if (t < 1) frame = requestAnimationFrame(step);
+                        else card.classList.remove('is-drawing');
                     };
                     frame = requestAnimationFrame(step);
                 });
             },
             // the voice's progress, from 0 to 1, drawn
             follow(p) {
-                cancelAnimationFrame(frame);
-                if (alpha && !still) render(p);
+                stop();
+                if (pen && !still) pen.render(p);
             },
         };
     }

@@ -125,10 +125,11 @@
 
     /* ---- Client quotes -----------------------------------
        One quote at a time, crossfading every eight seconds; resting while
-       the pointer or focus is on it or a client's voice is playing, and not
-       moving at all for visitors who ask for reduced motion. Only quotes
-       given in the language on screen take part — the set is rebuilt when
-       the language is switched. Each turn is announced ("quoteshow") for
+       the pointer or focus is on it, a client's voice is playing or their
+       portrait is still being drawn, and not moving at all for visitors who
+       ask for reduced motion. Only quotes given in the language on screen
+       take part — the set is rebuilt when the language is switched. Each
+       turn is announced ("quoteshow") for
        voices.js, which silences the quote leaving and draws the one
        arriving. */
     (function initQuotes() {
@@ -151,7 +152,7 @@
         function restart() {
             clearInterval(timer);
             if (list.length > 1 && !still) {
-                timer = setInterval(() => { if (!resting && !stage.querySelector('.is-playing')) show(cur + 1); }, 8000);
+                timer = setInterval(() => { if (!resting && !stage.querySelector('.is-playing, .is-drawing')) show(cur + 1); }, 8000);
             }
         }
 
