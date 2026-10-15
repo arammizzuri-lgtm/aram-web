@@ -112,8 +112,8 @@
     @endif
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
-    @php $quotesHaveMedia = $quotes->contains(fn ($q) => $q->hasMedia()); @endphp
-    @if ($quotesHaveMedia)
+    @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()); @endphp
+    @if ($quotesHaveVoices)
         <link rel="stylesheet" href="{{ asset('voices.css') }}?v={{ filemtime(public_path('voices.css')) }}">
     @endif
     @include('partials.kurdish-font')
@@ -424,7 +424,7 @@
     @endif
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
-    @if ($quotesHaveMedia)
+    @if ($quotesHaveVoices)
         <script src="{{ asset('voices.js') }}?v={{ filemtime(public_path('voices.js')) }}" defer></script>
     @endif
     @include('partials.saved-script')

@@ -6,15 +6,19 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\Testimonial;
 use App\Support\PortraitSketch;
+use App\Support\ReadAloud;
+use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
@@ -33,6 +37,19 @@ class TestimonialForm
                         ->requiredWithout('quote_ku')->validationAttribute('quote'),
                     Textarea::make('quote_ku')->label('Quote (Kurdish)')->rows(5)
                         ->extraInputAttributes($rtl),
+                    TextEntry::make('reading_status')->label('Read aloud')
+                        ->visibleOn('edit')->columnSpanFull()
+                        ->state(fn (Testimonial $record) => self::readingStatus($record))
+                        ->hintAction(
+                            Action::make('readNow')->label('Read the Kurdish now')->icon(Heroicon::OutlinedArrowPath)
+                                ->visible(fn (Testimonial $record) => ReadAloud::kurdishReady() && filled($record->quote_ku) && $record->voiceUrl() === null)
+                                ->action(function (Testimonial $record) {
+                                    $error = $record->refreshReading();
+                                    $error === null
+                                        ? Notification::make()->success()->title('The Kurdish words are read')->send()
+                                        : Notification::make()->danger()->title('They could not be read')->body($error)->persistent()->send();
+                                }),
+                        ),
                 ]),
 
             Section::make('Who said it')
@@ -99,5 +116,28 @@ class TestimonialForm
                     ]),
                 ]),
         ]);
+    }
+
+    /** How this quote is read aloud on the website, if it is: a line of text, or the Kurdish recording to hear. */
+    private static function readingStatus(Testimonial $record): HtmlString|string
+    {
+        if ($record->voiceUrl() !== null) {
+            return 'Not needed — their own voice note plays instead.';
+        }
+        if (! ReadAloud::enabled()) {
+            return 'Switched off in Manage → Read aloud.';
+        }
+        $english = filled($record->quote_en) ? 'English: read by the visitor’s phone or computer.' : '';
+        if (blank($record->quote_ku)) {
+            return $english;
+        }
+        if ($url = $record->readingUrl()) {
+            return new HtmlString(e($english).'<div style="margin-top:6px">Kurdish:</div>'
+                .'<audio controls preload="none" style="width:100%;max-width:420px;margin-top:4px" src="'.e($url).'"></audio>');
+        }
+
+        return trim($english.' Kurdish: '.(ReadAloud::kurdishReady()
+            ? 'not read yet — “Read the Kurdish now” shows why, if it cannot be.'
+            : 'not read — add a kurdishtts.com key in Manage → Read aloud.'));
     }
 }

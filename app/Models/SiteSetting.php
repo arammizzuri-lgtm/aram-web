@@ -28,17 +28,18 @@ class SiteSetting extends Model
 
     /**
      * Settings that are the studio's business, not the page's: the e-mail
-     * alert recipients and the mailbox the alerts are sent from. Anything
-     * under this prefix is kept out of what the public site is given.
+     * alert recipients and the mailbox the alerts are sent from, and the
+     * key to the Kurdish read-aloud service. Anything under these prefixes
+     * is kept out of what the public site is given.
      */
-    public const PRIVATE_PREFIX = 'alerts_';
+    public const PRIVATE_PREFIXES = ['alerts_', 'reader_api_'];
 
     /** Every setting the public site may see — allKeyed() minus the private ones. */
     public static function publicKeyed(): array
     {
         return array_filter(
             static::allKeyed(),
-            fn ($key) => ! str_starts_with((string) $key, self::PRIVATE_PREFIX),
+            fn ($key) => ! \Illuminate\Support\Str::startsWith((string) $key, self::PRIVATE_PREFIXES),
             ARRAY_FILTER_USE_KEY,
         );
     }

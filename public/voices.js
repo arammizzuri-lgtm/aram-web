@@ -4,6 +4,8 @@
    that draws itself — once as it comes into view, and again in step with
    the client's voice note while it plays — a player in the shape of a
    voice note, and the quote lighting up word by word as it is heard.
+   Without a voice note, "Read aloud" reads the quote in a computer voice
+   instead, with the same drawing and the same words lighting up.
    Loaded on the homepage and the project pages.
    ========================================================= */
 (function () {
@@ -179,11 +181,26 @@
         };
     }
 
+    let playing = null;    // the one voice heard at a time: a voice note, or a reading
+
+    // The homepage's quotes announce themselves as they turn over; while a
+    // voice plays, the words lighting up must not be read out over it.
+    function hush(card, on) {
+        const announcer = card.closest('[aria-live]');
+        if (!announcer) return;
+        if (on && announcer.getAttribute('aria-live') !== 'off') {
+            announcer.dataset.live = announcer.getAttribute('aria-live');
+            announcer.setAttribute('aria-live', 'off');
+        } else if (!on && announcer.dataset.live) {
+            announcer.setAttribute('aria-live', announcer.dataset.live);
+            delete announcer.dataset.live;
+        }
+    }
+
     /* ---- The player ----------------------------------------------
        Shown only where this browser says it can play the file. The bars
        start as a likely shape; the first play reads the real one from the
        recording itself. */
-    let playing = null;    // the one player heard at a time
 
     function Player(card, drawing, words) {
         const box = card.querySelector('.cv__player');
@@ -299,30 +316,16 @@
         audio.addEventListener('loadedmetadata', () => {
             if (audio.paused && audio.currentTime === 0 && knownLength()) time.textContent = fmt(knownLength());
         });
-        // The homepage's quotes announce themselves as they turn over; while a
-        // voice plays, the words lighting up must not be read out over it.
-        const announcer = card.closest('[aria-live]');
-        const quiet = on => {
-            if (!announcer) return;
-            if (on && announcer.getAttribute('aria-live') !== 'off') {
-                announcer.dataset.live = announcer.getAttribute('aria-live');
-                announcer.setAttribute('aria-live', 'off');
-            } else if (!on && announcer.dataset.live) {
-                announcer.setAttribute('aria-live', announcer.dataset.live);
-                delete announcer.dataset.live;
-            }
-        };
-
         audio.addEventListener('play', () => {
             card.classList.add('is-playing');
-            quiet(true);
+            hush(card, true);
             label();
             cancelAnimationFrame(frame);
             frame = requestAnimationFrame(tick);
         });
         audio.addEventListener('pause', () => {
             card.classList.remove('is-playing');
-            quiet(false);
+            hush(card, false);
             label();
             cancelAnimationFrame(frame);
         });
@@ -339,7 +342,7 @@
             if (!audio.src) return;
             box.hidden = true;
             card.classList.remove('is-playing');
-            quiet(false);
+            hush(card, false);
             if (words) words.done();
         });
 
@@ -370,6 +373,133 @@
         return api;
     }
 
+    /* ---- Read aloud ------------------------------------------------
+       For a quote without a voice note of its own, read in a computer voice
+       — and the button says so. English is read by the device itself;
+       Kurdish from the recording made when the quote was saved, or, where a
+       device happens to have one, by its own Kurdish voice. The button shows
+       only when one of those is there for the language on screen. */
+    const synth = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined' ? window.speechSynthesis : null;
+
+    // the device's best voice for English, or for Sorani (ckb) — or none
+    function deviceVoice(ku) {
+        if (!synth) return null;
+        const want = ku ? /^ckb/i : /^en/i;
+        const score = v => (/natural|neural|premium|enhanced/i.test(v.name) ? 4 : 0)
+            + (/google|samantha|daniel|serena|libby|sonia|aria|jenny|ava|andrew/i.test(v.name) ? 2 : 0)
+            + (/^en[-_]gb/i.test(v.lang) ? 1 : 0);
+        return synth.getVoices().filter(v => want.test(v.lang || '')).sort((a, b) => score(b) - score(a))[0] || null;
+    }
+
+    function Reader(card, drawing, words) {
+        const btn = card.querySelector('[data-read]');
+        const figure = card.closest('figure');
+        const quote = figure && figure.querySelector('blockquote');
+        if (!btn || !quote) return null;
+        const label = btn.querySelector('.cv-read__label');
+        const src = btn.dataset.srcKu;
+        let audio = null, utter = null, frame = 0, active = false;
+
+        // how the words on screen can be read, if they can
+        const way = () => (isKu() ? (src ? 'file' : deviceVoice(true) && 'device') : deviceVoice(false) && 'device') || null;
+        const setLabel = () => { label.textContent = pick(btn, active ? 'stop' : 'label'); };
+        const refresh = () => { btn.hidden = !way(); setLabel(); };
+
+        function follow(p) {
+            if (drawing) drawing.follow(p / 0.92);
+            if (words) words.show(p);
+        }
+        function begin() {
+            active = true;
+            card.classList.add('is-playing');
+            hush(card, true);
+            setLabel();
+        }
+        function finish(complete) {
+            if (!active) return;
+            active = false;
+            cancelAnimationFrame(frame);
+            card.classList.remove('is-playing');
+            hush(card, false);
+            setLabel();
+            if (complete && drawing) drawing.follow(1);
+            if (words) words.done();
+        }
+
+        function fromFile() {
+            if (!audio) {
+                audio = new Audio(src);
+                audio.addEventListener('ended', () => finish(true));
+                audio.addEventListener('error', () => { finish(false); btn.hidden = true; });
+            }
+            audio.currentTime = 0;
+            const started = audio.play();
+            if (started && started.catch) started.catch(() => finish(false));
+            begin();
+            const tick = () => {
+                if (!active) return;
+                if (isFinite(audio.duration) && audio.duration > 0) follow(clamp01(audio.currentTime / audio.duration));
+                frame = requestAnimationFrame(tick);
+            };
+            frame = requestAnimationFrame(tick);
+        }
+
+        function fromDevice() {
+            const text = quote.textContent.trim();
+            const voice = deviceVoice(isKu());
+            if (!text || !voice) return;
+            const u = new SpeechSynthesisUtterance(text);
+            u.voice = voice;
+            u.lang = voice.lang;
+            u.rate = 0.95;
+            utter = u;
+            // Where a voice reports each word as it reaches it, the drawing
+            // and the words follow it; where not, they follow the clock at an
+            // ordinary reading pace.
+            let said = -1, t0 = performance.now();
+            u.onstart = () => { t0 = performance.now(); };
+            u.onboundary = e => { if (u === utter && typeof e.charIndex === 'number') said = e.charIndex / text.length; };
+            u.onend = () => { if (u === utter) finish(true); };
+            u.onerror = () => { if (u === utter) finish(false); };
+            if (synth.speaking) synth.cancel();
+            synth.speak(u);
+            begin();
+            const tick = () => {
+                if (!active || u !== utter) return;
+                const paced = (performance.now() - t0) / 1000 * 14 * u.rate / text.length;
+                follow(Math.min(0.97, said >= 0 ? Math.max(said, paced * 0.6) : paced));
+                frame = requestAnimationFrame(tick);
+            };
+            frame = requestAnimationFrame(tick);
+        }
+
+        const api = {
+            pause() {
+                if (!active) return;
+                if (audio) audio.pause();
+                if (utter) { utter = null; synth.cancel(); }
+                finish(false);
+            },
+        };
+
+        btn.addEventListener('click', () => {
+            if (active) { api.pause(); return; }
+            if (playing && playing !== api) playing.pause();
+            playing = api;
+            if (drawing) drawing.whenReady();
+            way() === 'file' ? fromFile() : fromDevice();
+        });
+
+        document.addEventListener('langchange', () => { api.pause(); refresh(); });
+        // the device's voices arrive a moment after the page does
+        if (synth) synth.addEventListener('voiceschanged', refresh);
+        refresh();
+        return api;
+    }
+
+    // a reading left going would carry on after the visitor has moved on
+    window.addEventListener('pagehide', () => { if (synth) synth.cancel(); });
+
     /* ---- Each card --------------------------------------------- */
     document.addEventListener('langchange', () => {
         document.querySelectorAll('.cv__sketch[data-alt-en]').forEach(img => { img.alt = pick(img, 'alt'); });
@@ -379,7 +509,8 @@
         const drawing = card.hasAttribute('data-has-portrait') ? Drawing(card) : null;
         const words = Words(card);
         const player = Player(card, drawing, words);
-        return { card, drawing, player, inView: false, drawn: false };
+        const reader = player ? null : Reader(card, drawing, words);
+        return { card, drawing, player, reader, inView: false, drawn: false };
     });
 
     function arrive(item) {
@@ -413,8 +544,9 @@
     if (stage) {
         stage.addEventListener('quoteshow', () => {
             live.forEach(l => {
-                if (!onShow(l.card) && l.player) l.player.pause();
-                else arrive(l);
+                if (onShow(l.card)) { arrive(l); return; }
+                if (l.player) l.player.pause();
+                if (l.reader) l.reader.pause();
             });
         });
     }

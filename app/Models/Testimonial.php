@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Support\PortraitSketch;
+use App\Support\ReadAloud;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * A client's words about the studio. Shown in the homepage quotes, and on the
@@ -16,6 +19,10 @@ use Illuminate\Support\Str;
  * their photo. The photo is kept on the private disk and never published;
  * the drawing is made from it on save. Neither voice nor drawing is shown
  * until the client's agreement is ticked (media_consent).
+ *
+ * Without a voice note of their own, a quote can be read aloud by a computer
+ * voice, said as much on the page (App\Support\ReadAloud): English by the
+ * visitor's device, Kurdish from a recording made when the quote is saved.
  */
 class Testimonial extends Model
 {
@@ -40,11 +47,14 @@ class Testimonial extends Model
             if ($t->portrait) {
                 $t->redrawPortrait();
             }
+            $t->refreshReading();
         });
 
         static::updated(function (Testimonial $t) {
-            // a voice or photo replaced or removed: the old file goes with it.
             // Read before the redraw below, whose own save forgets what changed.
+            $reread = $t->wasChanged(['quote_ku', 'voice', 'media_consent']);
+
+            // a voice or photo replaced or removed: the old file goes with it.
             $oldVoice = $t->getOriginal('voice');
             if ($t->wasChanged('voice') && $oldVoice) {
                 Storage::disk('public')->delete($oldVoice);
@@ -58,10 +68,15 @@ class Testimonial extends Model
             if ($t->wasChanged(['portrait', 'sketch_detail'])) {
                 $t->redrawPortrait();
             }
+
+            // new Kurdish words, or the client's own voice come or gone
+            if ($reread) {
+                $t->refreshReading();
+            }
         });
 
         static::deleted(function (Testimonial $t) {
-            foreach ([$t->voice, $t->portrait_sketch] as $file) {
+            foreach ([$t->voice, $t->portrait_sketch, $t->reading_ku] as $file) {
                 if ($file) {
                     Storage::disk('public')->delete($file);
                 }
@@ -96,6 +111,86 @@ class Testimonial extends Model
         if ($old && $old !== $new) {
             Storage::disk('public')->delete($old);
         }
+    }
+
+    /**
+     * Make (or drop) the Kurdish reading of this quote. Nothing is read when
+     * the client's own voice is there to be heard or there are no Kurdish
+     * words; a recording already made from the same words, voice and speed
+     * is kept. Returns why it could not be made, if it could not — the quote
+     * is saved either way, and English needs no recording at all.
+     */
+    public function refreshReading(): ?string
+    {
+        $text = trim((string) $this->quote_ku);
+        if ($text === '' || $this->voiceUrl() !== null) {
+            $this->dropReading();
+
+            return null;
+        }
+        if (! ReadAloud::kurdishReady()) {
+            return null;
+        }
+
+        $for = ReadAloud::fingerprint($text);
+        if ($this->reading_ku && $this->reading_ku_for === $for && Storage::disk('public')->exists($this->reading_ku)) {
+            return null;
+        }
+
+        try {
+            $audio = ReadAloud::synthesize($text);
+        } catch (RuntimeException $e) {
+            Log::warning("Kurdish reading of quote {$this->id} not made: ".$e->getMessage());
+
+            return $e->getMessage();
+        }
+
+        $old = $this->reading_ku;
+        $rel = 'testimonials/readings/'.Str::random(32).'.mp3';
+        Storage::disk('public')->put($rel, $audio);
+        $this->forceFill(['reading_ku' => $rel, 'reading_ku_for' => $for])->saveQuietly();
+        if ($old) {
+            Storage::disk('public')->delete($old);
+        }
+
+        return null;
+    }
+
+    private function dropReading(): void
+    {
+        if (! $this->reading_ku) {
+            return;
+        }
+        Storage::disk('public')->delete($this->reading_ku);
+        $this->forceFill(['reading_ku' => null, 'reading_ku_for' => null])->saveQuietly();
+    }
+
+    /**
+     * Whether the page offers "Read aloud" — wherever the client's own voice
+     * is not there to be heard. English is read by the visitor's device; a
+     * Kurdish quote needs its recording (or, rarely, a Kurdish voice on the
+     * device), which voices.js checks for.
+     */
+    public function canReadAloud(): bool
+    {
+        return ReadAloud::enabled() && $this->voiceUrl() === null;
+    }
+
+    /** The Kurdish reading's address — only while it is a reading of the words on the page. */
+    public function readingUrl(): ?string
+    {
+        if (! $this->canReadAloud() || ! $this->reading_ku
+            || ! str_starts_with((string) $this->reading_ku_for, ReadAloud::wordsPart((string) $this->quote_ku))) {
+            return null;
+        }
+
+        return asset('storage/'.$this->reading_ku);
+    }
+
+    /** Whether there is anything to see or hear beside the words: portrait, voice, or a reading. */
+    public function showsVoiceBlock(): bool
+    {
+        return $this->hasMedia() || $this->canReadAloud();
     }
 
     /** The pencil portrait's address, once the client has agreed to it being shown. */

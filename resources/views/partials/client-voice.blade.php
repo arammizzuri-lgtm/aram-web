@@ -3,11 +3,14 @@
      (voices.js), inside a ring that carries their company's name and, on a
      seal, its logo, and turns while the voice plays. The player stays hidden
      until voices.js knows this browser can play the file — the quote stands
-     on its own without it. Labels carry both languages for the homepage's
-     language toggle. --}}
+     on its own without it. Without a voice note, "Read aloud" reads the
+     quote in a computer voice and says so; it too stays hidden until
+     voices.js finds a way to read the language on screen. Labels carry both
+     languages for the homepage's language toggle. --}}
 @php
     $cvSketch = $cvQuote->sketchUrl();
     $cvVoice = $cvQuote->voiceUrl();
+    $cvReads = $cvQuote->canReadAloud();
     $cvClient = $cvQuote->client;
     $cvNameEn = $cvQuote->personName('en');
     $cvNameKu = $cvQuote->personName('ku');
@@ -20,7 +23,7 @@
         $cvRingText = implode(' · ', array_fill(0, $cvRepeat, $cvCompany));
     }
 @endphp
-@if ($cvSketch || $cvVoice)
+@if ($cvSketch || $cvVoice || $cvReads)
     <div class="cv" data-cv @if ($cvSketch) data-has-portrait @endif>
         @if ($cvSketch)
             <div class="cv__portrait">
@@ -72,6 +75,21 @@
                      aria-label="{{ bi('Voice note', 'پەیامی دەنگی') }}" data-label-en="Voice note" data-label-ku="پەیامی دەنگی"></div>
                 <span class="cv__time" aria-hidden="true"></span>
             </div>
+        @endif
+        @if ($cvReads)
+            <button type="button" class="cv-read" hidden data-read
+                    @if ($cvQuote->readingUrl()) data-src-ku="{{ $cvQuote->readingUrl() }}" @endif
+                    data-label-en="Read aloud" data-label-ku="بە دەنگ بیخوێنەوە"
+                    data-stop-en="Stop reading" data-stop-ku="ڕاگرتنی خوێندنەوە">
+                <svg class="cv-read__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4z"/>
+                    <path class="cv-read__wave" d="M15.3 9.2a4 4 0 0 1 0 5.6"/>
+                    <path class="cv-read__wave cv-read__wave--far" d="M17.9 6.6a7.6 7.6 0 0 1 0 10.8"/>
+                </svg>
+                <span class="cv-read__label">{{ bi('Read aloud', 'بە دەنگ بیخوێنەوە') }}</span>
+                {{-- it must never pass for the client's own voice --}}
+                <span class="cv-read__note" data-en="computer voice" data-ku="دەنگی کۆمپیوتەر">{{ bi('computer voice', 'دەنگی کۆمپیوتەر') }}</span>
+            </button>
         @endif
     </div>
 @endif

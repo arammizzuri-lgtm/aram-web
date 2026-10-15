@@ -179,11 +179,12 @@ class ClientVoicesTest extends TestCase
     {
         $quote = $this->quote(['media_consent' => false]);
 
+        // not their voice, then: at most a computer voice reading their words
         $this->get('/')->assertOk()
             ->assertSee('They listened before they drew.')
             ->assertDontSee($quote->portrait_sketch)
             ->assertDontSee('hawre.opus')
-            ->assertDontSee('voices.js');
+            ->assertSee('data-read', false);
 
         $quote->update(['media_consent' => true]);
 
