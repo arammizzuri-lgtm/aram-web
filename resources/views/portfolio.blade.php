@@ -825,13 +825,13 @@
                         </li>
                     @endif
                     {{-- one email, two lines — the address itself lives on the map card below --}}
-                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new', 'Info@arammizzuri.com') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new', 'Info@arammizzuri.com') }}">
+                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new', 'Info@arammizuri.com') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new', 'Info@arammizuri.com') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                         </span>
                         <div class="cmethod__text">
                             <span class="cmethod__label" {!! bitext('contact_email_lbl') !!}>{{ bival('contact_email_lbl') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_email_new', 'Info@arammizzuri.com') }}</span>
+                            <span class="cmethod__value">{{ setting('contact_email_new', 'Info@arammizuri.com') }}</span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </li>
@@ -986,12 +986,12 @@
                            data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}"
                            {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
                     @endif
-                    @foreach (socials() as $s)
+                    @foreach (linked_socials() as $s)
                         @php $u = trim($s['url']); $ext = $u !== '' && $u !== '#'; @endphp
                         <a href="{{ $u !== '' ? $u : '#' }}" class="footer__link"@if($ext) target="_blank" rel="noopener"@endif>{{ $s['label'] }}</a>
                     @endforeach
                 </nav>
-                <p class="footer__copy">{!! nl2br(e(setting('footer_copy'))) !!}</p>
+                <p class="footer__copy">{!! nl2br(e(footer_copy())) !!}</p>
             </div>
         </div>
     </footer>

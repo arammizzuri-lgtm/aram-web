@@ -52,7 +52,7 @@ class StudioMail
      */
     public static function recipients(): array
     {
-        $raw = setting(self::TO) ?: setting('contact_email_new', 'Info@arammizzuri.com');
+        $raw = setting(self::TO) ?: setting('contact_email_new', 'Info@arammizuri.com');
 
         return collect(preg_split('/[\s,;]+/', $raw))
             ->map(fn ($a) => trim($a))

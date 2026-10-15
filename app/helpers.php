@@ -203,3 +203,33 @@ if (! function_exists('socials')) {
         return $out;
     }
 }
+
+if (! function_exists('linked_socials')) {
+    /**
+     * The social links that lead somewhere: a network left without an
+     * address (empty, or the "#" placeholder) is not shown at all — a link
+     * that goes nowhere makes a studio look unfinished.
+     *
+     * @return array<int, array{label:string, url:string}>
+     */
+    function linked_socials(): array
+    {
+        return array_values(array_filter(socials(), fn ($s) => ! in_array(trim($s['url']), ['', '#'], true)));
+    }
+}
+
+if (! function_exists('footer_copy')) {
+    /**
+     * The footer's copyright line as written in Site Content, with its year
+     * kept current: "© 2022" is shown as "© 2022–2026" — the year the
+     * studio began, and that it is still at work.
+     */
+    function footer_copy(): string
+    {
+        $now = (int) now()->year;
+
+        return preg_replace_callback('/©\s*(\d{4})(?!\s*[–-]\s*\d{4})/u',
+            fn ($m) => (int) $m[1] < $now ? '© '.$m[1].'–'.$now : $m[0],
+            (string) setting('footer_copy'));
+    }
+}

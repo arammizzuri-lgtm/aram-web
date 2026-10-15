@@ -68,7 +68,7 @@ class EnquiryAlerts extends Page
                     Toggle::make('enabled')->label('E-mail me when an enquiry arrives')->default(true),
                     TextInput::make('to')
                         ->label('Send alerts to')
-                        ->placeholder(setting('contact_email_new', 'Info@arammizzuri.com'))
+                        ->placeholder(setting('contact_email_new', 'Info@arammizuri.com'))
                         ->helperText('One address, or several separated by commas. Left empty, alerts go to the studio e-mail shown on the site.'),
                 ]),
 

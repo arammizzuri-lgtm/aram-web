@@ -15,7 +15,7 @@
         'logo' => asset('apple-touch-icon.png'),
         'image' => $image,
         'description' => $description,
-        'email' => setting('contact_email_new', 'Info@arammizzuri.com'),
+        'email' => setting('contact_email_new', 'Info@arammizuri.com'),
         'telephone' => $phone('contact_phone', '+964 (0) 782 445 4414'),
         'address' => [
             '@type' => 'PostalAddress',
