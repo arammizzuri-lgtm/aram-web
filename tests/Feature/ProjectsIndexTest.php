@@ -24,8 +24,8 @@ class ProjectsIndexTest extends TestCase
         Category::updateOrCreate(['key' => 'commercial'], ['name' => 'Commercial', 'name_ku' => 'بازرگانی', 'sort_order' => 2]);
         Category::updateOrCreate(['key' => 'cultural'], ['name' => 'Cultural', 'name_ku' => 'کولتووری', 'sort_order' => 3]);
 
-        $this->project(['name' => 'Mountain Villa', 'name_ku' => 'ڤیلای شاخ', 'category' => 'residential', 'city' => 'Shaqlawa', 'year' => '2021–2024']);
-        $this->project(['name' => 'So Delicious Cafe', 'category' => 'commercial', 'status' => 'Under Construction']);
+        $this->project(['name' => 'Mountain Villa', 'name_ku' => 'ڤیلای شاخ', 'category' => 'residential', 'city' => 'Shaqlawa', 'year' => '2021–2024', 'size' => 'large']);
+        $this->project(['name' => 'So Delicious Cafe', 'category' => 'commercial', 'status' => 'Under Construction', 'size' => 'wide']);
         $this->project(['name' => 'Hidden Draft', 'category' => 'residential', 'is_published' => false]);
         $this->project(['name' => 'Map Pin Only', 'category' => 'residential', 'map_only' => true]);
     }
@@ -97,6 +97,26 @@ class ProjectsIndexTest extends TestCase
         // the legend keeps the view, the views keep the category
         $this->assertStringContainsString('href="'.url('/projects').'?type=commercial&amp;view=sheets"', $html);
         $this->assertStringContainsString('href="'.url('/projects').'?type=residential" data-view="index"', $html);
+    }
+
+    public function test_the_wall_takes_each_sheets_size_from_the_admin_and_ends_with_a_blank_sheet(): void
+    {
+        $html = $this->get('/projects?view=sheets')->assertOk()->getContent();
+
+        // large: two bays by two; wide: two across; the rest one
+        $this->assertMatchesRegularExpression('#class="px-sheet px-sheet--l" data-w="2" data-h="2" data-categories="residential"#', $html);
+        $this->assertMatchesRegularExpression('#class="px-sheet px-sheet--w" data-w="2" data-h="1" data-categories="commercial"#', $html);
+        // the grid it is pinned to, and the disc that goes with the pointer
+        $this->assertStringContainsString('id="pxWallGrid"', $html);
+        $this->assertStringContainsString('data-disc="View"', $html);
+
+        // the last bay: a blank sheet, numbered after the last project, to start one
+        $next = str_pad((string) (Project::query()->where('is_published', true)->get()->filter->hasPage()->max(fn ($p) => (int) $p->num) + 1), 2, '0', STR_PAD_LEFT);
+        $this->assertMatchesRegularExpression('#<li class="px-sheet px-sheet--yours" data-w="1" data-h="1" data-yours>\s*<a class="px-sheet__link" href="'.preg_quote(url('/'), '#').'\#contact" data-disc="Start">#', $html);
+        $this->assertStringContainsString('<span class="px-yours__num"><small>Sheet</small><b>'.$next.'</b></span>', $html);
+        $this->assertStringContainsString('Your project', $html);
+
+        $this->get('/ku/projects?view=sheets')->assertSee('پرۆژەکەی تۆ')->assertSee('data-disc="بینین"', false);
     }
 
     public function test_the_kurdish_page_links_to_the_kurdish_project_pages(): void

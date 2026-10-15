@@ -176,19 +176,34 @@
         </div>
 
         {{-- ---- Sheets: each project framed as a drawing sheet, with the title
-             block every drawing carries in its corner. ---- --}}
+             block every drawing carries in its corner. On a computer or
+             tablet they are pinned up as a wall across the whole window, on a
+             structural grid — its bays lettered across the top and numbered
+             down the side, as on a plan (projects.js packs the wall and draws
+             the grid). Large projects take two bays by two, wide ones two
+             across. On a phone, one sheet under another. ---- --}}
+        @php
+            $shape = fn ($p) => ['large' => [2, 2, 'l'], 'wide' => [2, 1, 'w']][$p->size] ?? [1, 1, 's'];
+            $nextSheet = str_pad((string) ((int) $projects->max(fn ($p) => (int) $p->num) + 1), 2, '0', STR_PAD_LEFT);
+        @endphp
         <section class="px-sheets" id="pxSheets" aria-label="{{ bival('pj_sheets') }}" @if ($view !== 'sheets') hidden @endif>
-            <ol class="px-sheets__grid">
+          <div class="px-wall" id="pxWall">
+            <div class="px-wall__grid" id="pxWallGrid" aria-hidden="true"></div>
+            <ol class="px-sheets__grid" id="pxTiles">
                 @foreach ($projects as $p)
-                    <li class="px-sheet{{ in_array($p->size, ['large', 'wide'], true) ? ' px-sheet--wide' : '' }}" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}" @unless ($inType($p)) hidden @endunless>
-                        <a class="px-sheet__link" href="{{ $p->pageUrl($lang) }}">
+                    @php [$w, $h, $s] = $shape($p); @endphp
+                    <li class="px-sheet px-sheet--{{ $s }}" data-w="{{ $w }}" data-h="{{ $h }}" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}" @unless ($inType($p)) hidden @endunless>
+                        <a class="px-sheet__link" href="{{ $p->pageUrl($lang) }}" data-disc="{{ bival('pj_disc_view') }}">
                             <span class="px-sheet__frame">
-                                <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
+                                <span class="px-sheet__pic"><img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
+                                {{-- on the wall's smaller sheets the status rides on the picture --}}
+                                <span class="px-sheet__status px-st--{{ $p->statusClass() }}" aria-hidden="true">{{ $p->statusLabel($lang) }}</span>
                             </span>
                             {{-- the title block: the sheet's number tall at the side, the
-                                 project across the top, its particulars beneath --}}
+                                 project across the top, its particulars beneath; on the
+                                 wall, the bays it stands in under its number --}}
                             <span class="px-tb">
-                                <span class="px-tb__cell px-tb__cell--num"><small>{{ bival('pj_sheet') }}</small><b>{{ $p->num }}</b></span>
+                                <span class="px-tb__cell px-tb__cell--num"><small>{{ bival('pj_sheet') }}</small><b>{{ $p->num }}</b><small class="px-tb__ref"></small></span>
                                 <span class="px-tb__cell px-tb__cell--name">
                                     <span class="px-tb__head"><small>{{ bival('pj_project') }}</small><span class="px-tb__hatches" aria-hidden="true">@foreach ($kinds($p) as $k)<span class="px-swatch hatch-{{ $hatch[$k] }}"></span>@endforeach</span></span>
                                     <b><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></b>
@@ -206,8 +221,24 @@
                         </button>
                     </li>
                 @endforeach
+                {{-- the last bay: a blank sheet, numbered next, for the visitor's own project --}}
+                <li class="px-sheet px-sheet--yours" data-w="1" data-h="1" data-yours>
+                    <a class="px-sheet__link" href="{{ site_url('/') }}#contact" data-disc="{{ bival('pj_disc_start') }}">
+                        <span class="px-yours">
+                            <span class="px-yours__num"><small>{{ bival('pj_sheet') }}</small><b>{{ $nextSheet }}</b></span>
+                            <span class="px-yours__title">{{ bival('pj_yours_title') }}</span>
+                            <span class="px-yours__text">{{ bival('pj_yours_text') }}</span>
+                            <span class="px-yours__cta">{{ bival('pp_cta_button') }} <span class="px-yours__arrow" aria-hidden="true">↗&#xFE0E;</span></span>
+                        </span>
+                        <i class="px-crop px-crop--tl" aria-hidden="true"></i><i class="px-crop px-crop--tr" aria-hidden="true"></i>
+                        <i class="px-crop px-crop--bl" aria-hidden="true"></i><i class="px-crop px-crop--br" aria-hidden="true"></i>
+                    </a>
+                </li>
             </ol>
+          </div>
         </section>
+        {{-- the disc that goes with the pointer over the wall: "View", or "Start" on the blank sheet --}}
+        <div class="px-disc" id="pxDisc" aria-hidden="true"><span class="px-disc__label"></span><span class="px-disc__arrow">↗&#xFE0E;</span></div>
 
         <div class="px-empty" id="pxEmpty" @if ($shown > 0) hidden @endif>
             <p>{{ bival('pg_empty') }}</p>

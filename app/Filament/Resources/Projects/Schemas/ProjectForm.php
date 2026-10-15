@@ -71,10 +71,11 @@ class ProjectForm
                     Select::make('size')
                         ->label('Card size on grid')
                         ->options([
-                            'default' => 'Default',
-                            'large' => 'Large (featured)',
-                            'wide' => 'Wide',
-                        ])->default('default')->required()->native(false),
+                            'default' => 'Default — 1 × 1',
+                            'large' => 'Large, featured — 2 × 2',
+                            'wide' => 'Wide — 1 × 2',
+                        ])->default('default')->required()->native(false)
+                        ->helperText('Its tile on the homepage grid and on the projects page wall. Keep most projects Default, a few Large, and fewer still Wide.'),
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
                     TextInput::make('neighbourhood')
                         ->label('Neighbourhood / area')

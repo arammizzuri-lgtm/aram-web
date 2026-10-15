@@ -236,55 +236,60 @@
     font-size: 10px; letter-spacing: .24em; color: var(--gold);
 }
 
-/* ---- Sheets: drawings, with their title blocks ------------------------- */
+/* ---- Sheets ------------------------------------------------------------------
+   Each project framed as a drawing, with the title block every drawing
+   carries. On a phone, one under another, the title block beneath; on a
+   computer or tablet, pinned up as a wall (below). */
 .px-sheets { margin-top: clamp(40px, 7vh, 64px); }
-.px-sheets__grid {
-    --gap: clamp(28px, 3vw, 40px);
-    /* one sheet's picture height: a third of the width, at A-series proportions */
-    --h: calc((min(100vw, var(--wide)) - 2 * var(--gutter) - 2 * var(--gap)) / 3 / 1.414);
-    list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: calc(var(--gap) * 1.6) var(--gap); grid-auto-flow: dense;
-}
+.px-sheets__grid { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 44px; }
 .px-sheet { position: relative; }
 .px-sheet[hidden] { display: none; }
-.px-sheet--wide { grid-column: span 2; }
 .px-sheet__link { position: relative; display: block; color: inherit; text-decoration: none; }
 .px-sheet__frame {
-    position: relative; display: block; height: var(--h); padding: 9px;
+    position: relative; display: block; aspect-ratio: 1.414; padding: 9px;
     border: 1px solid var(--ink); transition: border-color .4s;
 }
-.px-sheet__frame img { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--panel); transition: transform 1.2s var(--ease-out); }
+.px-sheet__pic { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; background: var(--panel); }
+/* a little taller than its frame: on the wall it drifts as the page scrolls */
+.px-sheet__pic img {
+    position: absolute; top: -6%; left: 0; width: 100%; height: 112%; object-fit: cover; display: block;
+    transition: scale 1.2s var(--ease-out);
+}
 .px-sheet__link:hover .px-sheet__frame { border-color: rgba(245,197,24,.6); }
-.px-sheet__link:hover .px-sheet__frame img { transform: scale(1.03); }
+.px-sheet__link:hover .px-sheet__pic img { scale: 1.04; }
 /* crop marks, at each corner of the sheet — they open out when pointed at */
-.px-crop { position: absolute; width: 14px; height: 14px; border: 0 solid rgba(255,255,255,.4); transition: transform .5s var(--ease-out), border-color .4s; }
+.px-crop {
+    position: absolute; width: 14px; height: 14px; border: 0 solid rgba(255,255,255,.4);
+    transition: translate .5s var(--ease-out), border-color .4s, scale .7s var(--ease-out) var(--d, 0s);
+}
 .px-crop--tl { top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
 .px-crop--tr { top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
 .px-crop--bl { bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
 .px-crop--br { bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
 .px-sheet__link:hover .px-crop { border-color: var(--gold); }
-.px-sheet__link:hover .px-crop--tl { transform: translate(-4px, -4px); }
-.px-sheet__link:hover .px-crop--tr { transform: translate(4px, -4px); }
-.px-sheet__link:hover .px-crop--bl { transform: translate(-4px, 4px); }
-.px-sheet__link:hover .px-crop--br { transform: translate(4px, 4px); }
+.px-sheet__link:hover .px-crop--tl { translate: -4px -4px; }
+.px-sheet__link:hover .px-crop--tr { translate: 4px -4px; }
+.px-sheet__link:hover .px-crop--bl { translate: -4px 4px; }
+.px-sheet__link:hover .px-crop--br { translate: 4px 4px; }
 
-/* The title block, as in the corner of every drawing: the sheet's number
-   in a tall cell at the side, the project across the top, its place, year
-   and status in a row beneath. */
+/* The title block, as on every drawing: the sheet's number in a tall cell
+   at the side, the project across the top, its particulars beneath. */
 .px-tb {
-    display: grid; grid-template-columns: 62px minmax(0, 1.2fr) minmax(0, .7fr) minmax(max-content, 1fr);
+    display: grid; grid-template-columns: 54px minmax(0, 1fr) minmax(0, 1fr);
     border: 1px solid var(--ink); border-top: 0;
 }
 .px-tb__cell {
     display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 9px 12px;
     border-inline-start: 1px solid var(--ink); border-top: 1px solid var(--ink);
 }
-.px-tb__cell--num { grid-row: span 2; border-inline-start: 0; border-top: 0; justify-content: space-between; }
-.px-tb__cell--name { grid-column: span 3; border-top: 0; }
+.px-tb__cell--num { grid-row: span 3; border-inline-start: 0; border-top: 0; justify-content: space-between; padding-inline: 10px; }
+.px-tb__cell--name { grid-column: span 2; border-top: 0; }
+.px-tb__cell--status { grid-column: span 2; }
 .px-tb__cell small { font-size: 8.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--faint); }
 [dir="rtl"] .px-tb__cell small { letter-spacing: 0; font-size: 11px; }
 .px-tb__cell b { font-weight: 400; font-size: 12.5px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.px-tb__cell--num b { font-size: 26px; font-weight: 200; color: var(--gold); font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1; overflow: visible; }
+.px-tb__cell--num b { font-size: 22px; font-weight: 200; color: var(--gold); font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1; overflow: visible; }
+.px-tb__ref { display: none; }
 .px-tb__cell--name b { font-size: 16px; font-weight: 300; transition: color .3s; }
 .px-sheet__link:hover .px-tb__cell--name b { color: var(--gold); }
 .px-tb__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -305,17 +310,158 @@
 .px-heart:hover { border-color: var(--gold); color: var(--gold); }
 .px-heart.is-saved { border-color: rgba(245,197,24,.5); }
 .px-heart .icon-heart { width: 16px; height: 16px; }
+.px-sheet__status { display: none; }   /* the wall shows it on the smaller sheets */
+
+/* The last bay: a blank sheet on drawing paper, for the visitor's own
+   project — a registration cross at its centre turns when pointed at. */
+.px-yours {
+    position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;
+    min-height: 260px; height: 100%; padding: 22px 24px;
+    border: 1px dashed rgba(245,197,24,.5);
+    background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 22px 22px; background-position: -1px -1px;
+    transition: border-color .4s, background-color .4s;
+}
+.px-yours::before, .px-yours::after {
+    content: ''; position: absolute; top: 42%; left: 50%; background: rgba(245,197,24,.55);
+    transition: rotate .7s var(--ease-out);
+}
+.px-yours::before { width: 34px; height: 1px; margin-left: -17px; }
+.px-yours::after { width: 1px; height: 34px; margin-top: -17px; }
+.px-sheet__link:hover .px-yours { border-color: var(--gold); border-style: solid; background-color: rgba(245,197,24,.05); }
+.px-sheet__link:hover .px-yours::before, .px-sheet__link:hover .px-yours::after { rotate: 90deg; }
+.px-yours__num { position: absolute; top: 18px; inset-inline-start: 22px; display: flex; flex-direction: column; gap: 4px; }
+.px-yours__num small { font-size: 8.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--faint); }
+.px-yours__num b { font-size: 26px; font-weight: 200; color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+.px-yours__title { font-size: clamp(24px, 2.3vw, 34px); font-weight: 200; color: #fff; line-height: 1.1; }
+.px-yours__text { max-width: 30ch; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.px-yours__cta { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+.px-yours__arrow { font-variant-emoji: text; transition: translate .4s var(--ease-out); }
+.px-sheet__link:hover .px-yours__arrow { translate: 3px -3px; }
+[dir="rtl"] .px-yours__cta, [dir="rtl"] .px-yours__num small { letter-spacing: 0; font-size: 13px; text-transform: none; }
+
+/* ---- The wall (computer and tablet) -----------------------------------------
+   The sheets pinned up across the whole window, on a structural grid: bays
+   lettered across the top and numbered down the side (projects.js packs the
+   sheets into the bays and draws the grid; without it, the browser packs
+   them). Large projects stand two bays by two, wide ones two across. */
+@media (min-width: 761px) {
+    .pp--projects { overflow-x: clip; }   /* the wall reaches the window's edge */
+    .px-sheets { margin-inline: calc(50% - 50vw); padding-inline: clamp(14px, 2vw, 36px); }
+    .px-wall { --bubble: clamp(30px, 2.6vw, 44px); position: relative; padding-top: var(--bubble); padding-inline-start: var(--bubble); }
+    .px-sheets__grid {
+        --cols: 4; --gap: clamp(14px, 1.3vw, 24px);
+        /* until projects.js measures the bays: about three quarters of a bay's width */
+        --row: calc((100vw - 4 * clamp(14px, 2vw, 36px) - var(--bubble)) / var(--cols) * .72);
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-auto-rows: var(--row);
+        gap: var(--gap); grid-auto-flow: dense;
+    }
+    .px-sheet--l { grid-column: span 2; grid-row: span 2; }
+    .px-sheet--w { grid-column: span 2; }
+    .px-sheet__link { position: absolute; inset: 0; }
+    .px-sheet__frame { aspect-ratio: auto; height: 100%; padding: 7px; }
+    .px-heart { top: 16px; }
+
+    /* The title block in the bottom corner of the drawing, as on a real
+       sheet. On a large sheet: number, project, place, year and status. On
+       the smaller ones: number and project, with place and year opening
+       when pointed at — their status rides on the picture instead. */
+    .px-tb {
+        position: absolute; z-index: 1; bottom: 16px; inset-inline-end: 16px; overflow: hidden;
+        width: min(calc(100% - 32px), 330px);
+        grid-template-columns: 54px minmax(0, 1.3fr) minmax(0, 1fr);
+        background: rgba(9,9,9,.8); border: 1px solid rgba(255,255,255,.16);
+        -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+        transition: border-color .4s;
+    }
+    .px-sheet__link:hover .px-tb { border-color: rgba(245,197,24,.55); }
+    .px-tb__cell--num { grid-row: span 2; }
+    .px-tb__cell--status { display: none; }
+    .px-tb__ref { display: block; color: rgba(245,197,24,.7); letter-spacing: .04em; white-space: nowrap; }
+    .px-sheet--l .px-tb { width: min(calc(100% - 32px), 460px); grid-template-columns: 62px minmax(0, 1fr) minmax(0, .6fr) minmax(0, 1.6fr); }
+    .px-sheet--l .px-tb__cell--name { grid-column: span 3; }
+    .px-sheet--l .px-tb__cell--status { display: flex; grid-column: auto; }
+    .px-sheet--l .px-tb__cell--name b { font-size: 20px; }
+    .px-sheet--l .px-tb__cell--num b { font-size: 28px; }
+    .px-sheet__status {
+        display: inline-flex; align-items: center; gap: 7px; position: absolute; z-index: 1; top: 18px; inset-inline-start: 18px;
+        padding: 5px 10px; border-radius: 100px; background: rgba(9,9,9,.62); color: rgba(255,255,255,.85);
+        font-size: 9px; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap;
+        -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    }
+    .px-sheet__status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--st, #fff); }
+    [dir="rtl"] .px-sheet__status { letter-spacing: 0; font-size: 11px; }
+    .px-sheet--l .px-sheet__status { display: none; }
+    /* on the smaller sheets the particulars wait for the pointer */
+    .px-sheet:not(.px-sheet--l) .px-tb__cell:nth-child(n+3) {
+        max-height: 0; padding-block: 0; opacity: 0; border-top-color: transparent; overflow: hidden;
+        transition: max-height .45s var(--ease-out), padding .45s var(--ease-out), opacity .3s, border-color .3s;
+    }
+    .px-sheet:not(.px-sheet--l) .px-sheet__link:hover .px-tb__cell:nth-child(n+3),
+    .px-sheet:not(.px-sheet--l) .px-sheet__link:focus-visible .px-tb__cell:nth-child(n+3) {
+        max-height: 60px; padding-block: 9px; opacity: 1; border-top-color: var(--ink);
+    }
+    .px-yours { min-height: 0; container-type: size; }
+    .px-yours__title { font-size: clamp(22px, 7cqw, 56px); }
+    @container (max-height: 210px) { .px-yours__text { display: none; } }
+
+    /* the grid behind the wall: dashed lines along the bays' edges, a
+       bubble over each column and beside each row, lit for the sheet
+       pointed at */
+    .px-wall__grid { position: absolute; inset: 0; pointer-events: none; }
+    .px-gl { position: absolute; border: 0 dashed rgba(255,255,255,.09); }
+    .px-gl--v { top: calc(var(--bubble) / 2 + 14px); bottom: 0; border-inline-start-width: 1px; }
+    .px-gl--h { inset-inline-start: calc(var(--bubble) / 2 + 14px); inset-inline-end: 0; border-top-width: 1px; }
+    .px-bub {
+        position: absolute; width: 24px; height: 24px; margin-top: -12px; margin-inline-start: -12px;
+        display: grid; place-items: center; border-radius: 50%;
+        border: 1px solid rgba(255,255,255,.26); background: var(--black);
+        font-size: 10px; color: rgba(255,255,255,.55); font-variant-numeric: tabular-nums;
+        transition: border-color .3s, color .3s, box-shadow .3s, scale .4s var(--ease-out);
+    }
+    .px-bub.is-lit { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 4px rgba(245,197,24,.12); scale: 1.12; }
+
+    /* with a pointer: the rest of the wall steps back while one sheet is looked at */
+    @media (hover: hover) {
+        .px-wall:has(.px-sheet__link:hover) .px-sheet:not(:hover) { opacity: .45; }
+    }
+}
+@media (min-width: 761px) and (max-width: 939px) { .px-sheets__grid { --cols: 3; } }
+@media (min-width: 1260px) { .px-sheets__grid { --cols: 5; } }
+@media (min-width: 1640px) { .px-sheets__grid { --cols: 6; } }
+@media (min-width: 761px) and (max-width: 1100px) {
+    .px-tb { grid-template-columns: 44px minmax(0, 1.3fr) minmax(0, 1fr); }
+    .px-sheet--l .px-tb { grid-template-columns: 50px minmax(0, 1.1fr) minmax(0, .7fr) minmax(0, 1.4fr); }
+    .px-tb__cell--num b { font-size: 20px; }
+}
+
+/* the disc that goes with the pointer over the wall (projects.js) */
+.px-disc {
+    position: fixed; top: 0; left: 0; z-index: 40; width: 88px; height: 88px; margin: -44px 0 0 -44px;
+    display: grid; place-content: center; justify-items: center; gap: 2px; border-radius: 50%;
+    background: var(--gold); color: #111; pointer-events: none;
+    font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase;
+    scale: 0; opacity: 0; transition: scale .45s var(--ease-out), opacity .3s;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+.px-disc.is-on { scale: 1; opacity: 1; }
+.px-disc__arrow { font-size: 15px; letter-spacing: 0; font-variant-emoji: text; }
+[dir="rtl"] .px-disc { letter-spacing: 0; font-size: 13px; }
+[dir="rtl"] .px-disc__arrow { transform: scaleX(-1); }
 
 /* ---- Coming into view ----------------------------------------------------
    Rows rise into place; a sheet's picture is uncovered from the top, as a
-   drawing is pulled from the plan chest. Only once the script runs (.px-js). */
+   drawing is pulled from the plan chest, its crop marks set first. Only
+   once the script runs (.px-js). */
 .px-js .px-row, .px-js .px-sheet {
     opacity: 0; transform: translateY(22px);
     transition: opacity .8s var(--ease-out) var(--d, 0s), transform 1s var(--ease-out) var(--d, 0s);
 }
-.px-js .px-sheet__frame img { clip-path: inset(0 0 100% 0); transition: clip-path 1.2s var(--ease-out) calc(var(--d, 0s) + .15s), transform 1.2s var(--ease-out); }
+.px-js .px-sheet__pic { clip-path: inset(0 0 100% 0); transition: clip-path 1.2s var(--ease-out) calc(var(--d, 0s) + .15s); }
+.px-js .px-sheet .px-crop { scale: 0; }
 .px-js .is-in { opacity: 1; transform: none; }
-.px-js .px-sheet.is-in .px-sheet__frame img { clip-path: inset(0); }
+.px-js .px-sheet.is-in .px-sheet__pic { clip-path: inset(0); }
+.px-js .px-sheet.is-in .px-crop { scale: 1; }
 
 /* the visitor's last view, settled in the head before the script runs */
 .px-want-sheets .px-index { display: none; }
@@ -332,9 +478,6 @@
     .px-cols, .px-row__link { grid-template-columns: 40px minmax(0, 1fr) minmax(0, 170px) 130px 22px; }
     .px-row__place, .px-cols span:nth-child(4) { display: none; }
     .px-cols span:nth-child(5) { grid-column: 4; }
-}
-@media (max-width: 900px) {
-    .px-sheets__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); --h: calc((100vw - 2 * var(--gutter) - var(--gap)) / 2 / 1.414); }
 }
 @media (max-width: 760px) {
     .px-bar__inner { padding: 10px 0; }
@@ -360,19 +503,13 @@
     .px-row__status { display: none; }
     .px-row__arrow { grid-column: 3; grid-row: 1 / span 2; opacity: .6; transform: none; }
     .px-row__link:hover .px-row__name { transform: none; }
-
-    .px-sheets__grid { grid-template-columns: 1fr; --h: calc((100vw - 2 * var(--gutter)) / 1.414); }
-    .px-sheet--wide { grid-column: auto; }
-    /* the title block in three rows: the project; its place and year; its status */
-    .px-tb { grid-template-columns: 54px minmax(0, 1fr) minmax(0, 1fr); }
-    .px-tb__cell--num { grid-row: span 3; padding-inline: 10px; }
-    .px-tb__cell--num b { font-size: 22px; }
-    .px-tb__cell--name, .px-tb__cell--status { grid-column: span 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .px-guide, .px-guide__dot { animation: none; }
-    .px-js .px-row, .px-js .px-sheet, .px-js .px-sheet__frame img { opacity: 1; transform: none; clip-path: none; transition: none; }
+    .px-js .px-row, .px-js .px-sheet, .px-js .px-sheet__pic { opacity: 1; transform: none; clip-path: none; transition: none; }
+    .px-js .px-sheet .px-crop { scale: 1; }
+    .px-disc { display: none; }
     .px-peek { display: none; }
-    .px-row__name, .px-row__link::after, .px-sheet__frame img, .px-crop { transition: none; }
+    .px-row__name, .px-row__link::after, .px-sheet__pic img, .px-crop, .px-yours::before, .px-yours::after { transition: none; }
 }

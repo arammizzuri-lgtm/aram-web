@@ -339,6 +339,10 @@ class SiteText
                 'pj_year'   => ['Title block — year', 'Year', 'ساڵ'],
                 'pj_status' => ['Title block — status', 'Status', 'دۆخ'],
                 'pj_undated' => ['Index — projects without a year', 'Undated', 'بێ ساڵ'],
+                'pj_yours_title' => ['Blank sheet at the end — title', 'Your project', 'پرۆژەکەی تۆ'],
+                'pj_yours_text' => ['Blank sheet at the end — text', 'This sheet is still blank — let’s draw it together.', 'ئەم پەڕەیە هێشتا بەتاڵە — با پێکەوە بیکێشین.', 'area'],
+                'pj_disc_view' => ['Disc beside the pointer, over a project', 'View', 'بینین'],
+                'pj_disc_start' => ['Disc beside the pointer, over the blank sheet', 'Start', 'دەستپێک'],
             ],
 
             // The careers page (/careers). Positions themselves are managed
