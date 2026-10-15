@@ -125,9 +125,12 @@
 
     /* ---- Client quotes -----------------------------------
        One quote at a time, crossfading every eight seconds; resting while
-       the pointer or focus is on it, and not moving at all for visitors who
-       ask for reduced motion. Only quotes given in the language on screen
-       take part — the set is rebuilt when the language is switched. */
+       the pointer or focus is on it or a client's voice is playing, and not
+       moving at all for visitors who ask for reduced motion. Only quotes
+       given in the language on screen take part — the set is rebuilt when
+       the language is switched. Each turn is announced ("quoteshow") for
+       voices.js, which silences the quote leaving and draws the one
+       arriving. */
     (function initQuotes() {
         const stage = document.getElementById('quotesStage');
         if (!stage) return;
@@ -142,11 +145,14 @@
             all.forEach(q => q.classList.remove('is-active'));
             list[cur].classList.add('is-active');
             if (dotsEl) Array.from(dotsEl.children).forEach((d, n) => d.classList.toggle('is-active', n === cur));
+            stage.dispatchEvent(new Event('quoteshow'));
         }
 
         function restart() {
             clearInterval(timer);
-            if (list.length > 1 && !still) timer = setInterval(() => { if (!resting) show(cur + 1); }, 8000);
+            if (list.length > 1 && !still) {
+                timer = setInterval(() => { if (!resting && !stage.querySelector('.is-playing')) show(cur + 1); }, 8000);
+            }
         }
 
         function build() {
@@ -166,6 +172,12 @@
             }
             show(0);
             restart();
+        }
+
+        // the first quote gets its full turn when the band comes into view,
+        // not whatever is left of one that began while the page loaded
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(entries => { if (entries[0].isIntersecting) restart(); }, { threshold: 0.3 }).observe(stage);
         }
 
         stage.addEventListener('mouseenter', () => { resting = true; });

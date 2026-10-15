@@ -32,6 +32,13 @@ class TestimonialsTable
                         filled($r->quote_en) ? 'EN' : null,
                         filled($r->quote_ku) ? 'KU' : null,
                     ]))),
+                TextColumn::make('media')->label('Voice · portrait')->badge()->placeholder('—')
+                    ->state(fn (Testimonial $r) => array_values(array_filter([
+                        $r->voice ? 'Voice' : null,
+                        $r->portrait_sketch ? 'Portrait' : null,
+                    ])))
+                    ->color(fn (Testimonial $r) => $r->media_consent ? 'success' : 'gray')
+                    ->tooltip(fn (Testimonial $r) => $r->media_consent ? null : 'Not shown until they agree'),
                 ToggleColumn::make('is_published')->label('Live'),
             ])
             ->filters([

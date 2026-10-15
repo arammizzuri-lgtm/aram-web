@@ -56,6 +56,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
+    @php $quotesHaveMedia = $quotes->contains(fn ($q) => $q->hasMedia()); @endphp
+    @if ($quotesHaveMedia)
+        <link rel="stylesheet" href="{{ asset('voices.css') }}?v={{ filemtime(public_path('voices.css')) }}">
+    @endif
     @include('partials.kurdish-font')
     {{-- Leaflet is served from our own origin, not unpkg.com.
 
@@ -417,6 +421,7 @@
             <div class="quotes__stage" id="quotesStage" aria-live="polite">
                 @foreach ($quotes as $q)
                     <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled($q->quote_ku)) data-has-ku @endif>
+                        @include('partials.client-voice', ['cvQuote' => $q])
                         <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ $q->quote('ku') }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
                         <figcaption class="quote__by">
                             <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ $q->personName('ku') }}">{{ $q->personName(site_lang()) }}</span>
@@ -1191,6 +1196,9 @@
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
+    @if ($quotesHaveMedia)
+        <script src="{{ asset('voices.js') }}?v={{ filemtime(public_path('voices.js')) }}" defer></script>
+    @endif
     @include('partials.saved-script')
     <script src="{{ asset('vendor/three.min.js') }}" defer></script>
     <script src="{{ asset('hero3d.js') }}?v={{ filemtime(public_path('hero3d.js')) }}" defer></script>

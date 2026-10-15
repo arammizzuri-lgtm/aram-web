@@ -112,6 +112,10 @@
     @endif
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
+    @php $quotesHaveMedia = $quotes->contains(fn ($q) => $q->hasMedia()); @endphp
+    @if ($quotesHaveMedia)
+        <link rel="stylesheet" href="{{ asset('voices.css') }}?v={{ filemtime(public_path('voices.css')) }}">
+    @endif
     @include('partials.kurdish-font')
     @if ($hasMap)
         <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
@@ -309,7 +313,8 @@
             <section class="pp-quotes">
                 <h2 class="pp-label">{{ bival('quotes_label') }}</h2>
                 @foreach ($quotes as $q)
-                    <figure class="pp-quote-card">
+                    <figure class="pp-quote-card{{ $q->hasMedia() ? ' has-cv' : '' }}">
+                        @include('partials.client-voice', ['cvQuote' => $q])
                         <blockquote dir="auto">{{ $q->quote($lang) }}</blockquote>
                         <figcaption>
                             <span class="pp-quote-card__name"><bdi>{{ $q->personName($lang) }}</bdi></span>
@@ -419,6 +424,9 @@
     @endif
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
+    @if ($quotesHaveMedia)
+        <script src="{{ asset('voices.js') }}?v={{ filemtime(public_path('voices.js')) }}" defer></script>
+    @endif
     @include('partials.saved-script')
 </body>
 </html>
