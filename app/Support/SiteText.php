@@ -93,6 +93,7 @@ class SiteText
                 'filter_cultural'    => ['Filter — Cultural', 'Cultural', 'کولتووری'],
                 'filter_urban'       => ['Filter — Master Planning', 'Master Planning', 'شارستانی'],
                 'pg_view_project'    => ['Card CTA', 'View Project', 'بینینی پرۆژە'],
+                'pg_all'             => ['Link to the projects page (beside the title)', 'All projects', 'هەموو پرۆژەکان'],
                 'pg_empty'           => ['Empty state', 'No projects match your criteria.', 'هیچ پرۆژەیەک لەگەڵ داواکارییەکەت ناگونجێت.'],
             ],
 
@@ -315,6 +316,18 @@ class SiteText
                 'room_invite_text'    => ['Admin → client: the link ({name}, {project}, {url})', "Hello {name}, this is your private room for {project} — progress, drawings and payments, all in one place: {url}\nI will send you its PIN in a separate message.", "سڵاو {name}، ئەمە ژووری تایبەتی تۆیە بۆ {project} — پێشکەوتن، نەخشەکان و پارەدانەکان، هەمووی لە یەک شوێن: {url}\nژمارە نهێنییەکەی لە نامەیەکی جیادا بۆت دەنێرم.", 'area'],
                 'room_pin_msg'        => ['Admin → client: the PIN ({pin})', 'The PIN for your room: {pin}', 'ژمارە نهێنیی ژوورەکەت: {pin}'],
                 'room_news_text'      => ['Admin → client: something new ({name}, {project}, {url})', 'Hello {name}, there is something new in your room for {project}: {url}', 'سڵاو {name}، شتێکی نوێ لە ژوورەکەتدا هەیە بۆ {project}: {url}', 'area'],
+            ],
+
+            // Every project on one page (/projects), opened from the
+            // "Projects" heading on the homepage.
+            'Projects page' => [
+                'pj_label'  => ['Page label', 'All Work', 'هەموو کارەکان'],
+                'pj_title'  => ['Title', 'Projects', 'پرۆژەکان'],
+                'pj_intro'  => ['Introduction', 'Homes, interiors, workplaces and public buildings across Kurdistan — every project we have drawn, and the many we have seen built.', 'خانوو، دیزاینی ناوەوە، شوێنی کار و بینای گشتی لە سەرانسەری کوردستان — هەموو ئەو پرۆژانەی کێشاومانن، و زۆرێک لەوانەی بینیومانن کە بنیات نراون.', 'area'],
+                'pj_count'  => ['Count ({n} = how many are shown)', '{n} projects', '{n} پرۆژە'],
+                'pj_count_one' => ['Count — just one', '1 project', '1 پرۆژە'],
+                'pj_search' => ['Search box', 'Search projects…', 'گەڕان بۆ پرۆژەکان…'],
+                'pj_clear'  => ['Empty state — show everything', 'Show all projects', 'هەموو پرۆژەکان پیشان بدە'],
             ],
 
             // The careers page (/careers). Positions themselves are managed

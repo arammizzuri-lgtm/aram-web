@@ -6,6 +6,7 @@ use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectPageController;
+use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
@@ -28,6 +29,8 @@ use Illuminate\Support\Facades\Route;
 $pages = function (string $lang) {
     Route::middleware([SiteLanguage::class.':'.$lang, TrackPageView::class])->group(function () {
         Route::get('/', [PortfolioController::class, 'index'])->name('home');
+        // every project on one page, from the homepage's "Projects" heading
+        Route::get('/projects', [ProjectsController::class, 'index'])->name('projects');
         Route::get('/projects/{slug}', [ProjectPageController::class, 'show'])
             ->where('slug', '[a-z0-9-]+')
             ->name('project');

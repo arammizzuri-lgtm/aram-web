@@ -74,7 +74,7 @@
 </head>
 <body class="pp pp--saved">
 
-    @include('partials.page-top', ['otherUrl' => site_url('/saved', $other).$query, 'backHref' => site_url('/').'#projects'])
+    @include('partials.page-top', ['otherUrl' => site_url('/saved', $other).$query])
 
     <main class="sv-page">
         <header class="sv-head">
@@ -90,7 +90,7 @@
         @if ($projects->isEmpty())
             <div class="sv-empty">
                 <p>{{ bival('saved_empty') }}</p>
-                <a class="pp-btn" href="{{ site_url('/') }}#projects">
+                <a class="pp-btn" href="{{ site_url('/projects') }}">
                     <span>{{ bival('saved_browse') }}</span>
                     <span class="pp-arrow" aria-hidden="true">→</span>
                 </a>

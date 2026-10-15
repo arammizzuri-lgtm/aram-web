@@ -43,6 +43,7 @@ class SeoController extends Controller
 
         $homeModified = $projects->max('updated_at');
         $this->page($xml, '/', $homeModified);
+        $this->page($xml, '/projects', $homeModified);
 
         foreach ($projects as $project) {
             $this->page($xml, '/projects/'.$project->slug, $project->updated_at, $project->orderedVariantUrls('lg'));

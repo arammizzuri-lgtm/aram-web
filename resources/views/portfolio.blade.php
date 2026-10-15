@@ -447,10 +447,18 @@
     <section class="pg" id="projects">
 
         <div class="pg__head">
-            <div class="pg__head-left">
+            {{-- The heading opens every project on a page of its own (/projects). --}}
+            @php $pageCount = $projects->filter(fn ($p) => $p->hasPage())->count(); @endphp
+            <a class="pg__head-left pg__head-link" href="{{ site_url('/projects') }}"
+               data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}">
                 <p class="section-label" {!! bitext('pg_label') !!}>{{ bival('pg_label') }}</p>
-                <h2 class="pg__title" {!! bitext('pg_title') !!}>{{ bival('pg_title') }}</h2>
-            </div>
+                <h2 class="pg__title"><span {!! bitext('pg_title') !!}>{{ bival('pg_title') }}</span></h2>
+                <span class="pg__all">
+                    <span {!! bitext('pg_all') !!}>{{ bival('pg_all') }}</span>
+                    <span class="pg__all-n">{{ $pageCount }}</span>
+                    <span class="pg__all-arrow" aria-hidden="true">↗&#xFE0E;</span>
+                </span>
+            </a>
             <div class="pg__head-right">
                 <div class="pg__search-wrap">
                     <input class="pg__search" id="pgSearch" type="search" placeholder="{{ bi('Search projects…', 'گەڕان بۆ پرۆژەکان…') }}" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">

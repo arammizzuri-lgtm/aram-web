@@ -2,7 +2,7 @@
      saved list): the studio's name home, the visitor's saved projects once
      there are any (saved.js), a way back, and this page in the other language.
      $otherUrl: this page in the other language. $backHref / $backLabel:
-     where "back" goes (default: the projects on the homepage). $withSaved:
+     where "back" goes (default: every project, /projects). $withSaved:
      false on a page that is not for browsing (a client's room). --}}
 @php $isKuTop = site_lang() === 'ku'; $otherLang = $isKuTop ? 'en' : 'ku'; @endphp
 <header class="pp-top">
@@ -17,7 +17,7 @@
                 <span class="pp-saved__n" data-saved-count></span>
             </a>
         @endif
-        <a class="pp-top__link" href="{{ $backHref ?? site_url('/').'#projects' }}">
+        <a class="pp-top__link" href="{{ $backHref ?? site_url('/projects') }}">
             <span class="pp-arrow pp-arrow--back" aria-hidden="true">←</span>
             <span>{{ $backLabel ?? bival('pp_all_projects') }}</span>
         </a>

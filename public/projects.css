@@ -1,0 +1,98 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — projects.css
+   Every project on one page (/projects), on top of project.css (tokens,
+   top bar, footer, buttons, project cards and the call to action) and
+   engage.css (the hearts).
+   ========================================================= */
+
+.pj-page {
+    max-width: var(--wide); margin: 0 auto;
+    padding: clamp(110px, 18vh, 170px) var(--gutter) 0;
+}
+
+.pj-title {
+    font-size: clamp(52px, 8vw, 116px); font-weight: 200; color: #fff;
+    letter-spacing: -.03em; line-height: .95;
+}
+[dir="rtl"] .pj-title { letter-spacing: 0; line-height: 1.25; font-weight: 400; }
+.pj-intro { margin-top: 22px; max-width: 60ch; font-size: clamp(15px, 1.3vw, 18px); line-height: 1.8; font-weight: 300; color: rgba(255,255,255,.7); }
+
+/* ---- Categories and search ---------------------------------------- */
+.pj-tools {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px;
+    margin-top: clamp(40px, 7vh, 64px); padding-bottom: 22px; border-bottom: 1px solid var(--line);
+}
+.pj-filter { display: flex; flex-wrap: wrap; gap: 8px; }
+.pj-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.72);
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+    transition: border-color .25s, color .25s, background-color .25s;
+}
+[dir="rtl"] .pj-chip { letter-spacing: 0; font-size: 13px; text-transform: none; }
+.pj-chip:hover { border-color: rgba(245,197,24,.6); color: #fff; }
+.pj-chip.is-active { border-color: var(--gold); background: rgba(245,197,24,.12); color: var(--gold); }
+.pj-chip__n { font-size: 10px; letter-spacing: 0; opacity: .6; font-variant-numeric: tabular-nums; }
+
+.pj-search {
+    position: relative; display: block; width: min(100%, 280px);
+}
+.pj-search input {
+    width: 100%; height: 42px; padding: 0 16px 0 40px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.04); color: #fff;
+    font: inherit; font-size: 14px;
+}
+[dir="rtl"] .pj-search input { padding: 0 40px 0 16px; }
+.pj-search input:focus { outline: none; border-color: var(--gold); }
+.pj-search input::-webkit-search-cancel-button { filter: invert(1) opacity(.5); }
+.pj-search__icon { position: absolute; top: 50%; inset-inline-start: 14px; width: 17px; height: 17px; transform: translateY(-50%); color: rgba(255,255,255,.45); pointer-events: none; }
+.pj-search__icon svg { width: 100%; height: 100%; display: block; }
+
+.pj-count { margin-top: 18px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); }
+[dir="rtl"] .pj-count { letter-spacing: 0; font-size: 13px; }
+
+/* ---- The grid ------------------------------------------------------ */
+.pj-grid {
+    list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(32px, 4vw, 48px) clamp(16px, 2vw, 24px); margin-top: 28px;
+}
+.pj-card { position: relative; }
+.pj-card[hidden] { display: none; }
+.pp-card__img { position: relative; }
+.pj-status {
+    position: absolute; bottom: 12px; inset-inline-start: 12px;
+    padding: 5px 10px; border-radius: 100px;
+    background: rgba(9,9,9,.62); color: #fff; font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+[dir="rtl"] .pj-status { letter-spacing: 0; font-size: 12px; }
+.pj-status--done { color: #6fd68c; }
+.pj-status--build { color: var(--gold); }
+.pj-status--concept { color: rgba(255,255,255,.7); }
+.pj-heart {
+    position: absolute; top: 12px; inset-inline-end: 12px;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(9,9,9,.55); color: #fff;
+    border: 1px solid rgba(255,255,255,.18);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    transition: border-color .25s, color .25s;
+}
+.pj-heart:hover { border-color: var(--gold); color: var(--gold); }
+.pj-heart.is-saved { border-color: rgba(245,197,24,.5); }
+.pj-heart .icon-heart { width: 17px; height: 17px; }
+
+.pj-empty { margin-top: 36px; }
+.pj-empty[hidden] { display: none; }
+.pj-empty p { font-size: 16px; line-height: 1.8; font-weight: 300; color: var(--muted); margin-bottom: 22px; }
+
+.pj-cta { padding-top: clamp(80px, 14vh, 140px); }
+
+@media (max-width: 900px) {
+    .pj-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+    .pj-grid { grid-template-columns: 1fr; }
+    .pj-search { width: 100%; }
+}
