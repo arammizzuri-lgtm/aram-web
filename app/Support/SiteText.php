@@ -328,6 +328,17 @@ class SiteText
                 'pj_count_one' => ['Count — just one', '1 project', '1 پرۆژە'],
                 'pj_search' => ['Search box', 'Search projects…', 'گەڕان بۆ پرۆژەکان…'],
                 'pj_clear'  => ['Empty state — show everything', 'Show all projects', 'هەموو پرۆژەکان پیشان بدە'],
+                'pj_legend' => ['Categories — heading of the legend', 'Legend', 'نیشانەکان'],
+                'pj_view'   => ['Views — label', 'View', 'شێوەی پیشاندان'],
+                'pj_index'  => ['View — the list year by year', 'Index', 'پێڕست'],
+                'pj_sheets' => ['View — the pictures, as drawing sheets', 'Sheets', 'پەڕەکان'],
+                'pj_sheet'  => ['Title block — number', 'Sheet', 'پەڕە'],
+                'pj_project' => ['Title block — name', 'Project', 'پرۆژە'],
+                'pj_type'   => ['Title block — category', 'Type', 'جۆر'],
+                'pj_place'  => ['Title block — place', 'Place', 'شوێن'],
+                'pj_year'   => ['Title block — year', 'Year', 'ساڵ'],
+                'pj_status' => ['Title block — status', 'Status', 'دۆخ'],
+                'pj_undated' => ['Index — projects without a year', 'Undated', 'بێ ساڵ'],
             ],
 
             // The careers page (/careers). Positions themselves are managed

@@ -1,9 +1,15 @@
 @php
     /**
-     * @var \Illuminate\Support\Collection<int, \App\Models\Project> $projects
+     * The studio's work as a set of drawings (ProjectsController).
+     *
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project> $projects  in the studio's order
      * @var \Illuminate\Support\Collection<int, \App\Models\Category> $categories
      * @var \Illuminate\Support\Collection<string, int> $counts  projects per category key
+     * @var \Illuminate\Support\Collection<string, int> $hatch  the hatch each category is drawn in
+     * @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection> $byYear  newest first; '' undated
+     * @var \Illuminate\Support\Collection<int, string> $years
      * @var string $type  the category asked for in the address, or ''
+     * @var string $view  'index' or 'sheets'
      */
     $lang = site_lang();
     $isKu = $lang === 'ku';
@@ -13,9 +19,13 @@
     $description = \Illuminate\Support\Str::limit(bival('pj_intro'), 160);
     $ogImage = $projects->first()?->socialImageUrl() ?? asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg'));
     $count = fn (int $n) => $n === 1 ? bival('pj_count_one') : str_replace('{n}', (string) $n, bival('pj_count'));
-    $shown = $type === '' ? $projects->count() : $projects->filter(fn ($p) => in_array($type, $p->categoryKeys(), true))->count();
+    $inType = fn ($p) => $type === '' || in_array($type, $p->categoryKeys(), true);
+    $shown = $projects->filter($inType)->count();
+    $span = $years->isEmpty() ? '' : ($years->last() === $years->first() ? $years->first() : $years->last().' – '.$years->first());
+    $query = fn (array $q) => ($q = array_filter($q)) ? '?'.http_build_query($q) : '';
+    $catName = $categories->mapWithKeys(fn ($c) => [$c->key => bi($c->name, $c->name_ku)]);
+    $kinds = fn ($p) => collect($p->categoryKeys())->filter(fn ($k) => $catName->has($k));
 
-    // the projects, in order, as a list search engines can read
     $itemList = [
         '@context' => 'https://schema.org', '@type' => 'CollectionPage',
         'name' => $title, 'url' => site_url('/projects'), 'inLanguage' => $lang,
@@ -40,6 +50,17 @@
     <meta property="og:image" content="{{ $ogImage }}">
     <meta name="twitter:card" content="summary_large_image">
     <script type="application/ld+json">{!! json_encode($itemList, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+    {{-- The view this visitor chose last time, settled before the page paints
+         so the other one never flashes up. An address that names a view wins. --}}
+    <script>
+        (function () {
+            try {
+                if (!new URLSearchParams(location.search).get('view') && localStorage.getItem('am_projects_view') === 'sheets') {
+                    document.documentElement.classList.add('px-want-sheets');
+                }
+            } catch (e) { /* storage blocked: the default view */ }
+        })();
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,62 +77,144 @@
 </head>
 <body class="pp pp--projects">
 
-    @include('partials.page-top', ['otherUrl' => site_url('/projects', $other).($type ? '?type='.$type : ''), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home')])
+    @include('partials.page-top', ['otherUrl' => site_url('/projects', $other).$query(['type' => $type, 'view' => $view === 'sheets' ? 'sheets' : '']), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home')])
 
-    <main class="pj-page">
-        <header class="pj-head">
+    <main class="px" id="px" data-view="{{ $view }}">
+
+        {{-- ---- The title, set out with construction lines and a dimension ---- --}}
+        <header class="px-head">
             <p class="pp-label">{{ bival('pj_label') }}</p>
-            <h1 class="pj-title">{{ bival('pj_title') }}</h1>
-            <p class="pj-intro">{{ bival('pj_intro') }}</p>
+            <div class="px-title-wrap">
+                <h1 class="px-title">{{ bival('pj_title') }}</h1>
+                <span class="px-guide px-guide--cap" aria-hidden="true"></span>
+                <span class="px-guide px-guide--base" aria-hidden="true"></span>
+                <span class="px-guide px-guide--side" aria-hidden="true"></span>
+                <span class="px-guide__dot" aria-hidden="true"></span>
+            </div>
+            <p class="px-intro">{{ bival('pj_intro') }}</p>
+            <div class="px-dim">
+                <span class="px-dim__tick" aria-hidden="true"></span>
+                <span class="px-dim__line" aria-hidden="true"></span>
+                <span class="px-dim__label"><span id="pxCount" aria-live="polite">{{ $count($shown) }}</span>@if ($span) <span class="px-dim__span">· <bdi>{{ $span }}</bdi></span>@endif</span>
+                <span class="px-dim__line" aria-hidden="true"></span>
+                <span class="px-dim__tick" aria-hidden="true"></span>
+            </div>
         </header>
 
-        {{-- The categories are links, so a filtered view has an address of its
-             own; projects.js answers them at once, and adds the search. --}}
-        <div class="pj-tools" id="pjTools" data-count="{{ bival('pj_count') }}" data-count-one="{{ bival('pj_count_one') }}">
-            <nav class="pj-filter" aria-label="{{ bival('pg_title') }}">
-                <a class="pj-chip{{ $type === '' ? ' is-active' : '' }}" href="{{ site_url('/projects') }}" data-type="" @if ($type === '') aria-current="true" @endif>
-                    {{ bival('filter_all') }} <span class="pj-chip__n">{{ $projects->count() }}</span>
-                </a>
-                @foreach ($categories as $cat)
-                    <a class="pj-chip{{ $type === $cat->key ? ' is-active' : '' }}" href="{{ site_url('/projects') }}?type={{ $cat->key }}" data-type="{{ $cat->key }}"
-                       @if ($type === $cat->key) aria-current="true" @endif><bdi>{{ bi($cat->name, $cat->name_ku) }}</bdi> <span class="pj-chip__n">{{ $counts[$cat->key] }}</span></a>
-                @endforeach
-            </nav>
-            <label class="pj-search">
-                <span class="pj-search__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                </span>
-                <input type="search" id="pjSearch" placeholder="{{ bival('pj_search') }}" aria-label="{{ bival('pj_search') }}" autocomplete="off" dir="auto">
-            </label>
-        </div>
-        <p class="pj-count" id="pjCount" aria-live="polite">{{ $count($shown) }}</p>
-
-        <ul class="pj-grid" id="pjGrid">
-            @foreach ($projects as $p)
-                @php $inType = $type === '' || in_array($type, $p->categoryKeys(), true); @endphp
-                <li class="pj-card" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}" @unless ($inType) hidden @endunless>
-                    <a class="pp-card" href="{{ $p->pageUrl($lang) }}">
-                        <span class="pp-card__img">
-                            <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
-                            <span class="pj-status pj-status--{{ $p->statusClass() }}">{{ $p->statusLabel($lang) }}</span>
-                        </span>
-                        <span class="pp-card__num">{{ $p->num }}</span>
-                        <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
-                        <span class="pp-card__meta">{!! collect([...$p->categoryLabelsIn($lang), $p->cityLabel(), $p->endYear()])->filter()->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</span>
+        {{-- ---- The legend (categories, each in its hatch), search, and views ---- --}}
+        <div class="px-bar" id="pxBar" data-count="{{ bival('pj_count') }}" data-count-one="{{ bival('pj_count_one') }}">
+            <div class="px-bar__inner">
+                <nav class="px-legend" aria-label="{{ bival('pj_legend') }}">
+                    <span class="px-legend__title" aria-hidden="true">{{ bival('pj_legend') }}</span>
+                    <a class="px-key{{ $type === '' ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['view' => $view === 'sheets' ? 'sheets' : '']) }}" data-type="" @if ($type === '') aria-current="true" @endif>
+                        <span class="px-swatch px-swatch--all" aria-hidden="true"></span>{{ bival('filter_all') }}<sup>{{ $projects->count() }}</sup>
                     </a>
-                    <button class="pj-heart" type="button" data-save="{{ $p->slug }}" data-save-at="projects" aria-pressed="false" aria-label="{{ bival('save_add') }}">
-                        @include('partials.icon-heart')
-                    </button>
-                </li>
-            @endforeach
-        </ul>
-
-        <div class="pj-empty" id="pjEmpty" @if ($shown > 0) hidden @endif>
-            <p>{{ bival('pg_empty') }}</p>
-            <a class="pp-act" href="{{ site_url('/projects') }}" data-type="" id="pjClear">{{ bival('pj_clear') }}</a>
+                    @foreach ($categories as $cat)
+                        <a class="px-key{{ $type === $cat->key ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['type' => $cat->key, 'view' => $view === 'sheets' ? 'sheets' : '']) }}" data-type="{{ $cat->key }}" @if ($type === $cat->key) aria-current="true" @endif>
+                            <span class="px-swatch hatch-{{ $hatch[$cat->key] }}" aria-hidden="true"></span><bdi>{{ $catName[$cat->key] }}</bdi><sup>{{ $counts[$cat->key] }}</sup>
+                        </a>
+                    @endforeach
+                </nav>
+                <div class="px-bar__end">
+                    <label class="px-find">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <input type="search" id="pxSearch" placeholder="{{ bival('pj_search') }}" aria-label="{{ bival('pj_search') }}" autocomplete="off" dir="auto">
+                    </label>
+                    <div class="px-views" role="group" aria-label="{{ bival('pj_view') }}">
+                        <a class="px-view{{ $view === 'index' ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['type' => $type]) }}" data-view="index" aria-pressed="{{ $view === 'index' ? 'true' : 'false' }}">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.4"/></svg>
+                            <span>{{ bival('pj_index') }}</span>
+                        </a>
+                        <a class="px-view{{ $view === 'sheets' ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['type' => $type, 'view' => 'sheets']) }}" data-view="sheets" aria-pressed="{{ $view === 'sheets' ? 'true' : 'false' }}">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="11" stroke="currentColor" stroke-width="1.4"/><path d="M3.5 19.5h17M13 15.5v4" stroke="currentColor" stroke-width="1.4"/></svg>
+                            <span>{{ bival('pj_sheets') }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <section class="pp-cta pj-cta">
+        {{-- ---- Index: the register, year by year. On a computer the project's
+             picture comes up beside the pointer (projects.js); on a phone each
+             row carries a small one. ---- --}}
+        <section class="px-index" id="pxIndex" aria-label="{{ bival('pj_index') }}" @if ($view !== 'index') hidden @endif>
+            <div class="px-cols" aria-hidden="true">
+                <span>{{ bival('pj_sheet') }}</span><span>{{ bival('pj_project') }}</span><span>{{ bival('pj_type') }}</span>
+                <span>{{ bival('pj_place') }}</span><span>{{ bival('pj_status') }}</span>
+            </div>
+            @foreach ($byYear as $year => $group)
+                <div class="px-year" data-year="{{ $year }}" @unless ($group->contains($inType)) hidden @endunless>
+                    <h2 class="px-year__label">
+                        <span class="px-year__n"><bdi>{{ $year !== '' ? $year : bival('pj_undated') }}</bdi></span>
+                        <span class="px-year__count">{{ $group->filter($inType)->count() }}</span>
+                    </h2>
+                    <ol class="px-rows">
+                        @foreach ($group as $p)
+                            <li class="px-row" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}"
+                                data-img="{{ $p->coverThumbUrl() }}" data-pos="{{ $p->coverPosition() }}" data-num="{{ $p->num }}" @unless ($inType($p)) hidden @endunless>
+                                <a class="px-row__link" href="{{ $p->pageUrl($lang) }}">
+                                    <span class="px-row__num">{{ $p->num }}</span>
+                                    <span class="px-row__thumb" aria-hidden="true"><img src="{{ $p->variantUrl($p->coverImage(), 'sm') }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
+                                    <span class="px-row__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                                    <span class="px-row__type">
+                                        <span class="px-row__hatches" aria-hidden="true">@foreach ($kinds($p) as $k)<span class="px-swatch hatch-{{ $hatch[$k] }}"></span>@endforeach</span>
+                                        <span class="px-row__typetext">{{ $kinds($p)->map(fn ($k) => $catName[$k])->implode(' · ') }}</span>
+                                    </span>
+                                    <span class="px-row__place"><bdi>{{ $p->cityLabel() }}</bdi></span>
+                                    <span class="px-row__status px-st--{{ $p->statusClass() }}">{{ $p->statusLabel($lang) }}</span>
+                                    <span class="px-row__arrow" aria-hidden="true">↗&#xFE0E;</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            @endforeach
+        </section>
+        <div class="px-peek" id="pxPeek" aria-hidden="true">
+            <img alt="">
+            <span class="px-peek__num"></span>
+        </div>
+
+        {{-- ---- Sheets: each project framed as a drawing sheet, with the title
+             block every drawing carries in its corner. ---- --}}
+        <section class="px-sheets" id="pxSheets" aria-label="{{ bival('pj_sheets') }}" @if ($view !== 'sheets') hidden @endif>
+            <ol class="px-sheets__grid">
+                @foreach ($projects as $p)
+                    <li class="px-sheet{{ in_array($p->size, ['large', 'wide'], true) ? ' px-sheet--wide' : '' }}" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}" @unless ($inType($p)) hidden @endunless>
+                        <a class="px-sheet__link" href="{{ $p->pageUrl($lang) }}">
+                            <span class="px-sheet__frame">
+                                <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
+                            </span>
+                            {{-- the title block: the sheet's number tall at the side, the
+                                 project across the top, its particulars beneath --}}
+                            <span class="px-tb">
+                                <span class="px-tb__cell px-tb__cell--num"><small>{{ bival('pj_sheet') }}</small><b>{{ $p->num }}</b></span>
+                                <span class="px-tb__cell px-tb__cell--name">
+                                    <span class="px-tb__head"><small>{{ bival('pj_project') }}</small><span class="px-tb__hatches" aria-hidden="true">@foreach ($kinds($p) as $k)<span class="px-swatch hatch-{{ $hatch[$k] }}"></span>@endforeach</span></span>
+                                    <b><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></b>
+                                </span>
+                                <span class="px-tb__cell"><small>{{ bival('pj_place') }}</small><b><bdi>{{ $p->cityLabel() ?: '—' }}</bdi></b></span>
+                                <span class="px-tb__cell"><small>{{ bival('pj_year') }}</small><b><bdi>{{ $p->endYear() ?: '—' }}</bdi></b></span>
+                                <span class="px-tb__cell px-tb__cell--status"><small>{{ bival('pj_status') }}</small><b class="px-st--{{ $p->statusClass() }}">{{ $p->statusLabel($lang) }}</b></span>
+                            </span>
+                            {{-- crop marks, at the corners of the whole sheet --}}
+                            <i class="px-crop px-crop--tl" aria-hidden="true"></i><i class="px-crop px-crop--tr" aria-hidden="true"></i>
+                            <i class="px-crop px-crop--bl" aria-hidden="true"></i><i class="px-crop px-crop--br" aria-hidden="true"></i>
+                        </a>
+                        <button class="px-heart" type="button" data-save="{{ $p->slug }}" data-save-at="projects" aria-pressed="false" aria-label="{{ bival('save_add') }}">
+                            @include('partials.icon-heart')
+                        </button>
+                    </li>
+                @endforeach
+            </ol>
+        </section>
+
+        <div class="px-empty" id="pxEmpty" @if ($shown > 0) hidden @endif>
+            <p>{{ bival('pg_empty') }}</p>
+            <a class="pp-act" href="{{ site_url('/projects') }}" id="pxClear">{{ bival('pj_clear') }}</a>
+        </div>
+
+        <section class="pp-cta px-cta">
             <p class="pp-label">{{ bival('contact_label') }}</p>
             <h2 class="pp-cta__title">{{ bival('pp_cta_title') }}</h2>
             <p class="pp-cta__text">{{ bival('pp_cta_text') }}</p>
