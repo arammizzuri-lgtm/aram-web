@@ -157,6 +157,8 @@ img { display: block; max-width: 100%; }
     pointer-events: none;
 }
 .loader.out { opacity: 0; visibility: hidden; pointer-events: none; }
+/* back within the half hour: no loader at all (see the page head) */
+.am-seen .loader { display: none; }
 /* the sun, held in a liquid-glass disc: glass stays still, sun turns */
 .loader__sun {
     position: relative;
@@ -1537,6 +1539,19 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: 13.5px; font-weight: 300; line-height: 1.75;
     color: rgba(255,255,255,.55);
 }
+/* each card is a way in: to its projects, or to the contact form */
+a.service { display: flex; flex-direction: column; color: inherit; text-decoration: none; }
+.service__go {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 20px;
+    font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: rgba(245,197,24,.8);
+    transition: color .25s;
+}
+[dir="rtl"] .service__go { letter-spacing: 0; font-size: 12.5px; text-transform: none; }
+.service__go-arrow { font-variant-emoji: text; transition: transform .45s var(--ease-out); }
+[dir="rtl"] .service__go-arrow { transform: scaleX(-1); }
+.service:hover .service__go, .service:focus-visible .service__go { color: var(--gold); }
+.service:hover .service__go-arrow { transform: translate(3px, -3px); }
+[dir="rtl"] .service:hover .service__go-arrow { transform: translate(-3px, -3px) scaleX(-1); }
 @media (max-width: 1100px) {
     .service, .service--third { grid-column: span 6; }
 }

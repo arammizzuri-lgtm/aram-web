@@ -30,8 +30,12 @@ class SiteEvent extends Model
 
     public const TYPES = [self::PROJECT_OPEN, self::WHATSAPP_CLICK, self::SAVE, self::SHARE, self::ESTIMATE];
 
-    /** Where a button sits: the WhatsApp ones, and the hearts and share buttons. */
-    public const PLACEMENTS = ['fab', 'contact', 'overlay', 'project', 'grid', 'saved'];
+    /**
+     * Where a button sits: the WhatsApp ones, and the hearts and share
+     * buttons. Anything not listed here is not counted at all, so a new
+     * data-wa / data-save-at / data-share-at value must be added.
+     */
+    public const PLACEMENTS = ['fab', 'contact', 'overlay', 'project', 'projects', 'grid', 'saved', 'menu', 'not-found'];
 
     protected $fillable = ['type', 'project_id', 'placement', 'source', 'visitor_hash', 'created_at'];
 

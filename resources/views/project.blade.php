@@ -164,11 +164,20 @@
                 @if (filled($narrative))
                     <blockquote class="pp-quote" dir="auto">{{ $narrative }}</blockquote>
                 @endif
-                @if (! empty($project->materials))
+                @if ($materials->isNotEmpty())
+                    {{-- a material other projects share opens them all (ProjectPageController) --}}
                     <h2 class="pp-label">{{ bival('pp_materials') }}</h2>
                     <ul class="pp-chips">
-                        @foreach ($project->materials as $material)
-                            <li><bdi>{{ $material }}</bdi></li>
+                        @foreach ($materials as $material)
+                            <li>
+                                @if ($material['href'])
+                                    <a class="pp-chip-link" href="{{ $material['href'] }}" title="{{ str_replace('{n}', (string) $material['count'], bival('pp_material_more')) }}">
+                                        <bdi>{{ $material['name'] }}</bdi><sup>{{ $material['count'] }}</sup><span class="pp-chip-link__arrow" aria-hidden="true">↗&#xFE0E;</span>
+                                    </a>
+                                @else
+                                    <bdi>{{ $material['name'] }}</bdi>
+                                @endif
+                            </li>
                         @endforeach
                     </ul>
                 @endif

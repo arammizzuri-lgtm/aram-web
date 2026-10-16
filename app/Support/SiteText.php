@@ -33,6 +33,7 @@ class SiteText
                 'nav_services'   => ['Nav — Services', 'Services', 'خزمەتگوزاری'],
                 'nav_process'    => ['Nav — Process', 'Process', 'ڕێگا'],
                 'nav_contact'    => ['Nav — Contact', 'Contact', 'پەیوەندی'],
+                'nav_menu'       => ['Menu button (other pages, on a tablet or phone)', 'Menu', 'مێنیو'],
                 'ui_scroll'      => ['Scroll hint', 'Scroll', 'بۆ خوارەوە'],
                 'ui_clock_city'  => ['Hero clock — city', 'Erbil', 'هەولێر'],
                 'stat_projects'  => ['Stat label — Projects', 'Projects', 'پرۆژە'],
@@ -100,6 +101,9 @@ class SiteText
             'Services' => [
                 'services_label' => ['Section label', 'What We Do', 'ئەوەی دەیکەین'],
                 'services_title' => ['Title', 'Services', 'خزمەتگوزارییەکان'],
+                'services_see'   => ['Card — link to its projects ({n} = how many)', 'See {n} projects', 'بینینی {n} پرۆژە'],
+                'services_see_one' => ['Card — link to its only project', 'See the project', 'بینینی پرۆژەکە'],
+                'services_ask'   => ['Card — link to the contact form (no projects to show yet)', 'Ask us about it', 'پرسیارمان لێ بکە'],
             ],
 
             'Process' => [
@@ -182,10 +186,10 @@ class SiteText
             // A project's own page (/projects/…). Its spec labels are the
             // overlay's above, so the two always name things the same way.
             'Project page' => [
-                'pp_all_projects' => ['Back link', 'All projects', 'هەموو پرۆژەکان'],
                 'pp_status'       => ['Spec — Status', 'Status', 'دۆخ'],
                 'pp_category'     => ['Spec — Category', 'Category', 'پۆل'],
                 'pp_materials'    => ['Materials heading', 'Materials', 'کەرەستەکان'],
+                'pp_material_more' => ['A material other projects share — hint ({n} = how many projects)', 'See all {n} projects built with it', 'بینینی هەموو ئەو {n} پرۆژەیەی بەم کەرەستەیە دروستکراون'],
                 'pp_on_map'       => ['Map heading', 'On the map', 'لەسەر نەخشە'],
                 'pp_share'        => ['Share button', 'Share', 'هاوبەشکردن'],
                 'pp_copied'       => ['Share — link copied', 'Link copied', 'بەستەرەکە کۆپی کرا'],
@@ -343,6 +347,17 @@ class SiteText
                 'pj_yours_text' => ['Blank sheet at the end — text', 'This sheet is still blank — let’s draw it together.', 'ئەم پەڕەیە هێشتا بەتاڵە — با پێکەوە بیکێشین.', 'area'],
                 'pj_disc_view' => ['Disc beside the pointer, over a project', 'View', 'بینین'],
                 'pj_disc_start' => ['Disc beside the pointer, over the blank sheet', 'Start', 'دەستپێک'],
+            ],
+
+            // What an address that leads nowhere shows: a mistyped one, an old
+            // link, a project taken down since it was shared.
+            'Page not found' => [
+                'nf_label'  => ['Label', 'Error 404', 'هەڵەی ٤٠٤'],
+                'nf_title'  => ['Title', 'This sheet is missing from the set.', 'ئەم پەڕەیە لەناو نەخشەکاندا نییە.'],
+                'nf_text'   => ['Text', 'The page you followed has moved, or was never drawn. Search the projects, or start from one of these.', 'ئەو پەڕەیەی بەدوایدا هاتیت گوازراوەتەوە، یان هەرگیز نەکێشراوە. لە پرۆژەکاندا بگەڕێ، یان لە یەکێک لەمانەوە دەست پێبکە.', 'area'],
+                'nf_search' => ['Search button', 'Search', 'گەڕان'],
+                'nf_all'    => ['Button — every project', 'See every project', 'هەموو پرۆژەکان ببینە'],
+                'nf_picks'  => ['Heading over four projects', 'From the studio', 'لە کارەکانی ستۆدیۆ'],
             ],
 
             // The careers page (/careers). Positions themselves are managed

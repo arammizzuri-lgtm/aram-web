@@ -12,7 +12,7 @@
 </head>
 <body class="pp pp--room">
 
-    @include('partials.page-top', ['otherUrl' => site_url('/room/'.$room->token, $isKu ? 'en' : 'ku'), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home'), 'withSaved' => false])
+    @include('partials.page-top', ['otherUrl' => site_url('/room/'.$room->token, $isKu ? 'en' : 'ku'), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home'), 'withSaved' => false, 'withMenu' => false])
 
     <main class="rm-gate">
         <div class="rm-gate__card">

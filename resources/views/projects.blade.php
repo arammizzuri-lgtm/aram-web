@@ -8,7 +8,11 @@
      * @var \Illuminate\Support\Collection<string, int> $hatch  the hatch each category is drawn in
      * @var \Illuminate\Support\Collection<string, \Illuminate\Support\Collection> $byYear  newest first; '' undated
      * @var \Illuminate\Support\Collection<int, string> $years
+     * @var \Illuminate\Support\Collection<int, \App\Models\Project> $statuses  one project for each status there is, in the admin's order
+     * @var \Illuminate\Support\Collection<string, int> $statusCounts  projects per status key
      * @var string $type  the category asked for in the address, or ''
+     * @var string $status  the status asked for in the address, or ''
+     * @var string $q  the search asked for in the address, or ''
      * @var string $view  'index' or 'sheets'
      */
     $lang = site_lang();
@@ -19,10 +23,16 @@
     $description = \Illuminate\Support\Str::limit(bival('pj_intro'), 160);
     $ogImage = $projects->first()?->socialImageUrl() ?? asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg'));
     $count = fn (int $n) => $n === 1 ? bival('pj_count_one') : str_replace('{n}', (string) $n, bival('pj_count'));
-    $inType = fn ($p) => $type === '' || in_array($type, $p->categoryKeys(), true);
-    $shown = $projects->filter($inType)->count();
+    // what the address asks for: a category, a status and a search, together
+    $fits = fn ($p) => ($type === '' || in_array($type, $p->categoryKeys(), true))
+        && ($status === '' || $p->statusKey() === $status)
+        && $p->matchesSearch($q);
+    $shown = $projects->filter($fits)->count();
     $span = $years->isEmpty() ? '' : ($years->last() === $years->first() ? $years->first() : $years->last().' – '.$years->first());
-    $query = fn (array $q) => ($q = array_filter($q)) ? '?'.http_build_query($q) : '';
+    $query = fn (array $params) => ($params = array_filter($params)) ? '?'.http_build_query($params) : '';
+    // this page with one thing changed, the rest kept: a category picked keeps the status and the search
+    $now = ['type' => $type, 'status' => $status, 'q' => $q, 'view' => $view === 'sheets' ? 'sheets' : ''];
+    $with = fn (array $change, ?string $lang = null) => site_url('/projects', $lang).$query(array_merge($now, $change));
     $catName = $categories->mapWithKeys(fn ($c) => [$c->key => bi($c->name, $c->name_ku)]);
     $kinds = fn ($p) => collect($p->categoryKeys())->filter(fn ($k) => $catName->has($k));
 
@@ -77,7 +87,7 @@
 </head>
 <body class="pp pp--projects">
 
-    @include('partials.page-top', ['otherUrl' => site_url('/projects', $other).$query(['type' => $type, 'view' => $view === 'sheets' ? 'sheets' : '']), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home')])
+    @include('partials.page-top', ['otherUrl' => $with([], $other)])
 
     <main class="px" id="px" data-view="{{ $view }}">
 
@@ -104,28 +114,45 @@
         {{-- ---- The legend (categories, each in its hatch), search, and views ---- --}}
         <div class="px-bar" id="pxBar" data-count="{{ bival('pj_count') }}" data-count-one="{{ bival('pj_count_one') }}">
             <div class="px-bar__inner">
+              {{-- the keys: on a phone, categories and statuses run on in one strip --}}
+              <div class="px-keys">
                 <nav class="px-legend" aria-label="{{ bival('pj_legend') }}">
                     <span class="px-legend__title" aria-hidden="true">{{ bival('pj_legend') }}</span>
-                    <a class="px-key{{ $type === '' ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['view' => $view === 'sheets' ? 'sheets' : '']) }}" data-type="" @if ($type === '') aria-current="true" @endif>
+                    <a class="px-key{{ $type === '' ? ' is-on' : '' }}" href="{{ $with(['type' => '']) }}" data-type="" @if ($type === '') aria-current="true" @endif>
                         <span class="px-swatch px-swatch--all" aria-hidden="true"></span>{{ bival('filter_all') }}<sup>{{ $projects->count() }}</sup>
                     </a>
                     @foreach ($categories as $cat)
-                        <a class="px-key{{ $type === $cat->key ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['type' => $cat->key, 'view' => $view === 'sheets' ? 'sheets' : '']) }}" data-type="{{ $cat->key }}" @if ($type === $cat->key) aria-current="true" @endif>
+                        <a class="px-key{{ $type === $cat->key ? ' is-on' : '' }}" href="{{ $with(['type' => $cat->key]) }}" data-type="{{ $cat->key }}" @if ($type === $cat->key) aria-current="true" @endif>
                             <span class="px-swatch hatch-{{ $hatch[$cat->key] }}" aria-hidden="true"></span><bdi>{{ $catName[$cat->key] }}</bdi><sup>{{ $counts[$cat->key] }}</sup>
                         </a>
                     @endforeach
                 </nav>
+                @if ($statuses->count() > 1)
+                    {{-- built, being built, still on paper: each with the dot it carries in the register --}}
+                    <nav class="px-legend px-legend--status" aria-label="{{ bival('pj_status') }}">
+                        <span class="px-legend__title" aria-hidden="true">{{ bival('pj_status') }}</span>
+                        <a class="px-key{{ $status === '' ? ' is-on' : '' }}" href="{{ $with(['status' => '']) }}" data-status="" @if ($status === '') aria-current="true" @endif>
+                            {{ bival('filter_all') }}<sup>{{ $projects->count() }}</sup>
+                        </a>
+                        @foreach ($statuses as $st)
+                            <a class="px-key px-key--st px-st--{{ $st->statusClass() }}{{ $status === $st->statusKey() ? ' is-on' : '' }}" href="{{ $with(['status' => $st->statusKey()]) }}" data-status="{{ $st->statusKey() }}" @if ($status === $st->statusKey()) aria-current="true" @endif>
+                                <bdi>{{ $st->statusLabel($lang) }}</bdi><sup>{{ $statusCounts[$st->statusKey()] }}</sup>
+                            </a>
+                        @endforeach
+                    </nav>
+                @endif
+              </div>
                 <div class="px-bar__end">
                     <label class="px-find">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                        <input type="search" id="pxSearch" placeholder="{{ bival('pj_search') }}" aria-label="{{ bival('pj_search') }}" autocomplete="off" dir="auto">
+                        <input type="search" id="pxSearch" value="{{ $q }}" placeholder="{{ bival('pj_search') }}" aria-label="{{ bival('pj_search') }}" autocomplete="off" dir="auto">
                     </label>
                     <div class="px-views" role="group" aria-label="{{ bival('pj_view') }}">
-                        <a class="px-view{{ $view === 'index' ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['type' => $type]) }}" data-view="index" aria-pressed="{{ $view === 'index' ? 'true' : 'false' }}">
+                        <a class="px-view{{ $view === 'index' ? ' is-on' : '' }}" href="{{ $with(['view' => '']) }}" data-view="index" aria-pressed="{{ $view === 'index' ? 'true' : 'false' }}">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.4"/></svg>
                             <span>{{ bival('pj_index') }}</span>
                         </a>
-                        <a class="px-view{{ $view === 'sheets' ? ' is-on' : '' }}" href="{{ site_url('/projects').$query(['type' => $type, 'view' => 'sheets']) }}" data-view="sheets" aria-pressed="{{ $view === 'sheets' ? 'true' : 'false' }}">
+                        <a class="px-view{{ $view === 'sheets' ? ' is-on' : '' }}" href="{{ $with(['view' => 'sheets']) }}" data-view="sheets" aria-pressed="{{ $view === 'sheets' ? 'true' : 'false' }}">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="11" stroke="currentColor" stroke-width="1.4"/><path d="M3.5 19.5h17M13 15.5v4" stroke="currentColor" stroke-width="1.4"/></svg>
                             <span>{{ bival('pj_sheets') }}</span>
                         </a>
@@ -143,15 +170,15 @@
                 <span>{{ bival('pj_place') }}</span><span>{{ bival('pj_status') }}</span>
             </div>
             @foreach ($byYear as $year => $group)
-                <div class="px-year" data-year="{{ $year }}" @unless ($group->contains($inType)) hidden @endunless>
+                <div class="px-year" data-year="{{ $year }}" @unless ($group->contains($fits)) hidden @endunless>
                     <h2 class="px-year__label">
                         <span class="px-year__n"><bdi>{{ $year !== '' ? $year : bival('pj_undated') }}</bdi></span>
-                        <span class="px-year__count">{{ $group->filter($inType)->count() }}</span>
+                        <span class="px-year__count">{{ $group->filter($fits)->count() }}</span>
                     </h2>
                     <ol class="px-rows">
                         @foreach ($group as $p)
-                            <li class="px-row" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}"
-                                data-img="{{ $p->coverThumbUrl() }}" data-pos="{{ $p->coverPosition() }}" data-num="{{ $p->num }}" @unless ($inType($p)) hidden @endunless>
+                            <li class="px-row" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-status="{{ $p->statusKey() }}" data-search="{{ $p->searchText() }}"
+                                data-img="{{ $p->coverThumbUrl() }}" data-pos="{{ $p->coverPosition() }}" data-num="{{ $p->num }}" @unless ($fits($p)) hidden @endunless>
                                 <a class="px-row__link" href="{{ $p->pageUrl($lang) }}">
                                     <span class="px-row__num">{{ $p->num }}</span>
                                     <span class="px-row__thumb" aria-hidden="true"><img src="{{ $p->variantUrl($p->coverImage(), 'sm') }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
@@ -192,7 +219,7 @@
             <ol class="px-sheets__grid" id="pxTiles">
                 @foreach ($projects as $p)
                     @php [$w, $h, $s] = $shape($p); @endphp
-                    <li class="px-sheet px-sheet--{{ $s }}" data-w="{{ $w }}" data-h="{{ $h }}" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-search="{{ mb_strtolower($p->searchText()) }}" @unless ($inType($p)) hidden @endunless>
+                    <li class="px-sheet px-sheet--{{ $s }}" data-w="{{ $w }}" data-h="{{ $h }}" data-categories="{{ implode(' ', $p->categoryKeys()) }}" data-status="{{ $p->statusKey() }}" data-search="{{ $p->searchText() }}" @unless ($fits($p)) hidden @endunless>
                         <a class="px-sheet__link" href="{{ $p->pageUrl($lang) }}" data-disc="{{ bival('pj_disc_view') }}">
                             <span class="px-sheet__frame">
                                 <span class="px-sheet__pic"><img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
@@ -242,7 +269,7 @@
 
         <div class="px-empty" id="pxEmpty" @if ($shown > 0) hidden @endif>
             <p>{{ bival('pg_empty') }}</p>
-            <a class="pp-act" href="{{ site_url('/projects') }}" id="pxClear">{{ bival('pj_clear') }}</a>
+            <a class="pp-act" href="{{ site_url('/projects').$query(['view' => $now['view']]) }}" id="pxClear">{{ bival('pj_clear') }}</a>
         </div>
 
         <section class="pp-cta px-cta">

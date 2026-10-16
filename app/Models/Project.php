@@ -455,19 +455,51 @@ class Project extends Model
     /**
      * Everything the grid's search box should match on: the name in both
      * languages, every category label (English and Kurdish), the typology,
-     * place and year. Lower-cased and space-separated for a substring test.
+     * place and neighbourhood, year, status and materials. Lower-cased and
+     * space-separated for a substring test.
      */
     public function searchText(): string
     {
         $categories = collect($this->categoryKeys())
             ->flatMap(fn ($k) => [self::categoryKeyLabel($k), Category::kurdishMap()[$k] ?? null, $k]);
 
-        return collect([$this->name, $this->name_ku, $this->typology, $this->location, $this->year])
+        return collect([$this->name, $this->name_ku, $this->typology, $this->location, $this->neighbourhood, $this->year,
+            $this->status, $this->statusLabel('ku')])
             ->merge($categories)
+            ->merge((array) $this->materials)
             ->filter()
             ->map(fn ($v) => mb_strtolower((string) $v))
             ->unique()
             ->implode(' ');
+    }
+
+    /**
+     * The words of a search as the box reads them: lower-cased, split on
+     * spaces, with the ٠–٩ a Kurdish phone types read as 0–9.
+     *
+     * @return array<int, string>
+     */
+    public static function searchWords(?string $query): array
+    {
+        $plain = strtr(mb_strtolower((string) $query), array_combine(
+            ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'], range(0, 9),
+        ));
+
+        return array_values(array_filter(preg_split('/\s+/u', trim($plain)) ?: [], 'strlen'));
+    }
+
+    /** Whether every word of a search is found in this project (projects.js does the same). */
+    public function matchesSearch(?string $query): bool
+    {
+        $text = $this->searchText();
+
+        return collect(self::searchWords($query))->every(fn ($w) => str_contains($text, $w));
+    }
+
+    /** The status as it is written in an address: "Under Construction" → "under-construction". */
+    public function statusKey(): string
+    {
+        return Str::slug((string) $this->status);
     }
 
     public function statusClass(): string

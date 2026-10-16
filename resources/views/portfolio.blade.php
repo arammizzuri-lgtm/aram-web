@@ -54,6 +54,15 @@
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- The loader plays once a visit: back on the homepage within half an
+         hour of last seeing it, it is hidden before it can paint (script.js,
+         initLoader, keeps the time). --}}
+    <script>
+        try {
+            var amSeen = +localStorage.getItem('am_loader_seen');
+            if (amSeen && Date.now() - amSeen < 30 * 60 * 1000) document.documentElement.classList.add('am-seen');
+        } catch (e) { /* storage blocked: the loader, as on a first visit */ }
+    </script>
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()); @endphp
@@ -105,7 +114,9 @@
         </a>
 
         <div class="nav__bar">
-            <a href="#projects" class="nav__link" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
+            {{-- "Projects" opens every project on its own page; the hero's arrow still scrolls to the grid below --}}
+            <a href="{{ site_url('/projects') }}" class="nav__link"
+               data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
             <a href="#map"      class="nav__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
             <a href="#about"    class="nav__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
             <a href="#services" class="nav__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
@@ -137,7 +148,8 @@
 
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="#projects" class="mobile-menu__link" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
+        <a href="{{ site_url('/projects') }}" class="mobile-menu__link"
+           data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
         <a href="#map"      class="mobile-menu__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
         <a href="#about"    class="mobile-menu__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
         <a href="#services" class="mobile-menu__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
@@ -598,23 +610,29 @@
     <!-- ========== SERVICES ========== -->
     <section class="services" id="services">
         @php
-            // stroke-based line icons in the site's drafting language
+            // stroke-based line icons in the site's drafting language; 'to' is
+            // where a card leads on /projects — every project, a category or a
+            // status — and a card with nothing to show there leads to Contact
             $services = [
                 ['en' => 'Architectural Design', 'ku' => 'دیزاینی تەڵارسازی',
                  'den' => 'Complete building design — from first concept to approved drawings.',
                  'dku' => 'دیزاینی تەواوی بینا — لە یەکەم بیرۆکەوە تا نەخشەی پەسەندکراو.',
+                 'to' => [],
                  'icon' => '<circle cx="18" cy="7" r="3" stroke-width="1.8"/><line x1="16.4" y1="9.8" x2="9" y2="30" stroke-width="2"/><line x1="19.6" y1="9.8" x2="27" y2="30" stroke-width="2"/><path d="M11.5 24.5a13 13 0 0 0 13 0" stroke-width="1.8"/>'],
                 ['en' => 'Exterior Design', 'ku' => 'دیزاینی دەرەکی',
                  'den' => 'Façades and outdoor environments that give a building its public face.',
                  'dku' => 'ڕووکار و ژینگەی دەرەوە کە ڕوخساری گشتیی بینا دروستدەکەن.',
+                 'to' => ['type' => 'exterior-design'],
                  'icon' => '<rect x="4" y="8" width="15" height="24" stroke-width="1.8"/><line x1="8" y1="14" x2="15" y2="14" stroke-width="1.6"/><line x1="8" y1="20" x2="15" y2="20" stroke-width="1.6"/><line x1="8" y1="26" x2="15" y2="26" stroke-width="1.6"/><circle cx="27" cy="22" r="4" stroke-width="1.8"/><line x1="27" y1="26" x2="27" y2="32" stroke-width="1.8"/><line x1="22" y1="32" x2="32" y2="32" stroke-width="1.8"/>'],
                 ['en' => 'Interior Design', 'ku' => 'دیزاینی ناوەکی',
                  'den' => 'Spatial planning, materials and light — interiors made to be lived in.',
                  'dku' => 'پلاندانانی بۆشایی، کەرەستە و ڕووناکی — ناوەوەیەک بۆ ژیان.',
+                 'to' => ['type' => 'interior-design'],
                  'icon' => '<path d="M8 19v-7a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v7" stroke-width="1.8"/><path d="M5 19a2.5 2.5 0 0 1 5 0v2h16v-2a2.5 2.5 0 0 1 5 0v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" stroke-width="1.8"/><line x1="9" y1="29" x2="9" y2="32" stroke-width="1.8"/><line x1="27" y1="29" x2="27" y2="32" stroke-width="1.8"/>'],
                 ['en' => 'Construction', 'ku' => 'بیناسازی',
                  'den' => "On-site execution and supervision with Kurdistan's finest builders.",
                  'dku' => 'جێبەجێکردن و سەرپەرشتی مەیدانی لەگەڵ باشترین بیناسازانی کوردستان.',
+                 'to' => ['status' => 'under-construction'],
                  'icon' => '<line x1="5" y1="33" x2="31" y2="33" stroke-width="2"/><line x1="11" y1="33" x2="11" y2="5" stroke-width="2"/><line x1="11" y1="5" x2="31" y2="5" stroke-width="2"/><line x1="11" y1="12" x2="18" y2="5" stroke-width="1.8"/><line x1="31" y1="5" x2="31" y2="12" stroke-width="1.8"/><rect x="28.5" y="12" width="5" height="4.5" stroke-width="1.8"/>'],
                 ['en' => 'Tendering', 'ku' => 'تەندەرکردن',
                  'den' => 'Bid documentation, evaluation and contractor selection you can trust.',
@@ -629,6 +647,30 @@
                  'dku' => 'دابینکردنی براندە جیهانییەکانی مۆبیلیا — لە هەموو جیهاندا.',
                  'icon' => '<circle cx="18" cy="18" r="14" stroke-width="1.8"/><ellipse cx="18" cy="18" rx="6.5" ry="14" stroke-width="1.6"/><line x1="4" y1="18" x2="32" y2="18" stroke-width="1.6"/>'],
             ];
+
+            // how many projects each card would open on /projects
+            $withPage = $projects->filter(fn ($p) => $p->hasPage());
+            $byType = $withPage->flatMap(fn ($p) => $p->categoryKeys())->countBy();
+            $byStatus = $withPage->countBy(fn ($p) => $p->statusKey());
+            $text = fn (string $lang, string $key) => $lang === 'ku' ? \App\Support\SiteText::ku($key) : \App\Support\SiteText::en($key);
+            $serviceLink = function (array $s) use ($withPage, $byType, $byStatus, $text) {
+                $to = $s['to'] ?? null;
+                $n = match (true) {
+                    $to === null => 0,
+                    isset($to['type']) => $byType[$to['type']] ?? 0,
+                    isset($to['status']) => $byStatus[$to['status']] ?? 0,
+                    default => $withPage->count(),
+                };
+                if ($n === 0) {
+                    return ['href' => '#contact', 'en' => $text('en', 'services_ask'), 'ku' => $text('ku', 'services_ask'), 'arrow' => '→'];
+                }
+                $path = '/projects'.($to ? '?'.http_build_query($to) : '');
+                $say = fn (string $lang) => $n === 1
+                    ? $text($lang, 'services_see_one')
+                    : str_replace('{n}', (string) $n, $text($lang, 'services_see'));
+
+                return ['href' => site_url($path), 'href_en' => site_url($path, 'en'), 'href_ku' => site_url($path, 'ku'), 'en' => $say('en'), 'ku' => $say('ku'), 'arrow' => '↗'];
+            };
         @endphp
 
         <div class="services__inner">
@@ -638,14 +680,21 @@
             </div>
             <div class="services__grid">
                 @foreach ($services as $i => $s)
-                    <div class="service{{ $i >= 4 ? ' service--third' : '' }}">
+                    @php $go = $serviceLink($s); @endphp
+                    {{-- each card opens its work on /projects, or the contact form --}}
+                    <a class="service{{ $i >= 4 ? ' service--third' : '' }}" href="{{ $go['href'] }}"
+                       @isset($go['href_en']) data-href-en="{{ $go['href_en'] }}" data-href-ku="{{ $go['href_ku'] }}" @endisset>
                         <div class="service__top">
                             <svg class="service__icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $s['icon'] !!}</svg>
                             <span class="service__num">0{{ $i + 1 }}</span>
                         </div>
                         <h3 class="service__name" dir="auto" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ bi($s['en'], $s['ku']) }}</h3>
                         <p class="service__desc" dir="auto" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ bi($s['den'], $s['dku']) }}</p>
-                    </div>
+                        <span class="service__go">
+                            <span data-en="{{ $go['en'] }}" data-ku="{{ $go['ku'] }}">{{ bi($go['en'], $go['ku']) }}</span>
+                            <span class="service__go-arrow" aria-hidden="true">{{ $go['arrow'] }}&#xFE0E;</span>
+                        </span>
+                    </a>
                 @endforeach
             </div>
         </div>

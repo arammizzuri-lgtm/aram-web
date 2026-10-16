@@ -36,6 +36,16 @@ class ProjectPageController extends Controller
             ->sortByDesc(fn (Project $p) => count(array_intersect($keys, $p->categoryKeys())))
             ->take(3)->values();
 
+        // Its materials, each a way into the others built with it: a search
+        // on /projects — only where that finds more than this project alone.
+        $texts = $projects->map(fn (Project $p) => $p->searchText());
+        $materials = collect((array) $project->materials)->filter(fn ($m) => filled($m))->map(function (string $m) use ($texts) {
+            $words = Project::searchWords($m);
+            $found = $texts->filter(fn (string $t) => collect($words)->every(fn ($w) => str_contains($t, $w)))->count();
+
+            return ['name' => $m, 'href' => $found > 1 ? site_url('/projects').'?'.http_build_query(['q' => $m]) : null, 'count' => $found];
+        })->values();
+
         // what clients said about this one, in the language of the page
         $quotes = $project->testimonials()->publishedOrdered()->inLanguage(site_lang())->with('client')->get();
 
@@ -45,6 +55,7 @@ class ProjectPageController extends Controller
             'updates' => $project->publicUpdates()->get(),
             'media' => $project->mediaItems(),
             'compare' => $project->compareUrls(),
+            'materials' => $materials,
             'prev' => $prev,
             'next' => $next,
             'more' => $more,

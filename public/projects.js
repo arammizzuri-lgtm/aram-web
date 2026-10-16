@@ -1,8 +1,9 @@
 /* =========================================================
    ARAM MIZURI ARCHITECTURE — projects.js
    The projects page (/projects), a studio's set of drawings:
-   · the legend filters at once and the search narrows as it is typed;
-     the address keeps step (?type=…&view=sheets), so any view can be sent;
+   · the legend and the statuses filter at once and the search narrows as
+     it is typed; the address keeps step (?type=…&status=…&q=…&view=sheets),
+     so any view can be sent;
    · Index or Sheets, remembered for the next visit;
    · in the Index, the project's picture comes up beside the pointer and
      follows it, leaning a little the way it is moved;
@@ -26,7 +27,8 @@
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const wallWide = window.matchMedia('(min-width: 761px)');
     const rtl = document.documentElement.getAttribute('dir') === 'rtl';
-    const keys = Array.from(bar.querySelectorAll('.px-key'));
+    const keys = Array.from(bar.querySelectorAll('.px-key[data-type]'));
+    const statusKeys = Array.from(bar.querySelectorAll('.px-key[data-status]'));
     const views = Array.from(bar.querySelectorAll('.px-view'));
     const search = document.getElementById('pxSearch');
     const index = document.getElementById('pxIndex');
@@ -44,6 +46,7 @@
     const clear = document.getElementById('pxClear');
 
     let type = (keys.find(k => k.classList.contains('is-on')) || { dataset: {} }).dataset.type || '';
+    let status = (statusKeys.find(k => k.classList.contains('is-on')) || { dataset: {} }).dataset.status || '';
     let view = page.dataset.view === 'sheets' ? 'sheets' : 'index';
     let hidePeek = () => {};      // set below, where there is a picture to hide
     let drift = () => {};         // likewise, where the pictures drift
@@ -259,6 +262,7 @@
     function apply() {
         const words = plain(search ? search.value : '').split(/\s+/).filter(Boolean);
         const fits = el => (!type || el.dataset.categories.split(' ').includes(type))
+            && (!status || el.dataset.status === status)
             && words.every(w => el.dataset.search.includes(w));
 
         const before = packed && !still ? new Map(tiles.filter(t => !t.hidden).map(t => [t, t.getBoundingClientRect()])) : null;
@@ -281,18 +285,38 @@
 
     function remember() {
         const url = new URL(location.href);
-        if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
-        if (view === 'sheets') url.searchParams.set('view', 'sheets'); else url.searchParams.delete('view');
+        const q = search ? search.value.trim() : '';
+        const keep = (name, value) => { if (value) url.searchParams.set(name, value); else url.searchParams.delete(name); };
+        keep('type', type);
+        keep('status', status);
+        keep('q', q);
+        keep('view', view === 'sheets' ? 'sheets' : '');
         history.replaceState(null, '', url);
+        // the other language keeps them too
+        const other = document.querySelector('.pp-lang');
+        if (other) {
+            const there = new URL(other.href, location.href);
+            there.search = url.search;
+            other.href = there.toString();
+        }
     }
+
+    const mark = (list, attr, value) => list.forEach(k => {
+        const on = k.dataset[attr] === value;
+        k.classList.toggle('is-on', on);
+        if (on) k.setAttribute('aria-current', 'true'); else k.removeAttribute('aria-current');
+    });
 
     function choose(next) {
         type = next;
-        keys.forEach(k => {
-            const on = k.dataset.type === type;
-            k.classList.toggle('is-on', on);
-            if (on) k.setAttribute('aria-current', 'true'); else k.removeAttribute('aria-current');
-        });
+        mark(keys, 'type', type);
+        remember();
+        apply();
+    }
+
+    function chooseStatus(next) {
+        status = next;
+        mark(statusKeys, 'status', status);
         remember();
         apply();
     }
@@ -317,9 +341,18 @@
     // a plain click is answered here; a click asking for a new tab is left to the browser
     const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.button > 0);
     keys.forEach(k => k.addEventListener('click', e => { if (plainClick(e)) { e.preventDefault(); choose(k.dataset.type); } }));
+    statusKeys.forEach(k => k.addEventListener('click', e => { if (plainClick(e)) { e.preventDefault(); chooseStatus(k.dataset.status); } }));
     views.forEach(v => v.addEventListener('click', e => { if (plainClick(e)) { e.preventDefault(); show(v.dataset.view); } }));
-    if (search) search.addEventListener('input', apply);
-    if (clear) clear.addEventListener('click', e => { e.preventDefault(); if (search) search.value = ''; choose(''); });
+    // the address takes the search once the typing pauses (browsers limit how often it may change)
+    let typing = 0;
+    if (search) search.addEventListener('input', () => { apply(); clearTimeout(typing); typing = setTimeout(remember, 400); });
+    if (clear) clear.addEventListener('click', e => {
+        e.preventDefault();
+        if (search) search.value = '';
+        status = '';
+        mark(statusKeys, 'status', '');
+        choose('');
+    });
 
     /* ---- Coming into view ----------------------------------------------
        Those arriving together come in one after another, a beat apart. */
@@ -459,6 +492,8 @@
 
     /* ---- The wall keeps to the window ----------------------------------- */
     if ('ResizeObserver' in window) {
+        // the years stay just under the bar, however many lines its keys take
+        new ResizeObserver(() => page.style.setProperty('--bar-h', bar.offsetHeight + 'px')).observe(bar);
         let lastWidth = -1;
         new ResizeObserver(() => {
             const w = tileList.clientWidth;
@@ -468,6 +503,16 @@
         window.addEventListener('resize', () => layoutWall());
     }
     if (wallWide.addEventListener) wallWide.addEventListener('change', () => layoutWall());
+
+    // On a phone the keys run on in one strip: one asked for in the address (from a
+    // service on the homepage, say) is brought into it, so it shows what is chosen.
+    const strip = bar.querySelector('.px-keys');
+    const chosen = bar.querySelector('.px-key[data-status].is-on:not([data-status=""])')
+        || bar.querySelector('.px-key[data-type].is-on:not([data-type=""])');
+    if (strip && chosen && strip.scrollWidth > strip.clientWidth) {
+        const a = chosen.getBoundingClientRect(), s = strip.getBoundingClientRect();
+        strip.scrollBy({ left: rtl ? a.right - s.right + 24 : a.left - s.left - 24 });
+    }
 
     // the view chosen last time (the head already showed it), unless the address names one
     if (document.documentElement.classList.contains('px-want-sheets')) show('sheets', true);

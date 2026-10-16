@@ -1,0 +1,77 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — not-found.css
+   The page-not-found page (errors/404), on top of project.css: the number
+   in outline with its dimension line, as the projects page draws its years
+   and its count; then a search, the ways on, and four projects to start from.
+   ========================================================= */
+
+.nf {
+    max-width: var(--wide); margin: 0 auto;
+    padding: clamp(120px, 18vh, 180px) var(--gutter) clamp(80px, 12vh, 130px);
+}
+
+.nf-code { position: relative; display: inline-block; margin-bottom: 26px; }
+.nf-code__n {
+    display: block; font-size: clamp(110px, 20vw, 240px); font-weight: 200; line-height: .9; letter-spacing: -.04em;
+    color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,.38);
+    font-variant-numeric: tabular-nums;
+}
+/* the dimension under it, ticked at both ends */
+.nf-code__dim { display: flex; align-items: center; margin-top: 14px; }
+.nf-code__dim b { flex: 1; height: 1px; background: rgba(245,197,24,.5); }
+.nf-code__dim i { position: relative; width: 1px; height: 14px; background: rgba(255,255,255,.6); }
+.nf-code__dim i::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 10px; height: 1px;
+    background: rgba(255,255,255,.75); transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.nf-title {
+    max-width: 16em;
+    font-size: clamp(30px, 4.6vw, 58px); font-weight: 200; line-height: 1.1; letter-spacing: -.02em; color: #fff;
+}
+[dir="rtl"] .nf-title { letter-spacing: 0; font-weight: 400; line-height: 1.35; }
+.nf-text {
+    max-width: 36em; margin-top: 20px;
+    font-size: 16px; line-height: 1.8; font-weight: 300; color: var(--muted);
+}
+
+/* the search: what the projects page would be asked */
+.nf-find {
+    display: flex; align-items: center; gap: 12px; max-width: 560px; margin-top: 40px;
+    padding: 10px 2px; border-bottom: 1px solid rgba(255,255,255,.24); color: var(--faint);
+    transition: border-color .25s, color .25s;
+}
+.nf-find:focus-within { border-color: var(--gold); color: var(--gold); }
+.nf-find svg { flex: none; width: 20px; height: 20px; }
+.nf-find input {
+    flex: 1; min-width: 0; background: none; border: 0; outline: none; color: #fff; font: inherit; font-size: 18px; font-weight: 300;
+}
+.nf-find input::placeholder { color: var(--faint); }
+.nf-find input::-webkit-search-cancel-button { filter: invert(1) opacity(.5); }
+.nf-find button {
+    display: inline-flex; align-items: center; gap: 8px; flex: none;
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+}
+[dir="rtl"] .nf-find button { letter-spacing: 0; font-size: 13px; text-transform: none; }
+
+.nf-ways { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 40px; }
+.nf-ways .pp-act { height: 52px; padding: 0 24px; }
+
+/* four projects to start from */
+.nf-picks { margin-top: clamp(70px, 10vh, 110px); padding-top: 34px; border-top: 1px solid var(--line); }
+.nf-picks__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; list-style: none; }
+.nf-pick { display: block; }
+.nf-pick__pic { display: block; aspect-ratio: 4 / 3; overflow: hidden; background: var(--panel); }
+.nf-pick__pic img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease-out); }
+.nf-pick:hover .nf-pick__pic img { transform: scale(1.04); }
+.nf-pick__name { display: block; margin-top: 14px; font-size: 18px; font-weight: 300; color: #fff; transition: color .25s; }
+.nf-pick:hover .nf-pick__name { color: var(--gold); }
+.nf-pick__meta { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+
+@media (max-width: 900px) {
+    .nf-picks__grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+    .nf-find input { font-size: 16px; }
+    .nf-ways .pp-btn, .nf-ways .pp-act { flex: 1 1 auto; justify-content: center; }
+}

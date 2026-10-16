@@ -29,7 +29,7 @@
 </head>
 <body class="pp pp--room">
 
-    @include('partials.page-top', ['otherUrl' => site_url('/room/'.$room->token, $isKu ? 'en' : 'ku'), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home'), 'withSaved' => false])
+    @include('partials.page-top', ['otherUrl' => site_url('/room/'.$room->token, $isKu ? 'en' : 'ku'), 'backHref' => site_url('/'), 'backLabel' => bival('careers_home'), 'withSaved' => false, 'withMenu' => false])
 
     @if ($preview)
         <p class="rm-preview" dir="ltr">

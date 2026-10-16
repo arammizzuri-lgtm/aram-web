@@ -373,7 +373,13 @@ function buildKurdishSun(container, opts = {}) {
      Dismissal is now a single function every path calls.
 
    Past ~7s the wait stops being explicable by "loading" alone, so we say so;
-   past ~14s we assume something is wrong and offer a way out. */
+   past ~14s we assume something is wrong and offer a way out.
+
+   - It is shown once a visit. A visitor coming back to the homepage — from
+     a project, with the logo — within half an hour of last seeing it
+     (SEEN_KEY, read in the page head, which hides the loader before it can
+     paint) goes straight to the page: no sun, no bar, no beat at 100%. */
+const SEEN_KEY = 'am_loader_seen';
 (function initLoader() {
     const loader    = document.getElementById('loader');
     const loaderSun = document.getElementById('loaderSun');
@@ -386,7 +392,8 @@ function buildKurdishSun(container, opts = {}) {
 
     const SLOW_AFTER  = 7000;    // "this is taking a while"
     const STUCK_AFTER = 14000;   // "here is how to get out of it"
-    const FONT_CAP    = 4000;    // never hold the hero for a slow webfont
+    const seen        = document.documentElement.classList.contains('am-seen');
+    const FONT_CAP    = seen ? 600 : 4000;   // never hold the hero for a slow webfont
     const HARD_CAP    = 18000;   // absolute ceiling — always leave eventually
 
     // Weighted milestones. The weights are rough, but they are honest about
@@ -436,14 +443,15 @@ function buildKurdishSun(container, opts = {}) {
         clearTimeout(slowTimer);
         clearTimeout(stuckTimer);
         clearTimeout(hardTimer);
+        try { localStorage.setItem(SEEN_KEY, String(Date.now())); } catch (e) { /* not kept: shown next time too */ }
         // One frame at 100% so the bar is seen to complete rather than
-        // vanishing mid-fill, then out.
+        // vanishing mid-fill, then out — unless it was never shown.
         setTimeout(function () {
             if (raf) cancelAnimationFrame(raf);
             loader.classList.add('out');
             document.body.classList.add('is-loaded');   // triggers the hero reveal
             document.dispatchEvent(new Event('siteready'));
-        }, 260);
+        }, seen ? 0 : 260);
     }
 
     /* ---- Milestones -------------------------------------- */

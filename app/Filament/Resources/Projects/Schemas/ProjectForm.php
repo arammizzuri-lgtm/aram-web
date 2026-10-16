@@ -119,7 +119,13 @@ class ProjectForm
                         ->helperText('Shown as a quote on the project’s page. Each language shows only its own — leave one empty to show none there.'),
                     Textarea::make('narrative_ku')->label('Architect’s narrative (Kurdish)')->rows(4)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
-                    TagsInput::make('materials')->placeholder('Add a material and press Enter')->columnSpanFull(),
+                    // Written the same way on every project, a material on a project's
+                    // page opens the others built with it — so the ones already used
+                    // are offered as they are typed.
+                    TagsInput::make('materials')->placeholder('Add a material and press Enter')
+                        ->suggestions(fn () => Project::query()->pluck('materials')->flatten()->filter()->unique()->sort()->values()->all())
+                        ->helperText('Pick a material already used on another project where it is the same one: the project’s page then links to every project built with it.')
+                        ->columnSpanFull(),
                 ]),
 
             Section::make('Images')
