@@ -241,6 +241,14 @@ class SiteText
                 'story_hint'         => ['Status picture — how to post it', 'Share it and choose “My status” on WhatsApp — or save the picture and post it anywhere.', 'هاوبەشی بکە و لە واتسئاپ «ستاتسی من» هەڵبژێرە — یان وێنەکە پاشەکەوت بکە و لە هەر شوێنێک بڵاوی بکەرەوە.', 'area'],
             ],
 
+            // The poster for a building site's fence (Projects → a project →
+            // Site board), printed in both languages at once.
+            'Site boards' => [
+                'board_building' => ['Headline, while the building goes up', 'Being built here', 'لێرە بنیات دەنرێت'],
+                'board_scan'     => ['Beside the QR code', 'Scan to see the design', 'سکانی بکە بۆ بینینی دیزاینەکە'],
+                'board_by'       => ['Along the foot', 'Designed by Aram Mizuri Architecture', 'دیزاینی تەڵارسازیی ئارام مزووری'],
+            ],
+
             // The holiday cards (/card) — the occasions themselves, their
             // greetings and dates, are under Manage → Holiday cards.
             'Holiday cards' => [

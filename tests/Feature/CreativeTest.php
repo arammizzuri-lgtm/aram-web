@@ -241,4 +241,53 @@ class CreativeTest extends TestCase
 
         $this->assertSame(['card', 'story'], SiteEvent::query()->orderBy('placement')->pluck('placement')->all());
     }
+
+    /* ---- Site boards ------------------------------------------------------ */
+
+    public function test_a_site_boards_qr_code_opens_the_project_in_the_phones_language(): void
+    {
+        $p = $this->project(['name' => 'Garden Villa', 'status' => 'Under Construction']);
+
+        $this->withHeaders(['Accept-Language' => 'ckb-IQ,ckb;q=0.9,ar;q=0.8'])->get('/b/'.$p->id)
+            ->assertRedirect(url('/ku/projects/garden-villa').'?utm_source=board');
+        $this->withHeaders(['Accept-Language' => 'en-GB,en;q=0.9'])->get('/b/'.$p->id)
+            ->assertRedirect(url('/projects/garden-villa').'?utm_source=board');
+        // a project since taken down: the studio's homepage (English, where the phone does not say)
+        $this->get('/b/999999')->assertRedirect(url('/').'?utm_source=board');
+        $this->withHeaders(['Accept-Language' => 'ar-IQ,ar;q=0.9'])->get('/b/999999')->assertRedirect(url('/ku').'?utm_source=board');
+
+        // and the visit is counted as come from a board
+        $this->assertSame('board', \App\Support\TrafficSource::classify(null, null, 'board'));
+        $this->assertSame('Site boards (QR)', \App\Support\TrafficSource::label('board'));
+    }
+
+    public function test_the_studio_prints_a_site_board_with_its_qr_code(): void
+    {
+        $p = $this->project(['name' => 'Garden Villa', 'name_ku' => 'ڤێلای باخچە', 'num' => '07', 'status' => 'Under Construction']);
+        $url = route('filament.studio-aks-panel.project-board', $p);
+
+        $this->get($url)->assertRedirect();                                    // the studio's only
+
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $this->actingAs($admin)->get($url)->assertOk()
+            ->assertSee('@page { size: 420mm 594mm; margin: 0; }', false)       // A2 unless asked
+            ->assertSee('<svg xmlns="http://www.w3.org/2000/svg" class="qr-svg qr"', false)
+            ->assertSee(preg_replace('#^https?://#', '', url('/b/'.$p->id)))
+            ->assertSee('Being built here')->assertSee('لێرە بنیات دەنرێت')
+            ->assertSee('Garden Villa')->assertSee('ڤێلای باخچە')
+            ->assertSee('Scan to see the design');
+
+        $this->actingAs($admin)->get($url.'?size=a0&theme=light')->assertOk()
+            ->assertSee('@page { size: 841mm 1189mm; margin: 0; }', false)
+            ->assertSee('board board--light', false);
+
+        // a finished building's board says who designed it, not that it is going up
+        $done = $this->project(['name' => 'Old House', 'status' => 'Completed']);
+        $this->actingAs($admin)->get(route('filament.studio-aks-panel.project-board', $done))->assertOk()
+            ->assertDontSee('Being built here')->assertSee('Designed by Aram Mizuri Architecture');
+
+        // from the project in the admin
+        $this->actingAs($admin)->get(\App\Filament\Resources\Projects\ProjectResource::getUrl('edit', ['record' => $p]))
+            ->assertOk()->assertSee('Site board');
+    }
 }

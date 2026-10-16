@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BoardController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactController;
@@ -76,6 +77,10 @@ $rooms = function (string $lang) {
 
 $rooms('en');
 Route::prefix('ku')->name('ku.')->group(fn () => $rooms('ku'));
+
+// What a site board's QR code says (BoardController): short, so the code
+// reads from across a street; on to the project's page, counted as a board.
+Route::get('/b/{id}', [BoardController::class, 'scan'])->whereNumber('id')->name('board');
 
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');

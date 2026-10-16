@@ -27,6 +27,18 @@
         } catch (e) { /* counting must never get in the way */ }
     };
 
+    // Where a visit came from is counted as the page arrives (a site board's
+    // QR code, a tagged link); after that the address no longer needs to say
+    // so — and a link copied from it must not credit the next visitor to it.
+    try {
+        const here = new URL(location.href);
+        const tags = Array.from(here.searchParams.keys()).filter(k => /^utm_/.test(k));
+        if (tags.length && window.history && history.replaceState) {
+            tags.forEach(k => here.searchParams.delete(k));
+            history.replaceState(history.state, '', here.pathname + here.search + here.hash);
+        }
+    } catch (e) { /* the address stays as it came */ }
+
     // Every WhatsApp button on the page, wherever it sits (data-wa says where).
     // Sharing on WhatsApp is not a chat with the studio: it is counted below.
     document.addEventListener('click', e => {

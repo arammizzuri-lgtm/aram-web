@@ -32,6 +32,8 @@ class TrafficSource
             'tiktok' => 'TikTok',
             'telegram' => 'Telegram',
             'snapchat' => 'Snapchat',
+            // the QR code on a building site's board (BoardController)
+            'board' => 'Site boards (QR)',
             'search' => 'Other search engines',
             'other' => 'Other websites',
             'direct' => 'Direct / unknown',

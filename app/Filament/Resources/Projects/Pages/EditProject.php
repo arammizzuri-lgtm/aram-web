@@ -21,6 +21,13 @@ class EditProject extends EditRecord
                 ->color('gray')
                 ->url(fn (): ?string => $this->record->hasPage() ? $this->record->pageUrl() : null, shouldOpenInNewTab: true)
                 ->visible(fn (): bool => $this->record->hasPage()),
+            // the poster for the building site's fence, with the QR code to this page
+            Action::make('siteBoard')
+                ->label('Site board')
+                ->icon(Heroicon::OutlinedQrCode)
+                ->color(fn (): string => $this->record->statusClass() === 'build' ? 'primary' : 'gray')
+                ->url(fn (): string => route('filament.studio-aks-panel.project-board', $this->record), shouldOpenInNewTab: true)
+                ->visible(fn (): bool => $this->record->hasPage()),
             DeleteAction::make(),
         ];
     }

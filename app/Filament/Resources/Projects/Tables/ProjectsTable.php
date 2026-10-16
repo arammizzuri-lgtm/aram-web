@@ -105,6 +105,12 @@ class ProjectsTable
                         ->icon(Heroicon::OutlinedArrowTopRightOnSquare)
                         ->url(fn (Project $record): ?string => $record->hasPage() ? $record->pageUrl() : null, shouldOpenInNewTab: true)
                         ->visible(fn (Project $record): bool => $record->hasPage()),
+                    // A poster for the building site's fence, with a QR code to the page.
+                    Action::make('siteBoard')
+                        ->label('Site board (QR poster)')
+                        ->icon(Heroicon::OutlinedQrCode)
+                        ->url(fn (Project $record): string => route('filament.studio-aks-panel.project-board', $record), shouldOpenInNewTab: true)
+                        ->visible(fn (Project $record): bool => $record->hasPage()),
                     // Jump a project straight to either end of the running
                     // order. Dragging handles the nudges; these are for "put
                     // this one first/last" and still work while filtered.

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Auth\Login;
 use App\Http\Controllers\ApplicationCvController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BoardController;
 use App\Http\Controllers\RoomFileController;
 use App\Http\Controllers\TestimonialPhotoController;
 use App\Filament\Pages\Dashboard;
@@ -94,6 +95,7 @@ class AdminPanelProvider extends PanelProvider
                 Route::get('rooms/drawings/{drawing}', [RoomFileController::class, 'drawing'])->name('room-drawing');
                 Route::get('rooms/receipts/{payment}', [RoomFileController::class, 'receipt'])->name('room-receipt');
                 Route::get('testimonials/{testimonial}/photo', TestimonialPhotoController::class)->name('testimonial-photo');
+                Route::get('projects/{project}/board', [BoardController::class, 'poster'])->name('project-board');
             });
     }
 }
