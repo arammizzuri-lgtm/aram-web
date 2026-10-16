@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\Greeting;
 use App\Models\Project;
 use App\Models\Status;
 use App\Models\Testimonial;
@@ -90,7 +91,10 @@ class PortfolioController extends Controller
             'outlineUrl' => asset('kurdistan-data.js').'?v='.filemtime(public_path('kurdistan-data.js')),
         ];
 
-        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'payload', 'stats'));
+        // a holiday card on offer (Newroz, Eid…): the band under the hero
+        $greeting = rescue(fn () => Greeting::current(), null, false);
+
+        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'payload', 'stats', 'greeting'));
     }
 
     /**

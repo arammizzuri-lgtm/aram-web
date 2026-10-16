@@ -35,7 +35,7 @@ class SiteEvent extends Model
      * buttons. Anything not listed here is not counted at all, so a new
      * data-wa / data-save-at / data-share-at value must be added.
      */
-    public const PLACEMENTS = ['fab', 'contact', 'overlay', 'project', 'projects', 'grid', 'saved', 'menu', 'not-found'];
+    public const PLACEMENTS = ['fab', 'contact', 'overlay', 'project', 'projects', 'grid', 'saved', 'menu', 'not-found', 'story', 'card'];
 
     protected $fillable = ['type', 'project_id', 'placement', 'source', 'visitor_hash', 'created_at'];
 

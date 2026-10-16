@@ -236,6 +236,29 @@ class SiteText
                 'share_wa_text'      => ['WhatsApp — sharing a project ({project}, {url})', 'Have a look at “{project}” by Aram Mizuri Architecture: {url}', 'سەیری «{project}» بکە، کارێکی تەڵارسازیی ئارام مزووری: {url}', 'area'],
                 'share_copy'         => ['Share — copy link (computers, where there is no share menu)', 'Copy link', 'کۆپیکردنی بەستەر'],
                 'form_saved'         => ['Enquiry form — saved projects chip', 'Saved', 'پاشەکەوتکراو'],
+                'story_btn'          => ['Project page — make a picture for WhatsApp Status', 'Picture for Status', 'وێنە بۆ ستاتس'],
+                'story_share'        => ['Status picture — send it (phones)', 'Share', 'هاوبەشکردن'],
+                'story_hint'         => ['Status picture — how to post it', 'Share it and choose “My status” on WhatsApp — or save the picture and post it anywhere.', 'هاوبەشی بکە و لە واتسئاپ «ستاتسی من» هەڵبژێرە — یان وێنەکە پاشەکەوت بکە و لە هەر شوێنێک بڵاوی بکەرەوە.', 'area'],
+            ],
+
+            // The holiday cards (/card) — the occasions themselves, their
+            // greetings and dates, are under Manage → Holiday cards.
+            'Holiday cards' => [
+                'card_label'     => ['Page label', 'Holiday card', 'کارتی پیرۆزبایی'],
+                'card_lead'      => ['Introduction', 'Make the card with your name and send it to your family and friends on WhatsApp.', 'کارتەکە بە ناوی خۆت دروست بکە و لە واتسئاپ بۆ خێزان و هاوڕێکانتی بنێرە.', 'area'],
+                'card_name'      => ['Your name — label', 'Your name', 'ناوی تۆ'],
+                'card_name_ph'   => ['Your name — example', 'Shilan & family', 'شیلان و خێزانەکەی'],
+                'card_from'      => ['On the card — who it is from ({name})', '— {name}', '— {name}'],
+                'card_lang'      => ['Card language — label', 'The card in', 'زمانی کارتەکە'],
+                'card_photo'     => ['Photograph — label', 'Photograph', 'وێنە'],
+                'card_send'      => ['Send button (phones)', 'Send on WhatsApp', 'لە واتسئاپ بینێرە'],
+                'card_save'      => ['Save button', 'Save the picture', 'وێنەکە پاشەکەوت بکە'],
+                'card_private'   => ['Note under the buttons', 'Your name stays on your phone — it is not sent to us.', 'ناوەکەت لە مۆبایلەکەت دەمێنێتەوە — بۆ ئێمە نانێردرێت.'],
+                'card_noscript'  => ['Without JavaScript', 'This page needs JavaScript to make the card.', 'ئەم پەڕەیە بۆ دروستکردنی کارتەکە پێویستی بە جاڤاسکریپتە.'],
+                'card_preview'   => ['Shown to you when previewing outside its dates', 'Preview — visitors see this card only between its dates.', 'پێشبینین — سەردانکەران تەنها لە نێوان بەروارەکانیدا ئەم کارتە دەبینن.'],
+                'card_brand_sub' => ['On the card — after the studio’s name', 'Architecture', 'تەڵارسازی'],
+                'card_band_text' => ['Homepage band — text', 'Send a card with your name to your family and friends — made with one of our projects.', 'کارتێک بە ناوی خۆت بۆ خێزان و هاوڕێکانت بنێرە — بە یەکێک لە پرۆژەکانمان.', 'area'],
+                'card_band_btn'  => ['Homepage band — button', 'Make the card', 'کارتەکە دروست بکە'],
             ],
 
             // The cost estimator (/estimate) and its band on the homepage. The

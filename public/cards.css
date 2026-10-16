@@ -1,0 +1,107 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — cards.css
+   Pictures to send on (cards.js): the "Picture for Status" window on a
+   project's page, and the holiday card page (/card, greeting.js).
+   On top of project.css.
+   ========================================================= */
+
+/* ---- "Picture for Status": the card, shown before it is sent ---------- */
+.sc {
+    width: min(920px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 0; border: 0;
+    display: none; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: center;
+    background: transparent; color: var(--text); overflow: visible;
+}
+.sc[open] { display: grid; }
+.sc::backdrop { background: rgba(5,5,5,.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.sc__frame { position: relative; height: min(78dvh, 720px); aspect-ratio: 9 / 16; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #090909; }
+.sc__canvas { display: block; width: 100%; height: 100%; }
+.sc__wait {
+    position: absolute; inset: 0; display: none; place-items: center;
+    background: #090909;
+}
+.sc__wait::after {
+    content: ''; width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid rgba(245,197,24,.25); border-top-color: var(--gold);
+    animation: scTurn .9s linear infinite;
+}
+.sc.is-drawing .sc__wait { display: grid; }
+@keyframes scTurn { to { transform: rotate(360deg); } }
+.sc__side { display: grid; gap: 22px; align-content: center; }
+.sc__hint { font-size: 15px; line-height: 1.7; color: var(--muted); max-width: 30em; }
+.sc__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.sc__actions .pp-act { height: 52px; padding: 0 24px; }
+.sc.is-drawing .sc__actions { opacity: .4; pointer-events: none; }
+.sc__close {
+    position: fixed; top: 16px; inset-inline-end: 16px; width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.2); background: rgba(20,20,20,.7); color: #fff; font-size: 16px;
+}
+.sc__close:hover { border-color: var(--gold); color: var(--gold); }
+@media (max-width: 700px) {
+    .sc { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
+    .sc__frame { height: min(64dvh, 600px); }
+    .sc__side { justify-items: center; text-align: center; }
+    .sc__actions { justify-content: center; }
+}
+
+/* the button among a project's actions */
+.pp-act--story svg { width: 16px; height: 16px; flex: none; }
+.pp-act--story[hidden] { display: none; }
+
+/* ---- The holiday card page ------------------------------------------- */
+.gc { max-width: var(--wide); margin: 0 auto; padding: clamp(110px, 16vh, 150px) var(--gutter) clamp(70px, 10vh, 110px); }
+.gc-preview {
+    margin-bottom: 26px; padding: 12px 18px; border-radius: 12px; font-size: 14px;
+    color: #111; background: var(--gold);
+}
+.gc-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
+.gc-stage { position: relative; margin: 14px; }
+.gc-canvas { display: block; width: 100%; height: auto; aspect-ratio: 1080 / 1350; background: #0b0b0b; box-shadow: 0 30px 80px rgba(0,0,0,.55); }
+.gc-stage .px-crop { position: absolute; width: 22px; height: 22px; border-color: rgba(245,197,24,.7); border-style: solid; border-width: 0; }
+.gc-stage .px-crop--tl { top: -14px; left: -14px; border-top-width: 1px; border-left-width: 1px; }
+.gc-stage .px-crop--tr { top: -14px; right: -14px; border-top-width: 1px; border-right-width: 1px; }
+.gc-stage .px-crop--bl { bottom: -14px; left: -14px; border-bottom-width: 1px; border-left-width: 1px; }
+.gc-stage .px-crop--br { bottom: -14px; right: -14px; border-bottom-width: 1px; border-right-width: 1px; }
+
+.gc-panel { position: sticky; top: 100px; }
+.gc-title { font-size: clamp(34px, 4.6vw, 60px); font-weight: 200; line-height: 1.1; letter-spacing: -.02em; color: #fff; }
+[dir="rtl"] .gc-title { letter-spacing: 0; font-weight: 400; line-height: 1.35; }
+.gc-lead { margin-top: 16px; font-size: 16px; line-height: 1.75; font-weight: 300; color: var(--muted); max-width: 32em; }
+.gc-form { display: grid; gap: 24px; margin-top: 34px; }
+.gc-field { display: grid; gap: 10px; border: 0; min-width: 0; }
+.gc-field__label { font-size: 10px; letter-spacing: .32em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .gc-field__label { letter-spacing: 0; font-size: 13px; text-transform: none; }
+.gc-field input[type="text"] {
+    width: 100%; padding: 15px 18px; border-radius: 14px; font: 300 18px/1.4 var(--font); color: #fff;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.16);
+}
+.gc-field input[type="text"]:focus { outline: none; border-color: var(--gold); }
+.gc-seg { display: inline-flex; gap: 8px; }
+.gc-seg label { position: relative; }
+.gc-seg input { position: absolute; opacity: 0; pointer-events: none; }
+.gc-seg span {
+    display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 100px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.75); font-size: 15px;
+}
+.gc-seg input:checked + span { border-color: var(--gold); color: var(--gold); background: rgba(245,197,24,.08); }
+.gc-seg input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.gc-photo { position: relative; aspect-ratio: 4 / 3; overflow: hidden; cursor: pointer; border-radius: 6px; }
+.gc-photo input { position: absolute; opacity: 0; pointer-events: none; }
+.gc-photo img { width: 100%; height: 100%; object-fit: cover; opacity: .62; transition: opacity .25s; }
+.gc-photo::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid transparent; transition: border-color .25s; }
+.gc-photo:hover img, .gc-photo:has(input:checked) img { opacity: 1; }
+.gc-photo:has(input:checked)::after { border-color: var(--gold); }
+.gc-photo:has(input:focus-visible)::after { border-color: #fff; }
+.gc-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.gc-actions .pp-act { height: 52px; padding: 0 24px; }
+.gc-send svg { width: 18px; height: 18px; }
+.gc-send[hidden] { display: none; }
+.gc-actions button:disabled { opacity: .45; pointer-events: none; }
+.gc-private { font-size: 13px; color: var(--faint); }
+
+@media (max-width: 860px) {
+    .gc-layout { grid-template-columns: 1fr; }
+    .gc-panel { position: static; }
+    .gc-stage { max-width: 460px; margin: 14px auto; }
+}
+

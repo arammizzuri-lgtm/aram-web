@@ -3539,6 +3539,35 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .map-grow__line li.is-past span { color: rgba(245,197,24,.6); }
 .map-grow__line li.is-now span { color: var(--gold); }
 
+/* ---- A holiday card on offer (Newroz, Eid…): the band under the hero ---- */
+.gc-band { position: relative; z-index: 2; background: var(--black); border-block: 1px solid rgba(245,197,24,.18); }
+.gc-band__inner {
+    max-width: 1320px; margin: 0 auto; padding: 22px clamp(20px, 6vw, 84px);
+    display: flex; align-items: center; gap: clamp(16px, 2.4vw, 32px);
+}
+/* the Kurdish sun: a disc and twenty-one rays */
+.gc-band__sun {
+    flex: none; width: 46px; height: 46px; border-radius: 50%;
+    background:
+        radial-gradient(circle, var(--gold) 0 34%, transparent 35% 52%, transparent 52%),
+        repeating-conic-gradient(from -4deg, var(--gold) 0 7deg, transparent 7deg 17.1428deg);
+    -webkit-mask: radial-gradient(circle, #000 0 34%, transparent 35% 46%, #000 47% 100%);
+    mask: radial-gradient(circle, #000 0 34%, transparent 35% 46%, #000 47% 100%);
+    animation: spinSlow 30s linear infinite;
+}
+.gc-band__words { flex: 1; min-width: 0; }
+.gc-band__title { margin: 0; font-size: clamp(20px, 2.2vw, 28px); font-weight: 300; color: var(--gold); }
+.gc-band__text { margin: 4px 0 0; font-size: 14px; font-weight: 300; color: rgba(255,255,255,.65); }
+.gc-band__btn {
+    flex: none; display: inline-flex; align-items: center; height: 46px; padding: 0 24px; border-radius: 100px;
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #111; background: var(--gold); cursor: none;
+}
+[dir="rtl"] .gc-band__btn { letter-spacing: 0; font-size: 14px; text-transform: none; }
+@media (max-width: 640px) {
+    .gc-band__inner { flex-wrap: wrap; }
+    .gc-band__btn { width: 100%; justify-content: center; }
+}
+
 /* Bottom stat bar */
 .proj-map__stats {
     position: absolute; bottom: 0; left: 0; right: 0;

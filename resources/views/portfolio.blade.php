@@ -247,6 +247,21 @@
             ['v' => $sbAreaNum,                       's' => $sbAreaSuf, 'en' => 'm² Designed', 'ku' => 'م² دیزاینکراو'],
         ];
     @endphp
+    {{-- Between a holiday card's dates (Manage → Holiday cards): a band
+         offering it — Newroz, Eid, the New Year — to send with one's name. --}}
+    @if ($greeting ?? null)
+        <section class="gc-band" aria-label="{{ $greeting->title(site_lang()) }}">
+            <div class="gc-band__inner">
+                <span class="gc-band__sun" aria-hidden="true"></span>
+                <div class="gc-band__words">
+                    <p class="gc-band__title" dir="auto" data-en="{{ $greeting->title('en') }}" data-ku="{{ $greeting->title('ku') }}">{{ $greeting->title(site_lang()) }}</p>
+                    <p class="gc-band__text" dir="auto" {!! bitext('card_band_text') !!}>{{ bival('card_band_text') }}</p>
+                </div>
+                <a class="gc-band__btn" href="{{ site_url('/card') }}" data-href-en="{{ site_url('/card', 'en') }}" data-href-ku="{{ site_url('/card', 'ku') }}" {!! bitext('card_band_btn') !!}>{{ bival('card_band_btn') }}</a>
+            </div>
+        </section>
+    @endif
+
     <section class="statbar" aria-label="Practice figures">
         <div class="statbar__inner">
             <div class="statbar__caption">

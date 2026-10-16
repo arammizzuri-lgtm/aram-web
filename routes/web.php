@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CardController;
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EstimateController;
@@ -39,6 +40,8 @@ $pages = function (string $lang) {
         Route::get('/saved', [SavedController::class, 'index'])->name('saved');
         // "What will your house cost?"
         Route::get('/estimate', [EstimateController::class, 'index'])->name('estimate');
+        // a holiday card with the visitor's name, between the occasion's dates
+        Route::get('/card', [CardController::class, 'show'])->name('card');
     });
 
     // The estimator's live result, as each answer changes — not a page view.

@@ -112,6 +112,7 @@
     @endif
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
+    <link rel="stylesheet" href="{{ asset('cards.css') }}?v={{ filemtime(public_path('cards.css')) }}">
     @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()); @endphp
     @if ($quotesHaveVoices)
         <link rel="stylesheet" href="{{ asset('voices.css') }}?v={{ filemtime(public_path('voices.css')) }}">
@@ -198,6 +199,29 @@
                     </a>
                     @include('partials.share-link', ['shareClass' => 'pp-act', 'shareAt' => 'project', 'shareProject' => $project->slug,
                         'shareUrl' => site_url($path), 'shareTitle' => $title])
+                    {{-- the project as a phone-tall picture for WhatsApp Status (cards.js),
+                         which shows the button once it can make one --}}
+                    @php
+                        $storyCard = [
+                            'lang' => $lang, 'slug' => $project->slug, 'num' => (string) $project->num, 'name' => $name,
+                            'place' => $project->cityLabel(), 'year' => $project->endYear(),
+                            'status' => $project->statusLabel($lang), 'tone' => $project->statusClass(),
+                            'img' => $images[0] ?? null, 'pos' => $project->coverPosition(),
+                            'brand' => $isKu ? bival('brand_name') : mb_strtoupper(bival('brand_name')),
+                            'sub' => bival('brand_sub'),
+                            'host' => preg_replace('/^www\./', '', (string) parse_url(url('/'), PHP_URL_HOST)),
+                            'labels' => ['sheet' => bival('pj_sheet'), 'project' => bival('pj_project'), 'place' => bival('pj_place'),
+                                'year' => bival('pj_year'), 'status' => bival('pj_status')],
+                            'url' => site_url($path),
+                            'file' => $project->slug.'-status.jpg',
+                        ];
+                    @endphp
+                    <button class="pp-act pp-act--story" type="button" hidden data-story='@json($storyCard)'
+                            data-title="{{ bival('story_btn') }}" data-share="{{ bival('story_share') }}" data-save="{{ bival('card_save') }}"
+                            data-close="{{ bi('Close', 'داخستن') }}" data-hint="{{ bival('story_hint') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><circle cx="12" cy="11" r="3.4" stroke-dasharray="2.4 1.6"/><path d="M10 18.2h4" stroke-linecap="round"/></svg>
+                        <span>{{ bival('story_btn') }}</span>
+                    </button>
                 </div>
             </div>
 
@@ -433,6 +457,7 @@
     @endif
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
+    <script src="{{ asset('cards.js') }}?v={{ filemtime(public_path('cards.js')) }}" defer></script>
     @if ($quotesHaveVoices)
         <script src="{{ asset('pencil.js') }}?v={{ filemtime(public_path('pencil.js')) }}" defer></script>
         <script src="{{ asset('voices.js') }}?v={{ filemtime(public_path('voices.js')) }}" defer></script>
