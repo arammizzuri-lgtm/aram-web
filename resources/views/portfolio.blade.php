@@ -288,6 +288,38 @@
             <h2 class="proj-map__title" {!! bitext('map_title') !!}>{!! bival('map_title') !!}</h2>
         </div>
 
+        {{-- "Watch the studio grow": the projects played onto the map year by
+             year (map-growth.js), a year counter and a dimension line of the
+             years keeping time. Hidden until the script is there to play it. --}}
+        @php
+            $growYears = $projects->map(fn ($p) => $p->endYear())->filter(fn ($y) => preg_match('/^\d{4}$/', $y))->unique()->sort()->values();
+        @endphp
+        @if ($growYears->count() > 1)
+            <div class="map-grow" id="mapGrow" hidden
+                 data-play-en="{{ \App\Support\SiteText::en('map_grow') }}" data-play-ku="{{ \App\Support\SiteText::ku('map_grow') }}"
+                 data-stop-en="{{ \App\Support\SiteText::en('map_grow_stop') }}" data-stop-ku="{{ \App\Support\SiteText::ku('map_grow_stop') }}"
+                 data-again-en="{{ \App\Support\SiteText::en('map_grow_again') }}" data-again-ku="{{ \App\Support\SiteText::ku('map_grow_again') }}"
+                 data-count-en="{{ \App\Support\SiteText::en('pj_count') }}" data-count-ku="{{ \App\Support\SiteText::ku('pj_count') }}"
+                 data-one-en="{{ \App\Support\SiteText::en('pj_count_one') }}" data-one-ku="{{ \App\Support\SiteText::ku('pj_count_one') }}"
+                 data-beyond-en="{{ \App\Support\SiteText::en('map_grow_beyond') }}" data-beyond-ku="{{ \App\Support\SiteText::ku('map_grow_beyond') }}">
+                <div class="map-grow__clock" id="mapGrowClock" hidden>
+                    <span class="map-grow__year" id="mapGrowYear" aria-hidden="true"></span>
+                    <span class="map-grow__count" id="mapGrowCount" aria-live="polite"></span>
+                    <span class="map-grow__beyond" id="mapGrowBeyond" hidden></span>
+                </div>
+                <ol class="map-grow__line" id="mapGrowLine" aria-hidden="true">
+                    @foreach ($growYears as $y)
+                        <li data-year="{{ $y }}"><span>{{ $y }}</span></li>
+                    @endforeach
+                </ol>
+                <button type="button" class="map-grow__play" id="mapGrowPlay" aria-pressed="false">
+                    <svg class="map-grow__icon map-grow__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                    <svg class="map-grow__icon map-grow__icon--stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+                    <span class="map-grow__label">{{ bival('map_grow') }}</span>
+                </button>
+            </div>
+        @endif
+
         <!-- Floating project card — liquid glass; JS positions it near the pin.
              Two modes: a photo card, or (for map-only projects) a spec card
              with no image, toggled via .map-card--specs. -->
@@ -1252,6 +1284,7 @@
          The HEX flags keep it inert inside <script> (no "</script>", no quotes). --}}
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
+    <script src="{{ asset('map-growth.js') }}?v={{ filemtime(public_path('map-growth.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     @if ($quotesHaveVoices)
         <script src="{{ asset('pencil.js') }}?v={{ filemtime(public_path('pencil.js')) }}" defer></script>

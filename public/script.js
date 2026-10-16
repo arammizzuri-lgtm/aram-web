@@ -3123,6 +3123,7 @@ function projCoords(proj) {
     io.observe(mapSection || document.body);
 
     let activeIdx = null;
+    const pins = [];        // every pin on the map, for the time-lapse (map-growth.js)
 
     // Build markers — one per project, positioned by its own coordinates
     PROJECT_DATA.forEach((proj, i) => {
@@ -3139,11 +3140,12 @@ function projCoords(proj) {
             iconAnchor: [18, 18],
         });
 
-        L.marker(coords, { icon }).addTo(map)
+        const marker = L.marker(coords, { icon }).addTo(map)
          .on('click', function (e) {
              L.DomEvent.stopPropagation(e);
              showCard(i, this.getLatLng());
          });
+        pins.push({ idx: i, proj, marker });
     });
 
     /* ---- Show floating card near the clicked pin --------- */
@@ -3245,6 +3247,10 @@ function projCoords(proj) {
     const zoomOutBtn = document.getElementById('mapZoomOut');
     if (zoomInBtn)  zoomInBtn.addEventListener('click',  e => { e.stopPropagation(); userMoved = true; map.zoomIn();  });
     if (zoomOutBtn) zoomOutBtn.addEventListener('click', e => { e.stopPropagation(); userMoved = true; map.zoomOut(); });
+
+    // The map and its pins, for "Watch the studio grow" (map-growth.js),
+    // which plays the projects onto it year by year.
+    window.siteProjectMap = { map: map, el: mapEl, pins: pins, hideCard: hideCard };
 })();
 
 /* ---- Smooth active nav link on scroll ------------------ */

@@ -7,6 +7,8 @@
      · the address follows too, so an estimate can be reloaded or shared
      · the − / + steppers, and "I know my built area"
      · "Send this to the studio": a short enquiry, sent with the answers
+     · the house drawn beside the figures (estimate-house.js, told by an
+       "estimate:house" event) and the projects on plots like theirs below
    ========================================================= */
 (function () {
     'use strict';
@@ -15,6 +17,7 @@
     if (!form) return;
 
     const result     = document.getElementById('esResult');
+    const similar    = document.getElementById('esSimilar');
     const send       = document.getElementById('esSend');
     const builtAuto  = document.getElementById('esBuiltAuto');
     const builtOwn   = document.getElementById('esBuiltOwn');
@@ -53,6 +56,8 @@
             .then(data => {
                 if (mine !== asked) return;      // a newer answer is on its way
                 result.innerHTML = data.html;
+                if (similar && typeof data.similar === 'string') similar.innerHTML = data.similar;
+                document.dispatchEvent(new CustomEvent('estimate:house', { detail: data.house || null }));
                 builtAuto.textContent = data.auto_built ? Number(data.auto_built).toLocaleString('en') : '—';
                 send.hidden = !data.ok;
                 if (data.ok) count();

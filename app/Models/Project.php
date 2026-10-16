@@ -496,6 +496,14 @@ class Project extends Model
         return collect(self::searchWords($query))->every(fn ($w) => str_contains($text, $w));
     }
 
+    /** The plot area as a number of square metres ("1,200 m²" → 1200), or null. */
+    public function plotArea(): ?int
+    {
+        $digits = preg_replace('/\D/', '', (string) preg_replace('/\s*(m²|m2|m\^2).*$/iu', '', (string) $this->area));
+
+        return $digits !== '' && (int) $digits > 0 ? (int) $digits : null;
+    }
+
     /** The status as it is written in an address: "Under Construction" → "under-construction". */
     public function statusKey(): string
     {

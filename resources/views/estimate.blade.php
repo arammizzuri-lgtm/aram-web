@@ -23,7 +23,9 @@
     $pct = rtrim(rtrim(number_format($coverage, 1), '0'), '.');
 
     // the words estimate.js writes itself, in the page's language
-    $jsText = collect(['form_sending', 'form_failed', 'form_need_contact', 'form_check', 'est_sent'])
+    $jsText = collect(['form_sending', 'form_failed', 'form_need_contact', 'form_check', 'est_sent',
+        // and the drawing's labels (estimate-house.js)
+        'est_house_floors', 'est_house_floor', 'est_house_plot', 'est_house_built', 'est_basement', 'est_line_pool', 'est_house_empty'])
         ->mapWithKeys(fn ($k) => [$k => bival($k)]);
 @endphp
 <!DOCTYPE html>
@@ -139,9 +141,16 @@
                 <button class="pp-btn es-go" type="submit"><span>{{ bival('est_go') }}</span></button>
             </form>
 
-            <aside class="es-result" aria-live="polite">
+            <aside class="es-result">
+                {{-- The house, drawn from the answers as they change: the plot,
+                     the floors rising, a basement dug, a pool (estimate-house.js).
+                     A picture of the numbers below, so it is hidden from
+                     screen readers, which read the numbers. --}}
+                <figure class="es-house" id="esHouse" aria-hidden="true" data-house='@json($house)'>
+                    <svg viewBox="0 0 560 360" preserveAspectRatio="xMidYMid meet" role="presentation"></svg>
+                </figure>
                 <p class="pp-label">{{ bival('est_result') }}</p>
-                <div id="esResult">@include('partials.estimate-result', ['estimate' => $estimate])</div>
+                <div id="esResult" aria-live="polite">@include('partials.estimate-result', ['estimate' => $estimate])</div>
 
                 {{-- "Send this to the studio": a short form right here, sent with
                      the answers — the server works the estimate out again and
@@ -165,6 +174,8 @@
                 </div>
             </aside>
         </div>
+
+        <div id="esSimilar">@include('partials.estimate-similar', ['similar' => $similar, 'plot' => $plot])</div>
     </main>
 
     @include('partials.page-foot')
@@ -174,6 +185,7 @@
     <script type="application/json" id="esText">{!! json_encode($jsText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     @include('partials.saved-script')
+    <script src="{{ asset('estimate-house.js') }}?v={{ filemtime(public_path('estimate-house.js')) }}" defer></script>
     <script src="{{ asset('estimate.js') }}?v={{ filemtime(public_path('estimate.js')) }}" defer></script>
 </body>
 </html>

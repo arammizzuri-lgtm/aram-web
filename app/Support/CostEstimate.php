@@ -246,6 +246,57 @@ class CostEstimate
             ?? str_replace(['{low}', '{high}'], [$low, $high], $wording);
     }
 
+    /**
+     * What the page draws beside the figures (estimate-house.js): the plot,
+     * the house's footprint and floors, a basement and a pool — the numbers
+     * the estimate was worked out from, nothing more. Null without one.
+     *
+     * @return array{plot: int, plot_known: bool, footprint: int, built: int, floors: int, basement: bool, pool: bool}|null
+     */
+    public static function house(?array $estimate): ?array
+    {
+        if (! $estimate) {
+            return null;
+        }
+        $in = $estimate['inputs'];
+        $footprint = (int) round($estimate['built'] / max(1, $in['floors']));
+        $coverage = max(1.0, self::num('coverage'));
+
+        return [
+            // a built area given without a plot is drawn on the plot it would need
+            'plot' => $in['plot'] ?: (int) round($footprint * 100 / $coverage),
+            'plot_known' => (bool) $in['plot'],
+            'footprint' => $footprint,
+            'built' => (int) $estimate['built'],
+            'floors' => (int) $in['floors'],
+            'basement' => (bool) $in['basement'],
+            'pool' => (bool) $in['pool'],
+        ];
+    }
+
+    /**
+     * "Built on a plot like yours": the studio's projects on the plots
+     * nearest in size to the visitor's — within a third of it either way,
+     * closest first. Empty without a plot, or with nothing near it.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\Project>
+     */
+    public static function similarProjects(int $plot, int $limit = 3)
+    {
+        if ($plot <= 0) {
+            return collect();
+        }
+
+        return \App\Models\Project::publishedOrdered()->get()
+            ->filter(fn ($p) => $p->hasPage() && $p->plotArea() !== null)
+            ->map(fn ($p) => ['project' => $p, 'off' => abs($p->plotArea() - $plot) / $plot])
+            ->filter(fn ($m) => $m['off'] <= 0.34)
+            ->sortBy('off')
+            ->take($limit)
+            ->pluck('project')
+            ->values();
+    }
+
     /** The finish level's name in a language. */
     public static function finishName(string $level, string $lang): string
     {
