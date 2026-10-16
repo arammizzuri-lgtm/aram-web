@@ -103,6 +103,9 @@
                 <span class="px-guide__dot" aria-hidden="true"></span>
             </div>
             <p class="px-intro">{{ bival('pj_intro') }}</p>
+            @if ($roomPhotos ?? 0)
+                <a class="px-roomlink" href="{{ site_url('/photos') }}">{{ bival('ph_link') }} <sup>{{ $roomPhotos }}</sup> <span aria-hidden="true">↗&#xFE0E;</span></a>
+            @endif
             <div class="px-dim">
                 <span class="px-dim__tick" aria-hidden="true"></span>
                 <span class="px-dim__line" aria-hidden="true"></span>

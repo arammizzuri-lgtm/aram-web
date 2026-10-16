@@ -31,6 +31,7 @@ class Project extends Model
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
         'compare_before', 'compare_after', 'media',
         'sort_order', 'is_published', 'map_only',
+        'callouts', 'photo_rooms', 'voice_en', 'voice_ku',
     ];
 
     /** Focal point defaults to the centre of the cover image. */
@@ -45,6 +46,8 @@ class Project extends Model
         'related' => 'array',
         'imgs' => 'array',
         'media' => 'array',
+        'callouts' => 'array',
+        'photo_rooms' => 'array',
         'is_published' => 'boolean',
         'map_only' => 'boolean',
         'sort_order' => 'integer',
@@ -97,6 +100,36 @@ class Project extends Model
             if ($keys->isNotEmpty()) {
                 $p->category = $keys->first();
             }
+
+            // Notes and rooms belong to photographs still on the project: a
+            // photo taken off takes its notes and its room with it.
+            $imgs = array_map('strval', (array) $p->imgs);
+            $p->callouts = collect((array) $p->callouts)
+                ->filter(fn ($n) => is_array($n) && in_array((string) ($n['img'] ?? ''), $imgs, true)
+                    && (filled($n['en'] ?? null) || filled($n['ku'] ?? null)))
+                ->map(fn ($n) => [
+                    'img' => (string) $n['img'],
+                    'x' => round(max(0, min(100, (float) ($n['x'] ?? 50))), 2),
+                    'y' => round(max(0, min(100, (float) ($n['y'] ?? 50))), 2),
+                    'en' => trim((string) ($n['en'] ?? '')),
+                    'ku' => trim((string) ($n['ku'] ?? '')),
+                ])->values()->all() ?: null;
+            $p->photo_rooms = collect((array) $p->photo_rooms)
+                ->filter(fn ($room, $img) => in_array((string) $img, $imgs, true) && \App\Support\Rooms::valid($room))
+                ->all() ?: null;
+        });
+
+        // a voice note replaced or taken off: its file goes with it
+        static::updated(function (Project $p) {
+            foreach (['voice_en', 'voice_ku'] as $field) {
+                $old = $p->getOriginal($field);
+                if ($p->wasChanged($field) && $old) {
+                    Storage::disk('public')->delete($old);
+                }
+            }
+        });
+        static::deleted(function (Project $p) {
+            Storage::disk('public')->delete(array_filter([$p->voice_en, $p->voice_ku]));
         });
 
         // Keep a light WebP thumbnail for every uploaded image so the grid
@@ -612,6 +645,63 @@ class Project extends Model
         return $this->orderedImageRefs()
             ->map(fn ($img) => $this->variantUrl($img, $size))
             ->filter()->values()->all();
+    }
+
+    /** Every photograph's reference, cover first — the order the page shows them in. */
+    public function orderedImages(): array
+    {
+        return $this->orderedImageRefs()->values()->all();
+    }
+
+    /**
+     * The notes on each photograph, by its place in orderedImages(): their
+     * position (percent across, down) and words, in the page's language —
+     * the English where a Kurdish one was not written.
+     *
+     * @return array<int, array<int, array{x: float, y: float, t: string}>>
+     */
+    public function notesByImage(string $lang = 'en'): array
+    {
+        $at = array_flip(array_map('strval', $this->orderedImages()));
+        $notes = [];
+        foreach ((array) $this->callouts as $n) {
+            $words = $lang === 'ku' ? (($n['ku'] ?? '') ?: ($n['en'] ?? '')) : ($n['en'] ?? '');
+            $i = $at[(string) ($n['img'] ?? '')] ?? null;
+            if ($i === null || $words === '') {
+                continue;
+            }
+            $notes[$i][] = ['x' => (float) $n['x'], 'y' => (float) $n['y'], 't' => $words];
+        }
+        ksort($notes);
+
+        return $notes;
+    }
+
+    /** The room a photograph shows (App\Support\Rooms), if it has been said. */
+    public function roomOf(?string $img): ?string
+    {
+        $room = ((array) $this->photo_rooms)[(string) $img] ?? null;
+
+        return \App\Support\Rooms::valid($room) ? $room : null;
+    }
+
+    /**
+     * The architect's voice note on the project, in the page's language where
+     * there is one, else in the other — with which it is.
+     *
+     * @return array{url: string, type: string, lang: string}|null
+     */
+    public function voice(string $lang = 'en'): ?array
+    {
+        $other = $lang === 'ku' ? 'en' : 'ku';
+        foreach ([$lang, $other] as $l) {
+            $file = $this->{'voice_'.$l};
+            if (filled($file)) {
+                return ['url' => asset('storage/'.$file), 'type' => Testimonial::audioType($file), 'lang' => $l];
+            }
+        }
+
+        return null;
     }
 
     /** The chosen cover image reference, or the first image if none is set / valid. */

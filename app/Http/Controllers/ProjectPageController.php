@@ -46,6 +46,19 @@ class ProjectPageController extends Controller
             return ['name' => $m, 'href' => $found > 1 ? site_url('/projects').'?'.http_build_query(['q' => $m]) : null, 'count' => $found];
         })->values();
 
+        // Each photograph's room, as a way to every other photograph of that
+        // room (/photos) — where there is more than this one to see.
+        $lang = site_lang();
+        $roomCounts = $projects->flatMap(fn (Project $p) => array_values(array_filter(array_map(fn ($img) => $p->roomOf($img), $p->orderedImages()))))->countBy();
+        $rooms = array_map(function ($img) use ($project, $roomCounts, $lang) {
+            $room = $project->roomOf($img);
+
+            return $room && ($roomCounts[$room] ?? 0) > 1 ? [
+                'label' => str_replace(['{room}', '{n}'], [\App\Support\Rooms::label($room, $lang), $roomCounts[$room]], bival('pp_room_more')),
+                'url' => site_url('/photos').'?room='.$room,
+            ] : null;
+        }, $project->orderedImages());
+
         // what clients said about this one, in the language of the page
         $quotes = $project->testimonials()->publishedOrdered()->inLanguage(site_lang())->with('client')->get();
 
@@ -56,6 +69,9 @@ class ProjectPageController extends Controller
             'media' => $project->mediaItems(),
             'compare' => $project->compareUrls(),
             'materials' => $materials,
+            'notes' => $project->notesByImage($lang),
+            'rooms' => $rooms,
+            'voice' => $project->voice($lang),
             'prev' => $prev,
             'next' => $next,
             'more' => $more,

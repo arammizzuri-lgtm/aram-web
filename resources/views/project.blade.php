@@ -113,7 +113,7 @@
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     <link rel="stylesheet" href="{{ asset('cards.css') }}?v={{ filemtime(public_path('cards.css')) }}">
-    @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()); @endphp
+    @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()) || $voice; @endphp
     @if ($quotesHaveVoices)
         <link rel="stylesheet" href="{{ asset('voices.css') }}?v={{ filemtime(public_path('voices.css')) }}">
     @endif
@@ -164,6 +164,27 @@
                 @endif
                 @if (filled($narrative))
                     <blockquote class="pp-quote" dir="auto">{{ $narrative }}</blockquote>
+                @endif
+                {{-- The architect's own voice note on the project — the player the
+                     client quotes use (voices.js), shown once the browser can play it --}}
+                @if ($voice)
+                    <div class="pp-voice">
+                        <p class="pp-label">{{ bival('pp_voice_title') }}</p>
+                        <div class="cv cv--architect" data-cv>
+                            <div class="cv__player" hidden data-src="{{ $voice['url'] }}" data-type="{{ $voice['type'] }}" data-seed="{{ $project->id }}">
+                                <button type="button" class="cv__play" aria-label="{{ bival('pp_voice_play') }}"
+                                        data-play-en="{{ \App\Support\SiteText::en('pp_voice_play') }}" data-play-ku="{{ \App\Support\SiteText::ku('pp_voice_play') }}"
+                                        data-pause-en="Pause" data-pause-ku="وەستاندن">
+                                    <svg class="cv__icon cv__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                                    <svg class="cv__icon cv__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+                                </button>
+                                <div class="cv__wave" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                                     aria-label="{{ bival('pp_voice_title') }}" data-label-en="{{ \App\Support\SiteText::en('pp_voice_title') }}" data-label-ku="{{ \App\Support\SiteText::ku('pp_voice_title') }}"></div>
+                                <span class="cv__time" aria-hidden="true"></span>
+                            </div>
+                        </div>
+                        <p class="pp-voice__by">{{ bival('pp_voice_by') }}@if ($voice['lang'] !== $lang) <span class="pp-voice__lang">· {{ bival('pp_voice_in_'.$voice['lang']) }}</span>@endif</p>
+                    </div>
                 @endif
                 @if ($materials->isNotEmpty())
                     {{-- a material other projects share opens them all (ProjectPageController) --}}
@@ -270,7 +291,7 @@
                         $k = $loop->index;
                         $wide = $k % 3 === 0 || ($k === $rest - 1 && $k % 3 === 1);
                     @endphp
-                    <figure class="pp-shot{{ $wide ? ' pp-shot--wide' : '' }}">
+                    <figure class="pp-shot{{ $wide ? ' pp-shot--wide' : '' }}" @if (! empty($notes[$i])) data-notes='@json($notes[$i])' @endif>
                         <button class="pp-shot__open" type="button" data-open="{{ $i }}" aria-label="{{ $name }} — {{ $i + 1 }} / {{ count($images) }}">
                             <img src="{{ $thumbs[$i] ?? $src }}" @if ($srcset($i)) srcset="{{ $srcset($i) }}" sizes="{{ $wide ? '(min-width: 1400px) 1320px, 100vw' : '(min-width: 1400px) 660px, (min-width: 760px) 50vw, 100vw' }}" @endif
                                  alt="{{ $name }} — {{ $i + 1 }}" loading="lazy" decoding="async">
@@ -442,8 +463,25 @@
     @include('partials.page-foot')
 
     {{-- Full-screen photo viewer for the gallery (project.js). --}}
-    <dialog class="pp-lightbox" id="ppLightbox" data-images='@json($images)' aria-label="{{ $name }}">
-        <img class="pp-lightbox__img" alt="{{ $name }}">
+    @php
+        // index-aligned with the photographs: their notes, and their room
+        $viewerNotes = array_map(fn ($i) => $notes[$i] ?? [], array_keys($images));
+        $viewerRooms = array_map(fn ($i) => $rooms[$i] ?? null, array_keys($images));
+        $hasNotes = collect($viewerNotes)->contains(fn ($n) => ! empty($n));
+        $hasRooms = collect($viewerRooms)->filter()->isNotEmpty();
+    @endphp
+    <dialog class="pp-lightbox" id="ppLightbox" data-images='@json($images)' aria-label="{{ $name }}"
+            @if ($hasNotes) data-notes='@json($viewerNotes)' @endif @if ($hasRooms) data-rooms='@json($viewerRooms)' @endif>
+        <div class="pp-lightbox__frame">
+            <img class="pp-lightbox__img" alt="{{ $name }}">
+            <div class="pp-notes pp-notes--viewer" aria-hidden="false"></div>
+        </div>
+        @if ($hasNotes)
+            <button class="pp-lightbox__notes" type="button" aria-pressed="true" hidden>{{ bival('pp_notes') }}</button>
+        @endif
+        @if ($hasRooms)
+            <a class="pp-lightbox__room" hidden></a>
+        @endif
         <span class="pp-lightbox__count" aria-live="polite"></span>
         <button class="pp-lightbox__btn pp-lightbox__close" type="button" aria-label="Close">✕</button>
         <button class="pp-lightbox__btn pp-lightbox__prev" type="button" aria-label="Previous image">←</button>
@@ -458,6 +496,9 @@
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     <script src="{{ asset('cards.js') }}?v={{ filemtime(public_path('cards.js')) }}" defer></script>
+    @if ($hasNotes || $hasRooms)
+        <script src="{{ asset('photo-notes.js') }}?v={{ filemtime(public_path('photo-notes.js')) }}" defer></script>
+    @endif
     @if ($quotesHaveVoices)
         <script src="{{ asset('pencil.js') }}?v={{ filemtime(public_path('pencil.js')) }}" defer></script>
         <script src="{{ asset('voices.js') }}?v={{ filemtime(public_path('voices.js')) }}" defer></script>

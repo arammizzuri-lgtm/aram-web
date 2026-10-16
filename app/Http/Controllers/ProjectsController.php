@@ -59,9 +59,12 @@ class ProjectsController extends Controller
             ->sortKeysUsing(fn ($a, $b) => $a === '' ? 1 : ($b === '' ? -1 : strcmp($b, $a)));
         $years = $byYear->keys()->filter()->values();
 
+        // room by room (/photos), once there is something to see there
+        $roomPhotos = \App\Support\Rooms::photos($projects)->count();
+
         return view('projects', compact(
             'projects', 'categories', 'counts', 'hatch', 'statuses', 'statusCounts',
-            'type', 'status', 'q', 'view', 'byYear', 'years',
+            'type', 'status', 'q', 'view', 'byYear', 'years', 'roomPhotos',
         ));
     }
 }

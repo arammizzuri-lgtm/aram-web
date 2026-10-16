@@ -194,6 +194,13 @@ class SiteText
                 'pp_category'     => ['Spec — Category', 'Category', 'پۆل'],
                 'pp_materials'    => ['Materials heading', 'Materials', 'کەرەستەکان'],
                 'pp_material_more' => ['A material other projects share — hint ({n} = how many projects)', 'See all {n} projects built with it', 'بینینی هەموو ئەو {n} پرۆژەیەی بەم کەرەستەیە دروستکراون'],
+                'pp_voice_title'  => ['The architect’s voice note — heading', 'Hear the architect', 'گوێ لە تەڵارسازەکە بگرە'],
+                'pp_voice_by'     => ['The architect’s voice note — who', 'Aram Mizuri on this project', 'ئارام مزووری دەربارەی ئەم پرۆژەیە'],
+                'pp_voice_in_ku'  => ['…when the note is in Kurdish (on the English page)', 'in Kurdish', 'بە کوردی'],
+                'pp_voice_in_en'  => ['…when the note is in English (on the Kurdish page)', 'in English', 'بە ئینگلیزی'],
+                'pp_voice_play'   => ['…play button (for screen readers)', 'Listen to the architect', 'گوێ لە تەڵارسازەکە بگرە'],
+                'pp_notes'        => ['Photo viewer — show or hide the notes on a photograph', 'Notes', 'تێبینییەکان'],
+                'pp_room_more'    => ['Photo viewer — the room, and all photos of it ({room}, {n})', '{room} — see all {n}', '{room} — هەموو {n} وێنەکە ببینە'],
                 'pp_on_map'       => ['Map heading', 'On the map', 'لەسەر نەخشە'],
                 'pp_share'        => ['Share button', 'Share', 'هاوبەشکردن'],
                 'pp_copied'       => ['Share — link copied', 'Link copied', 'بەستەرەکە کۆپی کرا'],
@@ -239,6 +246,29 @@ class SiteText
                 'story_btn'          => ['Project page — make a picture for WhatsApp Status', 'Picture for Status', 'وێنە بۆ ستاتس'],
                 'story_share'        => ['Status picture — send it (phones)', 'Share', 'هاوبەشکردن'],
                 'story_hint'         => ['Status picture — how to post it', 'Share it and choose “My status” on WhatsApp — or save the picture and post it anywhere.', 'هاوبەشی بکە و لە واتسئاپ «ستاتسی من» هەڵبژێرە — یان وێنەکە پاشەکەوت بکە و لە هەر شوێنێک بڵاوی بکەرەوە.', 'area'],
+            ],
+
+            // The rooms a photograph can show (Manage → Photos by room), and the
+            // page that shows each room from every project (/photos).
+            'Rooms' => [
+                'room_facade'   => ['Room — façade', 'Façade & exterior', 'ڕووکار و دەرەوە'],
+                'room_entrance' => ['Room — entrance', 'Entrance & stairs', 'دەروازە و پلیکانە'],
+                'room_living'   => ['Room — living room', 'Living room', 'هۆڵی دانیشتن'],
+                'room_guest'    => ['Room — guest room', 'Guest room (diwan)', 'دیوەخان'],
+                'room_kitchen'  => ['Room — kitchen', 'Kitchen', 'چێشتخانە'],
+                'room_dining'   => ['Room — dining', 'Dining', 'ژووری نانخواردن'],
+                'room_bedroom'  => ['Room — bedroom', 'Bedroom', 'ژووری نووستن'],
+                'room_bathroom' => ['Room — bathroom', 'Bathroom', 'حەمام'],
+                'room_office'   => ['Room — office', 'Office & workplace', 'ئۆفیس و شوێنی کار'],
+                'room_outdoor'  => ['Room — garden', 'Garden & pool', 'باخچە و مەلەوانگە'],
+                'ph_label'      => ['Photos page — label', 'Room by room', 'ژوور بە ژوور'],
+                'ph_title'      => ['Photos page — title', 'Every room we have made', 'هەموو ئەو ژوورانەی دروستمان کردوون'],
+                'ph_intro'      => ['Photos page — introduction', 'Kitchens, guest rooms, façades — the same room from every project, side by side.', 'چێشتخانە، دیوەخان، ڕووکار — هەمان ژوور لە هەموو پرۆژەکانەوە، لە تەنیشت یەکتر.', 'area'],
+                'ph_all'        => ['Photos page — every room', 'All rooms', 'هەموو ژوورەکان'],
+                'ph_count'      => ['Photos page — count ({n})', '{n} photographs', '{n} وێنە'],
+                'ph_open'       => ['Photos page — to the project', 'See the project', 'پرۆژەکە ببینە'],
+                'ph_empty'      => ['Photos page — before any photograph has its room', 'The photographs are being sorted room by room — in the meantime, see every project.', 'وێنەکان ژوور بە ژوور ڕێکدەخرێن — تا ئەو کاتە، هەموو پرۆژەکان ببینە.', 'area'],
+                'ph_link'       => ['Projects page — link to the photos page', 'Browse room by room', 'ژوور بە ژوور بیبینە'],
             ],
 
             // "Draw it for us": the drawing paper on the projects page's blank

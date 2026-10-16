@@ -560,7 +560,71 @@ html.pp-menu-open { overflow: hidden; }
 }
 .pp-lightbox::backdrop { background: rgba(5,5,5,.9); }
 .pp-lightbox[open] { display: flex; align-items: center; justify-content: center; }
-.pp-lightbox__img { max-width: calc(100% - 32px); max-height: calc(100% - 120px); object-fit: contain; transition: opacity .25s; }
+/* the photograph and its notes, together in a frame that is the picture's own size */
+.pp-lightbox__frame { position: relative; display: inline-flex; }
+.pp-lightbox__img { max-width: calc(100vw - 32px); max-height: calc(100dvh - 120px); object-fit: contain; transition: opacity .25s; }
+/* its room, and the notes shown or put away */
+.pp-lightbox__room, .pp-lightbox__notes {
+    position: absolute; bottom: 16px; height: 38px; padding: 0 16px; border-radius: 100px;
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px;
+    background: rgba(20,20,20,.75); border: 1px solid rgba(245,197,24,.4); color: var(--gold);
+    transition: border-color .25s, background-color .25s;
+}
+.pp-lightbox__room { inset-inline-start: 16px; }
+.pp-lightbox__room::after { content: '↗\FE0E'; }
+.pp-lightbox__notes { inset-inline-end: 16px; }
+.pp-lightbox__notes[aria-pressed="false"] { color: rgba(255,255,255,.6); border-color: rgba(255,255,255,.2); }
+.pp-lightbox__room[hidden], .pp-lightbox__notes[hidden] { display: none; }
+.pp-lightbox__room:hover, .pp-lightbox__notes:hover { border-color: var(--gold); background: rgba(245,197,24,.12); }
+
+/* ---- Notes on a photograph, as a drawing's callouts (photo-notes.js) ----
+   A numbered point, a leader at 45° and the words at its end, set away
+   from the nearer edges of the photograph. */
+.pp-shot { position: relative; }
+.pp-notes { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.pp-notes.is-hidden { display: none; }
+.pp-note { position: absolute; width: 0; height: 0; pointer-events: auto; --a: -45deg; }
+.pp-note.to-left.to-up { --a: -135deg; }
+.pp-note.to-right.to-down { --a: 45deg; }
+.pp-note.to-left.to-down { --a: 135deg; }
+.pp-note__dot {
+    position: absolute; left: -13px; top: -13px; width: 26px; height: 26px; border-radius: 50%; padding: 0;
+    display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #111;
+    background: var(--gold); border: 0; cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(9,9,9,.55), 0 0 0 0 rgba(245,197,24,.5);
+    animation: ppNote 2.8s ease-out infinite;
+}
+@keyframes ppNote { 0% { box-shadow: 0 0 0 2px rgba(9,9,9,.55), 0 0 0 0 rgba(245,197,24,.5); } 70%, 100% { box-shadow: 0 0 0 2px rgba(9,9,9,.55), 0 0 0 12px rgba(245,197,24,0); } }
+.pp-note__lead {
+    position: absolute; left: 0; top: 0; width: 40px; height: 1px; background: var(--gold);
+    transform-origin: 0 0; transform: rotate(var(--a)) scaleX(0); transition: transform .4s var(--ease-out);
+}
+.pp-note__text {
+    position: absolute; width: max-content; max-width: min(260px, 60vw); padding: 7px 11px;
+    font-size: 13px; line-height: 1.45; color: #fff; text-align: start;
+    background: rgba(9,9,9,.84); border: 1px solid rgba(245,197,24,.5); border-radius: 3px;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    opacity: 0; visibility: hidden; transition: opacity .3s .1s, visibility .3s .1s;
+}
+.pp-note.to-right .pp-note__text { left: 28px; }
+.pp-note.to-left .pp-note__text { right: 28px; }
+.pp-note.to-up .pp-note__text { bottom: 28px; }
+.pp-note.to-down .pp-note__text { top: 28px; }
+.pp-note.is-open .pp-note__lead { transform: rotate(var(--a)) scaleX(1); }
+.pp-note.is-open .pp-note__text { opacity: 1; visibility: visible; }
+.pp-note.is-open .pp-note__dot { background: #fff; animation: none; }
+@media (hover: hover) {
+    .pp-note:hover .pp-note__lead { transform: rotate(var(--a)) scaleX(1); }
+    .pp-note:hover .pp-note__text { opacity: 1; visibility: visible; }
+}
+/* in the gallery the points are smaller, and say their words when asked */
+.pp-shot .pp-note__dot { left: -11px; top: -11px; width: 22px; height: 22px; font-size: 11px; }
+
+/* ---- The architect's voice note (the client quotes' player, voices.js) ---- */
+.pp-voice { margin-top: 34px; padding-top: 26px; border-top: 1px solid var(--line); }
+.pp-voice .cv--architect { align-items: flex-start; margin: 0; }
+.pp-voice__by { margin-top: 12px; font-size: 13px; color: var(--muted); }
+.pp-voice__lang { color: rgba(245,197,24,.8); }
 .pp-lightbox__img.is-loading { opacity: .25; }
 .pp-lightbox__btn {
     position: absolute; width: 48px; height: 48px; border-radius: 50%;

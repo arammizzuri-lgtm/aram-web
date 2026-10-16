@@ -233,7 +233,13 @@ class Testimonial extends Model
      */
     public function voiceType(): string
     {
-        return match (strtolower(pathinfo((string) $this->voice, PATHINFO_EXTENSION))) {
+        return self::audioType($this->voice);
+    }
+
+    /** The type of a voice note file, by its name (an architect's on a project, too). */
+    public static function audioType(?string $path): string
+    {
+        return match (strtolower(pathinfo((string) $path, PATHINFO_EXTENSION))) {
             'opus' => 'audio/ogg; codecs=opus',
             'ogg', 'oga' => 'audio/ogg',
             'mp3' => 'audio/mpeg',

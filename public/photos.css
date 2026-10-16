@@ -1,0 +1,61 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — photos.css
+   Room by room (/photos): the rooms as a row of keys, the photographs as a
+   wall in columns, each with its project; one opened large (photos.js).
+   On top of project.css.
+   ========================================================= */
+.ph { max-width: var(--wide); margin: 0 auto; padding: clamp(120px, 17vh, 160px) var(--gutter) 0; }
+.ph-title { font-size: clamp(36px, 6vw, 84px); font-weight: 200; line-height: 1.02; letter-spacing: -.03em; color: #fff; }
+[dir="rtl"] .ph-title { letter-spacing: 0; font-weight: 400; line-height: 1.3; }
+.ph-intro { margin-top: 18px; max-width: 34em; font-size: 16px; line-height: 1.75; font-weight: 300; color: var(--muted); }
+
+.ph-rooms {
+    display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: clamp(34px, 6vh, 52px); padding: 12px 0;
+    border-block: 1px solid var(--line);
+}
+.ph-room {
+    display: inline-flex; align-items: center; padding: 7px 0;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.62);
+    border-bottom: 1px solid transparent; transition: color .25s, border-color .25s;
+}
+.ph-room sup { font-size: 9px; letter-spacing: 0; color: var(--faint); margin-inline-start: 4px; }
+.ph-room:hover { color: #fff; }
+.ph-room.is-on { color: var(--gold); border-bottom-color: var(--gold); }
+[dir="rtl"] .ph-room { letter-spacing: 0; font-size: 14px; text-transform: none; }
+.ph-count { margin: 18px 0 22px; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .ph-count { letter-spacing: 0; font-size: 13px; }
+
+/* the wall: columns, each photograph at its own proportions */
+.ph-wall { list-style: none; columns: 3 300px; column-gap: 14px; }
+.ph-shot { break-inside: avoid; margin-bottom: 18px; }
+.ph-shot__open { display: block; width: 100%; min-height: 160px; padding: 0; border: 0; background: var(--panel); cursor: zoom-in; overflow: hidden; }   /* room kept while it loads */
+.ph-shot__open img { width: 100%; height: auto; transition: transform 1s var(--ease-out); }
+.ph-shot__open:hover img { transform: scale(1.03); }
+.ph-shot__cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-top: 9px; font-size: 13px; }
+.ph-shot__cap a { color: #fff; transition: color .25s; }
+.ph-shot__cap a:hover { color: var(--gold); }
+.ph-shot__room { color: var(--muted); font-size: 12px; }
+
+.ph-empty { margin-top: 40px; padding: 34px; border: 1px dashed rgba(255,255,255,.18); border-radius: 14px; }
+.ph-empty p { margin-bottom: 22px; font-size: 16px; line-height: 1.7; font-weight: 300; color: var(--muted); }
+
+/* one photograph, large */
+.ph-viewer {
+    position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+    padding: 0; border: 0; background: rgba(5,5,5,.97); color: #fff;
+}
+.ph-viewer[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.ph-viewer::backdrop { background: rgba(5,5,5,.9); }
+.ph-viewer__img { max-width: calc(100vw - 32px); max-height: calc(100dvh - 140px); object-fit: contain; transition: opacity .25s; }
+.ph-viewer__img.is-loading { opacity: .25; }
+.ph-viewer__cap { font-size: 14px; color: var(--muted); text-align: center; padding: 0 16px; }
+.ph-viewer__room { color: var(--gold); }
+.ph-viewer__link { color: #fff; }
+.ph-viewer__link:hover { color: var(--gold); }
+.ph-viewer__close { top: 16px; inset-inline-end: 16px; }
+.ph-viewer__prev { inset-inline-start: 16px; top: 50%; translate: 0 -50%; }
+.ph-viewer__next { inset-inline-end: 16px; top: 50%; translate: 0 -50%; }
+[dir="rtl"] .ph-viewer__prev, [dir="rtl"] .ph-viewer__next { transform: scaleX(-1); }
+@media (max-width: 640px) {
+    .ph-viewer__prev, .ph-viewer__next { top: auto; bottom: 10px; translate: none; }
+}

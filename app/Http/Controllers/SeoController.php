@@ -55,6 +55,11 @@ class SeoController extends Controller
             $this->page($xml, '/estimate', null);
         }
 
+        // room by room, once photographs have their rooms
+        if (\App\Support\Rooms::photos($projects)->isNotEmpty()) {
+            $this->page($xml, '/photos', $homeModified);
+        }
+
         $xml->endElement();
         $xml->endDocument();
 

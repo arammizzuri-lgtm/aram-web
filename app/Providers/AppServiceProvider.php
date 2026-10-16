@@ -52,5 +52,11 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::HEAD_END,
             fn (): string => view('filament.cover-picker-assets')->render(),
         );
+
+        // Notes placed on the project's photographs.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => view('filament.callout-picker-assets')->render(),
+        );
     }
 }

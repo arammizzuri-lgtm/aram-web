@@ -6,6 +6,7 @@ use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\PhotosController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectPageController;
 use App\Http\Controllers\ProjectsController;
@@ -38,6 +39,8 @@ $pages = function (string $lang) {
             ->where('slug', '[a-z0-9-]+')
             ->name('project');
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
+        // every room from every project, side by side
+        Route::get('/photos', [PhotosController::class, 'index'])->name('photos');
         // a visitor's hearted projects, or a list someone shared with them
         Route::get('/saved', [SavedController::class, 'index'])->name('saved');
         // "What will your house cost?"

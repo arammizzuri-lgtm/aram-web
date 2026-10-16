@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Projects\Schemas;
 
+use App\Filament\Forms\Components\CalloutPicker;
 use App\Filament\Forms\Components\CoverPicker;
 use App\Filament\Forms\Components\MapPicker;
 use App\Models\Category;
@@ -21,6 +22,15 @@ use Filament\Schemas\Schema;
 
 class ProjectForm
 {
+    /** Voice notes as phones and WhatsApp save them (as the client quotes take them). */
+    private const AUDIO_TYPES = [
+        'audio/ogg', 'audio/opus', 'application/ogg', 'audio/mpeg', 'audio/mp3',
+        'audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/aac', 'audio/x-aac',
+        'audio/wav', 'audio/x-wav', 'audio/wave', 'audio/webm',
+        // an .m4a is often taken for a video by its first bytes
+        'video/mp4',
+    ];
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -162,6 +172,29 @@ class ProjectForm
                     CoverPicker::make('cover_picker')
                         ->label('Card cover & focal point')
                         ->columnSpanFull(),
+                ]),
+
+            Section::make('Notes on the photographs')
+                ->description('Point out what a visitor would ask about — a material, a detail, why a window is where it is. Each note shows on the project page as a numbered point with its words, the way a drawing’s callouts do. Save the photographs first.')
+                ->collapsible()
+                ->schema([
+                    CalloutPicker::make('callouts')->hiddenLabel()->columnSpanFull(),
+                ]),
+
+            Section::make('The architect’s voice')
+                ->description('A minute in your own voice about this project — recorded on your phone, in Kurdish or English. It plays on the project page, under the story. A page in the other language plays the one there is, and says which language it is in.')
+                ->columns(2)
+                ->collapsible()
+                ->schema([
+                    FileUpload::make('voice_ku')->label('In Kurdish')
+                        ->disk('public')->directory('projects/voices')
+                        ->acceptedFileTypes(self::AUDIO_TYPES)->mimeTypeMap(['opus' => 'audio/ogg', 'm4a' => 'audio/mp4'])
+                        ->maxSize(15360),
+                    FileUpload::make('voice_en')->label('In English')
+                        ->disk('public')->directory('projects/voices')
+                        ->acceptedFileTypes(self::AUDIO_TYPES)->mimeTypeMap(['opus' => 'audio/ogg', 'm4a' => 'audio/mp4'])
+                        ->maxSize(15360)
+                        ->helperText('WhatsApp’s own .opus files play on Android, computers and iPhones with iOS 18.4 or newer; an .m4a or .mp3 plays everywhere.'),
                 ]),
 
             Section::make('Render vs. built')
