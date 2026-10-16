@@ -2212,6 +2212,22 @@ a.service { display: flex; flex-direction: column; color: inherit; text-decorati
 .form-saved .form-about__label { display: inline-flex; align-items: center; gap: 6px; }
 .form-saved .icon-heart { width: 12px; height: 12px; fill: var(--gold); stroke: var(--gold); }
 
+/* a sketch drawn for the enquiry (sketch.js): shown, and ✕ to leave it off */
+.form-sketch {
+    display: flex; align-items: center; gap: 14px; margin: 0 0 14px; padding: 8px 12px 8px 8px; border-radius: 12px;
+    background: rgba(245,197,24,.07); border: 1px solid rgba(245,197,24,.25);
+}
+.form-sketch[hidden] { display: none; }
+.form-sketch img { width: 96px; height: 72px; object-fit: cover; border-radius: 6px; background: #f4f1e8; }
+.form-sketch .form-about__label { flex: 1; }
+.form-sketch-open {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0 0 18px; padding: 6px 2px; cursor: none;
+    background: none; border: 0; font: inherit; font-size: 12px; letter-spacing: .06em; color: rgba(245,197,24,.8);
+    transition: color .25s;
+}
+.form-sketch-open svg { width: 18px; height: 18px; }
+.form-sketch-open:hover { color: var(--gold); }
+
 /* spam trap: present for bots, nowhere for people */
 .form-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 

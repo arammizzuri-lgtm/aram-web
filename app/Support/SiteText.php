@@ -241,6 +241,29 @@ class SiteText
                 'story_hint'         => ['Status picture — how to post it', 'Share it and choose “My status” on WhatsApp — or save the picture and post it anywhere.', 'هاوبەشی بکە و لە واتسئاپ «ستاتسی من» هەڵبژێرە — یان وێنەکە پاشەکەوت بکە و لە هەر شوێنێک بڵاوی بکەرەوە.', 'area'],
             ],
 
+            // "Draw it for us": the drawing paper on the projects page's blank
+            // sheet and on the enquiry form (sketch.js).
+            'Sketch' => [
+                'sk_title'    => ['Title', 'Draw it for us', 'بۆمان بکێشە'],
+                'sk_hint'     => ['Under the title', 'Your plot, a plan, the house you imagine — a rough sketch says a lot.', 'زەوییەکەت، نەخشەیەک، ئەو خانووەی لە خەیاڵتدایە — وێنەیەکی خێرا زۆر شت دەڵێت.', 'area'],
+                'sk_start'    => ['On the empty paper', 'Draw here — with a finger, a pen or the mouse', 'لێرە بکێشە — بە پەنجە، قەڵەم یان ماوس'],
+                'sk_close'    => ['Close button (for screen readers)', 'Close', 'داخستن'],
+                'sk_pen'      => ['Tool — pencil', 'Pencil', 'قەڵەم'],
+                'sk_line'     => ['Tool — straight line', 'Straight line', 'هێڵی ڕاست'],
+                'sk_undo'     => ['Undo', 'Undo', 'گەڕانەوە'],
+                'sk_clear'    => ['Clear', 'Clear', 'سڕینەوە'],
+                'sk_send'     => ['Send with a message (projects page)', 'Send with a message', 'لەگەڵ نامەیەک بینێرە'],
+                'sk_wa'       => ['Send on WhatsApp (projects page)', 'Send on WhatsApp', 'لە واتسئاپ بینێرە'],
+                'sk_attach'   => ['Attach (enquiry form)', 'Attach to my message', 'بیخەرە سەر نامەکەم'],
+                'sk_sending'  => ['While it is kept', 'Keeping your sketch…', 'وێنەکەت هەڵدەگیرێت…'],
+                'sk_failed'   => ['If it could not be kept', 'It could not be sent — please try again.', 'نەنێردرا — تکایە دووبارە هەوڵ بدەرەوە.'],
+                'sk_empty'    => ['Sent empty', 'Draw something first.', 'سەرەتا شتێک بکێشە.'],
+                'sk_wa_text'  => ['WhatsApp message with the sketch ({url})', 'Hello Aram Mizuri Architecture, here is a sketch of what I have in mind: {url}', 'سڵاو، ئەمە وێنەیەکی ئەوەیە کە لە بیرمدایە: {url}', 'area'],
+                'sk_open'     => ['Enquiry form — open the paper', 'Add a sketch', 'وێنەیەکی دەستی زیاد بکە'],
+                'sk_attached' => ['Enquiry form — the sketch attached', 'Your sketch', 'وێنە دەستییەکەت'],
+                'sk_cta'      => ['Projects page — button by “Start a project”', 'Draw it for us', 'بۆمان بکێشە'],
+            ],
+
             // The poster for a building site's fence (Projects → a project →
             // Site board), printed in both languages at once.
             'Site boards' => [

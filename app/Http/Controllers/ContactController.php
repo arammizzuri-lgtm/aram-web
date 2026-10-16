@@ -6,6 +6,7 @@ use App\Http\Middleware\TrackPageView;
 use App\Mail\NewEnquiry;
 use App\Models\ContactMessage;
 use App\Models\Project;
+use App\Models\Sketch;
 use App\Support\CostEstimate;
 use App\Support\Enquiry;
 use App\Support\SavedProjects;
@@ -49,6 +50,8 @@ class ContactController extends Controller
             'estimate' => ['nullable', 'array'],
             'estimate.*' => ['nullable', 'string', 'max:20'],
             'message' => ['nullable', 'string', 'max:5000'],
+            // a sketch they drew for it (sketch.js), by the token it was kept under
+            'sketch' => ['nullable', 'string', 'size:40', 'alpha_num'],
             'lang' => ['nullable', Rule::in(['en', 'ku'])],
             'page' => ['nullable', 'string', 'max:255'],
         ]);
@@ -87,10 +90,15 @@ class ContactController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
+        if (filled($data['sketch'] ?? null)) {
+            Sketch::query()->where('token', $data['sketch'])->whereNull('contact_message_id')
+                ->update(['contact_message_id' => $enquiry->id]);
+        }
+
         // After the response has gone: the visitor sees "received" at once
         // instead of waiting on the mail server.
         if (StudioMail::enabled()) {
-            defer(fn () => StudioMail::send(new NewEnquiry($enquiry->load('project'))));
+            defer(fn () => StudioMail::send(new NewEnquiry($enquiry->load('project', 'sketch'))));
         }
 
         return response()->json(['ok' => true]);

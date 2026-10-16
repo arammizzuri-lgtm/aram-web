@@ -12,6 +12,7 @@ use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\SketchController;
 use App\Http\Middleware\PrivatePage;
 use App\Http\Middleware\SiteLanguage;
 use App\Http\Middleware\TrackPageView;
@@ -88,6 +89,14 @@ Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::post('/contact', [ContactController::class, 'store'])
     ->middleware('throttle:contact')
     ->name('contact.store');
+
+// A sketch drawn for the studio (sketch.js), and the address it is seen at
+Route::post('/sketches', [SketchController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('sketch.store');
+Route::get('/sketches/{token}', [SketchController::class, 'show'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->name('sketch.show');
 
 Route::post('/careers/apply', [CareersController::class, 'apply'])
     ->middleware('throttle:applications')

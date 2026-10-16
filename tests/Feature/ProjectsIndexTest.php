@@ -110,9 +110,10 @@ class ProjectsIndexTest extends TestCase
         $this->assertStringContainsString('id="pxWallGrid"', $html);
         $this->assertStringContainsString('data-disc="View"', $html);
 
-        // the last bay: a blank sheet, numbered after the last project, to start one
+        // the last bay: a blank sheet, numbered after the last project, to start one —
+        // which opens drawing paper (sketch.js), or without it the enquiry form
         $next = str_pad((string) (Project::query()->where('is_published', true)->get()->filter->hasPage()->max(fn ($p) => (int) $p->num) + 1), 2, '0', STR_PAD_LEFT);
-        $this->assertMatchesRegularExpression('#<li class="px-sheet px-sheet--yours" data-w="1" data-h="1" data-yours>\s*<a class="px-sheet__link" href="'.preg_quote(url('/'), '#').'\#contact" data-disc="Start">#', $html);
+        $this->assertMatchesRegularExpression('#<li class="px-sheet px-sheet--yours" data-w="1" data-h="1" data-yours>\s*<a class="px-sheet__link" href="'.preg_quote(url('/'), '#').'\#contact" data-disc="Start" data-sketch-open="send">#', $html);
         $this->assertStringContainsString('<span class="px-yours__num"><small>Sheet</small><b>'.$next.'</b></span>', $html);
         $this->assertStringContainsString('Your project', $html);
 

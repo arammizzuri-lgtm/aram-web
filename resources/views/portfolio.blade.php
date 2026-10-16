@@ -1050,6 +1050,18 @@
                     <textarea id="cf-message" name="message" placeholder=" " rows="4"></textarea>
                     <label for="cf-message" {!! bitext('form_message') !!}>{{ bival('form_message') }}</label>
                 </div>
+                {{-- A sketch to go with it, drawn here (sketch.js) — or on the
+                     projects page's blank sheet, arriving as ?sketch=… --}}
+                <input type="hidden" name="sketch" id="cf-sketch">
+                <div class="form-sketch" id="formSketch" hidden>
+                    <img alt="" width="120" height="90">
+                    <span class="form-about__label" {!! bitext('sk_attached') !!}>{{ bival('sk_attached') }}</span>
+                    <button type="button" class="form-about__clear" id="formSketchClear" aria-label="Remove">✕</button>
+                </div>
+                <button type="button" class="form-sketch-open" data-sketch-open="attach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4.2-1 10-10a2.1 2.1 0 0 0-3-3l-10 10z"/><path d="M13.5 7.5l3 3"/></svg>
+                    <span {!! bitext('sk_open') !!}>{{ bival('sk_open') }}</span>
+                </button>
                 {{-- Spam trap: off-screen and out of the tab order, so only bots fill it. --}}
                 <div class="form-hp" aria-hidden="true">
                     <label for="cf-website">Website</label>
@@ -1300,6 +1312,7 @@
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
     <script src="{{ asset('map-growth.js') }}?v={{ filemtime(public_path('map-growth.js')) }}" defer></script>
+    @include('partials.sketch-assets')
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     @if ($quotesHaveVoices)
         <script src="{{ asset('pencil.js') }}?v={{ filemtime(public_path('pencil.js')) }}" defer></script>

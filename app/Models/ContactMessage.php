@@ -36,6 +36,12 @@ class ContactMessage extends Model
     ];
 
     /** The project page (or overlay) the visitor was looking at when they wrote. */
+    /** A sketch they drew and sent with it (sketch.js). */
+    public function sketch(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Sketch::class);
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

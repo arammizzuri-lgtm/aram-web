@@ -15,6 +15,7 @@
         'Their estimate' => $e->estimateLabel() ? $e->estimateLabel().' — '.\App\Support\CostEstimate::summary($e->estimate) : null,
         'Wrote in' => $e->lang === 'ku' ? 'Kurdish' : ($e->lang === 'en' ? 'English' : null),
     ], 'filled');
+    $sketchUrl = $e->sketch?->url();
     $btn = 'display:inline-block;margin:0 8px 8px 0;padding:11px 18px;border-radius:8px;font:600 13px/1 -apple-system,Segoe UI,Arial,sans-serif;text-decoration:none;';
 @endphp
 <!DOCTYPE html>
@@ -53,6 +54,11 @@
 
         @if (filled($e->message))
             <div style="margin-top:22px;padding:16px 18px;background:#f7f6f2;border-radius:10px;white-space:pre-line;" dir="auto">{{ $e->message }}</div>
+        @endif
+
+        @if ($sketchUrl)
+            <p style="margin:22px 0 8px;color:#888;font-size:13px;">They drew a sketch for it:</p>
+            <a href="{{ $sketchUrl }}"><img src="{{ $sketchUrl }}" alt="Their sketch" width="544" style="display:block;width:100%;max-width:544px;height:auto;border-radius:10px;border:1px solid #e3e0d6;"></a>
         @endif
 
         <p style="margin:26px 0 0;font-size:13px;">

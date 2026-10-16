@@ -482,6 +482,9 @@ html.pp-menu-open { overflow: hidden; }
 .pp-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(245,197,24,.32); }
 
 .pp-cta__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.pp-btn--line { background: none; color: var(--gold); border: 1px solid rgba(245,197,24,.5); box-shadow: none; }
+.pp-btn--line:hover { background: rgba(245,197,24,.08); box-shadow: none; }
+.pp-btn--line svg { width: 18px; height: 18px; }
 .pp-btn--wa {
     background: rgba(37,211,102,.08); color: #25D366;
     border: 1px solid rgba(37,211,102,.4); box-shadow: none;

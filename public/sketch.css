@@ -1,0 +1,67 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — sketch.css
+   "Draw it for us" (sketch.js): a sheet of squared drawing paper in a
+   window over the page, its tools under it. Stands on its own, so the
+   homepage (style.css) and the projects page (project.css) can both use it.
+   ========================================================= */
+.sk {
+    --sk-gold: #F5C518;
+    width: min(1040px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); margin: auto; padding: 22px 24px 20px;
+    border: 1px solid rgba(245,197,24,.28); border-radius: 22px; overflow: auto;
+    background: #101010; color: #E5E2DC; box-shadow: 0 30px 90px rgba(0,0,0,.6);
+    font-family: 'Inter', 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[dir="rtl"] .sk { font-family: 'Speda', 'Vazirmatn', sans-serif; }
+.sk::backdrop { background: rgba(5,5,5,.86); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.sk__head { position: relative; padding-inline-end: 52px; margin-bottom: 14px; }
+.sk__title { margin: 0; font-size: clamp(20px, 2.4vw, 28px); font-weight: 300; color: #fff; }
+.sk__hint { margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,.55); }
+.sk__close {
+    position: absolute; top: -4px; inset-inline-end: -4px; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.18); background: none; color: #fff; font-size: 15px;
+}
+.sk__close:hover { border-color: var(--sk-gold); color: var(--sk-gold); }
+
+/* the paper: the canvas is the drawing, its squares and all */
+.sk__paper { position: relative; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.sk__paper canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; background: #f4f1e8; }
+.sk__start {
+    position: absolute; inset: 0; display: grid; place-items: center; margin: 0; pointer-events: none;
+    font-size: 15px; color: rgba(29,29,27,.45); transition: opacity .3s;
+}
+.sk:not(.is-empty) .sk__start { opacity: 0; }
+
+.sk__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 18px; margin-top: 16px; }
+.sk__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sk__tools label { position: relative; }
+.sk__tools input { position: absolute; opacity: 0; pointer-events: none; }
+.sk__tools span, .sk__tools button {
+    display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 100px; cursor: pointer;
+    font: inherit; font-size: 13px; color: rgba(255,255,255,.75); background: none; border: 1px solid rgba(255,255,255,.16);
+}
+.sk__tools input:checked + span { border-color: var(--sk-gold); color: var(--sk-gold); background: rgba(245,197,24,.08); }
+.sk__tools input:focus-visible + span { outline: 2px solid var(--sk-gold); outline-offset: 2px; }
+.sk__tools button:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+.sk.is-empty .sk__tools button { opacity: .4; pointer-events: none; }
+.sk__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.sk__actions button { font: inherit; cursor: pointer; }
+.sk__actions .pp-btn, .sk__actions .pp-act { height: 46px; }
+/* on the homepage, which has no project.css, the two buttons drawn here */
+.sk__actions .pp-btn {
+    display: inline-flex; align-items: center; gap: 10px; padding: 0 22px; border-radius: 100px; border: 0;
+    background: var(--sk-gold); color: #0a0a0a; font-size: 13px; font-weight: 500;
+}
+.sk__actions .pp-act {
+    display: inline-flex; align-items: center; gap: 10px; padding: 0 18px; border-radius: 100px;
+    background: none; color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.18); font-size: 13px;
+}
+.sk__actions .pp-act--wa { color: #25D366; border-color: rgba(37,211,102,.4); }
+.sk.is-busy .sk__actions { opacity: .5; pointer-events: none; }
+.sk__status { margin: 12px 0 0; font-size: 14px; color: #b9f0c9; }
+.sk__status.is-error { color: #ff8a8a; }
+.sk__status[hidden] { display: none; }
+@media (max-width: 640px) {
+    .sk { padding: 16px 14px 14px; border-radius: 16px; }
+    .sk__actions { width: 100%; }
+    .sk__actions button { flex: 1 1 auto; justify-content: center; }
+}

@@ -49,6 +49,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
     <meta name="description" content="{{ $description }}">
     @include('partials.seo-alternates', ['path' => '/projects'])
@@ -250,7 +251,8 @@
                 @endforeach
                 {{-- the last bay: a blank sheet, numbered next, for the visitor's own project --}}
                 <li class="px-sheet px-sheet--yours" data-w="1" data-h="1" data-yours>
-                    <a class="px-sheet__link" href="{{ site_url('/') }}#contact" data-disc="{{ bival('pj_disc_start') }}">
+                    {{-- …which, with JavaScript, is a sheet to draw on (sketch.js) --}}
+                    <a class="px-sheet__link" href="{{ site_url('/') }}#contact" data-disc="{{ bival('pj_disc_start') }}" data-sketch-open="send">
                         <span class="px-yours">
                             <span class="px-yours__num"><small>{{ bival('pj_sheet') }}</small><b>{{ $nextSheet }}</b></span>
                             <span class="px-yours__title">{{ bival('pj_yours_title') }}</span>
@@ -281,6 +283,10 @@
                     <span>{{ bival('pp_cta_button') }}</span>
                     <span class="pp-arrow" aria-hidden="true">→</span>
                 </a>
+                <a class="pp-btn pp-btn--line" href="{{ site_url('/') }}#contact" data-sketch-open="send">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4.2-1 10-10a2.1 2.1 0 0 0-3-3l-10 10z"/><path d="M13.5 7.5l3 3"/></svg>
+                    <span>{{ bival('sk_cta') }}</span>
+                </a>
                 @if ($wa = whatsapp_url(bival('wa_text')))
                     <a class="pp-btn pp-btn--wa" href="{{ $wa }}" target="_blank" rel="noopener" data-wa="projects">
                         @include('partials.icon-whatsapp')
@@ -296,5 +302,6 @@
     <script src="{{ asset('projects.js') }}?v={{ filemtime(public_path('projects.js')) }}" defer></script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     @include('partials.saved-script')
+    @include('partials.sketch-assets')
 </body>
 </html>

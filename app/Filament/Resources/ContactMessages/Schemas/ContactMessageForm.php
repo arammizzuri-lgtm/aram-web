@@ -62,6 +62,13 @@ class ContactMessageForm
                             ->formatStateUsing(fn (?string $state) => TrafficSource::label($state)),
                         TextEntry::make('lang')->label('Wrote in')->placeholder('—')
                             ->formatStateUsing(fn (?string $state) => ['en' => 'English', 'ku' => 'Kurdish'][$state] ?? $state),
+                        // the sketch they drew, on its paper; it opens full size
+                        TextEntry::make('sketch')->label('Their sketch')
+                            ->visible(fn (ContactMessage $r) => $r->sketch !== null)
+                            ->state(fn (ContactMessage $r) => $r->sketch
+                                ? '<a href="'.e($r->sketch->url()).'" target="_blank" rel="noopener"><img src="'.e($r->sketch->url()).'" alt="Their sketch" style="max-width:min(100%,520px);border-radius:10px;border:1px solid rgba(0,0,0,.15)"></a>'
+                                : null)
+                            ->html()->columnSpanFull(),
                         // line breaks kept, everything else escaped
                         TextEntry::make('message')->placeholder('No message')
                             ->formatStateUsing(fn (?string $state): string => nl2br(e((string) $state)))->html()

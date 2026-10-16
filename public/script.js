@@ -1291,6 +1291,7 @@ function imgVariant(proj, size, i) {
             type: value('type'), city: value('city'), plot_area: value('plot_area'),
             budget: value('budget'), timeline: value('timeline'),
             about: value('about'), message: value('message'),
+            sketch: value('sketch'),                         // a sketch drawn for it (sketch.js)
             // the projects they saved, as the form's chip shows them (saved.js)
             saved: window.siteSaved ? window.siteSaved.forEnquiry() : [],
             website: value('website'),                       // the spam trap
