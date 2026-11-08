@@ -14,7 +14,7 @@
                 <li>
                     <a class="es-like__card" href="{{ $p->pageUrl($lang) }}">
                         <span class="es-like__pic"><img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
-                        <span class="es-like__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                        <span class="es-like__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                         <span class="es-like__meta">
                             <span class="es-like__plot"><bdi>{{ str_replace('{area}', number_format($p->plotArea()), bival('est_like_plot')) }}</bdi></span>
                             @if ($p->cityLabel())<span>· <bdi>{{ $p->cityLabel() }}</bdi></span>@endif

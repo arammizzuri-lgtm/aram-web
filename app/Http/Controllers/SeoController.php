@@ -103,7 +103,7 @@ class SeoController extends Controller
         $out[] = "Every project below was designed by {$name} and Aram Mizuri Architecture.";
         $out[] = '';
         foreach (Project::publishedOrdered()->get()->filter->hasPage() as $project) {
-            $facts = collect([implode(', ', $project->categoryLabelsIn('en')), $project->cityLabel(), $project->endYear()])->filter()->implode(' · ');
+            $facts = collect([implode(', ', $project->categoryLabelsIn('en')), $project->cityLabel('en'), $project->endYear()])->filter()->implode(' · ');
             $about = $clean($project->desc) ?: $clean($project->typology);
             $out[] = '- ['.$clean($project->name).']('.$project->pageUrl('en').')'
                 .($facts !== '' ? ' — '.$facts : '')
@@ -115,7 +115,7 @@ class SeoController extends Controller
         $out[] = '';
         $out[] = '- Studio: Erbil, Kurdistan Region, Iraq';
         $out[] = '- Email: '.setting('contact_email_new', 'Info@arammizuri.com');
-        $out[] = '- Website: '.site_url('/', 'en').' (English), '.site_url('/', 'ku').' (Kurdish)';
+        $out[] = '- Website: '.site_url('/', 'en').' (English), '.site_url('/', 'ku').' (Kurdish), '.site_url('/', 'ar').' (Arabic)';
         $out[] = '- [Every project]('.site_url('/projects', 'en').')';
         $out[] = '';
 
@@ -176,13 +176,13 @@ class SeoController extends Controller
      */
     private function page(XMLWriter $xml, string $path, $modified, array $images = []): void
     {
-        foreach (['en', 'ku'] as $lang) {
+        foreach (['en', 'ku', 'ar'] as $lang) {
             $xml->startElement('url');
             $xml->writeElement('loc', site_url($path, $lang));
             if ($modified) {
                 $xml->writeElement('lastmod', $modified->toAtomString());
             }
-            foreach (['en' => 'en', 'ku' => 'ku', 'x-default' => 'en'] as $hreflang => $target) {
+            foreach (['en' => 'en', 'ku' => 'ku', 'ar' => 'ar', 'x-default' => 'en'] as $hreflang => $target) {
                 $xml->startElement('xhtml:link');
                 $xml->writeAttribute('rel', 'alternate');
                 $xml->writeAttribute('hreflang', $hreflang);

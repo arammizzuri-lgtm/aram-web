@@ -1,19 +1,19 @@
 @php
     /** @var \App\Models\Project $project */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $path = '/projects/'.$project->slug;
 
-    $name = bi($project->name, $project->name_ku);
+    $name = bi($project->name, $project->name_ku, $project->name_ar);
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = $name.' — '.$brand;
-    $desc = bi($project->desc, $project->desc_ku);
+    $desc = $project->tr('desc');
     // The narrative is a quote in the architect's own words, so it is shown
     // only in the language it was written in — never the other one standing in.
-    $narrative = $isKu ? $project->narrative_ku : $project->narrative;
+    $narrative = match ($lang) { 'ku' => $project->narrative_ku, 'ar' => $project->narrative_ar, default => $project->narrative };
     $categories = $project->categoryLabelsIn($lang);
-    $summary = $desc ?: collect([$project->typology, $project->location, $project->year])->filter()->implode(' · ');
+    $summary = $desc ?: collect([$project->tr('typology'), $project->tr('location'), $project->year])->filter()->implode(' · ');
     $metaDescription = \Illuminate\Support\Str::limit(preg_replace('/\s+/u', ' ', (string) $summary), 160);
 
     // index-aligned, cover first: display size, card size, full original
@@ -29,10 +29,10 @@
     $hasMap = $project->lat && $project->lng && $tiles;
 
     $facts = array_filter([
-        bival('overlay_typology') => $project->typology,
+        bival('overlay_typology') => $project->tr('typology'),
         bival('overlay_year') => $project->year,
         bival('overlay_plot') => $project->area,
-        bival('overlay_location') => $project->location,
+        bival('overlay_location') => $project->tr('location'),
         bival('pp_category') => implode(' · ', $categories),
     ], 'filled');
 
@@ -142,7 +142,7 @@
                     @if ($categories)<span class="pp-hero__cats"><bdi>{{ implode(' · ', $categories) }}</bdi></span>@endif
                 </p>
                 <h1 class="pp-hero__title"><bdi>{{ $name }}</bdi></h1>
-                @php $where = collect([$project->location, $project->year])->filter(); @endphp
+                @php $where = collect([$project->tr('location'), $project->year])->filter(); @endphp
                 @if ($where->isNotEmpty())<p class="pp-hero__meta">{!! $where->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</p>@endif
             </div>
             @if (count($images) > 1)
@@ -175,13 +175,13 @@
                         <div class="cv cv--architect" data-cv>
                             <div class="cv__player" hidden data-src="{{ $voice['url'] }}" data-type="{{ $voice['type'] }}" data-seed="{{ $project->id }}">
                                 <button type="button" class="cv__play" aria-label="{{ bival('pp_voice_play') }}"
-                                        data-play-en="{{ \App\Support\SiteText::en('pp_voice_play') }}" data-play-ku="{{ \App\Support\SiteText::ku('pp_voice_play') }}"
+                                        data-play-en="{{ \App\Support\SiteText::en('pp_voice_play') }}" data-play-ku="{{ \App\Support\SiteText::second('pp_voice_play') }}"
                                         data-pause-en="Pause" data-pause-ku="وەستاندن">
                                     <svg class="cv__icon cv__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
                                     <svg class="cv__icon cv__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
                                 </button>
                                 <div class="cv__wave" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-                                     aria-label="{{ bival('pp_voice_title') }}" data-label-en="{{ \App\Support\SiteText::en('pp_voice_title') }}" data-label-ku="{{ \App\Support\SiteText::ku('pp_voice_title') }}"></div>
+                                     aria-label="{{ bival('pp_voice_title') }}" data-label-en="{{ \App\Support\SiteText::en('pp_voice_title') }}" data-label-ku="{{ \App\Support\SiteText::second('pp_voice_title') }}"></div>
                                 <span class="cv__time" aria-hidden="true"></span>
                             </div>
                         </div>
@@ -395,7 +395,7 @@
                         <span>{{ bival('contact_open_maps') }}</span> ↗&#xFE0E;
                     </a>
                     @if ($project->location)
-                        <p class="pp-map__place"><span class="pp-map__dot" aria-hidden="true"></span><bdi>{{ $project->location }}</bdi></p>
+                        <p class="pp-map__place"><span class="pp-map__dot" aria-hidden="true"></span><bdi>{{ $project->tr('location') }}</bdi></p>
                     @endif
                 </div>
             </section>
@@ -407,8 +407,13 @@
             <p class="pp-cta__text">{{ bival('pp_cta_text') }}</p>
             @php
                 // the chat opens already naming this project
-                $waText = fn (string $l) => str_replace('{project}', $l === 'ku' ? ($project->name_ku ?: $project->name) : $project->name,
-                    $l === 'ku' ? \App\Support\SiteText::ku('wa_text_project') : \App\Support\SiteText::en('wa_text_project'));
+                // the message the visitor sends, in the page's language, naming the project
+                $waText = fn (string $l) => str_replace('{project}', $project->tr('name', $l),
+                    match ($l) {
+                        'ku' => \App\Support\SiteText::ku('wa_text_project'),
+                        'ar' => \App\Support\SiteText::ar('wa_text_project'),
+                        default => \App\Support\SiteText::en('wa_text_project'),
+                    });
             @endphp
             <div class="pp-cta__actions">
                 {{-- the form on the homepage, told which project this was about --}}
@@ -440,7 +445,7 @@
                             {{ bival($dir === 'prev' ? 'pp_prev' : 'pp_next') }}
                             @if ($dir === 'next')<span class="pp-arrow" aria-hidden="true">→</span>@endif
                         </span>
-                        <span class="pp-pager__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                        <span class="pp-pager__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                     </a>
                 @endforeach
             </nav>
@@ -456,7 +461,7 @@
                                 <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
                             </span>
                             <span class="pp-card__num">{{ $p->num }}</span>
-                            <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                            <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                             <span class="pp-card__meta">{!! collect([...$p->categoryLabelsIn($lang), $p->cityLabel(), $p->endYear()])->filter()->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</span>
                         </a>
                     @endforeach

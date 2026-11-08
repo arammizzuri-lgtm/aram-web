@@ -573,8 +573,10 @@ class SiteText
     public static function jsStrings(): array
     {
         $out = [];
+        // on an Arabic page the "ku" half carries the Arabic (see rtl_slot())
+        $ar = site_lang() === 'ar';
         foreach (array_keys(static::tabs()[self::JS_TAB] ?? []) as $key) {
-            $out[$key] = ['en' => static::en($key), 'ku' => static::ku($key)];
+            $out[$key] = ['en' => static::en($key), 'ku' => $ar ? static::ar($key) : static::ku($key)];
         }
 
         return $out;
@@ -623,6 +625,31 @@ class SiteText
         }
 
         return $default;
+    }
+
+    /**
+     * Arabic value: {key}_ar → the Arabic default (SiteTextAr) → English.
+     * Never the Kurdish: an Arabic reader is better served by English.
+     */
+    public static function ar(string $key): string
+    {
+        $v = SiteSetting::get("{$key}_ar");
+        if ($v !== null && $v !== '') {
+            return (string) $v;
+        }
+        $default = SiteTextAr::all()[$key] ?? '';
+
+        return $default !== '' ? $default : static::en($key);
+    }
+
+    /**
+     * The page's second language — the text the browser holds in its "ku"
+     * slot (data-ku, .ku, *_ku): Arabic on an Arabic page, Kurdish anywhere
+     * else. See rtl_slot() in helpers.php.
+     */
+    public static function second(string $key): string
+    {
+        return site_lang() === 'ar' ? static::ar($key) : static::ku($key);
     }
 
     /** Kurdish value: {key}_ku → default. */

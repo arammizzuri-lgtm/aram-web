@@ -10,8 +10,9 @@
      back instead: $backHref / $backLabel (default: home). $withSaved: false
      there too. --}}
 @php
-    $isKuTop = site_lang() === 'ku';
-    $otherLang = $isKuTop ? 'en' : 'ku';
+    // this page in the two other languages (site_lang_urls); $otherUrl, which
+    // pages still pass, was the one other language when there were two
+    $langLinks = collect(site_lang_urls())->except(site_lang());
     $topMenu = ($withMenu ?? true) ? \App\Support\SiteMenu::items($markHere ?? true) : [];
     $topWa = $topMenu ? whatsapp_url(bival('wa_text')) : null;
 @endphp
@@ -41,7 +42,9 @@
                 <span>{{ $backLabel ?? bival('careers_home') }}</span>
             </a>
         @endunless
-        <a class="pp-lang" href="{{ $otherUrl }}" hreflang="{{ $otherLang }}" lang="{{ $otherLang }}" dir="auto">{{ $isKuTop ? 'English' : 'کوردی' }}</a>
+        @foreach ($langLinks as $code => $href)
+            <a class="pp-lang" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
+        @endforeach
         @if ($topMenu)
             <button class="pp-top__link pp-menu-btn" type="button" aria-expanded="false" aria-controls="ppSheet" aria-label="{{ bival('nav_menu') }}" data-menu-open>
                 <span class="pp-menu-btn__icon" aria-hidden="true"><i></i><i></i></span>

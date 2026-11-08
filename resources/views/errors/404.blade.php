@@ -7,10 +7,12 @@
      */
     if (request()->is('ku', 'ku/*')) {
         app()->setLocale('ku');
+    } elseif (request()->is('ar', 'ar/*')) {
+        app()->setLocale('ar');
     }
     $lang = site_lang();
-    $isKu = $lang === 'ku';
-    $other = $isKu ? 'en' : 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
+    $other = $lang === 'en' ? 'ku' : 'en';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     // the studio's work in its own order — never in the way of the page itself
     $picks = rescue(fn () => \App\Models\Project::publishedOrdered()->get()->filter(fn ($p) => $p->hasPage())->take(4)->values(), collect(), false);
@@ -77,7 +79,7 @@
                         <li>
                             <a class="nf-pick" href="{{ $p->pageUrl($lang) }}">
                                 <span class="nf-pick__pic"><img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
-                                <span class="nf-pick__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                                <span class="nf-pick__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                                 <span class="nf-pick__meta"><bdi>{{ collect([$p->cityLabel(), $p->endYear()])->filter()->implode(' · ') }}</bdi></span>
                             </a>
                         </li>

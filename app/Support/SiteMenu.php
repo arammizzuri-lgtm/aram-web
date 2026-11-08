@@ -18,7 +18,7 @@ class SiteMenu
     public static function items(bool $markHere = true): array
     {
         $route = $markHere ? (request()->route()?->getName() ?? '') : '';
-        $here = fn (string ...$names) => in_array(preg_replace('/^ku\./', '', $route), $names, true);
+        $here = fn (string ...$names) => in_array(preg_replace('/^(ku|ar)\./', '', $route), $names, true);
         $home = fn (string $section) => site_url('/').'#'.$section;
         $item = fn (string $label, string $href, bool $here = false, bool $onlyInSheet = false) => [
             'label' => $label, 'href' => $href, 'here' => $here, 'only_in_sheet' => $onlyInSheet,

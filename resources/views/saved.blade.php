@@ -5,14 +5,14 @@
      * @var bool $asked  whether the address carried a list at all
      */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $slugs = $projects->pluck('slug')->all();
     $query = $slugs ? '?p='.implode('.', $slugs) : '';
     $listUrl = site_url('/saved').$query;
 
-    $names = $projects->map(fn ($p) => bi($p->name, $p->name_ku));
+    $names = $projects->map(fn ($p) => bi($p->name, $p->name_ku, $p->name_ar));
     $title = bival('saved_label').' — '.$brand;
     // A shared list's link preview names what is in it, over the first one's cover.
     $ogTitle = $names->isNotEmpty() ? \Illuminate\Support\Str::limit($names->take(3)->implode(' · '), 90).' — '.$brand : $title;
@@ -104,7 +104,7 @@
                                 <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
                             </span>
                             <span class="pp-card__num">{{ $p->num }}</span>
-                            <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                            <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                             <span class="pp-card__meta">{!! collect([...$p->categoryLabelsIn($lang), $p->cityLabel(), $p->endYear()])->filter()->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</span>
                         </a>
                         <button class="sv-heart" type="button" data-save="{{ $p->slug }}" data-save-at="saved" aria-pressed="false" aria-label="{{ bival('save_add') }}">

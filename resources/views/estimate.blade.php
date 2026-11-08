@@ -7,7 +7,7 @@
      * @var float $coverage
      */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('est_title').' — '.$brand;
@@ -126,7 +126,7 @@
                         @foreach ($levels as $key => $level)
                             <label class="es-finish">
                                 <input type="radio" name="finish" value="{{ $key }}" @checked($in['finish'] === $key)>
-                                <span class="es-finish__name">{{ $isKu ? $level['ku'] : $level['en'] }}</span>
+                                <span class="es-finish__name">{{ $lang === 'ku' ? $level['ku'] : ($level[$lang] ?? $level['en']) }}</span>
                                 <span class="es-finish__rate">{{ \App\Support\CostEstimate::rangeIn(bival('est_per_m2'), \App\Support\CostEstimate::usd($level['low']), \App\Support\CostEstimate::usd($level['high'])) }}</span>
                             </label>
                         @endforeach
@@ -180,7 +180,7 @@
 
     @include('partials.page-foot')
 
-    @include('partials.whatsapp-fab', ['text' => ['en' => \App\Support\SiteText::en('wa_text'), 'ku' => \App\Support\SiteText::ku('wa_text')], 'hideOver' => '.es-send', 'waProject' => ''])
+    @include('partials.whatsapp-fab', ['text' => ['en' => \App\Support\SiteText::en('wa_text'), 'ku' => \App\Support\SiteText::second('wa_text')], 'hideOver' => '.es-send', 'waProject' => ''])
 
     <script type="application/json" id="esText">{!! json_encode($jsText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>

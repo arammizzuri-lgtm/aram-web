@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Category extends Model
 {
-    protected $fillable = ['key', 'name', 'name_ku', 'sort_order'];
+    protected $fillable = ['key', 'name', 'name_ku', 'name_ar', 'sort_order'];
 
     protected $casts = ['sort_order' => 'integer'];
 
@@ -21,11 +21,15 @@ class Category extends Model
     /** @var array<string, string>|null */
     private static ?array $kuMapCache = null;
 
+    /** @var array<string, string>|null */
+    private static ?array $arMapCache = null;
+
     protected static function booted(): void
     {
         $forget = function () {
             self::$mapCache = null;
             self::$kuMapCache = null;
+            self::$arMapCache = null;
         };
         static::saved($forget);
         static::deleted($forget);
@@ -54,5 +58,25 @@ class Category extends Model
         return self::$kuMapCache ??= array_filter(
             static::query()->ordered()->pluck('name_ku', 'key')->all()
         );
+    }
+
+    /** key => Arabic name, for the categories that have one. */
+    public static function arabicMap(): array
+    {
+        return self::$arMapCache ??= rescue(fn () => array_filter(
+            static::query()->ordered()->pluck('name_ar', 'key')->all()
+        ), [], false);   // [] until the name_ar column is migrated
+    }
+
+    /** key => name in a language, falling back to the English name. */
+    public static function mapIn(string $lang): array
+    {
+        $names = match ($lang) {
+            'ku' => static::kurdishMap(),
+            'ar' => static::arabicMap(),
+            default => [],
+        };
+
+        return array_replace(static::map(), $names);
     }
 }

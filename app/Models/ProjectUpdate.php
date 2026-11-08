@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProjectUpdate extends Model
 {
-    protected $fillable = ['project_id', 'date', 'title_en', 'title_ku', 'note_en', 'note_ku', 'images', 'is_private'];
+    protected $fillable = ['project_id', 'date', 'title_en', 'title_ku', 'title_ar', 'note_en', 'note_ku', 'note_ar', 'images', 'is_private'];
 
     protected $casts = [
         'date' => 'date',
@@ -45,11 +45,11 @@ class ProjectUpdate extends Model
 
     public function title(string $lang): ?string
     {
-        return $lang === 'ku' && filled($this->title_ku) ? $this->title_ku : $this->title_en;
+        return bi_record($lang, $this->title_en, $this->title_ku, $this->title_ar);
     }
 
     public function note(string $lang): ?string
     {
-        return $lang === 'ku' && filled($this->note_ku) ? $this->note_ku : $this->note_en;
+        return bi_record($lang, $this->note_en, $this->note_ku, $this->note_ar);
     }
 }

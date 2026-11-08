@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
 class Greeting extends Model
 {
     protected $fillable = [
-        'name', 'title_en', 'title_ku', 'text_en', 'text_ku',
+        'name', 'title_en', 'title_ku', 'title_ar', 'text_en', 'text_ku', 'text_ar',
         'starts_on', 'ends_on', 'yearly', 'project_id', 'is_published',
     ];
 
@@ -64,12 +64,12 @@ class Greeting extends Model
 
     public function title(string $lang): string
     {
-        return $lang === 'ku' && filled($this->title_ku) ? $this->title_ku : $this->title_en;
+        return bi_record($lang, $this->title_en, $this->title_ku, $this->title_ar);
     }
 
     public function text(string $lang): string
     {
-        return (string) ($lang === 'ku' && filled($this->text_ku) ? $this->text_ku : $this->text_en);
+        return (string) bi_record($lang, $this->text_en, $this->text_ku, $this->text_ar);
     }
 
     /**

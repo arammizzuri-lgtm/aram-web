@@ -30,14 +30,20 @@ class PortfolioController extends Controller
                 // the overlay puts /projects/{slug} in the address bar
                 'slug' => $p->hasPage() ? $p->slug : null,
                 'name' => $p->name,
-                'name_ku' => $p->name_ku,
+                // the second slot: Kurdish, or on /ar the Arabic-or-English (rtl_slot)
+                'name_ku' => rtl_slot($p->name, $p->name_ku, $p->name_ar),
                 'category' => $p->category,          // primary — kept for the map card
                 'categories' => $p->categoryKeys(),  // every category, primary first
                 'category_labels' => $p->categoryLabels(),
+                // the overlay's hashtags, in Arabic on /ar (categories, city, status)
+                'tags_local' => site_lang() === 'ar' ? collect([...$p->categoryLabelsIn('ar'), $p->cityLabel('ar'),
+                    match ($p->status) { 'Completed' => 'منجز', 'Under Construction' => 'قيد الإنشاء', default => 'فكرة' }])
+                    ->filter()->map(fn ($t) => '#'.preg_replace('/[\s،,]+/u', '_', trim($t)))->unique()->values()->all() : null,
                 'status' => $p->status,
                 'area' => $p->area,
-                'typology' => $p->typology,
-                'location' => $p->location,
+                // in the page's language where written (Arabic on /ar), else English
+                'typology' => $p->tr('typology'),
+                'location' => $p->tr('location'),
                 'neighbourhood' => $p->neighbourhood,
                 'city' => $p->city,
                 'country' => $p->country,
@@ -45,7 +51,7 @@ class PortfolioController extends Controller
                 'lng' => $p->lng,
                 'year' => $p->year,
                 'desc' => $p->desc,
-                'desc_ku' => $p->desc_ku,
+                'desc_ku' => rtl_slot($p->desc, $p->desc_ku, $p->desc_ar),
                 'materials' => $p->materials ?? [],
                 'related' => $p->related ?? [],
                 // Three index-aligned lists of the same photos: `imgs` is the
@@ -67,22 +73,27 @@ class PortfolioController extends Controller
             'stats' => $stats,
             // name => tone, so the map overlay can colour any status' dot.
             'statusTones' => Status::ordered()->pluck('tone', 'name')->all(),
+            // name => its name in the page's second language (Kurdish, or Arabic
+            // on /ar), for the overlay's status badge on a right-to-left page
+            'statusNames' => Status::ordered()->pluck('name')->mapWithKeys(fn ($name) => [
+                $name => (new Project(['status' => $name]))->statusLabel(site_lang() === 'ar' ? 'ar' : 'ku'),
+            ])->all(),
             // Waiting/progress copy in both languages. Everything else on the
             // page carries its own data-en/data-ku pair, but these strings have
             // no markup to live in until something is actually slow.
             'ui' => SiteText::jsStrings(),
             // The page title in both languages, for the language toggle and
             // for the overlay, which titles the tab after the open project.
-            'titles' => ['en' => SiteText::en('seo_title'), 'ku' => SiteText::ku('seo_title')],
+            'titles' => ['en' => SiteText::en('seo_title'), 'ku' => SiteText::second('seo_title')],
             // The overlay's WhatsApp button opens a chat that names the open
             // project. Null while no number is set, which hides the button.
             'whatsapp' => ($wa = phone_digits(setting('contact_whatsapp'))) ? [
                 'number' => $wa,
-                'project' => ['en' => SiteText::en('wa_text_project'), 'ku' => SiteText::ku('wa_text_project')],
+                'project' => ['en' => SiteText::en('wa_text_project'), 'ku' => SiteText::second('wa_text_project')],
             ] : null,
             // Sharing the open project on WhatsApp: the message, with its name
             // and link put in ({project}, {url}).
-            'share' => ['en' => SiteText::en('share_wa_text'), 'ku' => SiteText::ku('share_wa_text')],
+            'share' => ['en' => SiteText::en('share_wa_text'), 'ku' => SiteText::second('share_wa_text')],
             // CARTO basemap key, appended to every tile URL (see cartoTiles in
             // script.js). It is a public, domain-restricted key by design.
             'cartoKey' => config('services.carto.basemaps_key'),
@@ -108,7 +119,7 @@ class PortfolioController extends Controller
     private function portfolioStats($projects): array
     {
         // City = the structured city field (falls back to the location string).
-        $city = fn (Project $p) => $p->cityLabel();
+        $city = fn (Project $p) => $p->cityLabel('en');
 
         // Country = the structured country field, with the Kurdistan Region
         // counted under Iraq so the tally stays a count of sovereign states.

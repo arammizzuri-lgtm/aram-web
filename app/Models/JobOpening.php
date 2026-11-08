@@ -13,8 +13,8 @@ use Illuminate\Support\Str;
 class JobOpening extends Model
 {
     protected $fillable = [
-        'slug', 'title_en', 'title_ku', 'type', 'location_en', 'location_ku',
-        'summary_en', 'summary_ku', 'description_en', 'description_ku',
+        'slug', 'title_en', 'title_ku', 'title_ar', 'type', 'location_en', 'location_ku', 'location_ar',
+        'summary_en', 'summary_ku', 'summary_ar', 'description_en', 'description_ku', 'description_ar',
         'is_open', 'closes_at', 'sort_order',
     ];
 
@@ -42,10 +42,10 @@ class JobOpening extends Model
     public static function types(): array
     {
         return [
-            'full-time' => ['en' => 'Full-time', 'ku' => 'کاتی تەواو'],
-            'part-time' => ['en' => 'Part-time', 'ku' => 'نیوەکات'],
-            'internship' => ['en' => 'Internship', 'ku' => 'ڕاهێنان'],
-            'contract' => ['en' => 'Contract', 'ku' => 'بە گرێبەست'],
+            'full-time' => ['en' => 'Full-time', 'ku' => 'کاتی تەواو', 'ar' => 'دوام كامل'],
+            'part-time' => ['en' => 'Part-time', 'ku' => 'نیوەکات', 'ar' => 'دوام جزئي'],
+            'internship' => ['en' => 'Internship', 'ku' => 'ڕاهێنان', 'ar' => 'تدريب'],
+            'contract' => ['en' => 'Contract', 'ku' => 'بە گرێبەست', 'ar' => 'بعقد'],
         ];
     }
 
@@ -66,12 +66,16 @@ class JobOpening extends Model
     {
         $ku = $this->{$name.'_ku'};
 
+        if ($lang === 'ar' && filled($this->{$name.'_ar'})) {
+            return $this->{$name.'_ar'};
+        }
+
         return $lang === 'ku' && filled($ku) ? $ku : $this->{$name.'_en'};
     }
 
     public function typeLabel(string $lang = 'en'): string
     {
-        return self::types()[$this->type][$lang] ?? (string) $this->type;
+        return self::types()[$this->type][$lang] ?? self::types()[$this->type]['en'] ?? (string) $this->type;
     }
 
     /**

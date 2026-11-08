@@ -1,7 +1,7 @@
 @php
     // English at /, Kurdish at /ku — the page arrives in its language, so
     // search engines and link previews read the version they were sent to.
-    $isKu = site_lang() === 'ku';
+    $isKu = site_rtl();   // right to left: Kurdish or Arabic
     $seoTitle = bival('seo_title');
     $seoDescription = bival('seo_description');
     $ogImage = asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg'));
@@ -136,8 +136,12 @@
                 <span class="nav__saved-n" data-saved-count></span>
             </a>
             <span class="nav__sep"></span>
-            {{-- label flips between "کوردی" and "English", so it needs its own direction --}}
-            <button class="lang-toggle" id="langToggle" dir="auto" title="Switch to Kurdish / گۆڕانی زمان">{{ site_lang() === 'ku' ? 'English' : 'کوردی' }}</button>
+            {{-- The page in the two other languages: a link to each version
+                 (/, /ku, /ar). With three languages the old in-place toggle
+                 gave way to plain links, each loading its page whole. --}}
+            @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
+                <a class="lang-toggle" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
+            @endforeach
         </div>
 
         <a href="{{ site_url('/saved') }}" class="nav__saved-m" data-saved-link hidden aria-label="{{ bival('saved_nav') }}">
@@ -162,6 +166,11 @@
             <a href="{{ site_url('/estimate') }}" class="mobile-menu__link"
                data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
         @endif
+        <div class="mobile-menu__langs">
+            @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
+                <a class="mobile-menu__lang" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
+            @endforeach
+        </div>
     </div>
 
     {{-- The page's own content, between the menu and the footer — the
@@ -191,12 +200,13 @@
                     $by = count($w) > 1 ? array_pop($w) : '';
                     return [implode(' ', $w), $by];
                 };
-                [$l1MainEn, $l1ByEn] = $splitBy(setting('hero_title_line1_en'));
-                [$l1MainKu, $l1ByKu] = $splitBy(setting('hero_title_line1_ku'));
+                [$l1MainEn, $l1ByEn] = $splitBy(\App\Support\SiteText::en('hero_title_line1'));
+                // the second slot: Kurdish, or Arabic on /ar (SiteText::second)
+                [$l1MainKu, $l1ByKu] = $splitBy(\App\Support\SiteText::second('hero_title_line1'));
             @endphp
             <h1 class="hero__title">
-                <span class="hero__line"><span class="hero__line-in"><span dir="auto" data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ bi($l1MainEn, $l1MainKu) }}</span><span class="hero__by" dir="auto" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ bi($l1ByEn, $l1ByKu) }}</span></span></span>
-                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" dir="auto" data-en="{{ setting('hero_title_line2_en') }}" data-ku="{{ setting('hero_title_line2_ku') }}">{{ bi(setting('hero_title_line2_en'), setting('hero_title_line2_ku')) }}</span></span>
+                <span class="hero__line"><span class="hero__line-in"><span dir="auto" data-en="{{ $l1MainEn }}" data-ku="{{ $l1MainKu }}">{{ slot($l1MainEn, $l1MainKu) }}</span><span class="hero__by" dir="auto" data-en="{{ $l1ByEn }}" data-ku="{{ $l1ByKu }}">{{ site_lang() === 'en' ? $l1ByEn : $l1ByKu }}</span></span></span>
+                <span class="hero__line"><span class="hero__line-in hero__line-in--accent" {!! bitext('hero_title_line2') !!}>{{ bival('hero_title_line2') }}</span></span>
             </h1>
 
             {{-- Practice figures — rendered as the 3D glass card ring in
@@ -207,11 +217,11 @@
                 $areaSuf = trim(preg_replace('/[\d.,]/', '', $stats['area_short']));
             @endphp
             <div id="heroStatsData" class="sr-only">
-                <span data-value="{{ $stats['projects'] }}" dir="auto" data-en="Projects" data-ku="پرۆژە">{{ $stats['projects'] }} {{ bi('Projects', 'پرۆژە') }}</span>
-                <span data-value="{{ (int) setting('about_stat2_num') }}" dir="auto" data-en="Clients" data-ku="کڕیار">{{ (int) setting('about_stat2_num') }} {{ bi('Clients', 'کڕیار') }}</span>
-                <span data-value="{{ $stats['cities'] }}" dir="auto" data-en="Cities" data-ku="شار">{{ $stats['cities'] }} {{ bi('Cities', 'شار') }}</span>
-                <span data-value="{{ $stats['countries'] }}" dir="auto" data-en="Countries" data-ku="وڵات">{{ $stats['countries'] }} {{ bi('Countries', 'وڵات') }}</span>
-                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" dir="auto" data-en="m² Designed" data-ku="م² دیزاینکراو">{{ $stats['area_short'] }} {{ bi('m² Designed', 'م² دیزاینکراو') }}</span>
+                <span data-value="{{ $stats['projects'] }}" {!! bitext('stat_projects') !!}>{{ $stats['projects'] }} {{ bival('stat_projects') }}</span>
+                <span data-value="{{ (int) setting('about_stat2_num') }}" {!! bitext('stat_clients') !!}>{{ (int) setting('about_stat2_num') }} {{ bival('stat_clients') }}</span>
+                <span data-value="{{ $stats['cities'] }}" {!! bitext('stat_cities') !!}>{{ $stats['cities'] }} {{ bival('stat_cities') }}</span>
+                <span data-value="{{ $stats['countries'] }}" {!! bitext('stat_countries') !!}>{{ $stats['countries'] }} {{ bival('stat_countries') }}</span>
+                <span data-value="{{ $areaNum }}" data-suffix="{{ $areaSuf }}" {!! bitext('stat_area') !!}>{{ $stats['area_short'] }} {{ bival('stat_area') }}</span>
             </div>
         </div>
 
@@ -219,7 +229,7 @@
              desktop (clear of the ring); on phones they stay in the flow
              right under the headline. --}}
         <div class="hero__foot">
-            <p class="hero__sub" dir="auto" data-en="{{ setting('hero_sub_en') }}" data-ku="{{ setting('hero_sub_ku') }}">{{ bi(setting('hero_sub_en'), setting('hero_sub_ku')) }}</p>
+            <p class="hero__sub" {!! bitext('hero_sub') !!}>{{ bival('hero_sub') }}</p>
             <div class="hero__actions">
                 <a href="#projects" class="hero__go" id="heroGo">
                     <span class="hero__go-label" {!! bitext('hero_cta') !!}>{{ bival('hero_cta') }}</span>
@@ -233,10 +243,15 @@
             <span class="hero__scroll-line"></span>
         </a>
 
-        {{-- Mobile-only language switch — a small fixed KU/EN badge in the
-             top-left corner (the nav bar and its کوردی pill are hidden
-             below 768px). Label managed by initLang in script.js. --}}
-        <button class="hero__lang" id="heroLang" type="button" aria-label="Switch language / گۆڕینی زمان">{{ site_lang() === 'ku' ? 'EN' : 'KU' }}</button>
+        {{-- Mobile-only language switch — small fixed badges in the top-left
+             corner (the nav bar and its language pills are hidden below
+             768px): one for each of the two other languages. --}}
+        @php $short = ['en' => 'EN', 'ku' => 'کوردی', 'ar' => 'عربي']; @endphp
+        <div class="hero__lang" role="group" aria-label="Language / زمان / اللغة">
+            @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
+                <a href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto" aria-label="{{ site_langs()[$code] }}">{{ $short[$code] }}</a>
+            @endforeach
+        </div>
     </section>
 
     <!-- ========== STATS BAND ========== -->
@@ -247,11 +262,11 @@
         $sbAreaNum = (int) $stats['area_short'];
         $sbAreaSuf = trim(preg_replace('/[\d.,]/', '', $stats['area_short']));
         $statbar = [
-            ['v' => (int) $stats['projects'],         's' => '',         'en' => 'Projects',    'ku' => 'پرۆژە'],
-            ['v' => (int) setting('about_stat2_num'), 's' => '',         'en' => 'Clients',     'ku' => 'کڕیار'],
-            ['v' => (int) $stats['cities'],           's' => '',         'en' => 'Cities',      'ku' => 'شار'],
-            ['v' => (int) $stats['countries'],        's' => '',         'en' => 'Countries',   'ku' => 'وڵات'],
-            ['v' => $sbAreaNum,                       's' => $sbAreaSuf, 'en' => 'm² Designed', 'ku' => 'م² دیزاینکراو'],
+            ['v' => (int) $stats['projects'],         's' => '',         'en' => \App\Support\SiteText::en('stat_projects'),  'ku' => \App\Support\SiteText::second('stat_projects')],
+            ['v' => (int) setting('about_stat2_num'), 's' => '',         'en' => \App\Support\SiteText::en('stat_clients'),   'ku' => \App\Support\SiteText::second('stat_clients')],
+            ['v' => (int) $stats['cities'],           's' => '',         'en' => \App\Support\SiteText::en('stat_cities'),    'ku' => \App\Support\SiteText::second('stat_cities')],
+            ['v' => (int) $stats['countries'],        's' => '',         'en' => \App\Support\SiteText::en('stat_countries'), 'ku' => \App\Support\SiteText::second('stat_countries')],
+            ['v' => $sbAreaNum,                       's' => $sbAreaSuf, 'en' => \App\Support\SiteText::en('stat_area'),      'ku' => \App\Support\SiteText::second('stat_area')],
         ];
     @endphp
     {{-- Between a holiday card's dates (Manage → Holiday cards): a band
@@ -261,7 +276,7 @@
             <div class="gc-band__inner">
                 <span class="gc-band__sun" aria-hidden="true"></span>
                 <div class="gc-band__words">
-                    <p class="gc-band__title" dir="auto" data-en="{{ $greeting->title('en') }}" data-ku="{{ $greeting->title('ku') }}">{{ $greeting->title(site_lang()) }}</p>
+                    <p class="gc-band__title" dir="auto" data-en="{{ $greeting->title('en') }}" data-ku="{{ rtl_slot($greeting->title("en"), $greeting->title("ku"), $greeting->title("ar")) }}">{{ $greeting->title(site_lang()) }}</p>
                     <p class="gc-band__text" dir="auto" {!! bitext('card_band_text') !!}>{{ bival('card_band_text') }}</p>
                 </div>
                 <a class="gc-band__btn" href="{{ site_url('/card') }}" data-href-en="{{ site_url('/card', 'en') }}" data-href-ku="{{ site_url('/card', 'ku') }}" {!! bitext('card_band_btn') !!}>{{ bival('card_band_btn') }}</a>
@@ -281,7 +296,7 @@
                     <div class="statbar__item" style="--i: {{ $loop->index }}">
                         <span class="statbar__num" data-n="0{{ $st['s'] }}" data-value="{{ $st['v'] }}" data-suffix="{{ $st['s'] }}">0{{ $st['s'] }}</span>
                         <span class="statbar__rule" aria-hidden="true"></span>
-                        <span class="statbar__label" dir="auto" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ bi($st['en'], $st['ku']) }}</span>
+                        <span class="statbar__label" dir="auto" data-en="{{ $st['en'] }}" data-ku="{{ $st['ku'] }}">{{ slot($st["en"], $st["ku"]) }}</span>
                     </div>
                 @endforeach
             </div>
@@ -318,12 +333,12 @@
         @endphp
         @if ($growYears->count() > 1)
             <div class="map-grow" id="mapGrow" hidden
-                 data-play-en="{{ \App\Support\SiteText::en('map_grow') }}" data-play-ku="{{ \App\Support\SiteText::ku('map_grow') }}"
-                 data-stop-en="{{ \App\Support\SiteText::en('map_grow_stop') }}" data-stop-ku="{{ \App\Support\SiteText::ku('map_grow_stop') }}"
-                 data-again-en="{{ \App\Support\SiteText::en('map_grow_again') }}" data-again-ku="{{ \App\Support\SiteText::ku('map_grow_again') }}"
-                 data-count-en="{{ \App\Support\SiteText::en('pj_count') }}" data-count-ku="{{ \App\Support\SiteText::ku('pj_count') }}"
-                 data-one-en="{{ \App\Support\SiteText::en('pj_count_one') }}" data-one-ku="{{ \App\Support\SiteText::ku('pj_count_one') }}"
-                 data-beyond-en="{{ \App\Support\SiteText::en('map_grow_beyond') }}" data-beyond-ku="{{ \App\Support\SiteText::ku('map_grow_beyond') }}">
+                 data-play-en="{{ \App\Support\SiteText::en('map_grow') }}" data-play-ku="{{ \App\Support\SiteText::second('map_grow') }}"
+                 data-stop-en="{{ \App\Support\SiteText::en('map_grow_stop') }}" data-stop-ku="{{ \App\Support\SiteText::second('map_grow_stop') }}"
+                 data-again-en="{{ \App\Support\SiteText::en('map_grow_again') }}" data-again-ku="{{ \App\Support\SiteText::second('map_grow_again') }}"
+                 data-count-en="{{ \App\Support\SiteText::en('pj_count') }}" data-count-ku="{{ \App\Support\SiteText::second('pj_count') }}"
+                 data-one-en="{{ \App\Support\SiteText::en('pj_count_one') }}" data-one-ku="{{ \App\Support\SiteText::second('pj_count_one') }}"
+                 data-beyond-en="{{ \App\Support\SiteText::en('map_grow_beyond') }}" data-beyond-ku="{{ \App\Support\SiteText::second('map_grow_beyond') }}">
                 <div class="map-grow__clock" id="mapGrowClock" hidden>
                     <span class="map-grow__year" id="mapGrowYear" aria-hidden="true"></span>
                     <span class="map-grow__count" id="mapGrowCount" aria-live="polite"></span>
@@ -445,7 +460,7 @@
                         <div class="client-logo" @if($dup) aria-hidden="true" @endif>
                             {!! $clientMark($c) !!}
                             <span class="client-logo__name">{{ $c->name }}</span>
-                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ bi($c->sub_en, $c->sub_ku) }}</span>
+                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ rtl_slot($c->sub_en, $c->sub_ku, $c->sub_ar) }}">{{ bi($c->sub_en, $c->sub_ku, $c->sub_ar) }}</span>
                         </div>
                     @endforeach
                 @endforeach
@@ -465,7 +480,7 @@
                         <div class="clients-modal__tile" style="--i: {{ $loop->index }}">
                             {!! $clientMark($c) !!}
                             <span class="client-logo__name">{{ $c->name }}</span>
-                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ $c->sub_ku }}">{{ bi($c->sub_en, $c->sub_ku) }}</span>
+                            <span class="client-logo__sub" dir="auto" data-en="{{ $c->sub_en }}" data-ku="{{ rtl_slot($c->sub_en, $c->sub_ku, $c->sub_ar) }}">{{ bi($c->sub_en, $c->sub_ku, $c->sub_ar) }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -484,24 +499,24 @@
         $quotesKu = $quotes->filter(fn ($q) => filled($q->quote_ku));
     @endphp
     @if ($quotes->isNotEmpty())
-        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ($quotesKu->isNotEmpty()) data-has-ku @endif>
+        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ((site_lang() === "ar" ? $quotesEn : $quotesKu)->isNotEmpty()) data-has-ku @endif>
             <p class="section-label section-label--center" {!! bitext('quotes_label') !!}>{{ bival('quotes_label') }}</p>
             <h2 class="quotes__title" {!! bitext('quotes_title') !!}>{{ bival('quotes_title') }}</h2>
             <div class="quotes__stage" id="quotesStage" aria-live="polite">
                 @foreach ($quotes as $q)
-                    <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled($q->quote_ku)) data-has-ku @endif>
+                    <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled(rtl_slot($q->quote_en, $q->quote_ku, $q->quote_ar))) data-has-ku @endif>
                         @include('partials.client-voice', ['cvQuote' => $q])
-                        <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ $q->quote('ku') }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
+                        <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ rtl_slot($q->quote("en"), $q->quote("ku"), $q->quote("ar")) }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
                         <figcaption class="quote__by">
-                            <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ $q->personName('ku') }}">{{ $q->personName(site_lang()) }}</span>
-                            @php $roleEn = $q->attribution('en'); $roleKu = $q->attribution('ku'); @endphp
+                            <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ rtl_slot($q->personName("en"), $q->personName("ku"), $q->personName("ar")) }}">{{ $q->personName(site_lang()) }}</span>
+                            @php $roleEn = $q->attribution('en'); $roleKu = rtl_slot($roleEn, $q->attribution("ku"), $q->attribution("ar")); @endphp
                             @if (filled($roleEn) || filled($roleKu))
                                 <span class="quote__role" data-en="{{ $roleEn }}" data-ku="{{ $roleKu }}">{{ site_lang() === 'ku' ? $roleKu : $roleEn }}</span>
                             @endif
                             @if ($q->project?->hasPage())
                                 <a class="quote__project" href="{{ $q->project->pageUrl(site_lang()) }}"
                                    data-href-en="{{ $q->project->pageUrl('en') }}" data-href-ku="{{ $q->project->pageUrl('ku') }}">
-                                    <span data-en="{{ $q->project->name }}" data-ku="{{ $q->project->name_ku ?: $q->project->name }}">{{ bi($q->project->name, $q->project->name_ku) }}</span>
+                                    <span data-en="{{ $q->project->name }}" data-ku="{{ rtl_slot($q->project->name, $q->project->name_ku ?: $q->project->name, $q->project->name_ar) }}">{{ bi($q->project->name, $q->project->name_ku, $q->project->name_ar) }}</span>
                                     <span class="quote__arrow" aria-hidden="true">↗&#xFE0E;</span>
                                 </a>
                             @endif
@@ -539,7 +554,7 @@
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
                     <button class="pgf-btn active" data-filter="all" {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>
                     @foreach($categories as $cat)
-                    <button class="pgf-btn" data-filter="{{ $cat->key }}" dir="auto" data-en="{{ $cat->name }}" data-ku="{{ $cat->name_ku ?: $cat->name }}">{{ bi($cat->name, $cat->name_ku) }}</button>
+                    <button class="pgf-btn" data-filter="{{ $cat->key }}" dir="auto" data-en="{{ $cat->name }}" data-ku="{{ rtl_slot($cat->name, $cat->name_ku ?: $cat->name, $cat->name_ar) }}">{{ bi($cat->name, $cat->name_ku, $cat->name_ar) }}</button>
                     @endforeach
                 </div>
             </div>
@@ -567,7 +582,7 @@
                         <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ $project->statusBadge() }}</div>
                         <div class="pgc__info">
                             <div class="pgc__num">{{ $project->num }}</div>
-                            <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ $project->name_ku ?: $project->name }}">{{ bi($project->name, $project->name_ku) }}</h3>
+                            <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ rtl_slot($project->name, $project->name_ku ?: $project->name, $project->name_ar) }}">{{ bi($project->name, $project->name_ku, $project->name_ar) }}</h3>
                             <p class="pgc__meta">{{ $project->metaLabel() }}</p>
                         </div>
                         <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗&#xFE0E;</span></span>
@@ -579,7 +594,7 @@
                      lets search engines find every project page from here.
                      Not draggable, or a mouse drag along the row would pick up the
                      link instead of scrolling it. --}}
-                <a class="pgc__link" href="{{ $project->pageUrl(site_lang()) }}" draggable="false" aria-label="{{ bi($project->name, $project->name_ku) }}"
+                <a class="pgc__link" href="{{ $project->pageUrl(site_lang()) }}" draggable="false" aria-label="{{ bi($project->name, $project->name_ku, $project->name_ar) }}"
                    data-href-en="{{ $project->pageUrl('en') }}" data-href-ku="{{ $project->pageUrl('ku') }}"></a>
                 {{-- Save it to the visitor's list (saved.js) — above the link, and
                      handled before the card, so it never opens the project too. --}}
@@ -629,9 +644,9 @@
 
             <div class="about__top">
                 <div class="about__text">
-                    <p class="section-label" dir="auto" data-en="{{ setting('about_label_en') }}" data-ku="{{ setting('about_label_ku') }}">{{ bi(setting('about_label_en'), setting('about_label_ku')) }}</p>
-                    <h2 class="about__heading" dir="auto" data-en="{{ setting('about_heading_en') }}" data-ku="{{ setting('about_heading_ku') }}">
-                        {!! bi(setting('about_heading_en'), setting('about_heading_ku')) !!}
+                    <p class="section-label" {!! bitext('about_label') !!}>{{ bival('about_label') }}</p>
+                    <h2 class="about__heading" {!! bitext('about_heading') !!}>
+                        {!! bival('about_heading') !!}
                     </h2>
                     <p class="about__bio" {!! bitext('about_bio_1') !!}>
                         {{ bival('about_bio_1') }}
@@ -678,45 +693,51 @@
             // where a card leads on /projects — every project, a category or a
             // status — and a card with nothing to show there leads to Contact
             $services = [
-                ['en' => 'Architectural Design', 'ku' => 'دیزاینی تەڵارسازی',
+                ['en' => 'Architectural Design', 'ar' => 'التصميم المعماري', 'dar' => 'تصميم متكامل للمبنى — من الفكرة الأولى حتى المخطّطات المعتمدة.', 'ku' => 'دیزاینی تەڵارسازی',
                  'den' => 'Complete building design — from first concept to approved drawings.',
                  'dku' => 'دیزاینی تەواوی بینا — لە یەکەم بیرۆکەوە تا نەخشەی پەسەندکراو.',
                  'to' => [],
                  'icon' => '<circle cx="18" cy="7" r="3" stroke-width="1.8"/><line x1="16.4" y1="9.8" x2="9" y2="30" stroke-width="2"/><line x1="19.6" y1="9.8" x2="27" y2="30" stroke-width="2"/><path d="M11.5 24.5a13 13 0 0 0 13 0" stroke-width="1.8"/>'],
-                ['en' => 'Exterior Design', 'ku' => 'دیزاینی دەرەکی',
+                ['en' => 'Exterior Design', 'ar' => 'التصميم الخارجي', 'dar' => 'واجهات وبيئات خارجية تمنح المبنى وجهه أمام الناس.', 'ku' => 'دیزاینی دەرەکی',
                  'den' => 'Façades and outdoor environments that give a building its public face.',
                  'dku' => 'ڕووکار و ژینگەی دەرەوە کە ڕوخساری گشتیی بینا دروستدەکەن.',
                  'to' => ['type' => 'exterior-design'],
                  'icon' => '<rect x="4" y="8" width="15" height="24" stroke-width="1.8"/><line x1="8" y1="14" x2="15" y2="14" stroke-width="1.6"/><line x1="8" y1="20" x2="15" y2="20" stroke-width="1.6"/><line x1="8" y1="26" x2="15" y2="26" stroke-width="1.6"/><circle cx="27" cy="22" r="4" stroke-width="1.8"/><line x1="27" y1="26" x2="27" y2="32" stroke-width="1.8"/><line x1="22" y1="32" x2="32" y2="32" stroke-width="1.8"/>'],
-                ['en' => 'Interior Design', 'ku' => 'دیزاینی ناوەکی',
+                ['en' => 'Interior Design', 'ar' => 'التصميم الداخلي', 'dar' => 'تخطيط الفضاءات والمواد والإضاءة — تصاميم داخلية صُنعت لتُعاش.', 'ku' => 'دیزاینی ناوەکی',
                  'den' => 'Spatial planning, materials and light — interiors made to be lived in.',
                  'dku' => 'پلاندانانی بۆشایی، کەرەستە و ڕووناکی — ناوەوەیەک بۆ ژیان.',
                  'to' => ['type' => 'interior-design'],
                  'icon' => '<path d="M8 19v-7a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v7" stroke-width="1.8"/><path d="M5 19a2.5 2.5 0 0 1 5 0v2h16v-2a2.5 2.5 0 0 1 5 0v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" stroke-width="1.8"/><line x1="9" y1="29" x2="9" y2="32" stroke-width="1.8"/><line x1="27" y1="29" x2="27" y2="32" stroke-width="1.8"/>'],
-                ['en' => 'Construction', 'ku' => 'بیناسازی',
+                ['en' => 'Construction', 'ar' => 'الإنشاء', 'dar' => 'تنفيذ وإشراف في الموقع مع أفضل البنّائين في كوردستان.', 'ku' => 'بیناسازی',
                  'den' => "On-site execution and supervision with Kurdistan's finest builders.",
                  'dku' => 'جێبەجێکردن و سەرپەرشتی مەیدانی لەگەڵ باشترین بیناسازانی کوردستان.',
                  'to' => ['status' => 'under-construction'],
                  'icon' => '<line x1="5" y1="33" x2="31" y2="33" stroke-width="2"/><line x1="11" y1="33" x2="11" y2="5" stroke-width="2"/><line x1="11" y1="5" x2="31" y2="5" stroke-width="2"/><line x1="11" y1="12" x2="18" y2="5" stroke-width="1.8"/><line x1="31" y1="5" x2="31" y2="12" stroke-width="1.8"/><rect x="28.5" y="12" width="5" height="4.5" stroke-width="1.8"/>'],
-                ['en' => 'Tendering', 'ku' => 'تەندەرکردن',
+                ['en' => 'Tendering', 'ar' => 'المناقصات', 'dar' => 'إعداد وثائق المناقصة وتقييمها واختيار المقاول الذي تثق به.', 'ku' => 'تەندەرکردن',
                  'den' => 'Bid documentation, evaluation and contractor selection you can trust.',
                  'dku' => 'ئامادەکردنی بەڵگەنامەی تەندەر، هەڵسەنگاندن و هەڵبژاردنی بەڵێندەر.',
                  'icon' => '<path d="M9 3h13l6 6v24H9z" stroke-width="1.8"/><path d="M22 3v6h6" stroke-width="1.8"/><polyline points="14,21 17.5,24.5 23.5,16.5" stroke-width="2"/>'],
-                ['en' => 'Customized Furniture', 'ku' => 'مۆبیلیای تایبەتکراو',
+                ['en' => 'Customized Furniture', 'ar' => 'أثاث حسب الطلب', 'dar' => 'قطع خاصة تُصمَّم وتُصنع لكل مشروع.', 'ku' => 'مۆبیلیای تایبەتکراو',
                  'den' => 'Bespoke pieces designed and crafted for each project.',
                  'dku' => 'پارچەی تایبەت، دیزاین و دروستکراو بۆ هەر پرۆژەیەک.',
                  'icon' => '<line x1="10" y1="4" x2="10" y2="22" stroke-width="2"/><path d="M10 15h15v7" stroke-width="1.8"/><line x1="8" y1="22" x2="27" y2="22" stroke-width="2"/><line x1="11" y1="22" x2="11" y2="32" stroke-width="1.8"/><line x1="24" y1="22" x2="24" y2="32" stroke-width="1.8"/>'],
-                ['en' => 'International Furniture Brands', 'ku' => 'براندە نێودەوڵەتییەکانی مۆبیلیا',
+                ['en' => 'International Furniture Brands', 'ar' => 'علامات أثاث عالمية', 'dar' => 'توفير أفضل علامات الأثاث العالمية وتوريدها — من أنحاء العالم.', 'ku' => 'براندە نێودەوڵەتییەکانی مۆبیلیا',
                  'den' => 'Sourcing and supplying world-class furniture brands — worldwide.',
                  'dku' => 'دابینکردنی براندە جیهانییەکانی مۆبیلیا — لە هەموو جیهاندا.',
                  'icon' => '<circle cx="18" cy="18" r="14" stroke-width="1.8"/><ellipse cx="18" cy="18" rx="6.5" ry="14" stroke-width="1.6"/><line x1="4" y1="18" x2="32" y2="18" stroke-width="1.6"/>'],
             ];
 
+            // On /ar the cards' second slot (ku / dku, read as the page's
+            // right-to-left language) carries the Arabic — see rtl_slot().
+            if (site_lang() === 'ar') {
+                $services = array_map(fn ($s) => ['ku' => $s['ar'] ?? $s['en'], 'dku' => $s['dar'] ?? $s['den']] + $s, $services);
+            }
+
             // how many projects each card would open on /projects
             $withPage = $projects->filter(fn ($p) => $p->hasPage());
             $byType = $withPage->flatMap(fn ($p) => $p->categoryKeys())->countBy();
             $byStatus = $withPage->countBy(fn ($p) => $p->statusKey());
-            $text = fn (string $lang, string $key) => $lang === 'ku' ? \App\Support\SiteText::ku($key) : \App\Support\SiteText::en($key);
+            $text = fn (string $lang, string $key) => $lang === 'ku' ? \App\Support\SiteText::second($key) : \App\Support\SiteText::en($key);
             $serviceLink = function (array $s) use ($withPage, $byType, $byStatus, $text) {
                 $to = $s['to'] ?? null;
                 $n = match (true) {
@@ -752,10 +773,10 @@
                             <svg class="service__icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $s['icon'] !!}</svg>
                             <span class="service__num">0{{ $i + 1 }}</span>
                         </div>
-                        <h3 class="service__name" dir="auto" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ bi($s['en'], $s['ku']) }}</h3>
-                        <p class="service__desc" dir="auto" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ bi($s['den'], $s['dku']) }}</p>
+                        <h3 class="service__name" dir="auto" data-en="{{ $s['en'] }}" data-ku="{{ $s['ku'] }}">{{ slot($s["en"], $s["ku"]) }}</h3>
+                        <p class="service__desc" dir="auto" data-en="{{ $s['den'] }}" data-ku="{{ $s['dku'] }}">{{ slot($s["den"], $s["dku"]) }}</p>
                         <span class="service__go">
-                            <span data-en="{{ $go['en'] }}" data-ku="{{ $go['ku'] }}">{{ bi($go['en'], $go['ku']) }}</span>
+                            <span data-en="{{ $go['en'] }}" data-ku="{{ $go['ku'] }}">{{ slot($go["en"], $go["ku"]) }}</span>
                             <span class="service__go-arrow" aria-hidden="true">{{ $go['arrow'] }}&#xFE0E;</span>
                         </span>
                     </a>
@@ -776,8 +797,8 @@
 
             <!-- Sticky narrative rail -->
             <aside class="process__aside">
-                <p class="section-label" dir="auto" data-en="{{ setting('process_label_en') }}" data-ku="{{ setting('process_label_ku') }}">{{ bi(setting('process_label_en'), setting('process_label_ku')) }}</p>
-                <h2 class="process__title" dir="auto" data-en="{{ setting('process_title_en') }}" data-ku="{{ setting('process_title_ku') }}">{{ bi(setting('process_title_en'), setting('process_title_ku')) }}</h2>
+                <p class="section-label" {!! bitext('process_label') !!}>{{ bival('process_label') }}</p>
+                <h2 class="process__title" {!! bitext('process_title') !!}>{{ bival('process_title') }}</h2>
 
                 <div class="process__meter">
                     <div class="process__count">
@@ -867,7 +888,7 @@
         </div>
         <div class="heritage__inner">
             <div class="heritage__text reveal">
-                <p class="section-label section-label--light" dir="auto" data-en="{{ setting('heritage_label_en') }}" data-ku="{{ setting('heritage_label_ku') }}">{{ bi(setting('heritage_label_en'), setting('heritage_label_ku')) }}</p>
+                <p class="section-label section-label--light" {!! bitext('heritage_label') !!}>{{ bival('heritage_label') }}</p>
                 <h2 class="heritage__title" {!! bitext('heritage_title') !!}>
                     {!! nl2br(e(bival('heritage_title'))) !!}
                 </h2>
@@ -925,8 +946,8 @@
         <div class="contact__inner">
 
             <div class="contact__info">
-                <p class="section-label" dir="auto" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ bi(setting('contact_label_en'), setting('contact_label_ku')) }}</p>
-                <h2 class="contact__title" dir="auto" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! bi(setting('contact_title_en'), setting('contact_title_ku')) !!}</h2>
+                <p class="section-label" {!! bitext('contact_label') !!}>{{ bival('contact_label') }}</p>
+                <h2 class="contact__title" {!! bitext('contact_title') !!}>{!! bival('contact_title') !!}</h2>
 
                 <div class="contact__methods">
                     {{-- WhatsApp first — it is how most clients here would rather
@@ -935,7 +956,7 @@
                         <div>
                             <a class="cmethod cmethod--link cmethod--wa" href="{{ $waUrl }}" target="_blank" rel="noopener" data-wa="contact"
                                data-href-en="{{ whatsapp_url(\App\Support\SiteText::en('wa_text')) }}"
-                               data-href-ku="{{ whatsapp_url(\App\Support\SiteText::ku('wa_text')) }}">
+                               data-href-ku="{{ whatsapp_url(\App\Support\SiteText::second('wa_text')) }}">
                                 <span class="cmethod__icon">@include('partials.icon-whatsapp')</span>
                                 <span class="cmethod__text">
                                     <span class="cmethod__label" {!! bitext('wa_label') !!}>{{ bival('wa_label') }}</span>
@@ -1002,7 +1023,7 @@
                  so the studio knows what they were looking at. --}}
             @php
                 $choices = fn (array $options) => collect($options)->map(fn ($o, $key) =>
-                    '<option value="'.e($key).'" data-en="'.e($o['en']).'" data-ku="'.e($o['ku']).'">'.e(bi($o['en'], $o['ku'])).'</option>'
+                    '<option value="'.e($key).'" data-en="'.e($o['en']).'" data-ku="'.e(rtl_slot($o['en'], $o['ku'], $o['ar'] ?? null)).'">'.e(bi($o['en'], $o['ku'], $o['ar'] ?? null)).'</option>'
                 )->implode('');
                 $choose = '<option value="" '.bitext('form_choose').'>'.e(bival('form_choose')).'</option>';
             @endphp
@@ -1320,7 +1341,7 @@
          iPad and iPhone. The same outline is now composited on a viewport-sized
          canvas — see KurdistanOutline in script.js. --}}
 
-    @include('partials.whatsapp-fab', ['text' => ['en' => \App\Support\SiteText::en('wa_text'), 'ku' => \App\Support\SiteText::ku('wa_text')], 'hideOver' => '#map, #contact'])
+    @include('partials.whatsapp-fab', ['text' => ['en' => \App\Support\SiteText::en('wa_text'), 'ku' => \App\Support\SiteText::second('wa_text')], 'hideOver' => '#map, #contact'])
 
     {{-- Leaflet, self-hosted (see the note in the head) and fetched on
          demand by script.js (leafletReady) as a map comes near. --}}

@@ -44,6 +44,10 @@ class ProjectForm
                         ->label('Name (Kurdish)')
                         ->maxLength(160)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    TextInput::make('name_ar')
+                        ->label('Name (Arabic)')
+                        ->maxLength(160)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     TextInput::make('slug')
                         ->label('Page address')
                         ->prefix(fn (): string => url('/projects').'/')
@@ -87,6 +91,12 @@ class ProjectForm
                         ])->default('default')->required()->native(false)
                         ->helperText('Its tile on the homepage grid and on the projects page wall. Keep most projects Default, a few Large, and fewer still Wide.'),
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
+                    // Arabic pages (/ar): blank shows the English
+                    TextInput::make('typology_ar')->label('Typology (Arabic)')->maxLength(120)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
+                    TextInput::make('location_ar')->label('Location (Arabic)')->maxLength(191)
+                        ->helperText('The whole place in one line, e.g. «فيوتشر سيتي، أربيل، كوردستان». Left blank, the English location is shown.')
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
                     TextInput::make('neighbourhood')
                         ->label('Neighbourhood / area')
                         ->maxLength(120)->placeholder('Kawrgusk')
@@ -125,10 +135,14 @@ class ProjectForm
                     Textarea::make('desc')->label('Description (English)')->rows(5),
                     Textarea::make('desc_ku')->label('Description (Kurdish)')->rows(5)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    Textarea::make('desc_ar')->label('Description (Arabic)')->rows(5)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     Textarea::make('narrative')->label('Architect’s narrative (English)')->rows(4)
                         ->helperText('Shown as a quote on the project’s page. Each language shows only its own — leave one empty to show none there.'),
                     Textarea::make('narrative_ku')->label('Architect’s narrative (Kurdish)')->rows(4)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    Textarea::make('narrative_ar')->label('Architect’s narrative (Arabic)')->rows(4)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     // Written the same way on every project, a material on a project's
                     // page opens the others built with it — so the ones already used
                     // are offered as they are typed.

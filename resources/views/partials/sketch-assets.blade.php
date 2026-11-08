@@ -10,7 +10,7 @@
     ];
     $skConfig = [
         'en' => array_map(fn ($k) => \App\Support\SiteText::en($k), $skKeys),
-        'ku' => array_map(fn ($k) => \App\Support\SiteText::ku($k), $skKeys),
+        'ku' => array_map(fn ($k) => \App\Support\SiteText::second($k), $skKeys),
         'host' => preg_replace('/^www\./', '', (string) parse_url(url('/'), PHP_URL_HOST)),
         'store' => route('sketch.store'),
         'show' => url('/sketches/TOKEN'),

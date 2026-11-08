@@ -52,7 +52,7 @@ class ContactController extends Controller
             'message' => ['nullable', 'string', 'max:5000'],
             // a sketch they drew for it (sketch.js), by the token it was kept under
             'sketch' => ['nullable', 'string', 'size:40', 'alpha_num'],
-            'lang' => ['nullable', Rule::in(['en', 'ku'])],
+            'lang' => ['nullable', Rule::in(['en', 'ku', 'ar'])],
             'page' => ['nullable', 'string', 'max:255'],
         ]);
 

@@ -9,7 +9,7 @@
      * @var string $room  the room asked for, or ''
      */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $here = $room !== '' ? \App\Support\Rooms::label($room, $lang) : null;
@@ -19,7 +19,7 @@
     $with = fn (string $r, ?string $l = null) => site_url('/photos', $l).($r !== '' ? '?room='.$r : '');
     $viewer = $photos->map(fn ($ph) => [
         'src' => $ph['project']->variantUrl($ph['img'], 'lg'),
-        'name' => bi($ph['project']->name, $ph['project']->name_ku),
+        'name' => bi($ph['project']->name, $ph['project']->name_ku, $ph['project']->name_ar),
         'room' => \App\Support\Rooms::label($ph['room'], $lang),
         'url' => $ph['project']->pageUrl($lang),
     ])->values();
@@ -80,11 +80,11 @@
                 @foreach ($photos as $i => $ph)
                     @php $p = $ph['project']; @endphp
                     <li class="ph-shot">
-                        <button class="ph-shot__open" type="button" data-at="{{ $i }}" aria-label="{{ bi($p->name, $p->name_ku) }} — {{ \App\Support\Rooms::label($ph['room'], $lang) }}">
+                        <button class="ph-shot__open" type="button" data-at="{{ $i }}" aria-label="{{ bi($p->name, $p->name_ku, $p->name_ar) }} — {{ \App\Support\Rooms::label($ph['room'], $lang) }}">
                             <img src="{{ $p->variantUrl($ph['img'], 'thumb') }}" alt="" loading="lazy" decoding="async">
                         </button>
                         <p class="ph-shot__cap">
-                            <a href="{{ $p->pageUrl($lang) }}"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></a>
+                            <a href="{{ $p->pageUrl($lang) }}"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></a>
                             @if ($room === '')<span class="ph-shot__room">{{ \App\Support\Rooms::label($ph['room'], $lang) }}</span>@endif
                         </p>
                     </li>

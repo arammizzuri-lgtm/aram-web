@@ -65,10 +65,10 @@ class Insights
     {
         $ids = Project::query()->pluck('id', 'slug');
 
-        // /projects/{slug} and /ku/projects/{slug}, both counted for the project
+        // /projects/{slug}, /ku/… and /ar/…, all counted for the project
         $pages = [];
         PageView::query()->whereBetween('created_at', [$start, $end])
-            ->where(fn ($q) => $q->where('path', 'like', '/projects/%')->orWhere('path', 'like', '/ku/projects/%'))
+            ->where(fn ($q) => $q->where('path', 'like', '/projects/%')->orWhere('path', 'like', '/ku/projects/%')->orWhere('path', 'like', '/ar/projects/%'))
             ->selectRaw('path, count(*) as c')->groupBy('path')
             ->pluck('c', 'path')
             ->each(function ($count, $path) use ($ids, &$pages) {

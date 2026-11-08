@@ -30,11 +30,20 @@ function uiText(key) {
  * so every history entry made before a switch still carries the old
  * language — this is what puts it right when one of them is landed on.
  */
+/**
+ * The address prefix of the language on screen: '' for English, '/ku' or
+ * '/ar' — read from <html lang>, which the server sets and the toggle keeps.
+ */
+function langPrefix() {
+    const lang = document.documentElement.getAttribute('lang');
+    return lang === 'ku' || lang === 'ar' ? '/' + lang : '';
+}
+
 function syncLangAddress() {
     if (!window.history || !history.replaceState) return;
-    const isKu = document.documentElement.getAttribute('dir') === 'rtl';
-    const bare = location.pathname.replace(/^\/ku(?=\/|$)/, '') || '/';
-    const want = isKu ? (bare === '/' ? '/ku' : '/ku' + bare) : bare;
+    const prefix = langPrefix();
+    const bare = location.pathname.replace(/^\/(ku|ar)(?=\/|$)/, '') || '/';
+    const want = prefix ? (bare === '/' ? prefix : prefix + bare) : bare;
     if (want !== location.pathname) {
         history.replaceState(history.state, '', want + location.search + location.hash);
     }
@@ -1372,7 +1381,7 @@ function imgVariant(proj, size, i) {
             // the projects they saved, as the form's chip shows them (saved.js)
             saved: window.siteSaved ? window.siteSaved.forEnquiry() : [],
             website: value('website'),                       // the spam trap
-            lang: isKu() ? 'ku' : 'en',
+            lang: document.documentElement.getAttribute('lang') || 'en',   // en, ku or ar
             page: location.pathname,
         };
         Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
@@ -2174,6 +2183,8 @@ function projCoords(proj) {
     /* ---- Generate hashtags from project data ------------ */
     function buildTags(proj) {
         var tags = [];
+        // On an Arabic page the server sends the tags in Arabic, ready-made
+        if (proj.tags_local && proj.tags_local.length) return proj.tags_local.slice(0, 6);
         // Categories — a project can carry several
         var cats = (proj.categories && proj.categories.length) ? proj.categories : [proj.category];
         cats.forEach(function(c) {
@@ -2202,7 +2213,10 @@ function projCoords(proj) {
         if (!proj) return;
 
         var isKu = document.documentElement.getAttribute('dir') === 'rtl';
-        var STATUS_KU = { 'Completed': 'تەواوبوو', 'Under Construction': 'لەژێر بنیاتنان', 'Concept / Planning': 'بیرۆکە و پلاندانان' };
+        // the status in the page's second language (Kurdish, or Arabic on /ar),
+        // sent by the server; the built-in Kurdish is the fallback
+        var STATUS_KU = (window.__SITE__ && window.__SITE__.statusNames)
+            || { 'Completed': 'تەواوبوو', 'Under Construction': 'لەژێر بنیاتنان', 'Concept / Planning': 'بیرۆکە و پلاندانان' };
 
         // tone comes from the DB-managed statuses (name => done|build|concept),
         // with a sensible fallback for the three original statuses.
@@ -2366,7 +2380,7 @@ function projCoords(proj) {
        the entry again. */
     function projectPath(proj) {
         if (!proj || !proj.slug) return null;
-        return (document.documentElement.getAttribute('dir') === 'rtl' ? '/ku' : '') + '/projects/' + proj.slug;
+        return langPrefix() + '/projects/' + proj.slug;
     }
 
     function syncAddress(mode) {
@@ -2493,7 +2507,7 @@ function projCoords(proj) {
         const a = e.target.closest('a[data-extra]');
         if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
         e.preventDefault();
-        const home = document.documentElement.getAttribute('dir') === 'rtl' ? '/ku' : '/';
+        const home = langPrefix() || '/';
         if (window.history && history.replaceState) history.replaceState(null, '', home);
         closeOverlay(true);
         window.location.assign(a.href);

@@ -16,7 +16,7 @@
      * @var string $view  'index' or 'sheets'
      */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('pj_title').' — '.$brand;
@@ -33,14 +33,14 @@
     // this page with one thing changed, the rest kept: a category picked keeps the status and the search
     $now = ['type' => $type, 'status' => $status, 'q' => $q, 'view' => $view === 'sheets' ? 'sheets' : ''];
     $with = fn (array $change, ?string $lang = null) => site_url('/projects', $lang).$query(array_merge($now, $change));
-    $catName = $categories->mapWithKeys(fn ($c) => [$c->key => bi($c->name, $c->name_ku)]);
+    $catName = $categories->mapWithKeys(fn ($c) => [$c->key => bi($c->name, $c->name_ku, $c->name_ar)]);
     $kinds = fn ($p) => collect($p->categoryKeys())->filter(fn ($k) => $catName->has($k));
 
     $itemList = [
         '@context' => 'https://schema.org', '@type' => 'CollectionPage',
         'name' => $title, 'url' => site_url('/projects'), 'inLanguage' => $lang,
         'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $projects->values()->map(fn ($p, $i) => [
-            '@type' => 'ListItem', 'position' => $i + 1, 'url' => $p->pageUrl($lang), 'name' => bi($p->name, $p->name_ku),
+            '@type' => 'ListItem', 'position' => $i + 1, 'url' => $p->pageUrl($lang), 'name' => bi($p->name, $p->name_ku, $p->name_ar),
         ])->all()],
     ];
 @endphp
@@ -186,7 +186,7 @@
                                 <a class="px-row__link" href="{{ $p->pageUrl($lang) }}">
                                     <span class="px-row__num">{{ $p->num }}</span>
                                     <span class="px-row__thumb" aria-hidden="true"><img src="{{ $p->variantUrl($p->coverImage(), 'sm') }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
-                                    <span class="px-row__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                                    <span class="px-row__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                                     <span class="px-row__type">
                                         <span class="px-row__hatches" aria-hidden="true">@foreach ($kinds($p) as $k)<span class="px-swatch hatch-{{ $hatch[$k] }}"></span>@endforeach</span>
                                         <span class="px-row__typetext">{{ $kinds($p)->map(fn ($k) => $catName[$k])->implode(' · ') }}</span>
@@ -237,7 +237,7 @@
                                 <span class="px-tb__cell px-tb__cell--num"><small>{{ bival('pj_sheet') }}</small><b>{{ $p->num }}</b><small class="px-tb__ref"></small></span>
                                 <span class="px-tb__cell px-tb__cell--name">
                                     <span class="px-tb__head"><small>{{ bival('pj_project') }}</small><span class="px-tb__hatches" aria-hidden="true">@foreach ($kinds($p) as $k)<span class="px-swatch hatch-{{ $hatch[$k] }}"></span>@endforeach</span></span>
-                                    <b><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></b>
+                                    <b><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></b>
                                 </span>
                                 <span class="px-tb__cell"><small>{{ bival('pj_place') }}</small><b><bdi>{{ $p->cityLabel() ?: '—' }}</bdi></b></span>
                                 <span class="px-tb__cell"><small>{{ bival('pj_year') }}</small><b><bdi>{{ $p->endYear() ?: '—' }}</bdi></b></span>

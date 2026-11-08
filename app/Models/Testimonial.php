@@ -32,7 +32,7 @@ class Testimonial extends Model
     public const PHOTO_DISK = 'local';
 
     protected $fillable = [
-        'quote_en', 'quote_ku', 'person_name', 'person_name_ku', 'person_role_en', 'person_role_ku',
+        'quote_en', 'quote_ku', 'quote_ar', 'person_name', 'person_name_ku', 'person_name_ar', 'person_role_en', 'person_role_ku', 'person_role_ar',
         'client_id', 'project_id', 'sort_order', 'is_published',
         'voice', 'portrait', 'sketch_detail', 'media_consent',
     ];
@@ -275,26 +275,38 @@ class Testimonial extends Model
      */
     public function scopeInLanguage($query, string $lang)
     {
-        $column = $lang === 'ku' ? 'quote_ku' : 'quote_en';
+        $column = match ($lang) { 'ku' => 'quote_ku', 'ar' => 'quote_ar', default => 'quote_en' };
 
         return $query->whereNotNull($column)->where($column, '!=', '');
     }
 
     public function quote(string $lang): string
     {
-        return (string) ($lang === 'ku' ? $this->quote_ku : $this->quote_en);
+        return (string) match ($lang) {
+            'ku' => $this->quote_ku,
+            'ar' => filled($this->quote_ar) ? $this->quote_ar : $this->quote_en,
+            default => $this->quote_en,
+        };
     }
 
     public function personName(string $lang): string
     {
+        if ($lang === 'ar' && filled($this->person_name_ar)) {
+            return $this->person_name_ar;
+        }
+
         return $lang === 'ku' && filled($this->person_name_ku) ? $this->person_name_ku : $this->person_name;
     }
 
     /** "Owner, Shaqlawa Villa" — the role, then the client it speaks for. */
     public function attribution(string $lang): string
     {
-        $role = $lang === 'ku' && filled($this->person_role_ku) ? $this->person_role_ku : $this->person_role_en;
+        $role = match (true) {
+            $lang === 'ku' && filled($this->person_role_ku) => $this->person_role_ku,
+            $lang === 'ar' && filled($this->person_role_ar) => $this->person_role_ar,
+            default => $this->person_role_en,
+        };
 
-        return collect([$role, $this->client?->name])->filter()->implode($lang === 'ku' ? '، ' : ', ');
+        return collect([$role, $this->client?->name])->filter()->implode($lang === 'en' ? ', ' : '، ');
     }
 }

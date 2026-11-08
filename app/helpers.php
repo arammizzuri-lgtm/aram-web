@@ -18,12 +18,54 @@ if (! function_exists('setting')) {
 
 if (! function_exists('site_lang')) {
     /**
-     * The language this page is rendered in: 'ku' for everything under /ku
-     * (set by the SiteLanguage middleware), 'en' everywhere else.
+     * The language this page is rendered in: 'ku' for everything under /ku,
+     * 'ar' under /ar (set by the SiteLanguage middleware), 'en' everywhere else.
      */
     function site_lang(): string
     {
-        return app()->getLocale() === 'ku' ? 'ku' : 'en';
+        $locale = app()->getLocale();
+
+        return in_array($locale, ['ku', 'ar'], true) ? $locale : 'en';
+    }
+}
+
+if (! function_exists('site_langs')) {
+    /**
+     * Every language the public site is in, with the name each is known by
+     * in itself — for the language switcher.
+     *
+     * @return array<string, string>
+     */
+    function site_langs(): array
+    {
+        return ['en' => 'English', 'ku' => 'کوردی', 'ar' => 'العربية'];
+    }
+}
+
+if (! function_exists('site_rtl')) {
+    /** Whether a language (default: this page's) is written right to left. */
+    function site_rtl(?string $lang = null): bool
+    {
+        return in_array($lang ?? site_lang(), ['ku', 'ar'], true);
+    }
+}
+
+if (! function_exists('site_lang_urls')) {
+    /**
+     * This page's address in every language — the path the visitor is on,
+     * under /, /ku or /ar, with its query string kept.
+     *
+     * @return array<string, string>
+     */
+    function site_lang_urls(): array
+    {
+        $path = '/'.ltrim(request()->path(), '/');
+        $path = preg_replace('#^/(ku|ar)(?=/|$)#', '', $path) ?: '/';
+        $query = request()->getQueryString();
+
+        return collect(array_keys(site_langs()))->mapWithKeys(fn ($l) => [
+            $l => site_url($path, $l).($query ? '?'.$query : ''),
+        ])->all();
     }
 }
 
@@ -35,8 +77,9 @@ if (! function_exists('site_url')) {
     function site_url(string $path = '/', ?string $lang = null): string
     {
         $path = '/'.ltrim($path, '/');
+        $lang ??= site_lang();
 
-        return url(($lang ?? site_lang()) === 'ku' ? rtrim('/ku'.$path, '/') : $path);
+        return url(in_array($lang, ['ku', 'ar'], true) ? rtrim('/'.$lang.$path, '/') : $path);
     }
 }
 
@@ -105,14 +148,25 @@ if (! function_exists('site_date')) {
      */
     function site_date(\DateTimeInterface $date, ?string $lang = null, bool $monthOnly = false): string
     {
-        if (($lang ?? site_lang()) !== 'ku') {
+        $lang ??= site_lang();
+        if ($lang === 'en') {
             return $date->format($monthOnly ? 'F Y' : 'j F Y');
+        }
+
+        $digits = fn (string $s) => strtr($s, ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
+            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']);
+
+        // Arabic as written in Iraq: the Syriac month names, "١٢ تشرين الأول ٢٠٢٦"
+        if ($lang === 'ar') {
+            $months = ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران',
+                'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول'];
+            $text = $months[(int) $date->format('n') - 1].' '.$digits($date->format('Y'));
+
+            return $monthOnly ? $text : $digits($date->format('j')).' '.$text;
         }
 
         $months = ['کانوونی دووەم', 'شوبات', 'ئازار', 'نیسان', 'ئایار', 'حوزەیران',
             'تەممووز', 'ئاب', 'ئەیلوول', 'تشرینی یەکەم', 'تشرینی دووەم', 'کانوونی یەکەم'];
-        $digits = fn (string $s) => strtr($s, ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
-            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']);
         $text = $months[(int) $date->format('n') - 1].'ی '.$digits($date->format('Y'));
 
         return $monthOnly ? $text : $digits($date->format('j')).'ی '.$text;
@@ -121,13 +175,61 @@ if (! function_exists('site_date')) {
 
 if (! function_exists('bi')) {
     /**
-     * The current language's half of an English/Kurdish pair — for the values
-     * that come from the database rather than SiteText. A blank Kurdish value
-     * falls back to the English one, as the language toggle does.
+     * The current language's version of a value that comes from the database
+     * rather than SiteText — English, Kurdish and (where the record has one)
+     * Arabic. A blank translation falls back to the English, as the language
+     * toggle does: an Arabic page shows English where no Arabic was written,
+     * never the Kurdish.
      */
-    function bi(?string $en, ?string $ku): string
+    function bi(?string $en, ?string $ku, ?string $ar = null): string
     {
-        return site_lang() === 'ku' && filled($ku) ? (string) $ku : (string) $en;
+        return match (site_lang()) {
+            'ku' => filled($ku) ? (string) $ku : (string) $en,
+            'ar' => filled($ar) ? (string) $ar : (string) $en,
+            default => (string) $en,
+        };
+    }
+}
+
+if (! function_exists('bi_record')) {
+    /**
+     * A record's text in a given language (not necessarily the page's): the
+     * Kurdish or the Arabic where it was written, the English otherwise.
+     */
+    function bi_record(string $lang, ?string $en, ?string $ku, ?string $ar = null): ?string
+    {
+        return match ($lang) {
+            'ku' => filled($ku) ? $ku : $en,
+            'ar' => filled($ar) ? $ar : $en,
+            default => $en,
+        };
+    }
+}
+
+if (! function_exists('rtl_slot')) {
+    /**
+     * What the browser should hold in a record's "_ku" slot on this page.
+     *
+     * The scripts read a page's second language from its *_ku fields, its
+     * data-ku attributes and its .ku strings, whenever the page is right to
+     * left. On an Arabic page, that slot carries the Arabic (or, where none
+     * was written, the English) — so every script works in Arabic unchanged.
+     */
+    function rtl_slot(?string $en, ?string $ku, ?string $ar = null): ?string
+    {
+        return site_lang() === 'ar' ? (filled($ar) ? $ar : $en) : $ku;
+    }
+}
+
+if (! function_exists('slot')) {
+    /**
+     * The text to show from an English / second-slot pair (see rtl_slot):
+     * the English on an English page, the second slot — Kurdish or Arabic —
+     * on a right-to-left one, falling back to the English when it is blank.
+     */
+    function slot(?string $en, ?string $second): string
+    {
+        return site_lang() !== 'en' && filled($second) ? (string) $second : (string) $en;
     }
 }
 
@@ -139,7 +241,11 @@ if (! function_exists('bival')) {
      */
     function bival(string $key): string
     {
-        return site_lang() === 'ku' ? SiteText::ku($key) : SiteText::en($key);
+        return match (site_lang()) {
+            'ku' => SiteText::ku($key),
+            'ar' => SiteText::ar($key),
+            default => SiteText::en($key),
+        };
     }
 }
 
@@ -162,7 +268,10 @@ if (! function_exists('bitext')) {
      */
     function bitext(string $key): string
     {
-        return 'dir="auto" data-en="'.e(SiteText::en($key)).'" data-ku="'.e(SiteText::ku($key)).'"';
+        // on an Arabic page the "ku" half carries the Arabic (see rtl_slot)
+        $second = site_lang() === 'ar' ? SiteText::ar($key) : SiteText::ku($key);
+
+        return 'dir="auto" data-en="'.e(SiteText::en($key)).'" data-ku="'.e($second).'"';
     }
 }
 

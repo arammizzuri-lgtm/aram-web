@@ -1,7 +1,7 @@
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\JobOpening> $openings */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('careers_label').' — '.$brand;

@@ -873,9 +873,14 @@ body.is-loaded .hero__actions { animation: heroFade .9s var(--ease-out) .68s for
 /* mobile-only language switch — the nav pill vanishes with the nav bar
    below 768px; this small glass KU/EN badge sits fixed in the top-left
    corner, opposite the hamburger */
+/* a badge for each of the two other languages (links, since there are three) */
 .hero__lang {
-    display: none;
+    display: none; gap: 6px;
     position: fixed; top: 16px; left: 16px; z-index: 950;
+    opacity: 0; transform: translateY(-8px);
+}
+.hero__lang a {
+    display: block;
     padding: 8px 12px; border-radius: 9px;
     font-family: var(--font);
     font-size: 12px; font-weight: 600; letter-spacing: .14em;
@@ -884,11 +889,19 @@ body.is-loaded .hero__actions { animation: heroFade .9s var(--ease-out) .68s for
     border: 1px solid rgba(245,197,24,.4);
     backdrop-filter: blur(12px) saturate(150%); -webkit-backdrop-filter: blur(12px) saturate(150%);
     box-shadow: 0 8px 20px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.15);
-    opacity: 0; transform: translateY(-8px);
 }
+.hero__lang a:not([lang="en"]) { letter-spacing: 0; font-size: 13px; font-weight: 500; }
 body.is-loaded .hero__lang { animation: heroFade .9s var(--ease-out) 1.15s forwards; }
-.hero__lang:active { transform: scale(.94); }
-@media (max-width: 768px) { .hero__lang { display: block; } }
+.hero__lang a:active { transform: scale(.94); }
+@media (max-width: 768px) { .hero__lang { display: flex; } }
+/* the language links at the foot of the phone menu */
+.mobile-menu__langs { display: flex; gap: 10px; margin-top: 18px; }
+.mobile-menu__lang {
+    padding: 8px 16px; border-radius: 100px; font-size: 14px;
+    color: var(--gold); border: 1px solid rgba(245,197,24,.4);
+}
+.lang-toggle { text-decoration: none; display: inline-block; }
+.lang-toggle + .lang-toggle { margin-inline-start: 6px; }
 @media (prefers-reduced-motion: reduce) { .hero__lang { transform: none !important; opacity: 1 !important; } }
 
 /* --- drawing sheet: frame + registration marks --- */

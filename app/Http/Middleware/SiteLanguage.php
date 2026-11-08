@@ -18,7 +18,7 @@ class SiteLanguage
 {
     public function handle(Request $request, Closure $next, string $lang = 'en'): Response
     {
-        app()->setLocale($lang === 'ku' ? 'ku' : 'en');
+        app()->setLocale(in_array($lang, ['ku', 'ar'], true) ? $lang : 'en');
 
         return $next($request);
     }

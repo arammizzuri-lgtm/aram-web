@@ -25,7 +25,7 @@ class Project extends Model
     public const SIZES = ['default', 'wide', 'large'];
 
     protected $fillable = [
-        'num', 'name', 'slug', 'name_ku', 'category', 'categories', 'status', 'size', 'area', 'typology',
+        'num', 'name', 'slug', 'name_ku', 'name_ar', 'typology_ar', 'location_ar', 'desc_ar', 'narrative_ar', 'category', 'categories', 'status', 'size', 'area', 'typology',
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
         'desc', 'desc_ku', 'narrative', 'narrative_ku', 'materials',
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
@@ -194,10 +194,24 @@ class Project extends Model
         return $this->is_published && ! $this->map_only && filled($this->slug) && $this->coverImage() !== null;
     }
 
-    /** Absolute URL of the project's page, in English or Kurdish. */
+    /**
+     * One of the project's texts in a language (default: the page's) —
+     * name, desc, narrative, typology or location: the Kurdish or Arabic
+     * where it was written (the fields that have one), else the English.
+     */
+    public function tr(string $field, ?string $lang = null): ?string
+    {
+        $lang ??= site_lang();
+        $en = $this->{$field};
+        $ku = in_array($field, ['name', 'desc', 'narrative'], true) ? $this->{$field.'_ku'} : null;
+
+        return bi_record($lang, $en, $ku, $this->{$field.'_ar'} ?? null);
+    }
+
+    /** Absolute URL of the project's page, in English, Kurdish or Arabic. */
     public function pageUrl(string $lang = 'en'): string
     {
-        return url(($lang === 'ku' ? '/ku' : '').'/projects/'.$this->slug);
+        return site_url('/projects/'.$this->slug, $lang);
     }
 
     /** Clients' words about this project (shown on its page). */
@@ -464,11 +478,33 @@ class Project extends Model
         return array_map(fn ($k) => self::categoryKeyLabel($k), $this->categoryKeys());
     }
 
-    /** City name — the structured field, falling back to the location string. */
-    public function cityLabel(): string
+    /**
+     * City name — the structured field, falling back to the location string —
+     * in English, or on an Arabic page by the name Arabic gives it ("Soran,
+     * Erbil" → "سوران، أربيل"). A place not in the list keeps its own name.
+     */
+    public function cityLabel(?string $lang = null): string
     {
-        return $this->city ?: trim(explode(',', (string) $this->location)[0] ?? '');
+        $city = $this->city ?: trim(explode(',', (string) $this->location)[0] ?? '');
+        if (($lang ?? site_lang()) !== 'ar' || $city === '') {
+            return $city;
+        }
+
+        return collect(explode(',', $city))
+            ->map(fn ($part) => self::ARABIC_PLACES[mb_strtolower(trim($part))] ?? trim($part))
+            ->implode('، ');
     }
+
+    /** Places the studio works in, as Arabic names them (for cityLabel). */
+    private const ARABIC_PLACES = [
+        'erbil' => 'أربيل', 'hawler' => 'أربيل', 'soran' => 'سوران', 'mergasur' => 'ميركه سور',
+        'massif' => 'مصيف', 'shaqlawa' => 'شقلاوة', 'koya' => 'كويه', 'ranya' => 'رانية',
+        'dohuk' => 'دهوك', 'duhok' => 'دهوك', 'zakho' => 'زاخو', 'amadiyah' => 'العمادية', 'akre' => 'عقرة',
+        'sulaymaniyah' => 'السليمانية', 'sulaimani' => 'السليمانية', 'halabja' => 'حلبجة',
+        'kirkuk' => 'كركوك', 'baghdad' => 'بغداد', 'mosul' => 'الموصل', 'basra' => 'البصرة',
+        'kurdistan' => 'كوردستان', 'kurdistan region' => 'إقليم كوردستان', 'iraq' => 'العراق',
+        'madrid' => 'مدريد', 'spain' => 'إسبانيا', 'diyarbakır' => 'ديار بكر', 'diyarbakir' => 'ديار بكر',
+    ];
 
     /** End year = last 4-digit number found in the year string. */
     public function endYear(): string
@@ -481,7 +517,7 @@ class Project extends Model
     /** "Residential · Exterior · Erbil · 2024" — the meta line on each card. */
     public function metaLabel(): string
     {
-        return collect([...$this->categoryLabels(), $this->cityLabel(), $this->endYear()])
+        return collect([...$this->categoryLabels(), $this->cityLabel('en'), $this->endYear()])
             ->filter()->implode(' · ');
     }
 
@@ -556,13 +592,20 @@ class Project extends Model
      */
     public function statusLabel(string $lang = 'en'): string
     {
-        $ku = [
-            'Completed' => 'تەواوبوو',
-            'Under Construction' => 'لەژێر بنیاتنان',
-            'Concept / Planning' => 'بیرۆکە و پلاندانان',
+        $names = [
+            'ku' => [
+                'Completed' => 'تەواوبوو',
+                'Under Construction' => 'لەژێر بنیاتنان',
+                'Concept / Planning' => 'بیرۆکە و پلاندانان',
+            ],
+            'ar' => [
+                'Completed' => 'مُنجز',
+                'Under Construction' => 'قيد الإنشاء',
+                'Concept / Planning' => 'فكرة / تخطيط',
+            ],
         ];
 
-        return $lang === 'ku' && isset($ku[$this->status]) ? $ku[$this->status] : (string) $this->status;
+        return $names[$lang][$this->status] ?? (string) $this->status;
     }
 
     /**
@@ -573,9 +616,13 @@ class Project extends Model
      */
     public function categoryLabelsIn(string $lang = 'en'): array
     {
-        $ku = $lang === 'ku' ? Category::kurdishMap() : [];
+        $names = match ($lang) {
+            'ku' => Category::kurdishMap(),
+            'ar' => Category::arabicMap(),
+            default => [],
+        };
 
-        return array_map(fn ($k) => $ku[$k] ?? self::categoryKeyLabel($k), $this->categoryKeys());
+        return array_map(fn ($k) => $names[$k] ?? self::categoryKeyLabel($k), $this->categoryKeys());
     }
 
     public function statusBadge(): string
@@ -693,8 +740,10 @@ class Project extends Model
      */
     public function voice(string $lang = 'en'): ?array
     {
-        $other = $lang === 'ku' ? 'en' : 'ku';
-        foreach ([$lang, $other] as $l) {
+        // his own voice, in the page's language where he recorded it; on an
+        // Arabic page, the English recording before the Kurdish
+        $order = $lang === 'ku' ? ['ku', 'en'] : ['en', 'ku'];
+        foreach ($order as $l) {
             $file = $this->{'voice_'.$l};
             if (filled($file)) {
                 return ['url' => asset('storage/'.$file), 'type' => Testimonial::audioType($file), 'lang' => $l];

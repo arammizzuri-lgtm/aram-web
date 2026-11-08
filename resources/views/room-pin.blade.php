@@ -1,8 +1,8 @@
 @php
     /** @var \App\Models\ClientRoom $room */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
-    $name = bi($room->project->name, $room->project->name_ku);
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
+    $name = bi($room->project->name, $room->project->name_ku, $room->project->name_ar);
     $brand = trim(explode('|', bival('seo_title'))[0]);
 @endphp
 <!DOCTYPE html>

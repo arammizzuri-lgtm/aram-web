@@ -22,6 +22,8 @@ class CategoriesTable
                 TextColumn::make('name')->label('Name (EN)')->searchable()->sortable(),
                 TextColumn::make('name_ku')->label('Name (KU)')
                     ->extraAttributes(['dir' => 'rtl'])->toggleable(),
+                TextColumn::make('name_ar')->label('Name (AR)')
+                    ->extraAttributes(['dir' => 'rtl'])->toggleable(),
                 TextColumn::make('key')->badge()->color('primary'),
                 // Counts every project carrying the category, not just the ones
                 // where it happens to be the primary pick.

@@ -24,6 +24,9 @@ class ClientForm
                     TextInput::make('sub_ku')
                         ->label('Category (Kurdish)')->maxLength(120)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    TextInput::make('sub_ar')
+                        ->label('Category (Arabic)')->maxLength(120)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     Toggle::make('is_published')
                         ->label('Published (visible on site)')->default(true)->columnSpanFull(),
                 ]),

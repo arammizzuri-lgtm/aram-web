@@ -35,6 +35,8 @@ class TestimonialForm
                         ->requiredWithout('quote_ku')->validationAttribute('quote'),
                     Textarea::make('quote_ku')->label('Quote (Kurdish)')->rows(5)
                         ->extraInputAttributes($rtl),
+                    Textarea::make('quote_ar')->label('Quote (Arabic)')->rows(5)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     TextEntry::make('reading_status')->label('Read aloud')
                         ->visibleOn('edit')->columnSpanFull()
                         ->state(fn (Testimonial $record) => self::readingStatus($record))
@@ -56,10 +58,14 @@ class TestimonialForm
                     TextInput::make('person_name')->label('Name (English)')->required()->maxLength(120),
                     TextInput::make('person_name_ku')->label('Name (Kurdish)')->maxLength(120)
                         ->extraInputAttributes($rtl),
+                    TextInput::make('person_name_ar')->label('Name (Arabic)')->maxLength(120)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     TextInput::make('person_role_en')->label('Role (English)')->maxLength(120)
                         ->placeholder('Owner · Managing Director · Homeowner'),
                     TextInput::make('person_role_ku')->label('Role (Kurdish)')->maxLength(120)
                         ->extraInputAttributes($rtl),
+                    TextInput::make('person_role_ar')->label('Role (Arabic)')->maxLength(120)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     Select::make('client_id')->label('Client (optional)')
                         ->options(fn () => Client::query()->orderBy('sort_order')->pluck('name', 'id'))
                         ->searchable()->native(false)

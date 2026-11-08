@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 class Client extends Model
 {
     protected $fillable = [
-        'name', 'sub_en', 'sub_ku', 'mark', 'logo', 'logo_mono', 'sort_order', 'is_published',
+        'name', 'sub_en', 'sub_ku', 'sub_ar', 'mark', 'logo', 'logo_mono', 'sort_order', 'is_published',
     ];
 
     protected $casts = [

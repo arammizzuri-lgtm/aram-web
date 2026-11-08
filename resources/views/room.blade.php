@@ -7,8 +7,8 @@
      * @var bool $preview  a signed-in studio account, looking without the PIN
      */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
-    $name = bi($project->name, $project->name_ku);
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
+    $name = bi($project->name, $project->name_ku, $project->name_ar);
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $base = site_url('/room/'.$room->token);
     $cover = $project->orderedVariantUrls('lg')[0] ?? null;

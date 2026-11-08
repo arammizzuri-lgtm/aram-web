@@ -9,7 +9,7 @@
      * @var bool $preview  shown to the studio ahead of its dates
      */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = $greeting->title($lang).' — '.$brand;
@@ -83,8 +83,8 @@
                     <fieldset class="gc-field">
                         <legend class="gc-field__label">{{ bival('card_lang') }}</legend>
                         <div class="gc-seg">
-                            <label><input type="radio" name="gcLang" value="ku" @checked($isKu)><span lang="ckb">کوردی</span></label>
-                            <label><input type="radio" name="gcLang" value="en" @checked(! $isKu)><span lang="en">English</span></label>
+                            <label><input type="radio" name="gcLang" value="ku" @checked($lang === 'ku')><span lang="ckb">کوردی</span></label>
+                            <label><input type="radio" name="gcLang" value="en" @checked($lang !== 'ku')><span lang="en">English</span></label>
                         </div>
                     </fieldset>
 
@@ -95,7 +95,7 @@
                                 @foreach ($photos as $i => $photo)
                                     <label class="gc-photo">
                                         <input type="radio" name="gcPhoto" value="{{ $i }}" @checked($i === 0)>
-                                        <img src="{{ $photo['url'] }}" alt="{{ $isKu ? $photo['name_ku'] : $photo['name_en'] }}" loading="lazy" decoding="async" style="object-position: {{ $photo['pos'] }}">
+                                        <img src="{{ $photo['url'] }}" alt="{{ $lang === 'ku' ? $photo['name_ku'] : $photo['name_en'] }}" loading="lazy" decoding="async" style="object-position: {{ $photo['pos'] }}">
                                     </label>
                                 @endforeach
                             </div>

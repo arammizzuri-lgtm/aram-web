@@ -30,6 +30,7 @@ class Architect
     {
         $text = match ($lang ?? site_lang()) {
             'ku' => SiteText::ku($key) ?: SiteText::en($key),
+            'ar' => SiteText::ar($key),
             default => SiteText::en($key),
         };
 
@@ -60,7 +61,11 @@ class Architect
     public static function bio(?string $lang = null): array
     {
         $lang ??= site_lang();
-        $pick = fn (string $key) => $lang === 'ku' ? (SiteText::ku($key) ?: SiteText::en($key)) : SiteText::en($key);
+        $pick = fn (string $key) => match ($lang) {
+            'ku' => SiteText::ku($key) ?: SiteText::en($key),
+            'ar' => SiteText::ar($key),
+            default => SiteText::en($key),
+        };
 
         $own = trim((string) $pick('arch_bio'));
         if ($own !== '') {

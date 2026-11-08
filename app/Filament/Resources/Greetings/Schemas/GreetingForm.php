@@ -25,9 +25,13 @@ class GreetingForm
                     TextInput::make('title_en')->label('Greeting (English)')->required()->maxLength(60)->placeholder('Happy Newroz'),
                     TextInput::make('title_ku')->label('Greeting (Kurdish)')->maxLength(60)->placeholder('نەورۆزتان پیرۆز بێت')
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    TextInput::make('title_ar')->label('Greeting (Arabic)')->maxLength(60)->placeholder('نەورۆزتان پیرۆز بێت')
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     Textarea::make('text_en')->label('Line under it (English)')->rows(2)->maxLength(160),
                     Textarea::make('text_ku')->label('Line under it (Kurdish)')->rows(2)->maxLength(160)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    Textarea::make('text_ar')->label('Line under it (Arabic)')->rows(2)->maxLength(160)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
                     Select::make('project_id')->label('Photographs from')
                         ->options(fn () => Project::publishedOrdered()->get()->filter(fn (Project $p) => $p->hasPage())->pluck('name', 'id')->all())
                         ->searchable()->native(false)->placeholder('The covers of your first projects')

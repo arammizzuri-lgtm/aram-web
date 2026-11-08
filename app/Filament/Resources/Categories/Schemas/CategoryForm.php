@@ -29,6 +29,11 @@ class CategoryForm
                         ->label('Name (Kurdish)')
                         ->maxLength(80)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                    TextInput::make('name_ar')
+                        ->label('Name (Arabic)')
+                        ->maxLength(80)
+                        ->helperText('Shown on the Arabic pages (/ar). Left blank, the English name is used.')
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
                     TextInput::make('key')
                         ->label('Key (slug)')
                         ->required()->maxLength(60)

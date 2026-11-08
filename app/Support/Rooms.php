@@ -16,7 +16,11 @@ class Rooms
     {
         $lang ??= site_lang();
 
-        return $lang === 'ku' ? SiteText::ku('room_'.$key) : SiteText::en('room_'.$key);
+        return match ($lang) {
+            'ku' => SiteText::ku('room_'.$key),
+            'ar' => SiteText::ar('room_'.$key),
+            default => SiteText::en('room_'.$key),
+        };
     }
 
     /** @return array<string, string> key => name, in the page's language */

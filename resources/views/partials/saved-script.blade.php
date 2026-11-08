@@ -4,7 +4,7 @@
      language in place. --}}
 @php
     $savedText = collect(['save' => 'save_add', 'saved' => 'save_added', 'kept' => 'saved_kept'])
-        ->map(fn ($key) => ['en' => \App\Support\SiteText::en($key), 'ku' => \App\Support\SiteText::ku($key)]);
+        ->map(fn ($key) => ['en' => \App\Support\SiteText::en($key), 'ku' => \App\Support\SiteText::second($key)]);
 @endphp
 <script type="application/json" id="savedText">{!! json_encode($savedText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
 <script src="{{ asset('saved.js') }}?v={{ filemtime(public_path('saved.js')) }}" defer></script>

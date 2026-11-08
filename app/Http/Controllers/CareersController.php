@@ -53,7 +53,7 @@ class CareersController extends Controller
                         $fail('The CV must be a PDF file.');
                     }
                 }],
-            'lang' => ['nullable', Rule::in(['en', 'ku'])],
+            'lang' => ['nullable', Rule::in(['en', 'ku', 'ar'])],
         ]);
 
         $file = $request->file('cv');

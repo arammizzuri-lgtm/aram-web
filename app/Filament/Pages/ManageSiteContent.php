@@ -48,6 +48,7 @@ class ManageSiteContent extends Page
         foreach (SiteText::map() as $key => $meta) {
             $state["{$key}_en"] = SiteText::en($key);
             $state["{$key}_ku"] = SiteText::ku($key);
+            $state["{$key}_ar"] = SiteText::ar($key);
         }
 
         // Non-text singles come straight from the settings table; the social
@@ -75,6 +76,7 @@ class ManageSiteContent extends Page
                 $type = $def[3] ?? 'text';
                 $fields[] = $this->biField("{$key}_en", "{$label} — EN", $type, false);
                 $fields[] = $this->biField("{$key}_ku", "{$label} — KU", $type, true);
+                $fields[] = $this->biField("{$key}_ar", "{$label} — AR", $type, true, 'ar');
             }
 
             foreach ($this->extrasFor($tabName) as $extra) {
@@ -82,7 +84,8 @@ class ManageSiteContent extends Page
             }
 
             $tabs[] = Tab::make($tabName)->schema([
-                Grid::make(2)->schema($fields),
+                // English, Kurdish, Arabic side by side
+                Grid::make(3)->schema($fields),
             ]);
         }
 
@@ -183,14 +186,14 @@ class ManageSiteContent extends Page
 
     /* ---- field builders ---- */
 
-    private function biField(string $key, string $label, string $type, bool $rtl): TextInput|Textarea
+    private function biField(string $key, string $label, string $type, bool $rtl, string $lang = 'ckb'): TextInput|Textarea
     {
         $field = $type === 'area'
             ? Textarea::make($key)->label($label)->rows(3)
             : TextInput::make($key)->label($label)->maxLength(3000);
 
         if ($rtl) {
-            $field->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']);
+            $field->extraInputAttributes(['dir' => 'rtl', 'lang' => $lang]);
         }
 
         return $field;

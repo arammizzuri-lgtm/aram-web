@@ -42,9 +42,13 @@ class UpdatesRelationManager extends RelationManager
                 ->placeholder('Structure complete to roof level'),
             TextInput::make('title_ku')->label('Headline (Kurdish)')->maxLength(160)
                 ->extraInputAttributes($rtl),
+            TextInput::make('title_ar')->label('Headline (Arabic)')->maxLength(160)
+                ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
             Textarea::make('note_en')->label('Note (English)')->rows(3),
             Textarea::make('note_ku')->label('Note (Kurdish)')->rows(3)
                 ->extraInputAttributes($rtl),
+            Textarea::make('note_ar')->label('Note (Arabic)')->rows(3)
+                ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
             FileUpload::make('images')->label('Site photographs')
                 ->multiple()->image()->reorderable()->appendFiles()
                 ->directory('projects/updates')->disk('public')->visibility('public')

@@ -61,6 +61,7 @@ $pages = function (string $lang) {
 
 $pages('en');
 Route::prefix('ku')->name('ku.')->group(fn () => $pages('ku'));
+Route::prefix('ar')->name('ar.')->group(fn () => $pages('ar'));
 
 /*
 | A client's private room: a secret link and a PIN (RoomController). In both
@@ -84,6 +85,7 @@ $rooms = function (string $lang) {
 
 $rooms('en');
 Route::prefix('ku')->name('ku.')->group(fn () => $rooms('ku'));
+Route::prefix('ar')->name('ar.')->group(fn () => $rooms('ar'));
 
 // What a site board's QR code says (BoardController): short, so the code
 // reads from across a street; on to the project's page, counted as a board.

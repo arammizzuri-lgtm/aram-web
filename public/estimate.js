@@ -125,7 +125,7 @@
             name: value('name'), phone: value('phone'), email: value('email'),
             message: value('message'), website: value('website'),     // the last is the spam trap
             estimate: Object.fromEntries(params()),
-            lang: isKu() ? 'ku' : 'en',
+            lang: document.documentElement.getAttribute('lang') || 'en',   // en, ku or ar
             page: location.pathname,
         };
         Object.keys(body).forEach(k => { if (body[k] === '') delete body[k]; });

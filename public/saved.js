@@ -59,7 +59,7 @@
     /** The /saved page for a list, in the language on screen. */
     function url(list) {
         list = list || read();
-        return (isKu() ? '/ku' : '') + '/saved' + (list.length ? '?p=' + list.join('.') : '');
+        return ({ ku: '/ku', ar: '/ar' }[document.documentElement.getAttribute('lang')] || '') + '/saved' + (list.length ? '?p=' + list.join('.') : '');
     }
 
     /* ---- Hearts --------------------------------------------

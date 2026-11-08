@@ -2,7 +2,7 @@
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\Project> $projects */
     $lang = site_lang();
-    $isKu = $lang === 'ku';
+    $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $path = Architect::PATH;
 
@@ -221,7 +221,7 @@
                                 <img src="{{ $p->coverThumbUrl() }}" alt="{{ $p->name }} — {{ strip_tags(bival('arch_credit')) }}: {{ strip_tags(bival('arch_name')) }}" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
                             </span>
                             <span class="pp-card__num">{{ $p->num }}</span>
-                            <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku) }}</bdi></span>
+                            <span class="pp-card__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
                             <span class="pp-card__meta">{!! collect([...$p->categoryLabelsIn($lang), $p->cityLabel(), $p->endYear()])->filter()->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</span>
                         </a>
                     @endforeach
