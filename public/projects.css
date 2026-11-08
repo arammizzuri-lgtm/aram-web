@@ -450,6 +450,58 @@
     .px-tb__cell--num b { font-size: 20px; }
 }
 
+/* ---- The wall's caption (computer and tablet) -------------------------------
+   The boxed title block covered up to half of a smaller picture, so on the
+   wall it becomes a slim caption on a soft shade along the picture's bottom
+   edge: the number and the project on one line. Place, year and status
+   follow on a second, smaller line — always on the large sheets, and on the
+   others when pointed at or focused. The picture stays the thing you see. */
+@media (min-width: 761px) {
+    .px-tb,
+    .px-sheet--l .px-tb {
+        inset: auto 7px 7px 7px; width: auto;
+        display: grid; grid-template-columns: auto auto auto minmax(0, 1fr); align-items: baseline;
+        column-gap: 12px; row-gap: 0;
+        padding: 44px 16px 12px;
+        background: linear-gradient(to top, rgba(9,9,9,.82) 0%, rgba(9,9,9,.45) 55%, rgba(9,9,9,0) 100%);
+        border: 0; -webkit-backdrop-filter: none; backdrop-filter: none;
+        pointer-events: none;
+    }
+    .px-sheet .px-tb__cell { padding: 0; border: 0; gap: 0; }
+    .px-tb__cell small,
+    .px-tb__head { display: none; }
+    .px-tb__cell b { text-shadow: 0 1px 8px rgba(0,0,0,.6); }
+
+    /* line one: the number, then the project */
+    .px-sheet .px-tb__cell--num { grid-row: 1; grid-column: 1; }
+    .px-sheet .px-tb__cell--num b { font-size: 17px; }
+    .px-sheet--l .px-tb__cell--num b { font-size: 22px; }
+    .px-sheet .px-tb__cell--name { grid-row: 1; grid-column: 2 / -1; }
+    .px-sheet .px-tb__cell--name b { font-size: 14.5px; font-weight: 400; }
+    .px-sheet--l .px-tb__cell--name b { font-size: 19px; font-weight: 300; }
+
+    /* line two: place · year · status, under the project's name */
+    .px-sheet .px-tb__cell:nth-child(n+3) { grid-row: 2; }
+    .px-sheet .px-tb__cell:nth-child(3) { grid-column: 2; }
+    .px-sheet .px-tb__cell:nth-child(4) { grid-column: 3; }
+    .px-sheet .px-tb__cell--status { display: flex; grid-column: 4; }
+    .px-sheet .px-tb__cell:nth-child(n+3) b { font-size: 11px; color: rgba(255,255,255,.78); }
+    .px-sheet .px-tb__cell.px-tb__cell--status b { font-size: 9.5px; }
+    .px-sheet--l .px-tb__cell:nth-child(n+3) { padding-top: 6px; }
+
+    /* the smaller sheets keep line two folded until pointed at; their status
+       already rides on the picture */
+    .px-sheet:not(.px-sheet--l) .px-tb__cell:nth-child(n+3) { max-height: 0; opacity: 0; }
+    .px-sheet:not(.px-sheet--l) .px-tb__cell--status { display: none; }
+    .px-sheet:not(.px-sheet--l) .px-sheet__link:hover .px-tb__cell:nth-child(n+3),
+    .px-sheet:not(.px-sheet--l) .px-sheet__link:focus-visible .px-tb__cell:nth-child(n+3) {
+        max-height: 30px; padding-block: 6px 0; opacity: 1;
+    }
+
+    /* the status chip on the picture, quieter */
+    .px-sheet__status { top: 16px; inset-inline-start: 16px; padding: 4px 9px; font-size: 8.5px; background: rgba(9,9,9,.5); }
+}
+
 /* the disc that goes with the pointer over the wall (projects.js) */
 .px-disc {
     position: fixed; top: 0; left: 0; z-index: 40; width: 88px; height: 88px; margin: -44px 0 0 -44px;
