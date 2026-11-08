@@ -4,8 +4,11 @@
     $isKu = site_rtl($lang);   // right to left: Kurdish or Arabic
     $other = $isKu ? 'en' : 'ku';
     $brand = trim(explode('|', bival('seo_title'))[0]);
-    $title = bival('careers_label').' — '.$brand;
-    $description = \Illuminate\Support\Str::limit(bival('careers_intro'), 160);
+    // worded the way people look for work ("architecture jobs in Erbil")
+    $title = bival('careers_seo_title').' | '.$brand;
+    $description = \Illuminate\Support\Str::limit(bival('careers_seo_desc'), 200);
+    $faq = collect(range(1, 4))->map(fn ($i) => [bival("careers_faq{$i}_q"), bival("careers_faq{$i}_a")])
+        ->filter(fn ($qa) => filled($qa[0]) && filled($qa[1]))->values();
     $ogImage = asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg'));
 
     // Each open position as a JobPosting, so it can appear in Google's job search.
@@ -26,6 +29,21 @@
             'addressLocality' => 'Erbil', 'addressRegion' => 'Kurdistan Region', 'addressCountry' => 'IQ',
         ]],
     ]))->values()->all();
+
+    // The open-application page itself, and its questions. (Not a JobPosting:
+    // Google only allows those for real, specific openings.)
+    $pageGraph = [
+        ['@type' => 'WebPage', 'name' => $title, 'description' => $description, 'url' => site_url('/careers'), 'inLanguage' => $lang,
+            'about' => ['@id' => url('/').'#studio'], 'breadcrumb' => ['@type' => 'BreadcrumbList', 'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => $brand, 'item' => site_url('/')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => bival('careers_label'), 'item' => site_url('/careers')],
+            ]]],
+    ];
+    if ($faq->isNotEmpty()) {
+        $pageGraph[] = ['@type' => 'FAQPage', 'mainEntity' => $faq->map(fn ($qa) => ['@type' => 'Question', 'name' => $qa[0],
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => $qa[1]]])->all()];
+    }
+    $postings = array_merge($pageGraph, $postings);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ $isKu ? 'rtl' : 'ltr' }}">
@@ -110,6 +128,29 @@
             @endforelse
         </section>
 
+        {{-- Open applications: always here, open positions or not --}}
+        <section class="cr-oa" aria-labelledby="crOaHeading">
+            <p class="pp-label">{{ bival('careers_oa_label') }}</p>
+            <h2 class="cr-oa__title" id="crOaHeading">{{ bival('careers_oa_title') }}</h2>
+            <p class="cr-oa__text">{{ bival('careers_oa_text') }}</p>
+            <ul class="cr-who">
+                @foreach (range(1, 4) as $i)
+                    @if (filled(bival("careers_who{$i}_t")))
+                        <li class="cr-who__item">
+                            <span class="cr-who__num" aria-hidden="true">0{{ $i }}</span>
+                            <h3 class="cr-who__title">{{ bival("careers_who{$i}_t") }}</h3>
+                            <p class="cr-who__text">{{ bival("careers_who{$i}_d") }}</p>
+                        </li>
+                    @endif
+                @endforeach
+            </ul>
+            <p class="cr-oa__send">{{ bival('careers_send_what') }}</p>
+            <a class="cr-job__apply" href="#apply" data-apply="">
+                <span>{{ bival('careers_oa_btn') }}</span>
+                <span class="pp-arrow" aria-hidden="true">→</span>
+            </a>
+        </section>
+
         {{-- The application. The CV goes to the private disk; only the studio's
              admin can open it. Messages are in the page's language (careers.js). --}}
         <section class="cr-apply" id="apply">
@@ -174,6 +215,18 @@
                 </div>
             </form>
         </section>
+
+        @if ($faq->isNotEmpty())
+            <section class="cr-faq" aria-labelledby="crFaqHeading">
+                <h2 class="cr-faq__title" id="crFaqHeading">{{ bival('careers_faq_title') }}</h2>
+                @foreach ($faq as [$q, $a])
+                    <details class="cr-faq__item">
+                        <summary>{{ $q }}</summary>
+                        <p>{{ $a }}</p>
+                    </details>
+                @endforeach
+            </section>
+        @endif
     </main>
 
     @include('partials.page-foot')

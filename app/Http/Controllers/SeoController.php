@@ -122,6 +122,7 @@ class SeoController extends Controller
         if (\App\Models\Partner::anyPublished()) {
             $out[] = '- [Partners & suppliers the studio builds with]('.site_url('/partners', 'en').')';
         }
+        $out[] = '- [Careers — open applications welcome all year from architects, interior designers, fresh graduates and architecture students (training) in Erbil and Kurdistan]('.site_url('/careers', 'en').')';
         $out[] = '- [Erbil architecture walk — a guide to the city\'s buildings by Aram Mizuri]('.site_url('/erbil-walk', 'en').')';
         $out[] = '';
 

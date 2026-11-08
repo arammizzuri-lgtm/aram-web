@@ -481,6 +481,36 @@ class SiteText
                 'careers_success'   => ['Form — received', "✓ Application received — thank you. We read every one, and will be in touch if there is a fit.", '✓ داواکارییەکەت گەیشت — سوپاس. هەموویان دەخوێنینەوە و ئەگەر گونجاو بوو پەیوەندیت پێوە دەکەین.', 'area'],
                 'careers_cv_needed' => ['Form — CV missing or not a PDF', 'Please attach your CV as a PDF.', 'تکایە سیڤییەکەت وەک PDF هاوپێچ بکە.'],
                 'careers_cv_big'    => ['Form — CV too large', 'That file is larger than 8 MB.', 'ئەو فایلە لە ٨ مێگابایت گەورەترە.'],
+
+                // what search engines show — written the way job seekers search
+                'careers_seo_title' => ['Search title (Google tab and result)', 'Architecture jobs in Erbil — open applications for architects', 'هەلی کاری تەلارسازی لە هەولێر — داواکاریی گشتی بۆ ئەندازیارانی تەلارساز'],
+                'careers_seo_desc'  => ['Search description', 'Architect, interior designer, fresh graduate or architecture student looking for work in Erbil or Kurdistan? Aram Mizuri Architecture welcomes open applications all year — send your CV and portfolio.', 'ئەندازیاری تەلارساز، دیزاینەری ناوەوە، دەرچووی نوێ یان خوێندکاری تەلارسازیت و بەدوای کاردا دەگەڕێیت لە هەولێر یان کوردستان؟ ستۆدیۆی ئارام میزوری بە درێژایی ساڵ داواکاریی گشتی وەردەگرێت — سیڤی و پۆرتفۆلیۆکەت بنێرە.', 'area'],
+
+                // the open-application section, shown whether or not positions are open
+                'careers_oa_label'  => ['Open applications — label', 'Open applications · all year', 'داواکاریی گشتی · بە درێژایی ساڵ'],
+                'careers_oa_title'  => ['Open applications — heading', 'Always looking for creative new minds', 'هەمیشە بەدوای بیری نوێ و داهێنەردا دەگەڕێین'],
+                'careers_oa_text'   => ['Open applications — text', 'You do not need to wait for a position to be posted. If you are an architect or designer who wants to grow with a young studio in Erbil, send us your CV and portfolio. We keep every application and come back to it when the right project starts.', 'پێویست ناکات چاوەڕێی بڵاوکردنەوەی هەلی کار بکەیت. ئەگەر ئەندازیاری تەلارساز یان دیزاینەریت و دەتەوێت لەگەڵ ستۆدیۆیەکی گەنج لە هەولێر گەشە بکەیت، سیڤی و پۆرتفۆلیۆکەتمان بۆ بنێرە. هەموو داواکارییەک هەڵدەگرین و کاتێک پرۆژەی گونجاو دەست پێدەکات دەگەڕێینەوە سەری.', 'area'],
+                'careers_who1_t'    => ['Who — 1 title', 'Architects', 'ئەندازیارانی تەلارساز'],
+                'careers_who1_d'    => ['Who — 1 line', 'Design, drawings and site work — at any stage of your career.', 'دیزاین، نەخشە و کاری سەر سایت — لە هەر قۆناغێکی کارەکەتدا بیت.'],
+                'careers_who2_t'    => ['Who — 2 title', 'Interior designers', 'دیزاینەرانی ناوەوە'],
+                'careers_who2_d'    => ['Who — 2 line', 'Homes, cafés and restaurants, from the first idea to the last detail.', 'ماڵ، کافێ و چێشتخانە، لە یەکەم بیرۆکەوە تا دوایین وردەکاری.'],
+                'careers_who3_t'    => ['Who — 3 title', 'Fresh graduates', 'دەرچووانی نوێ'],
+                'careers_who3_d'    => ['Who — 3 line', 'A strong portfolio matters more to us than years of experience.', 'پۆرتفۆلیۆیەکی بەهێز لە ساڵانی ئەزموون گرنگترە بۆمان.'],
+                'careers_who4_t'    => ['Who — 4 title', 'Architecture students', 'خوێندکارانی تەلارسازی'],
+                'careers_who4_d'    => ['Who — 4 line', 'Looking for training? Tell us your university and when you are free.', 'بەدوای ڕاهێناندا دەگەڕێیت؟ زانکۆکەت و کاتی بەتاڵیت پێمان بڵێ.'],
+                'careers_send_what' => ['What to send', 'Send: your CV as a PDF, a link to your portfolio, and a few lines on why you want to work with us.', 'بنێرە: سیڤییەکەت وەک PDF، بەستەری پۆرتفۆلیۆکەت، و چەند دێڕێک دەربارەی ئەوەی بۆچی دەتەوێت لەگەڵمان کار بکەیت.', 'area'],
+                'careers_oa_btn'    => ['Open applications — button', 'Send an open application', 'داواکارییەکی گشتی بنێرە'],
+
+                // questions job seekers ask — also read by Google and AI assistants
+                'careers_faq_title' => ['Questions — heading', 'Questions', 'پرسیارەکان'],
+                'careers_faq1_q'    => ['Question 1', 'Do you accept applications from fresh graduates?', 'داواکاری لە دەرچووانی نوێ وەردەگرن؟'],
+                'careers_faq1_a'    => ['Answer 1', 'Yes. Show us your best student projects — we look at how you think, not only at your experience.', 'بەڵێ. پیشانمان بدە باشترین پرۆژەکانی زانکۆت — سەیری شێوازی بیرکردنەوەت دەکەین، نەک تەنها ئەزموونت.', 'area'],
+                'careers_faq2_q'    => ['Question 2', 'Can architecture students apply for training?', 'خوێندکارانی تەلارسازی دەتوانن داوای ڕاهێنان بکەن؟'],
+                'careers_faq2_a'    => ['Answer 2', 'Yes. Send an open application, say that it is for training, and tell us your university, your year and the months you are available.', 'بەڵێ. داواکارییەکی گشتی بنێرە، بڵێ بۆ ڕاهێنانە، و زانکۆ، قۆناغ و ئەو مانگانەی کە بەتاڵیت پێمان بڵێ.', 'area'],
+                'careers_faq3_q'    => ['Question 3', 'What should my portfolio include?', 'پۆرتفۆلیۆکەم چی تێدابێت؟'],
+                'careers_faq3_a'    => ['Answer 3', 'Five to ten of your best projects — university work counts. Sketches, drawings, models and renders, with a line on your part in each. A PDF link or a website both work.', 'پێنج بۆ دە لە باشترین پرۆژەکانت — کاری زانکۆش حسابە. سکێچ، نەخشە، ماکێت و ڕێندەر، لەگەڵ دێڕێک دەربارەی بەشی خۆت لە هەر یەکێکیان. بەستەری PDF یان ماڵپەڕ هەردووکیان دەبن.', 'area'],
+                'careers_faq4_q'    => ['Question 4', 'What happens after I apply?', 'دوای ناردنی داواکاری چی ڕوودەدات؟'],
+                'careers_faq4_a'    => ['Answer 4', 'We read every application ourselves. If there is a fit, we contact you by email or phone to meet at the studio in Erbil.', 'هەموو داواکارییەک خۆمان دەیخوێنینەوە. ئەگەر گونجاو بوو، بە ئیمەیڵ یان تەلەفۆن پەیوەندیت پێوە دەکەین بۆ دیدارێک لە ستۆدیۆ لە هەولێر.', 'area'],
             ],
 
             // The architect's own page (/aram-mizuri): who he is, as a person,

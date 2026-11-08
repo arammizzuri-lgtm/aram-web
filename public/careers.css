@@ -87,7 +87,8 @@
 .cr-field.is-invalid label, .cr-field.is-invalid .cr-field__label { color: #ff8f7a; }
 
 /* the file input is hidden behind a label that looks like the other fields */
-.cr-file__input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.cr-field--file { position: relative; }
+.cr-file__input { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
 .cr-file {
     display: flex; align-items: center; gap: 12px; cursor: pointer;
     padding: 16px 18px; border-radius: 12px;
@@ -100,7 +101,7 @@
 .cr-file__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cr-file.has-file { border-style: solid; }
 
-.cr-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.cr-hp { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; }
 
 .cr-form__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 6px; }
 .cr-form__send { border: 0; cursor: pointer; }
@@ -112,3 +113,30 @@
     .cr-form { grid-template-columns: 1fr; }
     .cr-job { padding: 22px 20px; }
 }
+
+/* ---- Open applications (always shown) ------------------------------- */
+.cr-oa { max-width: 900px; margin: 0 auto; padding: clamp(64px, 11vh, 120px) var(--gutter) 0; }
+.cr-oa__title { font-size: clamp(28px, 3.4vw, 44px); font-weight: 200; color: #fff; line-height: 1.15; }
+[dir="rtl"] .cr-oa__title { font-weight: 400; line-height: 1.5; }
+.cr-oa__text { margin-top: 18px; max-width: 62ch; font-size: 16px; line-height: 1.8; font-weight: 300; color: rgba(255,255,255,.72); }
+.cr-who { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 36px; }
+.cr-who__item { padding: 22px; border-radius: 14px; background: rgba(255,255,255,.03); border: 1px solid var(--line); }
+.cr-who__num { font-size: 11px; letter-spacing: .2em; color: var(--gold); }
+.cr-who__title { margin-top: 10px; font-size: 18px; font-weight: 400; color: #fff; }
+.cr-who__text { margin-top: 8px; font-size: 14px; line-height: 1.65; font-weight: 300; color: var(--muted); }
+.cr-oa__send { margin-top: 28px; max-width: 62ch; font-size: 15px; line-height: 1.75; color: rgba(255,255,255,.8); }
+
+/* ---- Questions -------------------------------------------------------- */
+.cr-faq { max-width: 900px; margin: 0 auto; padding: 0 var(--gutter) clamp(72px, 12vh, 128px); }
+.cr-faq__title { font-size: clamp(24px, 2.6vw, 34px); font-weight: 200; color: #fff; margin-bottom: 18px; }
+.cr-faq__item { border-top: 1px solid var(--line); }
+.cr-faq__item:last-child { border-bottom: 1px solid var(--line); }
+.cr-faq__item summary {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px; cursor: pointer; list-style: none;
+    padding: 20px 0; font-size: 17px; font-weight: 300; color: #fff;
+}
+.cr-faq__item summary::-webkit-details-marker { display: none; }
+.cr-faq__item summary::after { content: '+'; flex: none; color: var(--gold); font-size: 22px; font-weight: 200; transition: transform .3s; }
+.cr-faq__item[open] summary::after { transform: rotate(45deg); }
+.cr-faq__item p { padding: 0 0 22px; max-width: 66ch; font-size: 15px; line-height: 1.8; font-weight: 300; color: rgba(255,255,255,.7); }
+@media (max-width: 480px) { .cr-who { grid-template-columns: 1fr; } }
