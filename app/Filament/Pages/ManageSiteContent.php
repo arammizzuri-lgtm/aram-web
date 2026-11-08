@@ -11,19 +11,26 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Livewire\Attributes\Url;
 use UnitEnum;
 
 /**
- * Site Content editor — one tab per public-site section. Every bilingual
+ * Site Content editor — one section of the public site at a time. Every bilingual
  * string on the site is registered in App\Support\SiteText and its English +
  * Kurdish fields are generated here automatically, so nothing needs wiring by
  * hand. A handful of non-text objects (metrics, images, contact numbers) and
  * the add/remove social-links repeater are appended to the relevant tabs.
+ *
+ * One section is built at a time (?section=…, the links across the top of
+ * the page). Built all at once, the three languages came to some 1,250
+ * fields and a 3 MB page that took longer to make than shared hosting
+ * allows a request — the page simply failed. Saving stores only the section
+ * on screen, so the others are never touched.
  */
 class ManageSiteContent extends Page
 {
@@ -42,10 +49,34 @@ class ManageSiteContent extends Page
     /** @var array<string, mixed>|null */
     public ?array $data = [];
 
+    /** The section being edited — its slug, kept in the address (?section=). */
+    #[Url]
+    public string $section = '';
+
+    public const MEDIA = 'Numbers & Media';
+
+    /** slug => section name, in the order they appear on the site */
+    public static function sections(): array
+    {
+        return collect([...array_keys(SiteText::tabs()), self::MEDIA])
+            ->mapWithKeys(fn ($name) => [Str::slug($name) => $name])->all();
+    }
+
+    /** The name of the section on screen. */
+    public function currentSection(): string
+    {
+        return self::sections()[$this->section] ?? array_values(self::sections())[0];
+    }
+
     public function mount(): void
     {
+        if (! isset(self::sections()[$this->section])) {
+            $this->section = array_key_first(self::sections());
+        }
+
+        // the section's own strings only — in English, Kurdish and Arabic
         $state = [];
-        foreach (SiteText::map() as $key => $meta) {
+        foreach (SiteText::tabs()[$this->currentSection()] ?? [] as $key => $def) {
             $state["{$key}_en"] = SiteText::en($key);
             $state["{$key}_ku"] = SiteText::ku($key);
             $state["{$key}_ar"] = SiteText::ar($key);
@@ -56,7 +87,7 @@ class ManageSiteContent extends Page
         $this->form->fill(array_merge(
             SiteSetting::allKeyed(),
             $state,
-            ['footer_socials' => socials()],
+            $this->currentSection() === 'Footer' ? ['footer_socials' => socials()] : [],
         ));
     }
 
@@ -67,9 +98,13 @@ class ManageSiteContent extends Page
 
     public function form(Schema $schema): Schema
     {
+        $current = $this->currentSection();
         $tabs = [];
 
         foreach (SiteText::tabs() as $tabName => $entries) {
+            if ($tabName !== $current) {
+                continue;
+            }
             $fields = [];
             foreach ($entries as $key => $def) {
                 $label = $def[0];
@@ -83,14 +118,15 @@ class ManageSiteContent extends Page
                 $fields[] = $extra;
             }
 
-            $tabs[] = Tab::make($tabName)->schema([
+            $tabs[] = Section::make($tabName)->description('English · Kurdish · Arabic')->schema([
                 // English, Kurdish, Arabic side by side
                 Grid::make(3)->schema($fields),
             ]);
         }
 
         // A dedicated home for the numeric metrics and images (not text).
-        $tabs[] = Tab::make('Numbers & Media')->icon(Heroicon::OutlinedPhoto)->schema([
+        if ($current === self::MEDIA) {
+        $tabs[] = Section::make(self::MEDIA)->icon(Heroicon::OutlinedPhoto)->schema([
             Grid::make(2)->schema([
                 $this->text('about_stat1_num', 'Metric 1 — number'),
                 $this->text('about_stat1_label', 'Metric 1 — label'),
@@ -107,13 +143,11 @@ class ManageSiteContent extends Page
                 $this->text('about_portrait_img', 'Portrait image URL', true),
             ]),
         ]);
+        }
 
-        return $schema->components([
-            Tabs::make('Sections')->persistTabInQueryString()->columnSpanFull()->tabs($tabs),
-        ]);
+        return $schema->components($tabs);
     }
 
-    /** Extra non-text fields grafted onto a given text tab. */
     /**
      * The verification code from whatever was pasted: the whole tag Google or
      * Bing shows (<meta name="…" content="CODE" />) or just the code. Only
@@ -129,6 +163,7 @@ class ManageSiteContent extends Page
         return preg_replace('/[^A-Za-z0-9_\-]/', '', $state);
     }
 
+    /** Extra non-text fields grafted onto a given text tab. */
     private function extrasFor(string $tab): array
     {
         return match ($tab) {
