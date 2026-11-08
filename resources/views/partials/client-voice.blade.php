@@ -71,23 +71,23 @@
                     <svg class="cv__icon cv__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
                 </button>
                 <div class="cv__wave" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-                     aria-label="{{ bi('Voice note', 'پەیامی دەنگی') }}" data-label-en="Voice note" data-label-ku="پەیامی دەنگی"></div>
+                     aria-label="{{ bi('Voice note', 'پەیامی دەنگی', 'رسالة صوتية') }}" data-label-en="Voice note" data-label-ku="{{ rtl_slot('Voice note', 'پەیامی دەنگی', 'رسالة صوتية') }}"></div>
                 <span class="cv__time" aria-hidden="true"></span>
             </div>
         @endif
         @if ($cvReads)
             <button type="button" class="cv-read" hidden data-read
-                    @if ($cvQuote->readingUrl()) data-src-ku="{{ $cvQuote->readingUrl() }}" @endif
-                    data-label-en="Read aloud" data-label-ku="بە دەنگ بیخوێنەوە"
-                    data-stop-en="Stop reading" data-stop-ku="ڕاگرتنی خوێندنەوە">
+                    @if (site_lang() === 'ku' && $cvQuote->readingUrl()) data-src-ku="{{ $cvQuote->readingUrl() }}" @endif
+                    data-label-en="Read aloud" data-label-ku="{{ rtl_slot('Read aloud', 'بە دەنگ بیخوێنەوە', 'اقرأ بصوت عالٍ') }}"
+                    data-stop-en="Stop reading" data-stop-ku="{{ rtl_slot('Stop reading', 'ڕاگرتنی خوێندنەوە', 'إيقاف القراءة') }}">
                 <svg class="cv-read__icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M4 9.5h3.2L12 5.6v12.8l-4.8-3.9H4z"/>
                     <path class="cv-read__wave" d="M15.3 9.2a4 4 0 0 1 0 5.6"/>
                     <path class="cv-read__wave cv-read__wave--far" d="M17.9 6.6a7.6 7.6 0 0 1 0 10.8"/>
                 </svg>
-                <span class="cv-read__label">{{ bi('Read aloud', 'بە دەنگ بیخوێنەوە') }}</span>
+                <span class="cv-read__label">{{ bi('Read aloud', 'بە دەنگ بیخوێنەوە', 'اقرأ بصوت عالٍ') }}</span>
                 {{-- it must never pass for the client's own voice --}}
-                <span class="cv-read__note" data-en="computer voice" data-ku="دەنگی کۆمپیوتەر">{{ bi('computer voice', 'دەنگی کۆمپیوتەر') }}</span>
+                <span class="cv-read__note" data-en="computer voice" data-ku="{{ rtl_slot('computer voice', 'دەنگی کۆمپیوتەر', 'صوت حاسوبي') }}">{{ bi('computer voice', 'دەنگی کۆمپیوتەر', 'صوت حاسوبي') }}</span>
             </button>
         @endif
     </div>

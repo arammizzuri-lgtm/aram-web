@@ -383,19 +383,19 @@
                 {{-- spec grid shown only for map-only (image-less) projects --}}
                 <dl class="map-card__specs" id="mapCardSpecs">
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Type" data-ku="جۆر">{{ bi('Type', 'جۆر') }}</dt>
+                        <dt dir="auto" data-en="Type" data-ku="{{ rtl_slot('Type', 'جۆر', 'النوع') }}">{{ bi('Type', 'جۆر', 'النوع') }}</dt>
                         <dd id="mcSpecType"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Year" data-ku="ساڵ">{{ bi('Year', 'ساڵ') }}</dt>
+                        <dt dir="auto" data-en="Year" data-ku="{{ rtl_slot('Year', 'ساڵ', 'السنة') }}">{{ bi('Year', 'ساڵ', 'السنة') }}</dt>
                         <dd id="mcSpecYear"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Plot Area" data-ku="ڕووبەری زەوی">{{ bi('Plot Area', 'ڕووبەری زەوی') }}</dt>
+                        <dt dir="auto" data-en="Plot Area" data-ku="{{ rtl_slot('Plot Area', 'ڕووبەری زەوی', 'مساحة القطعة') }}">{{ bi('Plot Area', 'ڕووبەری زەوی', 'مساحة القطعة') }}</dt>
                         <dd id="mcSpecArea"></dd>
                     </div>
                     <div class="map-card__spec">
-                        <dt dir="auto" data-en="Location" data-ku="شوێن">{{ bi('Location', 'شوێن') }}</dt>
+                        <dt dir="auto" data-en="Location" data-ku="{{ rtl_slot('Location', 'شوێن', 'الموقع') }}">{{ bi('Location', 'شوێن', 'الموقع') }}</dt>
                         <dd id="mcSpecLoc"></dd>
                     </div>
                 </dl>
@@ -489,44 +489,6 @@
     </section>
 
     <!-- ========== SELECTED WORK ========== -->
-    {{-- ========== CLIENT QUOTES ==========
-         One quote at a time, turning over on its own (engage.js). Each quote
-         is shown only in the language it was given in — the language toggle
-         hides the rest — and the whole band only exists in a language that
-         has at least one. --}}
-    @php
-        $quotesEn = $quotes->filter(fn ($q) => filled($q->quote_en));
-        $quotesKu = $quotes->filter(fn ($q) => filled($q->quote_ku));
-    @endphp
-    @if ($quotes->isNotEmpty())
-        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ((site_lang() === "ar" ? $quotesEn : $quotesKu)->isNotEmpty()) data-has-ku @endif>
-            <p class="section-label section-label--center" {!! bitext('quotes_label') !!}>{{ bival('quotes_label') }}</p>
-            <h2 class="quotes__title" {!! bitext('quotes_title') !!}>{{ bival('quotes_title') }}</h2>
-            <div class="quotes__stage" id="quotesStage" aria-live="polite">
-                @foreach ($quotes as $q)
-                    <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled(rtl_slot($q->quote_en, $q->quote_ku, $q->quote_ar))) data-has-ku @endif>
-                        @include('partials.client-voice', ['cvQuote' => $q])
-                        <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ rtl_slot($q->quote("en"), $q->quote("ku"), $q->quote("ar")) }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
-                        <figcaption class="quote__by">
-                            <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ rtl_slot($q->personName("en"), $q->personName("ku"), $q->personName("ar")) }}">{{ $q->personName(site_lang()) }}</span>
-                            @php $roleEn = $q->attribution('en'); $roleKu = rtl_slot($roleEn, $q->attribution("ku"), $q->attribution("ar")); @endphp
-                            @if (filled($roleEn) || filled($roleKu))
-                                <span class="quote__role" data-en="{{ $roleEn }}" data-ku="{{ $roleKu }}">{{ site_lang() === 'ku' ? $roleKu : $roleEn }}</span>
-                            @endif
-                            @if ($q->project?->hasPage())
-                                <a class="quote__project" href="{{ $q->project->pageUrl(site_lang()) }}"
-                                   data-href-en="{{ $q->project->pageUrl('en') }}" data-href-ku="{{ $q->project->pageUrl('ku') }}">
-                                    <span data-en="{{ $q->project->name }}" data-ku="{{ rtl_slot($q->project->name, $q->project->name_ku ?: $q->project->name, $q->project->name_ar) }}">{{ bi($q->project->name, $q->project->name_ku, $q->project->name_ar) }}</span>
-                                    <span class="quote__arrow" aria-hidden="true">↗&#xFE0E;</span>
-                                </a>
-                            @endif
-                        </figcaption>
-                    </figure>
-                @endforeach
-            </div>
-            <div class="quotes__dots" id="quotesDots" aria-hidden="true"></div>
-        </section>
-    @endif
 
     <section class="pg" id="projects">
 
@@ -545,7 +507,7 @@
             </a>
             <div class="pg__head-right">
                 <div class="pg__search-wrap">
-                    <input class="pg__search" id="pgSearch" type="search" placeholder="{{ bi('Search projects…', 'گەڕان بۆ پرۆژەکان…') }}" data-en-ph="Search projects…" data-ku-ph="گەڕان بۆ پرۆژەکان…" autocomplete="off" aria-label="Search projects">
+                    <input class="pg__search" id="pgSearch" type="search" placeholder="{{ bi('Search projects…', 'گەڕان بۆ پرۆژەکان…', 'ابحث في المشاريع…') }}" data-en-ph="Search projects…" data-ku-ph="{{ rtl_slot('Search projects…', 'گەڕان بۆ پرۆژەکان…', 'ابحث في المشاريع…') }}" autocomplete="off" aria-label="Search projects">
                     <span class="pg__search-icon" aria-hidden="true">↗&#xFE0E;</span>
                 </div>
                 {{-- Filter row is generated from the database-managed categories
@@ -579,11 +541,11 @@
                 <div class="pgc__inner">
                     <img class="pgc__img" data-src="{{ $project->coverThumbUrl() }}" src="" alt="{{ $project->name }}" loading="lazy" decoding="async" style="object-position: {{ $project->coverPosition() }}">
                     <div class="pgc__overlay">
-                        <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ $project->statusBadge() }}</div>
+                        <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ site_lang() === 'ar' ? $project->statusLabel('ar') : $project->statusBadge() }}</div>
                         <div class="pgc__info">
                             <div class="pgc__num">{{ $project->num }}</div>
                             <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ rtl_slot($project->name, $project->name_ku ?: $project->name, $project->name_ar) }}">{{ bi($project->name, $project->name_ku, $project->name_ar) }}</h3>
-                            <p class="pgc__meta">{{ $project->metaLabel() }}</p>
+                            <p class="pgc__meta">{{ site_lang() === 'ar' ? collect([...$project->categoryLabelsIn('ar'), $project->cityLabel('ar'), $project->endYear()])->filter()->implode(' · ') : $project->metaLabel() }}</p>
                         </div>
                         <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗&#xFE0E;</span></span>
                     </div>
@@ -623,7 +585,7 @@
         <p class="pg__more" id="pgMore" aria-hidden="true">
             <span class="pg__more-label"
                   dir="auto" data-en="slide for more — {{ $galleryCount }} projects"
-                  data-ku="ڕایبکێشە بۆ زیاتر — {{ $galleryCount }} پرۆژە">{{ bi('slide for more — '.$galleryCount.' projects', 'ڕایبکێشە بۆ زیاتر — '.$galleryCount.' پرۆژە') }}</span>
+                  data-ku="{{ rtl_slot('', 'ڕایبکێشە بۆ زیاتر — '.$galleryCount.' پرۆژە', 'اسحب للمزيد — '.$galleryCount.' مشروعاً') }}">{{ bi('slide for more — '.$galleryCount.' projects', 'ڕایبکێشە بۆ زیاتر — '.$galleryCount.' پرۆژە', 'اسحب للمزيد — '.$galleryCount.' مشروعاً') }}</span>
             <span class="pg__more-arrow">⟶</span>
         </p>
 
@@ -632,6 +594,45 @@
         </div>
 
     </section>
+
+    {{-- ========== CLIENT QUOTES ==========
+         One quote at a time, turning over on its own (engage.js). Each quote
+         is shown only in the language it was given in — the language toggle
+         hides the rest — and the whole band only exists in a language that
+         has at least one. --}}
+    @php
+        $quotesEn = $quotes->filter(fn ($q) => filled($q->quote_en));
+        $quotesKu = $quotes->filter(fn ($q) => filled($q->quote_ku));
+    @endphp
+    @if ($quotes->isNotEmpty())
+        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ((site_lang() === "ar" ? $quotesEn : $quotesKu)->isNotEmpty()) data-has-ku @endif>
+            <p class="section-label section-label--center" {!! bitext('quotes_label') !!}>{{ bival('quotes_label') }}</p>
+            <h2 class="quotes__title" {!! bitext('quotes_title') !!}>{{ bival('quotes_title') }}</h2>
+            <div class="quotes__stage" id="quotesStage" aria-live="polite">
+                @foreach ($quotes as $q)
+                    <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled(rtl_slot($q->quote_en, $q->quote_ku, $q->quote_ar))) data-has-ku @endif>
+                        @include('partials.client-voice', ['cvQuote' => $q])
+                        <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ rtl_slot($q->quote("en"), $q->quote("ku"), $q->quote("ar")) }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
+                        <figcaption class="quote__by">
+                            <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ rtl_slot($q->personName("en"), $q->personName("ku"), $q->personName("ar")) }}">{{ $q->personName(site_lang()) }}</span>
+                            @php $roleEn = $q->attribution('en'); $roleKu = rtl_slot($roleEn, $q->attribution("ku"), $q->attribution("ar")); @endphp
+                            @if (filled($roleEn) || filled($roleKu))
+                                <span class="quote__role" data-en="{{ $roleEn }}" data-ku="{{ $roleKu }}">{{ slot($roleEn, $roleKu) }}</span>
+                            @endif
+                            @if ($q->project?->hasPage())
+                                <a class="quote__project" href="{{ $q->project->pageUrl(site_lang()) }}"
+                                   data-href-en="{{ $q->project->pageUrl('en') }}" data-href-ku="{{ $q->project->pageUrl('ku') }}">
+                                    <span data-en="{{ $q->project->name }}" data-ku="{{ rtl_slot($q->project->name, $q->project->name_ku ?: $q->project->name, $q->project->name_ar) }}">{{ bi($q->project->name, $q->project->name_ku, $q->project->name_ar) }}</span>
+                                    <span class="quote__arrow" aria-hidden="true">↗&#xFE0E;</span>
+                                </a>
+                            @endif
+                        </figcaption>
+                    </figure>
+                @endforeach
+            </div>
+            <div class="quotes__dots" id="quotesDots" aria-hidden="true"></div>
+        </section>
+    @endif
 
     <!-- ========== ABOUT ========== -->
     <section class="about" id="about">
@@ -832,7 +833,7 @@
                 <li class="process__item" data-step="0">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="01" data-ku="٠١">{{ bi('01', '٠١') }}</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="01" data-ku="٠١">{{ bi('01', '٠١', '٠١') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase1') !!}>{{ bival('process_phase1') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step1_title') !!}>{{ bival('process_step1_title') }}</h3>
@@ -844,7 +845,7 @@
                 <li class="process__item" data-step="1">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="02" data-ku="٠٢">{{ bi('02', '٠٢') }}</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="02" data-ku="٠٢">{{ bi('02', '٠٢', '٠٢') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase2') !!}>{{ bival('process_phase2') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step2_title') !!}>{{ bival('process_step2_title') }}</h3>
@@ -856,7 +857,7 @@
                 <li class="process__item" data-step="2">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="03" data-ku="٠٣">{{ bi('03', '٠٣') }}</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="03" data-ku="٠٣">{{ bi('03', '٠٣', '٠٣') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase3') !!}>{{ bival('process_phase3') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step3_title') !!}>{{ bival('process_step3_title') }}</h3>
@@ -868,7 +869,7 @@
                 <li class="process__item" data-step="3">
                     <div class="process__node"><span class="process__orb"></span></div>
                     <article class="process__card">
-                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="04" data-ku="٠٤">{{ bi('04', '٠٤') }}</span>
+                        <span class="process__ghost" aria-hidden="true" dir="auto" data-en="04" data-ku="٠٤">{{ bi('04', '٠٤', '٠٤') }}</span>
                         <div class="process__card-body">
                             <span class="process__kicker" {!! bitext('process_phase4') !!}>{{ bival('process_phase4') }}</span>
                             <h3 class="process__card-title" {!! bitext('process_step4_title') !!}>{{ bival('process_step4_title') }}</h3>
@@ -1147,7 +1148,9 @@
                         <a href="{{ $u !== '' ? $u : '#' }}" class="footer__link"@if($ext) target="_blank" rel="noopener"@endif>{{ $s['label'] }}</a>
                     @endforeach
                 </nav>
-                <p class="footer__copy">{!! nl2br(e(footer_copy())) !!}</p>
+                @php $copy = footer_copy(); if (site_lang() === 'ar' && preg_match('/©\s*[\d–-]+/u', $copy, $years)) { $copy = $years[0]." آرام مزوري للعمارة.
+جميع الحقوق محفوظة."; } @endphp
+                <p class="footer__copy">{!! nl2br(e($copy)) !!}</p>
             </div>
         </div>
     </footer>

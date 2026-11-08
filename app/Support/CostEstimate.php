@@ -72,7 +72,7 @@ class CostEstimate
         return max(1, min(12, (int) self::get('max_floors')));
     }
 
-    /** @return array<string, array{en: string, ku: string, low: float, high: float, bath: float}> */
+    /** @return array<string, array{en: string, ku: string, ar: string, low: float, high: float, bath: float}> */
     public static function levels(): array
     {
         $levels = [];
@@ -80,6 +80,7 @@ class CostEstimate
             $levels[$level] = [
                 'en' => self::get($level.'_en'),
                 'ku' => self::get($level.'_ku') ?: self::get($level.'_en'),
+                'ar' => ['standard' => 'عادي', 'premium' => 'ممتاز', 'luxury' => 'فاخر'][$level] ?? self::get($level.'_en'),
                 'low' => self::num($level.'_low'),
                 'high' => max(self::num($level.'_low'), self::num($level.'_high')),
                 'bath' => self::num($level.'_bath'),
@@ -163,7 +164,7 @@ class CostEstimate
 
         return [
             'inputs' => $in,
-            'finish' => ['en' => $level['en'], 'ku' => $level['ku']],
+            'finish' => ['en' => $level['en'], 'ku' => $level['ku'], 'ar' => $level['ar']],
             'built' => $built,
             'built_auto' => $in['built'] === null,
             'basement_area' => $basement,

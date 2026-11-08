@@ -335,10 +335,13 @@
        only when one of those is there for the language on screen. */
     const synth = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined' ? window.speechSynthesis : null;
 
-    // the device's best voice for English, or for Sorani (ckb) — or none
-    function deviceVoice(ku) {
+    // the device's best voice for the page's language — English, Sorani
+    // (ckb) or Arabic — or none. (true/false still mean Kurdish/English.)
+    const pageLang = () => document.documentElement.getAttribute('lang') || 'en';
+    function deviceVoice(lang) {
         if (!synth) return null;
-        const want = ku ? /^ckb/i : /^en/i;
+        if (lang === true) lang = 'ku'; else if (lang === false) lang = 'en';
+        const want = { ku: /^ckb/i, ar: /^ar/i }[lang] || /^en/i;
         const score = v => (/natural|neural|premium|enhanced/i.test(v.name) ? 4 : 0)
             + (/google|samantha|daniel|serena|libby|sonia|aria|jenny|ava|andrew/i.test(v.name) ? 2 : 0)
             + (/^en[-_]gb/i.test(v.lang) ? 1 : 0);
@@ -355,7 +358,7 @@
         let audio = null, utter = null, frame = 0, active = false;
 
         // how the words on screen can be read, if they can
-        const way = () => (isKu() ? (src ? 'file' : deviceVoice(true) && 'device') : deviceVoice(false) && 'device') || null;
+        const way = () => (pageLang() === 'ku' ? (src ? 'file' : deviceVoice('ku') && 'device') : deviceVoice(pageLang()) && 'device') || null;
         const setLabel = () => { label.textContent = pick(btn, active ? 'stop' : 'label'); };
         const refresh = () => { btn.hidden = !way(); setLabel(); };
 
@@ -400,7 +403,7 @@
 
         function fromDevice() {
             const text = quote.textContent.trim();
-            const voice = deviceVoice(isKu());
+            const voice = deviceVoice(pageLang());
             if (!text || !voice) return;
             const u = new SpeechSynthesisUtterance(text);
             u.voice = voice;

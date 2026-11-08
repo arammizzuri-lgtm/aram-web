@@ -241,7 +241,7 @@
                     @endphp
                     <button class="pp-act pp-act--story" type="button" hidden data-story='@json($storyCard)'
                             data-title="{{ bival('story_btn') }}" data-share="{{ bival('story_share') }}" data-save="{{ bival('card_save') }}"
-                            data-close="{{ bi('Close', 'داخستن') }}" data-hint="{{ bival('story_hint') }}">
+                            data-close="{{ bi('Close', 'داخستن', 'إغلاق') }}" data-hint="{{ bival('story_hint') }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><circle cx="12" cy="11" r="3.4" stroke-dasharray="2.4 1.6"/><path d="M10 18.2h4" stroke-linecap="round"/></svg>
                         <span>{{ bival('story_btn') }}</span>
                     </button>

@@ -504,6 +504,8 @@ class Project extends Model
         'kirkuk' => 'كركوك', 'baghdad' => 'بغداد', 'mosul' => 'الموصل', 'basra' => 'البصرة',
         'kurdistan' => 'كوردستان', 'kurdistan region' => 'إقليم كوردستان', 'iraq' => 'العراق',
         'madrid' => 'مدريد', 'spain' => 'إسبانيا', 'diyarbakır' => 'ديار بكر', 'diyarbakir' => 'ديار بكر',
+        'erbil old city' => 'أربيل القديمة', 'erbil city centre' => 'مركز أربيل', 'sinjar' => 'سنجار',
+        'afrin' => 'عفرين', 'kobani' => 'كوباني', 'kermanshah' => 'كرمانشاه', 'qamishli' => 'القامشلي',
     ];
 
     /** End year = last 4-digit number found in the year string. */
