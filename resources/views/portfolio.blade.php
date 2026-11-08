@@ -1141,6 +1141,9 @@
                 <nav class="footer__social">
                     <a href="{{ site_url('/journal') }}" class="footer__link" {!! bitext('journal_nav') !!}>{{ bival('journal_nav') }}</a>
                     <a href="{{ site_url('/erbil-walk') }}" class="footer__link" {!! bitext('walk_nav') !!}>{{ bival('walk_nav') }}</a>
+                    @if (\App\Models\Partner::anyPublished())
+                        <a href="{{ site_url('/partners') }}" class="footer__link" {!! bitext('partners_nav') !!}>{{ bival('partners_nav') }}</a>
+                    @endif
                     <a href="{{ site_url('/careers') }}" class="footer__link"
                        data-href-en="{{ site_url('/careers', 'en') }}" data-href-ku="{{ site_url('/careers', 'ku') }}"
                        {!! bitext('careers_link') !!}>{{ bival('careers_link') }}</a>

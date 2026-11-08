@@ -549,6 +549,19 @@ class SiteText
                 'walk_photo_soon' => ['Walk — a stop with no photograph yet', 'Photograph coming', 'وێنە بەم زووانە'],
             ],
 
+            // The partners and suppliers page (/partners). The partners
+            // themselves are under Manage → Partners.
+            'Partners' => [
+                'partners_nav'   => ['Footer link', 'Partners', 'هاوبەشەکان'],
+                'partners_label' => ['Page label', 'Partners & suppliers', 'هاوبەش و دابینکەران'],
+                'partners_title' => ['Title', 'Who we build with', 'لەگەڵ کێ بنیات دەنێین'],
+                'partners_intro' => ['Introduction', 'Good buildings are made by many hands. These are the suppliers, brands and craftspeople whose materials and work we trust in our projects.', 'بینای باش بە دەستی زۆر دروست دەکرێت. ئەمانە ئەو دابینکەر، براند و وەستایانەن کە متمانەمان بە کەرەستە و کارەکانیان هەیە لە پرۆژەکانماندا.', 'area'],
+                'partners_visit' => ['Link to a partner\'s website', 'Visit website', 'سەردانی ماڵپەڕ بکە'],
+                'partners_empty' => ['No partners yet', 'Our partners will be listed here soon.', 'بەم زووانە هاوبەشەکانمان لێرە دەخرێنە ڕوو.'],
+                'partners_join'  => ['Closing question', 'A supplier or brand who would like to work with us?', 'دابینکەر یان براندێکیت و دەتەوێت لەگەڵمان کار بکەیت؟'],
+                'partners_join_btn' => ['Closing button', 'Get in touch', 'پەیوەندیمان پێوە بکە'],
+            ],
+
             'Footer' => [
                 'footer_logo'    => ['Logo text', 'ARAM MIZURI', 'ئارام مزووری'],
                 'footer_tagline' => ['Tagline', 'Architecture · Erbil · Kurdistan', 'تەڵارسازی · هەولێر · کوردستان'],

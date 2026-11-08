@@ -485,6 +485,16 @@ class SiteTextAr
             'walk_cta_btn'    => 'تحدّث مع المكتب',
             'walk_photo_soon' => 'الصورة قريباً',
 
+            // Partners
+            'partners_nav'      => 'الشركاء',
+            'partners_label'    => 'الشركاء والموردون',
+            'partners_title'    => 'مع من نبني',
+            'partners_intro'    => 'المباني الجيدة تصنعها أيدٍ كثيرة. هؤلاء هم الموردون والعلامات التجارية والحِرفيون الذين نثق بموادّهم وعملهم في مشاريعنا.',
+            'partners_visit'    => 'زيارة الموقع',
+            'partners_empty'    => 'سنعرض شركاءنا هنا قريباً.',
+            'partners_join'     => 'مورّد أو علامة تجارية تودّ العمل معنا؟',
+            'partners_join_btn' => 'تواصل معنا',
+
             // Footer
             'footer_logo'    => 'آرام مزوري',
             'footer_tagline' => 'عمارة · أربيل · كوردستان',

@@ -17,6 +17,9 @@
         <a href="{{ site_url(\App\Support\Architect::PATH) }}">{{ bival('arch_name') }}</a>
         <a href="{{ site_url('/journal') }}">{{ bival('journal_nav') }}</a>
         <a href="{{ site_url('/erbil-walk') }}">{{ bival('walk_nav') }}</a>
+        @if (\App\Models\Partner::anyPublished())
+            <a href="{{ site_url('/partners') }}">{{ bival('partners_nav') }}</a>
+        @endif
         <a href="{{ site_url('/careers') }}">{{ bival('careers_link') }}</a>
         @if (\App\Support\CostEstimate::enabled())
             <a href="{{ site_url('/estimate') }}">{{ bival('est_nav') }}</a>

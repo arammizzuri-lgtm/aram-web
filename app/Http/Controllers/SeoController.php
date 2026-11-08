@@ -119,6 +119,9 @@ class SeoController extends Controller
         $out[] = '- Website: '.site_url('/', 'en').' (English), '.site_url('/', 'ku').' (Kurdish), '.site_url('/', 'ar').' (Arabic)';
         $out[] = '- [Every project]('.site_url('/projects', 'en').')';
         $out[] = '- [Build journal — projects as they are built]('.site_url('/journal', 'en').')';
+        if (\App\Models\Partner::anyPublished()) {
+            $out[] = '- [Partners & suppliers the studio builds with]('.site_url('/partners', 'en').')';
+        }
         $out[] = '- [Erbil architecture walk — a guide to the city\'s buildings by Aram Mizuri]('.site_url('/erbil-walk', 'en').')';
         $out[] = '';
 
@@ -157,6 +160,10 @@ class SeoController extends Controller
             $this->page($xml, '/journal/'.$post->slug, $post->updated_at, $post->imageUrls('lg'));
         }
         $this->page($xml, '/erbil-walk', \App\Models\WalkStop::max('updated_at') ? \Illuminate\Support\Carbon::parse(\App\Models\WalkStop::max('updated_at')) : null);
+
+        if (\App\Models\Partner::anyPublished()) {
+            $this->page($xml, '/partners', \Illuminate\Support\Carbon::parse(\App\Models\Partner::max('updated_at')));
+        }
 
         $this->page($xml, '/careers', JobOpening::query()->max('updated_at') ? Carbon::parse(JobOpening::query()->max('updated_at')) : null);
 

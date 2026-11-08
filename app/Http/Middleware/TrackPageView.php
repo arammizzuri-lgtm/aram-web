@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\PageView;
 use App\Support\TrafficSource;
+use App\Support\WeeklyReport;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,6 +42,12 @@ class TrackPageView
                     'source' => $source,
                     'created_at' => now(),
                 ]);
+
+                // the weekly report goes out on the first visit after it falls due —
+                // the host runs no scheduled jobs; checked after the page is sent
+                if (WeeklyReport::isDue()) {
+                    \Illuminate\Support\defer(fn () => WeeklyReport::sendIfDue());
+                }
 
                 if ($source !== TrafficSource::INTERNAL && $request->hasSession()
                     && ! $request->session()->has(self::SESSION_KEY)) {

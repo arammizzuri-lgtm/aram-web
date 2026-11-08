@@ -48,6 +48,7 @@ class EnquiryAlerts extends Page
     {
         $this->form->fill([
             'enabled' => StudioMail::enabled(),
+            'weekly' => \App\Support\WeeklyReport::enabled(),
             'to' => setting(StudioMail::TO),
             'host' => setting(StudioMail::HOST),
             'port' => setting(StudioMail::PORT) ?: '465',
@@ -66,6 +67,9 @@ class EnquiryAlerts extends Page
                 ->description('Every enquiry from the website is e-mailed here, with buttons to reply, WhatsApp or call the person who wrote.')
                 ->schema([
                     Toggle::make('enabled')->label('E-mail me when an enquiry arrives')->default(true),
+                    Toggle::make('weekly')->label('Weekly report — every Sunday morning, last week on the website')
+                        ->helperText('Visitors and how they found you, the projects viewed most, WhatsApp taps and every enquiry, compared with the week before. Sent to the same addresses.')
+                        ->default(true),
                     TextInput::make('to')
                         ->label('Send alerts to')
                         ->placeholder(setting('contact_email_new', 'Info@arammizuri.com'))
@@ -97,6 +101,7 @@ class EnquiryAlerts extends Page
         $state = $this->form->getState();
 
         SiteSetting::put(StudioMail::ENABLED, ! empty($state['enabled']) ? '1' : '0', 'alerts');
+        SiteSetting::put(\App\Support\WeeklyReport::ENABLED, ! empty($state['weekly']) ? '1' : '0', 'alerts');
         foreach (['to' => StudioMail::TO, 'host' => StudioMail::HOST, 'port' => StudioMail::PORT,
             'username' => StudioMail::USERNAME, 'from' => StudioMail::FROM] as $field => $key) {
             SiteSetting::put($key, trim((string) ($state[$field] ?? '')), 'alerts');
@@ -113,6 +118,20 @@ class EnquiryAlerts extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('weeklyNow')
+                ->label('Send last week\'s report now')
+                ->icon(Heroicon::OutlinedChartBar)
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalDescription(fn () => 'The weekly report for last week (Sunday to Saturday), sent now to: '
+                    .(implode(', ', StudioMail::recipients()) ?: 'nobody — no valid address'))
+                ->action(function () {
+                    [$start, $end] = \App\Support\WeeklyReport::lastWeek();
+                    $error = \App\Support\WeeklyReport::send($start, $end);
+                    $error === null
+                        ? Notification::make()->success()->title('Weekly report sent')->body('Check the inbox of: '.implode(', ', StudioMail::recipients()))->send()
+                        : Notification::make()->danger()->title('The report could not be sent')->body($error)->persistent()->send();
+                }),
             Action::make('test')
                 ->label('Send a test e-mail')
                 ->icon(Heroicon::OutlinedPaperAirplane)
