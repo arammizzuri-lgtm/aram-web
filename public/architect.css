@@ -41,7 +41,7 @@
 }
 [dir="rtl"] .ar-portrait figcaption { letter-spacing: 0; font-size: 13px; }
 
-.ar-hero__text { align-self: center; padding-block: clamp(24px, 6vh, 72px); max-width: 640px; }
+.ar-hero__text { align-self: center; padding-block: clamp(24px, 6vh, 72px); max-width: 760px; }
 .ar-crumbs {
     display: flex; gap: 10px; margin-bottom: clamp(28px, 6vh, 64px);
     font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint);
@@ -51,13 +51,15 @@
 .ar-crumbs [aria-current] { color: rgba(255,255,255,.7); }
 [dir="rtl"] .ar-crumbs { letter-spacing: 0; font-size: 13px; }
 
+/* the name set as the studio's mark in the corner (.pp-brand__name):
+   capitals, medium weight, widely spaced — on one line */
 .ar-hero__name {
-    display: flex; flex-direction: column;
-    font-size: clamp(64px, 8.6vw, 168px); font-weight: 200; line-height: .9;
-    letter-spacing: -.045em; color: #fff;
+    display: flex; flex-wrap: wrap; column-gap: .42em;
+    font-size: clamp(34px, 3.9vw, 70px); font-weight: 500; line-height: 1.1;
+    letter-spacing: .2em; text-transform: uppercase; color: #fff;
+    margin-inline-end: -.2em;   /* the tracking after the last letter */
 }
-.ar-hero__name span:last-child { color: rgba(255,255,255,.55); }
-[dir="rtl"] .ar-hero__name { letter-spacing: 0; line-height: 1.2; font-weight: 400; font-size: clamp(56px, 7vw, 128px); }
+[dir="rtl"] .ar-hero__name { letter-spacing: 0; margin-inline-end: 0; font-size: clamp(40px, 4.4vw, 80px); line-height: 1.4; }
 .ar-hero__role {
     margin-top: clamp(24px, 4vh, 36px); max-width: 46ch; padding-top: 18px;
     border-top: 1px solid rgba(245,197,24,.35);

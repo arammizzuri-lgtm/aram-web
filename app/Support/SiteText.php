@@ -513,7 +513,7 @@ class SiteText
                 'arch_press'           => ['Publications and talks — one per line; a line may end with its web address', '', '', 'area'],
                 'arch_projects_title'  => ['Selected projects — heading', 'Selected projects', 'پرۆژە هەڵبژێردراوەکان'],
                 'arch_all_projects'    => ['Link to every project', 'See every project', 'هەموو پرۆژەکان ببینە'],
-                'arch_cta'             => ['Contact button', 'Work with Aram', 'لەگەڵ ئارام کار بکە'],
+                'arch_cta'             => ['Contact button', 'Start your project with Aram Mizuri', 'پرۆژەکەت لەگەڵ ئارام مزووری دەست پێ بکە'],
                 'arch_credit'          => ['On each project page — label before the name', 'Architect', 'تەڵارساز'],
                 'arch_profiles'        => ['His own profiles, one web address per line (LinkedIn, Instagram, ArchDaily, Wikidata…) — not shown, read by search engines', '', '', 'area'],
                 'arch_other_names'     => ['Other spellings of his name, one per line — not shown, read by search engines', "Aram Mizzuri\nAram Mizouri\nآرام مزوري", '', 'area'],
