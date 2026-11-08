@@ -78,6 +78,33 @@ class Architect
         return filled($src) ? url($src) : null;
     }
 
+    /**
+     * Lighter copies of the portrait, for srcset: WebP files saved beside
+     * the original under the same name — "{name}-800.webp" and "{name}.webp"
+     * (made from public/images/aram-portrait-sq.jpg). A portrait without
+     * them is simply served as it is.
+     *
+     * @return string a srcset value, or '' when there are none
+     */
+    public static function portraitSrcset(): string
+    {
+        $src = Project::resolveImage(setting('about_portrait_img'));
+        $path = ltrim((string) parse_url((string) $src, PHP_URL_PATH), '/');
+        if ($path === '' || ! preg_match('/\.(jpe?g|png)$/i', $path) || ! is_file(public_path($path))) {
+            return '';
+        }
+
+        $base = preg_replace('/\.(jpe?g|png)$/i', '', $path);
+        $set = [];
+        foreach ([$base.'-800.webp', $base.'.webp'] as $file) {
+            if (is_file(public_path($file)) && ($size = @getimagesize(public_path($file)))) {
+                $set[] = asset($file).' '.$size[0].'w';
+            }
+        }
+
+        return implode(', ', $set);
+    }
+
     /** Web addresses that are his: his own profiles, then the studio's. */
     public static function profiles(): array
     {

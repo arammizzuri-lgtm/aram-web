@@ -101,7 +101,8 @@
         <section class="ar-hero{{ $portrait ? '' : ' ar-hero--text' }}">
             @if ($portrait)
                 <figure class="ar-portrait">
-                    <img src="{{ $portrait }}" alt="{{ strip_tags(bival('arch_name')) }} — {{ strip_tags(bival('arch_label')) }}" fetchpriority="high">
+                    @php $portraitSet = Architect::portraitSrcset(); @endphp
+                    <img src="{{ $portrait }}" @if ($portraitSet) srcset="{{ $portraitSet }}" sizes="(max-width: 900px) 100vw, 58vw" @endif alt="{{ strip_tags(bival('arch_name')) }} — {{ strip_tags(bival('arch_label')) }}" fetchpriority="high">
                     <figcaption>{{ bival('about_portrait_caption') }}</figcaption>
                 </figure>
             @endif

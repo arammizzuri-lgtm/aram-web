@@ -6,7 +6,12 @@
    year counter and a dimension line of the years keeping time. Anything the
    visitor does to the map stops it and puts every pin back.
    ========================================================= */
-(function () {
+// The map is built only as its section comes near (script.js), so this waits
+// for it — or starts at once if it is already there.
+(function (start) {
+    if (window.siteProjectMap) start();
+    else document.addEventListener('projectmapready', start, { once: true });
+})(function () {
     'use strict';
 
     const api = window.siteProjectMap;
@@ -171,4 +176,4 @@
 
     setLabel();
     ui.hidden = false;
-})();
+});

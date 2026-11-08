@@ -193,6 +193,69 @@ function trackImage(img, frame, opts) {
  * CARTO_BASEMAPS_KEY. With no key set there is no basemap at all: the gold
  * outline and pins on the dark container beat a wall of watermarks.
  */
+/**
+ * Leaflet, fetched when a map is about to be needed rather than with the
+ * page. It is ~165 KB of script and styles that the first screen never uses,
+ * and loading it up front held back everything after it. The files are
+ * still our own (window.__LEAFLET__, set in the page) — see the note in the
+ * page head on why they are not on a CDN. Resolves once L is ready;
+ * rejects if the files cannot be had, and every map then simply stays empty.
+ */
+const leafletReady = (function () {
+    let pending = null;
+    function add(tag, attrs) {
+        return new Promise(function (resolve, reject) {
+            const el = document.createElement(tag);
+            Object.assign(el, attrs);
+            el.onload = resolve;
+            el.onerror = reject;
+            document.head.appendChild(el);
+        });
+    }
+    return function () {
+        if (typeof L !== 'undefined') return Promise.resolve();
+        if (pending) return pending;
+        const f = window.__LEAFLET__;
+        if (!f) return Promise.reject(new Error('no Leaflet files'));
+        pending = Promise.all([
+            add('link', { rel: 'stylesheet', href: f.css }),
+            add('link', { rel: 'stylesheet', href: f.gestureCss }),
+            add('script', { src: f.js, async: false }),
+        ])
+            // the gesture plugin hooks into L, so it comes after it
+            .then(function () { return add('script', { src: f.gesture, async: false }); })
+            .catch(function (e) { pending = null; throw e; });
+        return pending;
+    };
+})();
+
+/**
+ * Run cb once el is within 250px of the viewport — so a map below the fold
+ * costs nothing until the visitor heads towards it. Watching starts only
+ * once the page is up (the loader gone): a map sitting just under the first
+ * screen would otherwise count as "near" at once and compete with it.
+ * Without IntersectionObserver, as soon as the page is up.
+ */
+function whenNear(el, cb) {
+    if (!el) return;
+    let watching = false;
+    // the loader's own ceiling, in case the page came up some other way
+    setTimeout(watch, 20000);
+    function watch() {
+        if (watching) return;
+        watching = true;
+        if (!('IntersectionObserver' in window)) { cb(); return; }
+        const io = new IntersectionObserver(function (entries) {
+            if (!entries.some(function (e) { return e.isIntersecting; })) return;
+            io.disconnect();
+            cb();
+        }, { rootMargin: '250px 0px' });
+        io.observe(el);
+    }
+    if (document.body.classList.contains('is-loaded')) watch();
+    else document.addEventListener('siteready', watch, { once: true });
+}
+
 function cartoTiles(style, opts) {
     const key = (window.__SITE__ || {}).cartoKey;
     if (!key || typeof L === 'undefined') return null;
@@ -337,13 +400,14 @@ function buildKurdishSun(container, opts = {}) {
     // Decorative spin — but never for visitors who ask for reduced motion
     // (this is a JS-driven inline transform, so CSS media queries can't stop it).
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (spin && !prefersReducedMotion) {
-        let angle = 0;
-        (function rotateSun() {
-            angle += spinSpeed;
-            svg.style.transform = `rotate(${angle}deg)`;
-            requestAnimationFrame(rotateSun);
-        })();
+    // A CSS animation, not a script turning it 60 times a second: the
+    // browser runs it on the compositor, off the main thread, and stops it
+    // when it is off-screen. spinSpeed is degrees per frame (at 60 fps), as
+    // it always was; where the stylesheet already spins this sun (the
+    // loader's), that one is kept, as before.
+    if (spin && !prefersReducedMotion && getComputedStyle(svg).animationName === 'none') {
+        const seconds = 360 / (Math.max(spinSpeed, 0.001) * 60);
+        svg.style.animation = `spinSlow ${seconds.toFixed(1)}s linear infinite`;
     }
 
     return svg;
@@ -375,10 +439,10 @@ function buildKurdishSun(container, opts = {}) {
    Past ~7s the wait stops being explicable by "loading" alone, so we say so;
    past ~14s we assume something is wrong and offer a way out.
 
-   - It is shown once a visit. A visitor coming back to the homepage — from
-     a project, with the logo — within half an hour of last seeing it
+   - It is shown on a visitor's first visit only. Once seen on a device
      (SEEN_KEY, read in the page head, which hides the loader before it can
-     paint) goes straight to the page: no sun, no bar, no beat at 100%. */
+     paint), every later visit goes straight to the page: no sun, no bar, no
+     beat at 100%. */
 const SEEN_KEY = 'am_loader_seen';
 (function initLoader() {
     const loader    = document.getElementById('loader');
@@ -393,7 +457,10 @@ const SEEN_KEY = 'am_loader_seen';
     const SLOW_AFTER  = 7000;    // "this is taking a while"
     const STUCK_AFTER = 14000;   // "here is how to get out of it"
     const seen        = document.documentElement.classList.contains('am-seen');
-    const FONT_CAP    = seen ? 600 : 4000;   // never hold the hero for a slow webfont
+    // never hold the hero for a slow webfont: the text shows in its fallback
+    // (font-display: swap) and changes over when the font arrives. 4s was
+    // the longest part of a first visit on a slow phone connection.
+    const FONT_CAP    = seen ? 600 : 2500;
     const HARD_CAP    = 18000;   // absolute ceiling — always leave eventually
 
     // Weighted milestones. The weights are rough, but they are honest about
@@ -878,7 +945,9 @@ function imgVariant(proj, size, i) {
 
     // every project that has a cover image, in site order
     const slides = site.projects
-        .map((p, idx) => ({ idx, num: p.num, name: p.name, nameKu: p.name_ku, img: imgVariant(p, 'lg', 0) }))
+        // the card-size image (1200px): the frame is a few hundred pixels wide,
+        // and the full 2560px one cost ~380 KB a picture for nothing
+        .map((p, idx) => ({ idx, num: p.num, name: p.name, nameKu: p.name_ku, img: imgVariant(p, 'thumb', 0) }))
         .filter(s => s.img);
     if (!slides.length) { box.hidden = true; return; }
 
@@ -953,8 +1022,20 @@ function imgVariant(proj, size, i) {
    interaction is off. */
 (function initOfficeMap() {
     const el = document.getElementById('officeMapEl');
-    if (!el || typeof L === 'undefined') return;
+    if (!el) return;
     const OFFICE = [36.23992, 44.04997]; // Nº 592, Italian Village 2, Erbil (36°14'23.7"N 44°02'59.9"E)
+
+    // the map is a door to directions: click/Enter opens Google Maps — this
+    // works before (and without) the map itself
+    const gmaps = 'https://www.google.com/maps/search/?api=1&query=' + OFFICE[0] + ',' + OFFICE[1];
+    const go = () => window.open(gmaps, '_blank', 'noopener');
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+
+    // drawn only as the Contact section comes near (leafletReady)
+    whenNear(el, () => leafletReady().then(draw).catch(() => {}));
+
+    function draw() {
     const map = L.map(el, {
         zoomControl: false, attributionControl: false,
         dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
@@ -963,6 +1044,7 @@ function imgVariant(proj, size, i) {
     const tiles = cartoTiles('dark_all');
     if (tiles) { tiles.addTo(map); mapSkeleton(el, tiles); }
     L.marker(OFFICE, {
+        keyboard: false,   // decorative: no unnamed "button" for screen readers to land on
         interactive: false,
         icon: L.divIcon({
             className: 'office-pin-wrap',
@@ -979,12 +1061,7 @@ function imgVariant(proj, size, i) {
             io.disconnect();
         }, { threshold: 0.1 }).observe(el);
     }
-
-    // the map is a door to directions: click/Enter opens Google Maps
-    const gmaps = 'https://www.google.com/maps/search/?api=1&query=' + OFFICE[0] + ',' + OFFICE[1];
-    const go = () => window.open(gmaps, '_blank', 'noopener');
-    el.addEventListener('click', go);
-    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    }
 })();
 
 /* ---- Stats band — count up on reveal --------------------
@@ -1861,6 +1938,7 @@ function projCoords(proj) {
         var miniTiles = cartoTiles('dark_all');
         if (miniTiles) { miniTiles.addTo(miniMap); mapSkeleton(miniCanvas, miniTiles); }
         miniMarker = L.marker([0, 0], {
+            keyboard: false,   // decorative, like the office pin
             interactive: false,
             icon: L.divIcon({
                 className: 'od-sidemap__pin-wrap',
@@ -1874,11 +1952,19 @@ function projCoords(proj) {
     function updateMiniMap(index, proj) {
         var coords = projCoords(proj, index);
         if (!miniWrap) return;
-        if (!coords || typeof L === 'undefined' || !miniCanvas) {
+        if (!coords || !miniCanvas) {
             miniWrap.style.display = 'none';      // no location → no map
             return;
         }
         miniWrap.style.display = '';
+        if (typeof L === 'undefined') {
+            // Leaflet comes on demand (leafletReady); draw once it is here,
+            // if this is still the project being shown
+            leafletReady().then(function () {
+                if (currentProjIdx === index) updateMiniMap(index, proj);
+            }).catch(function () { miniWrap.style.display = 'none'; });
+            return;
+        }
         ensureMiniMap();
         miniMap.setView(coords, 12, { animate: false });   // city scale
         miniMarker.setLatLng(coords);
@@ -2691,8 +2777,10 @@ function projCoords(proj) {
     }
 })();
 
-/* ---- Projects Map -------------------------------------- */
-(function initProjectMap() {
+/* ---- Projects Map --------------------------------------
+   Built when the section comes near (see the call after it), not with the
+   page: Leaflet and its tiles are not needed for the first screen. */
+function initProjectMap() {
     if (typeof L === 'undefined') return;
     const mapEl = document.getElementById('projectMapEl');
     if (!mapEl) return;
@@ -3141,11 +3229,14 @@ function projCoords(proj) {
             iconAnchor: [18, 18],
         });
 
+        // named, so a keyboard or screen-reader visitor hears which project it is
         const marker = L.marker(coords, { icon }).addTo(map)
          .on('click', function (e) {
              L.DomEvent.stopPropagation(e);
              showCard(i, this.getLatLng());
          });
+        // (a label, not a title: no tooltip appears over the pin)
+        if (marker.getElement()) marker.getElement().setAttribute('aria-label', proj.name || ('Project ' + proj.num));
         pins.push({ idx: i, proj, marker });
     });
 
@@ -3252,7 +3343,12 @@ function projCoords(proj) {
     // The map and its pins, for "Watch the studio grow" (map-growth.js),
     // which plays the projects onto it year by year.
     window.siteProjectMap = { map: map, el: mapEl, pins: pins, hideCard: hideCard };
-})();
+    document.dispatchEvent(new Event('projectmapready'));
+}
+// drawn as the map section comes near, once Leaflet is here (leafletReady)
+whenNear(document.getElementById('projectMapEl'), function () {
+    leafletReady().then(initProjectMap).catch(function () {});
+});
 
 /* ---- Smooth active nav link on scroll ------------------ */
 (function initActiveLink() {
@@ -3271,4 +3367,39 @@ function projCoords(proj) {
     }, { rootMargin: '-40% 0px -55% 0px' });
 
     sections.forEach(s => io.observe(s));
+})();
+
+/* ---- The hero's 3D stage, after the page is up -----------
+   three.js (~600 KB) and hero3d.js used to load with the page, and since a
+   deferred script runs before the page counts as ready, the loader waited
+   for the whole 3D scene to be built before anyone saw the site. Now they
+   are fetched once the loader has gone and the browser has a moment to
+   spare; the hero's own background is there in the meantime, and the scene
+   fades in over it (hero3d.js adds .hero--3d). */
+(function startHero3d() {
+    const f = window.__LEAFLET__ || {};
+    if (!f.three || !f.hero3d || !document.getElementById('heroCanvas')) return;
+
+    let started = false;
+    function load(src) {
+        return new Promise(function (resolve, reject) {
+            const s = document.createElement('script');
+            s.src = src; s.async = false;
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+        });
+    }
+    function go() {
+        if (started) return;
+        started = true;
+        load(f.three).then(function () { return load(f.hero3d); }).catch(function () { /* the 2D hero stays */ });
+    }
+    function whenIdle() {
+        if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 1500 });
+        else setTimeout(go, 300);
+    }
+    if (document.body.classList.contains('is-loaded')) whenIdle();
+    else document.addEventListener('siteready', whenIdle, { once: true });
+    // the loader's own ceiling (initLoader) is the latest this can be
+    setTimeout(go, 20000);
 })();

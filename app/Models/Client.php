@@ -68,6 +68,24 @@ class Client extends Model
         return $this->logo_mono ? self::resolveImage($this->logo_mono) : null;
     }
 
+    /**
+     * The monochrome logo's own width and height, for the <img> tag, so the
+     * page can keep its place before it loads (no jump as logos arrive).
+     * Null for a logo stored elsewhere, or a file that cannot be read.
+     *
+     * @return array{0:int,1:int}|null
+     */
+    public function monoSize(): ?array
+    {
+        $img = (string) $this->logo_mono;
+        if ($img === '' || preg_match('#^(https?:)?//#', $img) || str_starts_with($img, '/')) {
+            return null;
+        }
+        $size = @getimagesize(Storage::disk('public')->path(ltrim($img, '/')));
+
+        return $size ? [(int) $size[0], (int) $size[1]] : null;
+    }
+
     /** Resolve a stored path/URL to a public URL (mirrors Project::resolveImage). */
     public static function resolveImage(?string $img): ?string
     {

@@ -732,20 +732,35 @@ img { display: block; max-width: 100%; }
     0%   { transform: translate(-58%, -54%) scale(1); }
     100% { transform: translate(-42%, -44%) scale(1.2); }
 }
+/* The grid drifts one tile, diagonally, and repeats. It used to move by
+   animating background-position, which repaints the whole hero on every
+   frame, for as long as the page is open. Now the lines are on a layer one
+   tile larger than the hero that slides with transform — the same drift,
+   done by the compositor for almost nothing. The vignette (the mask) stays
+   on .hero__grid, so it holds still while the lines pass under it, as
+   before. */
 .hero__grid {
-    position: absolute; inset: -2px;
+    position: absolute; inset: -2px; overflow: hidden;
+    -webkit-mask-image: radial-gradient(120% 92% at 50% 42%, #000 22%, transparent 82%);
+            mask-image: radial-gradient(120% 92% at 50% 42%, #000 22%, transparent 82%);
+}
+.hero__grid::before {
+    content: ''; position: absolute; inset: -66px 0 0 -66px;
     background-image:
         linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
     background-size: 66px 66px;
-    -webkit-mask-image: radial-gradient(120% 92% at 50% 42%, #000 22%, transparent 82%);
-            mask-image: radial-gradient(120% 92% at 50% 42%, #000 22%, transparent 82%);
     animation: heroGridPan 26s linear infinite;
+    will-change: transform;
 }
-@keyframes heroGridPan { to { background-position: 66px 66px; } }
+@keyframes heroGridPan { to { transform: translate(66px, 66px); } }
 /* WebGL stage — sits between the aurora and the grain so the film-grain
    unifies the 3D render with the DOM layers into one "shot" */
 .hero__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* the 3D stage arrives after the page (startHero3d in script.js): it fades
+   in over the hero's own background rather than appearing with a jump */
+.hero__canvas { opacity: 0; transition: opacity 1.4s ease; }
+.hero--3d .hero__canvas { opacity: 1; }
 /* when the 3D scene is live, the CSS grid recedes so the two grids don't fight */
 .hero--3d .hero__grid { opacity: .45; }
 .hero__grain {
@@ -973,7 +988,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     .hero__scroll { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .hero__aurora, .hero__grid, .hero__grain, .hero__marquee-track, .hero__seal { animation: none; }
+    .hero__aurora, .hero__grid, .hero__grid::before, .hero__grain, .hero__marquee-track, .hero__seal { animation: none; }
     .hero__line-in, .hero__sub, .hero__actions, .hero__eyebrow, .hero__titleblock { transform: none !important; opacity: 1 !important; }
 }
 
@@ -2396,7 +2411,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 }
 .footer__tagline {
     font-size: 11px; letter-spacing: .18em;
-    color: rgba(255,255,255,.25); text-transform: uppercase; margin-bottom: 6px;
+    color: rgba(255,255,255,.5);   /* .25 failed contrast (2.1:1); .5 reads 4.9:1 */ text-transform: uppercase; margin-bottom: 6px;
 }
 .footer__kurdish {
     font-size: 13px; color: var(--gold); opacity: .5;
@@ -2414,13 +2429,13 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
     gap: 10px; margin-bottom: 20px;
 }
 .footer__link {
-    font-size: 12px; letter-spacing: .1em; color: rgba(255,255,255,.35);
+    font-size: 12px; letter-spacing: .1em; color: rgba(255,255,255,.55);  /* was .35: 3.1:1, under the 4.5:1 minimum */
     text-transform: uppercase; transition: color .25s;
 }
 .footer__link:hover { color: var(--gold); }
 .footer__copy {
     font-size: 10px; letter-spacing: .08em;
-    color: rgba(255,255,255,.18); text-align: right; line-height: 1.7;
+    color: rgba(255,255,255,.5);   /* was .18: 1.6:1 — unreadable for many */ text-align: right; line-height: 1.7;
 }
 
 /* ---- Clients & Partners -------------------------------- */
@@ -2694,7 +2709,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .clients__hint {
     margin: 14px 0 0;
     font-size: 9.5px; letter-spacing: .26em; text-transform: uppercase;
-    color: rgba(245,197,24,.55);
+    color: rgba(245,197,24,.75);    /* was .55: 4.2:1 at 9.5px */
 }
 .client-logo:hover .client-logo__name { color: var(--gold); }
 

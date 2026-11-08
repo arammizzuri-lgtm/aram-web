@@ -59,8 +59,9 @@
          initLoader, keeps the time). --}}
     <script>
         try {
-            var amSeen = +localStorage.getItem('am_loader_seen');
-            if (amSeen && Date.now() - amSeen < 30 * 60 * 1000) document.documentElement.classList.add('am-seen');
+            // The loader (the sun) is a welcome, shown on a visitor's first
+            // visit only: once seen on this device, the page opens straight away.
+            if (localStorage.getItem('am_loader_seen')) document.documentElement.classList.add('am-seen');
         } catch (e) { /* storage blocked: the loader, as on a first visit */ }
     </script>
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
@@ -82,9 +83,11 @@
          Self-hosted, the worst case is a map that does not draw, on a page
          that works. three.min.js was already kept here for the same reason.
          To update, re-download all four files (plus vendor/images/) from
-         unpkg at the matching version. --}}
-    <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
-    <link rel="stylesheet" href="{{ asset('vendor/leaflet-gesture-handling.min.css') }}?v={{ filemtime(public_path('vendor/leaflet-gesture-handling.min.css')) }}">
+         unpkg at the matching version.
+
+         They are no longer loaded with the page: no map is on the first
+         screen, so script.js fetches them as a map comes near (leafletReady),
+         from the addresses in window.__LEAFLET__ at the foot of the page. --}}
 </head>
 <body>
 
@@ -160,6 +163,10 @@
                data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
         @endif
     </div>
+
+    {{-- The page's own content, between the menu and the footer — the
+         landmark screen readers (and AI agents) jump to. --}}
+    <main id="main">
 
     <!-- ========== HERO ========== -->
     <section class="hero" id="home">
@@ -412,8 +419,11 @@
         @php
             $clientMark = function ($c) {
                 if ($c->monoUrl()) {
+                    // its own proportions, so the row keeps its place while it loads
+                    $size = $c->monoSize();
                     return '<img class="client-logo__mark client-logo__mark--img" src="'
-                        .e($c->monoUrl()).'" alt="'.e($c->name).' logo" loading="lazy" decoding="async">';
+                        .e($c->monoUrl()).'"'.($size ? ' width="'.$size[0].'" height="'.$size[1].'"' : '')
+                        .' alt="'.e($c->name).' logo" loading="lazy" decoding="async">';
                 }
                 if ($c->mark) {
                     return '<svg class="client-logo__mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">'.$c->mark.'</svg>';
@@ -646,7 +656,9 @@
                         {{-- .img-ph again — the portrait frame's ::after is the
                              caption gradient. --}}
                         <span class="img-ph is-loading" aria-hidden="true"></span>
-                        <img class="portrait__photo" src="{{ \App\Models\Project::resolveImage(setting('about_portrait_img')) }}" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
+                        {{-- the 800px WebP for this frame where it exists (Architect::portraitSrcset) --}}
+                        @php $portraitSet = \App\Support\Architect::portraitSrcset(); @endphp
+                        <img class="portrait__photo" src="{{ \App\Models\Project::resolveImage(setting('about_portrait_img')) }}" @if ($portraitSet) srcset="{{ $portraitSet }}" sizes="(max-width: 900px) 90vw, 440px" @endif loading="lazy" decoding="async" alt="Aram Mizuri, Principal Architect" style="position:absolute;inset:0;z-index:1;">
                         <span class="portrait__corner portrait__corner--tl"></span>
                         <span class="portrait__corner portrait__corner--br"></span>
                         <div class="portrait__caption" {!! bitext('about_portrait_caption') !!}>{{ bival('about_portrait_caption') }}</div>
@@ -778,7 +790,7 @@
                 {{-- Liquid-glass design showcase — cycles through every
                      project cover every 3s (initProcessShowcase in script.js).
                      Desktop only: hidden ≤1100px where the aside stacks. --}}
-                <div class="process__showcase" id="processShowcase" role="button" tabindex="0" aria-label="Selected designs — open project">
+                <div class="process__showcase" id="processShowcase" role="button" tabindex="0">
                     <p class="pshow__label" {!! bitext('process_selected') !!}>{{ bival('process_selected') }}</p>
                     <div class="pshow__frame">
                         <img class="pshow__img" alt="" draggable="false">
@@ -916,11 +928,11 @@
                 <p class="section-label" dir="auto" data-en="{{ setting('contact_label_en') }}" data-ku="{{ setting('contact_label_ku') }}">{{ bi(setting('contact_label_en'), setting('contact_label_ku')) }}</p>
                 <h2 class="contact__title" dir="auto" data-en="{{ setting('contact_title_en') }}" data-ku="{{ setting('contact_title_ku') }}">{!! bi(setting('contact_title_en'), setting('contact_title_ku')) !!}</h2>
 
-                <ul class="contact__methods">
+                <div class="contact__methods">
                     {{-- WhatsApp first — it is how most clients here would rather
                          start. Hidden until a number is set in Site Content. --}}
                     @if ($waUrl = whatsapp_url(bival('wa_text')))
-                        <li>
+                        <div>
                             <a class="cmethod cmethod--link cmethod--wa" href="{{ $waUrl }}" target="_blank" rel="noopener" data-wa="contact"
                                data-href-en="{{ whatsapp_url(\App\Support\SiteText::en('wa_text')) }}"
                                data-href-ku="{{ whatsapp_url(\App\Support\SiteText::ku('wa_text')) }}">
@@ -931,10 +943,10 @@
                                 </span>
                                 <span class="cmethod__hint"><span {!! bitext('wa_cta') !!}>{{ bival('wa_cta') }}</span> ↗&#xFE0E;</span>
                             </a>
-                        </li>
+                        </div>
                     @endif
                     {{-- one email, two lines — the address itself lives on the map card below --}}
-                    <li class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new', 'Info@arammizuri.com') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new', 'Info@arammizuri.com') }}">
+                    <div class="cmethod cmethod--copy" data-copy="{{ setting('contact_email_new', 'Info@arammizuri.com') }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_email_new', 'Info@arammizuri.com') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                         </span>
@@ -943,8 +955,8 @@
                             <span class="cmethod__value">{{ setting('contact_email_new', 'Info@arammizuri.com') }}</span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
-                    </li>
-                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone', '+964 (0) 782 445 4414')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone', '+964 (0) 782 445 4414') }}">
+                    </div>
+                    <div class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone', '+964 (0) 782 445 4414')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone', '+964 (0) 782 445 4414') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
@@ -953,8 +965,8 @@
                             <span class="cmethod__value">{{ setting('contact_phone', '+964 (0) 782 445 4414') }}</span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
-                    </li>
-                    <li class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone2', '+964 (0) 750 408 6367')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone2', '+964 (0) 750 408 6367') }}">
+                    </div>
+                    <div class="cmethod cmethod--copy" data-copy="{{ str_replace('(0) ', '', setting('contact_phone2', '+964 (0) 750 408 6367')) }}" tabindex="0" role="button" aria-label="Copy {{ setting('contact_phone2', '+964 (0) 750 408 6367') }}">
                         <span class="cmethod__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
                         </span>
@@ -963,8 +975,8 @@
                             <span class="cmethod__value">{{ setting('contact_phone2', '+964 (0) 750 408 6367') }}</span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
-                    </li>
-                </ul>
+                    </div>
+                </div>
 
                 {{-- Office locator — dark map, pulsing gold pin, and the
                      visiting policy. Initialised in script.js (initOfficeMap). --}}
@@ -1082,6 +1094,8 @@
             </form>
         </div>
     </section>
+
+    </main>
 
     <!-- ========== FOOTER ========== -->
     <footer class="footer">
@@ -1308,14 +1322,20 @@
 
     @include('partials.whatsapp-fab', ['text' => ['en' => \App\Support\SiteText::en('wa_text'), 'ku' => \App\Support\SiteText::ku('wa_text')], 'hideOver' => '#map, #contact'])
 
-    {{-- Self-hosted — see the note beside the Leaflet stylesheets above. --}}
-    <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}"></script>
-    <script src="{{ asset('vendor/leaflet-gesture-handling.min.js') }}?v={{ filemtime(public_path('vendor/leaflet-gesture-handling.min.js')) }}"></script>
+    {{-- Leaflet, self-hosted (see the note in the head) and fetched on
+         demand by script.js (leafletReady) as a map comes near. --}}
+    @php $v = fn (string $f) => asset($f).'?v='.filemtime(public_path($f)); @endphp
+    <script>window.__LEAFLET__ = {!! json_encode([
+        'css' => $v('vendor/leaflet.css'), 'gestureCss' => $v('vendor/leaflet-gesture-handling.min.css'),
+        'js' => $v('vendor/leaflet.js'), 'gesture' => $v('vendor/leaflet-gesture-handling.min.js'),
+        // the hero's 3D stage, also fetched after the page is up (below)
+        'three' => asset('vendor/three.min.js'), 'hero3d' => $v('hero3d.js'),
+    ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!};</script>
     {{-- Plain JSON, Kurdish left as Kurdish: Js::from() wrapped it in a string
          and escaped every letter as \uXXXX, which made this block 60% larger.
          The HEX flags keep it inert inside <script> (no "</script>", no quotes). --}}
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
-    <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}"></script>
+    <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}" defer></script>
     <script src="{{ asset('map-growth.js') }}?v={{ filemtime(public_path('map-growth.js')) }}" defer></script>
     @include('partials.sketch-assets')
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
@@ -1324,7 +1344,11 @@
         <script src="{{ asset('voices.js') }}?v={{ filemtime(public_path('voices.js')) }}" defer></script>
     @endif
     @include('partials.saved-script')
-    <script src="{{ asset('vendor/three.min.js') }}" defer></script>
-    <script src="{{ asset('hero3d.js') }}?v={{ filemtime(public_path('hero3d.js')) }}" defer></script>
+    {{-- The hero's 3D stage (three.js, ~600 KB, and hero3d.js) used to load
+         with the page, and the loader could not leave until it had been
+         built — so it decided how soon anyone saw the site at all. It now
+         loads once the page is up and the browser has a moment to spare
+         (startHero3d in script.js); until then, the hero's own background
+         stands where it will be. --}}
 </body>
 </html>
