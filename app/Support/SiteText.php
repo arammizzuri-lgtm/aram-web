@@ -521,9 +521,9 @@ class SiteText
                 'arch_other_names'     => ['Other spellings of his name, one per line — not shown, read by search engines', "Aram Mizzuri\nAram Mizouri\nآرام مزوري", '', 'area'],
             ],
 
-            // The build journal (/journal), the Erbil architecture walk
-            // (/erbil-walk) and the blueprint switch in the menu bar.
-            'Journal, walk & blueprint' => [
+            // The build journal (/journal) and the Erbil architecture walk
+            // (/erbil-walk).
+            'Journal & walk' => [
                 'journal_nav'     => ['Journal — menu and footer link', 'Journal', 'ڕۆژنامە'],
                 'journal_label'   => ['Journal — page label', 'Build journal', 'ڕۆژنامەی بیناسازی'],
                 'journal_title'   => ['Journal — title', 'From the site', 'لە شوێنی کارەوە'],
@@ -547,8 +547,6 @@ class SiteText
                 'walk_cta'        => ['Walk — closing question', 'Planning to build in Erbil?', 'پلانی بیناسازیت لە هەولێر هەیە؟'],
                 'walk_cta_btn'    => ['Walk — closing button', 'Talk to the studio', 'لەگەڵ ستۆدیۆ قسە بکە'],
                 'walk_photo_soon' => ['Walk — a stop with no photograph yet', 'Photograph coming', 'وێنە بەم زووانە'],
-                'blueprint_on'    => ['Blueprint switch — turn on', 'Blueprint view', 'بینینی نەخشە'],
-                'blueprint_off'   => ['Blueprint switch — turn off', 'Photo view', 'بینینی وێنە'],
             ],
 
             'Footer' => [

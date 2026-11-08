@@ -460,7 +460,7 @@ class SiteTextAr
             'arch_profiles'        => '',
             'arch_other_names'     => '',
 
-            // Journal, walk & blueprint
+            // Journal & walk
             'journal_nav'     => 'اليوميات',
             'journal_label'   => 'يوميات البناء',
             'journal_title'   => 'من موقع العمل',
@@ -484,8 +484,6 @@ class SiteTextAr
             'walk_cta'        => 'تخطّط للبناء في أربيل؟',
             'walk_cta_btn'    => 'تحدّث مع المكتب',
             'walk_photo_soon' => 'الصورة قريباً',
-            'blueprint_on'    => 'عرض المخطّط',
-            'blueprint_off'   => 'عرض الصور',
 
             // Footer
             'footer_logo'    => 'آرام مزوري',

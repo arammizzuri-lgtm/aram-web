@@ -140,7 +140,6 @@
             {{-- The page in the two other languages: a link to each version
                  (/, /ku, /ar). With three languages the old in-place toggle
                  gave way to plain links, each loading its page whole. --}}
-            @include('partials.blueprint-switch', ['class' => 'lang-toggle'])
             @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
                 <a class="lang-toggle" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
             @endforeach
@@ -169,7 +168,6 @@
                data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
         @endif
         <div class="mobile-menu__langs">
-            @include('partials.blueprint-switch', ['class' => 'mobile-menu__lang', 'withLabel' => true])
             @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
                 <a class="mobile-menu__lang" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
             @endforeach
