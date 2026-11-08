@@ -114,9 +114,35 @@ class ManageSiteContent extends Page
     }
 
     /** Extra non-text fields grafted onto a given text tab. */
+    /**
+     * The verification code from whatever was pasted: the whole tag Google or
+     * Bing shows (<meta name="…" content="CODE" />) or just the code. Only
+     * the characters such codes are made of are kept.
+     */
+    public static function verificationCode(mixed $state): string
+    {
+        $state = trim((string) $state);
+        if (preg_match('/content\s*=\s*["\']([^"\']+)["\']/i', $state, $m)) {
+            $state = $m[1];
+        }
+
+        return preg_replace('/[^A-Za-z0-9_\-]/', '', $state);
+    }
+
     private function extrasFor(string $tab): array
     {
         return match ($tab) {
+            // Proof of ownership for Google Search Console and Bing Webmaster
+            // Tools: the code each gives for its "HTML tag" method, put on the
+            // homepage as a <meta> (partials/site-verification).
+            'Search & sharing' => [
+                $this->text('google_site_verification', 'Google Search Console — verification code (from the "HTML tag" method)', true)
+                    ->placeholder('Paste the whole <meta …> tag, or only its content="…" code')
+                    ->dehydrateStateUsing(fn ($state) => self::verificationCode($state)),
+                $this->text('bing_site_verification', 'Bing Webmaster Tools — verification code (msvalidate.01, "HTML Meta Tag" method)', true)
+                    ->placeholder('Paste the whole <meta …> tag, or only its content="…" code')
+                    ->dehydrateStateUsing(fn ($state) => self::verificationCode($state)),
+            ],
             'Contact' => [
                 $this->text('contact_email_new', 'Email address (value)', true),
                 $this->text('contact_phone', 'Phone 01 — number (value)'),

@@ -14,6 +14,7 @@
     <title>{{ $seoTitle }}</title>
     <meta name="description" content="{{ $seoDescription }}">
     @include('partials.seo-alternates', ['path' => '/'])
+    @include('partials.site-verification')
 
     {{-- Social link preview (Facebook / WhatsApp / iMessage / LinkedIn / X).
          The image is the studio's hero mark; ?v busts the aggressive caches
