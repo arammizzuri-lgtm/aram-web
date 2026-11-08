@@ -672,3 +672,7 @@ html.pp-menu-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* the footer's professional membership line (partials/page-foot) */
+.pp-foot__member { display: inline-flex; align-items: center; gap: 7px; margin-top: 6px; color: rgba(255,255,255,.55); font-size: 11px; }
+.pp-foot__shield { width: 13px; height: 13px; flex: none; color: var(--gold); }

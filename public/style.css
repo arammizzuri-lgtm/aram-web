@@ -2422,6 +2422,13 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
     font-size: 22px; font-weight: 200; letter-spacing: .22em;
     color: #fff; margin-bottom: 8px;
 }
+/* the professional membership, under the tagline */
+.footer__member {
+    display: flex; align-items: center; gap: 8px; margin: 2px 0 8px;
+    font-size: 11px; letter-spacing: .06em; color: rgba(255,255,255,.55);
+}
+.footer__shield { width: 14px; height: 14px; flex: none; color: var(--gold); }
+[dir="rtl"] .footer__member { letter-spacing: 0; font-size: 12px; }
 .footer__tagline {
     font-size: 11px; letter-spacing: .18em;
     color: rgba(255,255,255,.5);   /* .25 failed contrast (2.1:1); .5 reads 4.9:1 */ text-transform: uppercase; margin-bottom: 6px;

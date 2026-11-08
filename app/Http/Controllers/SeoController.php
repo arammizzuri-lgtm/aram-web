@@ -81,6 +81,7 @@ class SeoController extends Controller
         $sections = [
             'Areas of work' => $lines('arch_expertise'),
             'Education' => $lines('arch_education'),
+            'Membership' => $lines('arch_membership'),
             'Awards and recognition' => $lines('arch_awards'),
             'Publications and talks' => $lines('arch_press'),
         ];

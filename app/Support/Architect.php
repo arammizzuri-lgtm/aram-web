@@ -169,7 +169,15 @@ class Architect
             ]],
             'knowsAbout' => self::lines('arch_expertise', 'en') ?: null,
             'alumniOf' => $education ? array_map(fn ($l) => ['@type' => 'EducationalOrganization', 'name' => self::organisation($l)], $education) : null,
-            'hasCredential' => $degrees ? array_map(fn ($l) => ['@type' => 'EducationalOccupationalCredential', 'name' => $l, 'credentialCategory' => 'degree'], $degrees) : null,
+            // the engineers' union: a body he belongs to, and the registration it gave him
+            'memberOf' => str_contains(SiteText::en('arch_membership'), 'Kurdistan Engineers Union')
+                ? ['@type' => 'Organization', 'name' => 'Kurdistan Engineers Union', 'alternateName' => ['نقابة مهندسي كوردستان', 'سەندیکای ئەندازیارانی کوردستان']] : null,
+            'hasCredential' => array_values(array_filter([
+                ...array_map(fn ($l) => ['@type' => 'EducationalOccupationalCredential', 'name' => $l, 'credentialCategory' => 'degree'], $degrees),
+                // the union membership, as written in Site Content (number and year)
+                filled(SiteText::en('arch_membership')) ? ['@type' => 'EducationalOccupationalCredential', 'name' => SiteText::en('arch_membership'),
+                    'credentialCategory' => 'membership', 'recognizedBy' => ['@type' => 'Organization', 'name' => 'Kurdistan Engineers Union']] : null,
+            ])) ?: null,
             'award' => self::lines('arch_awards', 'en') ?: null,
             'sameAs' => self::profiles() ?: null,
         ]);

@@ -18,6 +18,7 @@
     $lists = array_filter([
         'expertise' => [bival('arch_expertise_title'), Architect::lines('arch_expertise', $lang)],
         'education' => [bival('arch_education_title'), Architect::lines('arch_education', $lang)],
+        'membership' => [bival('arch_membership_title'), Architect::lines('arch_membership', $lang)],
         'awards' => [bival('arch_awards_title'), Architect::lines('arch_awards', $lang)],
         'press' => [bival('arch_press_title'), Architect::lines('arch_press', $lang)],
     ], fn ($l) => $l[1]);
@@ -121,6 +122,10 @@
                 <p class="ar-hero__role">{{ bival('arch_role') }}</p>
                 @if (filled(bival('arch_based')))
                     <p class="ar-hero__based"><span class="ar-dot" aria-hidden="true"></span>{{ bival('arch_based') }}</p>
+                @endif
+                @if (filled(bival('arch_membership')))
+                    {{-- registered with the engineers' union: a credential a client can check --}}
+                    <p class="ar-hero__member"><svg class="ar-hero__shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.6 12.2l2.3 2.3 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>{{ bival('arch_membership') }}</span></p>
                 @endif
                 <div class="ar-hero__actions">
                     <a class="pp-btn" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>

@@ -1125,6 +1125,9 @@
             <div class="footer__col footer__col--brand">
                 <div class="footer__logo" {!! bitext('footer_logo') !!}>{{ bival('footer_logo') }}</div>
                 <div class="footer__tagline" {!! bitext('footer_tagline') !!}>{{ bival('footer_tagline') }}</div>
+                @if (filled(bival('arch_membership')))
+                    <div class="footer__member"><svg class="footer__shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.6 12.2l2.3 2.3 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span {!! bitext('arch_membership') !!}>{{ bival('arch_membership') }}</span></div>
+                @endif
                 {{-- always Kurdish, in both versions of the site, so it is always RTL --}}
                 <div class="footer__kurdish" dir="rtl">{{ setting('footer_kurdish') }}</div>
             </div>

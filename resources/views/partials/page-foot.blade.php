@@ -3,6 +3,9 @@
     <div class="pp-foot__brand">
         <a href="{{ site_url('/') }}">{{ bival('footer_logo') }}</a>
         <span>{{ bival('footer_tagline') }}</span>
+        @if (filled(bival('arch_membership')))
+            <span class="pp-foot__member"><svg class="pp-foot__shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.6 12.2l2.3 2.3 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ bival('arch_membership') }}</span>
+        @endif
     </div>
     @php
         $footEmail = setting('contact_email_new', 'Info@arammizuri.com');
