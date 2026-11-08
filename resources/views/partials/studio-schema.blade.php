@@ -27,7 +27,8 @@
         'geo' => ['@type' => 'GeoCoordinates', 'latitude' => 36.23992, 'longitude' => 44.04997],
         'hasMap' => 'https://www.google.com/maps/search/?api=1&query=36.23992,44.04997',
         'areaServed' => 'Kurdistan Region of Iraq',
-        'founder' => ['@type' => 'Person', 'name' => 'Aram Mizuri', 'jobTitle' => 'Principal Architect'],
+        // the same person his own page describes in full (App\Support\Architect)
+        'founder' => \App\Support\Architect::reference() + ['jobTitle' => 'Principal Architect'],
         'sameAs' => collect(socials())->pluck('url')
             ->filter(fn ($u) => preg_match('#^https?://#i', (string) $u))->values()->all(),
     ];

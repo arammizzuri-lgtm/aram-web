@@ -483,6 +483,35 @@ class SiteText
                 'careers_cv_big'    => ['Form — CV too large', 'That file is larger than 8 MB.', 'ئەو فایلە لە ٨ مێگابایت گەورەترە.'],
             ],
 
+            // The architect's own page (/aram-mizuri): who he is, as a person,
+            // for visitors and for search engines and AI assistants, which
+            // read it as the authoritative source on him. A list (one item per
+            // line) left empty is not shown, and nothing is said about it to
+            // search engines either — only facts written here are published.
+            'Architect page' => [
+                'arch_link'            => ['Link to the page (About section, footer)', 'More about Aram Mizuri', 'زیاتر دەربارەی ئارام مزووری'],
+                'arch_label'           => ['Page label', 'The architect', 'تەڵارساز'],
+                'arch_name'            => ['Name — the page heading', 'Aram Mizuri', 'ئارام مزووری'],
+                'arch_role'            => ['Role, under the name', 'Architect · Founder and principal of Aram Mizuri Architecture, Erbil', 'تەڵارساز · دامەزرێنەر و سەرپەرشتیاری تەڵارسازیی ئارام مزووری، هەولێر'],
+                'arch_seo_title'       => ['Page title (browser tab, Google)', 'Aram Mizuri — Architect in Erbil, Kurdistan', 'ئارام مزووری — تەڵارساز لە هەولێر، کوردستان'],
+                'arch_seo_description' => ['Description (Google, link previews — about 150 characters)', 'Aram Mizuri is a Kurdish architect in Erbil, founder of Aram Mizuri Architecture: homes, interiors, cultural and commercial buildings across Kurdistan.', 'ئارام مزووری تەڵارسازێکی کوردە لە هەولێر و دامەزرێنەری تەڵارسازیی ئارام مزوورییە: خانوو، ناوەوە، بینای کولتووری و بازرگانی لە سەرانسەری کوردستان.', 'area'],
+                'arch_bio'             => ['Biography — paragraphs separated by a blank line (left empty, the two About paragraphs are used)', '', '', 'area'],
+                'arch_expertise_title' => ['Areas of work — heading', 'Areas of work', 'بوارەکانی کار'],
+                'arch_expertise'       => ['Areas of work — one per line', "Residential architecture\nInterior design\nCultural and civic buildings\nCommercial and hospitality design\nUrban design and master planning", "تەڵارسازیی نیشتەجێبوون\nدیزاینی ناوەوە\nبینای کولتووری و گشتی\nدیزاینی بازرگانی و میوانداری\nدیزاینی شاری و پلاندانانی گشتی", 'area'],
+                'arch_education_title' => ['Education — heading', 'Education', 'خوێندن'],
+                'arch_education'       => ['Education — one per line, e.g. "Bachelor of Architecture — Salahaddin University, 2015"', '', '', 'area'],
+                'arch_awards_title'    => ['Awards — heading', 'Awards and recognition', 'خەڵات و ناسینەوە'],
+                'arch_awards'          => ['Awards — one per line, e.g. "Winner, Best Residential Design — Kurdistan Architecture Awards, 2024"', '', '', 'area'],
+                'arch_press_title'     => ['Publications and talks — heading', 'Publications and talks', 'بڵاوکراوە و وتار'],
+                'arch_press'           => ['Publications and talks — one per line; a line may end with its web address', '', '', 'area'],
+                'arch_projects_title'  => ['Selected projects — heading', 'Selected projects', 'پرۆژە هەڵبژێردراوەکان'],
+                'arch_all_projects'    => ['Link to every project', 'See every project', 'هەموو پرۆژەکان ببینە'],
+                'arch_cta'             => ['Contact button', 'Work with Aram', 'لەگەڵ ئارام کار بکە'],
+                'arch_credit'          => ['On each project page — label before the name', 'Architect', 'تەڵارساز'],
+                'arch_profiles'        => ['His own profiles, one web address per line (LinkedIn, Instagram, ArchDaily, Wikidata…) — not shown, read by search engines', '', '', 'area'],
+                'arch_other_names'     => ['Other spellings of his name, one per line — not shown, read by search engines', "Aram Mizzuri\nAram Mizouri\nآرام مزوري", '', 'area'],
+            ],
+
             'Footer' => [
                 'footer_logo'    => ['Logo text', 'ARAM MIZURI', 'ئارام مزووری'],
                 'footer_tagline' => ['Tagline', 'Architecture · Erbil · Kurdistan', 'تەڵارسازی · هەولێر · کوردستان'],

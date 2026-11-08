@@ -1436,6 +1436,20 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: 15px; font-weight: 300; line-height: 1.85;
     color: rgba(255,255,255,.6); margin-bottom: 22px;
 }
+/* the way on to the architect's own page (/aram-mizuri) */
+.about__more {
+    display: inline-flex; align-items: center; gap: 10px; align-self: flex-start;
+    margin: 4px 0 28px; padding-bottom: 4px;
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--gold); border-bottom: 1px solid rgba(245,197,24,.4);
+    transition: border-color .3s;
+}
+.about__more:hover { border-color: var(--gold); }
+.about__more-arrow { transition: translate .4s cubic-bezier(0.16, 1, 0.3, 1); }
+.about__more:hover .about__more-arrow { translate: 4px 0; }
+[dir="rtl"] .about__more { letter-spacing: 0; font-size: 13px; }
+[dir="rtl"] .about__more-arrow { display: inline-block; transform: scaleX(-1); }
+[dir="rtl"] .about__more:hover .about__more-arrow { translate: -4px 0; }
 .about__quote {
     border-left: 2px solid var(--gold); padding: 18px 24px;
     margin-top: auto;     /* pushes the quote to the bottom of the text column */

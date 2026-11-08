@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArchitectController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\CareersController;
@@ -38,6 +39,8 @@ $pages = function (string $lang) {
         Route::get('/projects/{slug}', [ProjectPageController::class, 'show'])
             ->where('slug', '[a-z0-9-]+')
             ->name('project');
+        // the architect himself, as a person (App\Support\Architect)
+        Route::get('/aram-mizuri', [ArchitectController::class, 'show'])->name('architect');
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
         // every room from every project, side by side
         Route::get('/photos', [PhotosController::class, 'index'])->name('photos');
@@ -88,6 +91,7 @@ Route::get('/b/{id}', [BoardController::class, 'scan'])->whereNumber('id')->name
 
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+Route::get('/llms.txt', [SeoController::class, 'llms'])->name('llms');
 
 Route::post('/contact', [ContactController::class, 'store'])
     ->middleware('throttle:contact')

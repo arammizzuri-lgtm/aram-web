@@ -308,6 +308,9 @@ html.pp-menu-open { overflow: hidden; }
 }
 [dir="rtl"] .pp-fact dt { letter-spacing: 0; font-size: 12px; }
 .pp-fact dd { font-size: 14px; font-weight: 300; color: rgba(255,255,255,.88); line-height: 1.45; }
+/* the architect's name, leading to his own page */
+.pp-fact__link { border-bottom: 1px solid rgba(245,197,24,.45); transition: color .25s, border-color .25s; }
+.pp-fact__link:hover { color: var(--gold); border-color: var(--gold); }
 
 /* ---- Gallery ------------------------------------------------ */
 .pp-gallery {

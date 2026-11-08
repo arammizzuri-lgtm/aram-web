@@ -629,6 +629,11 @@
                     <p class="about__bio" {!! bitext('about_bio_2') !!}>
                         {{ bival('about_bio_2') }}
                     </p>
+                    {{-- on to the architect's own page --}}
+                    <a class="about__more" href="{{ site_url(\App\Support\Architect::PATH) }}">
+                        <span {!! bitext('arch_link') !!}>{{ bival('arch_link') }}</span>
+                        <span class="about__more-arrow" aria-hidden="true">→</span>
+                    </a>
                     <blockquote class="about__quote">
                         <p {!! bitext('about_quote') !!}>{{ bival('about_quote') }}</p>
                         <cite {!! bitext('about_quote_cite') !!}>{{ bival('about_quote_cite') }}</cite>

@@ -1,0 +1,69 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — architect.css
+   The architect's own page (/aram-mizuri), on top of project.css: his
+   name, role and portrait, his story, the record of his work, and the
+   projects that show it.
+   ========================================================= */
+
+.ar-hero {
+    max-width: var(--wide); margin: 0 auto;
+    padding: clamp(120px, 18vh, 180px) var(--gutter) clamp(56px, 9vh, 96px);
+    display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .85fr);
+    gap: clamp(32px, 6vw, 96px); align-items: start;
+}
+.ar-hero__name {
+    font-size: clamp(48px, 7.4vw, 112px); font-weight: 200; line-height: .98;
+    letter-spacing: -.035em; color: #fff;
+}
+[dir="rtl"] .ar-hero__name { letter-spacing: 0; line-height: 1.25; font-weight: 400; }
+.ar-hero__role {
+    margin: 22px 0 36px; max-width: 46ch;
+    font-size: clamp(15px, 1.25vw, 18px); font-weight: 300; line-height: 1.6; color: var(--gold);
+}
+.ar-hero__bio {
+    max-width: 62ch; font-size: 16px; font-weight: 300; line-height: 1.85; color: var(--text);
+}
+.ar-hero__bio + .ar-hero__bio { margin-top: 18px; }
+[dir="rtl"] .ar-hero__bio { font-size: 17px; line-height: 2; }
+
+.ar-quote {
+    margin-top: 40px; padding-inline-start: 22px; border-inline-start: 1px solid rgba(245,197,24,.5);
+}
+.ar-quote p { font-size: clamp(18px, 1.6vw, 22px); font-weight: 200; line-height: 1.55; color: #fff; }
+.ar-quote cite { display: block; margin-top: 12px; font-style: normal; font-size: 12px; letter-spacing: .14em; color: var(--muted); }
+[dir="rtl"] .ar-quote cite { letter-spacing: 0; font-size: 14px; }
+
+.ar-hero__portrait { position: relative; position: sticky; top: 110px; }
+.ar-hero__portrait img {
+    width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 4px; background: var(--panel);
+}
+.ar-hero__portrait figcaption {
+    margin-top: 14px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint);
+}
+[dir="rtl"] .ar-hero__portrait figcaption { letter-spacing: 0; font-size: 13px; }
+
+/* The record: one column per list, as many as were written */
+.ar-record {
+    max-width: var(--wide); margin: 0 auto; padding: clamp(40px, 7vh, 72px) var(--gutter);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(28px, 4vw, 56px);
+    border-top: 1px solid var(--line);
+}
+.ar-list { list-style: none; display: flex; flex-direction: column; }
+.ar-list li {
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+    font-size: 15px; font-weight: 300; line-height: 1.55; color: var(--text);
+}
+.ar-list a { color: #fff; border-bottom: 1px solid rgba(245,197,24,.45); transition: color .25s, border-color .25s; }
+.ar-list a:hover { color: var(--gold); border-color: var(--gold); }
+
+.ar-projects { border-top: 1px solid var(--line); }
+.ar-projects__head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+.ar-projects__all { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+[dir="rtl"] .ar-projects__all { letter-spacing: 0; font-size: 14px; }
+
+.ar-cta { display: flex; justify-content: center; padding: 0 var(--gutter) clamp(72px, 12vh, 128px); }
+
+@media (max-width: 860px) {
+    .ar-hero { grid-template-columns: 1fr; padding-top: 110px; }
+    .ar-hero__portrait { position: static; order: -1; width: min(100%, 320px); }
+}

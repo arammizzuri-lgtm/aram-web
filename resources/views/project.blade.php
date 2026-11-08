@@ -57,6 +57,8 @@
                 'genre' => implode(', ', $categories) ?: null,
                 'dateCreated' => preg_match('/^\d{4}$/', $project->endYear()) ? $project->endYear() : null,
                 'creator' => ['@type' => 'ProfessionalService', '@id' => url('/').'#studio', 'name' => 'Aram Mizuri Architecture', 'url' => site_url('/')],
+                // the architect by name, joined to his own page
+                'author' => \App\Support\Architect::reference(),
                 'locationCreated' => array_filter([
                     '@type' => 'Place',
                     'name' => $project->location ?: null,
@@ -246,16 +248,19 @@
                 </div>
             </div>
 
-            @if ($facts)
-                <dl class="pp-facts">
-                    @foreach ($facts as $label => $value)
-                        <div class="pp-fact">
-                            <dt>{{ $label }}</dt>
-                            <dd><bdi>{{ $value }}</bdi></dd>
-                        </div>
-                    @endforeach
-                </dl>
-            @endif
+            <dl class="pp-facts">
+                @foreach ($facts as $label => $value)
+                    <div class="pp-fact">
+                        <dt>{{ $label }}</dt>
+                        <dd><bdi>{{ $value }}</bdi></dd>
+                    </div>
+                @endforeach
+                {{-- every project credits the architect, linked to his own page --}}
+                <div class="pp-fact">
+                    <dt>{{ bival('arch_credit') }}</dt>
+                    <dd><a class="pp-fact__link" href="{{ site_url(\App\Support\Architect::PATH) }}"><bdi>{{ bival('arch_name') }}</bdi></a></dd>
+                </div>
+            </dl>
         </section>
 
         {{-- Render over photograph, with a slider between them. The range input
