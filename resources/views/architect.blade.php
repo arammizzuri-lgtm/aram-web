@@ -94,75 +94,89 @@
     @include('partials.page-top', ['otherUrl' => site_url($path, $other)])
 
     <main>
-        {{-- Who he is: the whole portrait, uncropped, beside his name, role and
-             the figures that sum up his work so far --}}
+        {{-- Who he is. The portrait as large as the screen allows and never
+             cropped: its own black ground runs into the page's, so it stands
+             free of any frame. Beside it, the name in two lines and the role
+             in one quiet line, as the big practices set a founder. --}}
         <section class="ar-hero{{ $portrait ? '' : ' ar-hero--text' }}">
             @if ($portrait)
                 <figure class="ar-portrait">
-                    <span class="ar-portrait__frame">
-                        <img src="{{ $portrait }}" alt="{{ strip_tags(bival('arch_name')) }} — {{ strip_tags(bival('arch_label')) }}" fetchpriority="high">
-                        <i class="ar-mark ar-mark--tl" aria-hidden="true"></i><i class="ar-mark ar-mark--tr" aria-hidden="true"></i>
-                        <i class="ar-mark ar-mark--bl" aria-hidden="true"></i><i class="ar-mark ar-mark--br" aria-hidden="true"></i>
-                    </span>
+                    <img src="{{ $portrait }}" alt="{{ strip_tags(bival('arch_name')) }} — {{ strip_tags(bival('arch_label')) }}" fetchpriority="high">
                     <figcaption>{{ bival('about_portrait_caption') }}</figcaption>
                 </figure>
             @endif
             <div class="ar-hero__text">
+                <nav class="ar-crumbs" aria-label="Breadcrumb">
+                    <a href="{{ site_url('/') }}">{{ bival('careers_home') }}</a>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">{{ bival('nav_about') }}</span>
+                </nav>
                 <p class="pp-label">{{ bival('arch_label') }}</p>
-                <h1 class="ar-hero__name">{{ bival('arch_name') }}</h1>
+                <h1 class="ar-hero__name">
+                    @foreach (preg_split('/\s+/u', trim(strip_tags(bival('arch_name')))) as $word)
+                        <span>{{ $word }}</span>
+                    @endforeach
+                </h1>
                 <p class="ar-hero__role">{{ bival('arch_role') }}</p>
                 @if (filled(bival('arch_based')))
                     <p class="ar-hero__based"><span class="ar-dot" aria-hidden="true"></span>{{ bival('arch_based') }}</p>
                 @endif
-                @if ($figures)
-                    <dl class="ar-figures">
-                        @foreach ($figures as [$number, $what])
-                            <div class="ar-figure">
-                                <dt>{{ $number }}</dt>
-                                <dd dir="auto">{{ $what }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                @endif
-                <a class="pp-btn ar-hero__cta" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                <div class="ar-hero__actions">
+                    <a class="pp-btn" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                    <a class="ar-hero__more" href="#profile">{{ bival('arch_story_title') }} <span aria-hidden="true">↓</span></a>
+                </div>
             </div>
         </section>
 
+        {{-- The figures, as the title block along the foot of a sheet --}}
+        @if ($figures)
+            <dl class="ar-strip">
+                @foreach ($figures as [$number, $what])
+                    <div class="ar-strip__cell">
+                        <dt>{{ $number }}</dt>
+                        <dd dir="auto">{{ $what }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+        @endif
+
         {{-- 01 — his story, in his words --}}
-        <section class="ar-sec">
+        <section class="ar-sec" id="profile">
             <header class="ar-sec__head">
                 <span class="ar-sec__num">{{ str_pad((string) $n++, 2, '0', STR_PAD_LEFT) }}</span>
                 <h2 class="ar-sec__title">{{ bival('arch_story_title') }}</h2>
             </header>
             <div class="ar-sec__body">
-                @foreach ($bio as $paragraph)
-                    <p class="ar-bio" dir="auto">{{ $paragraph }}</p>
+                @foreach ($bio as $i => $paragraph)
+                    <p class="ar-bio{{ $i === 0 ? ' ar-bio--lede' : '' }}" dir="auto">{{ $paragraph }}</p>
                 @endforeach
-                @if (filled(bival('about_quote')))
-                    <blockquote class="ar-quote">
-                        <p dir="auto">{{ bival('about_quote') }}</p>
-                        <cite dir="auto">{{ bival('about_quote_cite') }}</cite>
-                    </blockquote>
-                @endif
             </div>
         </section>
 
-        {{-- 02 — the career, step by step, oldest first --}}
+        {{-- his own words, given the whole width --}}
+        @if (filled(bival('about_quote')))
+            <figure class="ar-quote">
+                <blockquote><p dir="auto">{{ bival('about_quote') }}</p></blockquote>
+                <figcaption dir="auto">{{ bival('about_quote_cite') }}</figcaption>
+            </figure>
+        @endif
+
+        {{-- 02 — the career as an index, the latest first --}}
         @if ($timeline)
             <section class="ar-sec">
                 <header class="ar-sec__head">
                     <span class="ar-sec__num">{{ str_pad((string) $n++, 2, '0', STR_PAD_LEFT) }}</span>
                     <h2 class="ar-sec__title">{{ bival('arch_timeline_title') }}</h2>
                 </header>
-                <ol class="ar-sec__body ar-timeline">
-                    @foreach ($timeline as [$when, $role, $where, $what])
-                        <li class="ar-step">
-                            <span class="ar-step__when" dir="auto">{{ $when }}</span>
-                            <div class="ar-step__body">
-                                <h3 class="ar-step__role" dir="auto">{{ $role }}</h3>
-                                @if ($where !== '')<p class="ar-step__where" dir="auto">{{ $where }}</p>@endif
-                                @if ($what !== '')<p class="ar-step__what" dir="auto">{{ $what }}</p>@endif
+                <ol class="ar-sec__body ar-index" reversed>
+                    @foreach (array_reverse($timeline) as $i => [$when, $role, $where, $what])
+                        <li class="ar-row{{ $i === 0 ? ' is-latest' : '' }}">
+                            <span class="ar-row__when" dir="auto">{{ $when }}</span>
+                            <div class="ar-row__main">
+                                <h3 class="ar-row__role" dir="auto">{{ $role }}</h3>
+                                @if ($where !== '')<p class="ar-row__where" dir="auto">{{ $where }}</p>@endif
                             </div>
+                            @if ($what !== '')<p class="ar-row__what" dir="auto">{{ $what }}</p>@endif
                         </li>
                     @endforeach
                 </ol>

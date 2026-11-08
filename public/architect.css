@@ -1,150 +1,194 @@
 /* =========================================================
    ARAM MIZURI ARCHITECTURE — architect.css
    The architect's own page (/aram-mizuri), on top of project.css.
-   Laid out like a set of drawings: the portrait whole, in a frame with
-   the crop marks of a sheet, beside his name and the figures that sum up
-   his work; then numbered sections — profile, career, expertise and
-   education, projects — each with its number and title in the margin.
+
+   Set the way the large practices present a founder (ZHA, BIG, OMA,
+   Snøhetta): the portrait as large as the screen allows, the name large
+   and the role in one quiet line; a few facts in a ruled strip rather than
+   a dashboard; the story as an essay with his own words given the whole
+   width; the career as a plain dated index, latest first; and on to the
+   work at the end.
    ========================================================= */
 
-/* ---- Hero: portrait and name ------------------------------ */
+/* ---- Hero: the portrait and the name ----------------------- */
 .ar-hero {
-    max-width: var(--wide); margin: 0 auto;
-    padding: clamp(112px, 15vh, 160px) var(--gutter) clamp(64px, 10vh, 112px);
-    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: clamp(36px, 6vw, 104px); align-items: center;
+    position: relative; min-height: min(100svh, 1040px);
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end;
+    gap: clamp(32px, 5vw, 96px);
+    padding: 88px clamp(16px, 4vw, 72px) 0;
+    overflow: hidden;
 }
-.ar-hero--text { grid-template-columns: minmax(0, 1fr); }
+.ar-hero--text { grid-template-columns: minmax(0, 1fr); align-items: center; }
 
-/* the portrait, never cropped: the whole photograph at its own proportions */
-.ar-portrait { margin: 0; }
-.ar-portrait__frame {
-    position: relative; display: block; padding: 10px;
-    border: 1px solid rgba(255,255,255,.1); background: #0d0d0d;
+/* The portrait at its own proportions, as tall as the screen less the bar
+   across the top — never cropped. Its black ground meets the page's, and a
+   shade along the foot settles it onto the strip below. */
+.ar-portrait { position: relative; margin: 0; align-self: end; }
+.ar-portrait img {
+    display: block; width: auto; height: auto;
+    max-height: min(calc(100svh - 88px), 952px); max-width: min(58vw, 980px);
 }
-.ar-portrait__frame img {
-    display: block; width: 100%; height: auto;
-    max-height: calc(100vh - 180px); object-fit: contain; margin: 0 auto;
+/* its edges dissolve, so the photograph's black and the page's are one */
+.ar-portrait img {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 74%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 74%, transparent);
+    mask-composite: intersect;
 }
-.ar-mark { position: absolute; width: 18px; height: 18px; border: 0 solid var(--gold); }
-.ar-mark--tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
-.ar-mark--tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
-.ar-mark--bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
-.ar-mark--br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
 .ar-portrait figcaption {
-    margin-top: 14px; font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--faint);
+    position: absolute; z-index: 1; bottom: 22px; inset-inline-start: 0;
+    font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: rgba(255,255,255,.45);
 }
 [dir="rtl"] .ar-portrait figcaption { letter-spacing: 0; font-size: 13px; }
 
-.ar-hero__name {
-    font-size: clamp(52px, 7vw, 116px); font-weight: 200; line-height: .95;
-    letter-spacing: -.04em; color: #fff;
+.ar-hero__text { align-self: center; padding-block: clamp(24px, 6vh, 72px); max-width: 640px; }
+.ar-crumbs {
+    display: flex; gap: 10px; margin-bottom: clamp(28px, 6vh, 64px);
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint);
 }
-[dir="rtl"] .ar-hero__name { letter-spacing: 0; line-height: 1.3; font-weight: 400; }
+.ar-crumbs a { color: var(--muted); transition: color .25s; }
+.ar-crumbs a:hover { color: var(--gold); }
+.ar-crumbs [aria-current] { color: rgba(255,255,255,.7); }
+[dir="rtl"] .ar-crumbs { letter-spacing: 0; font-size: 13px; }
+
+.ar-hero__name {
+    display: flex; flex-direction: column;
+    font-size: clamp(64px, 8.6vw, 168px); font-weight: 200; line-height: .9;
+    letter-spacing: -.045em; color: #fff;
+}
+.ar-hero__name span:last-child { color: rgba(255,255,255,.55); }
+[dir="rtl"] .ar-hero__name { letter-spacing: 0; line-height: 1.2; font-weight: 400; font-size: clamp(56px, 7vw, 128px); }
 .ar-hero__role {
-    margin-top: 26px; max-width: 44ch;
-    font-size: clamp(15px, 1.2vw, 18px); font-weight: 300; line-height: 1.65; color: var(--gold);
+    margin-top: clamp(24px, 4vh, 36px); max-width: 46ch; padding-top: 18px;
+    border-top: 1px solid rgba(245,197,24,.35);
+    font-size: clamp(14px, 1.05vw, 16px); font-weight: 300; line-height: 1.7; color: rgba(255,255,255,.82);
 }
 .ar-hero__based {
-    display: flex; align-items: center; gap: 10px; margin-top: 14px;
-    font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+    display: flex; align-items: center; gap: 10px; margin-top: 12px;
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
 }
 [dir="rtl"] .ar-hero__based { letter-spacing: 0; font-size: 14px; }
 .ar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--done); box-shadow: 0 0 0 4px rgba(78,203,113,.15); }
+.ar-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin-top: clamp(28px, 5vh, 48px); }
+.ar-hero__more {
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--line); padding-bottom: 4px; transition: color .25s, border-color .25s;
+}
+.ar-hero__more:hover { color: #fff; border-color: rgba(255,255,255,.5); }
+[dir="rtl"] .ar-hero__more { letter-spacing: 0; font-size: 14px; }
 
-/* the figures: a ruled grid, as on a title block */
-.ar-figures {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: clamp(32px, 5vh, 48px);
-    border-top: 1px solid var(--line); border-inline-start: 1px solid var(--line);
+/* ---- The figures: a ruled strip, like a sheet's title block ---- */
+.ar-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding-inline: clamp(16px, 4vw, 72px);
 }
-.ar-figure {
-    padding: 20px 22px; display: flex; flex-direction: column; gap: 8px;
-    border-bottom: 1px solid var(--line); border-inline-end: 1px solid var(--line);
+.ar-strip__cell {
+    display: flex; flex-direction: column; gap: 10px; padding: clamp(22px, 3.4vh, 34px) clamp(16px, 2vw, 32px);
+    border-inline-start: 1px solid var(--line);
 }
-.ar-figure dt {
-    font-size: clamp(30px, 3vw, 44px); font-weight: 200; line-height: 1; color: var(--gold);
+.ar-strip__cell:first-child { border-inline-start: 0; padding-inline-start: 0; }
+.ar-strip dt {
+    font-size: clamp(28px, 2.6vw, 42px); font-weight: 200; line-height: 1; color: var(--gold);
     font-variant-numeric: tabular-nums; letter-spacing: -.02em;
 }
-.ar-figure dd { font-size: 13px; font-weight: 300; line-height: 1.5; color: var(--muted); }
-[dir="rtl"] .ar-figure dd { font-size: 14px; }
-.ar-hero__cta { margin-top: clamp(28px, 4vh, 40px); }
+.ar-strip dd { max-width: 30ch; font-size: 13px; font-weight: 300; line-height: 1.55; color: var(--muted); }
+[dir="rtl"] .ar-strip dd { font-size: 14px; }
 
-/* ---- Numbered sections ------------------------------------ */
+/* ---- Numbered sections: number and title in the margin ------ */
 .ar-sec {
-    max-width: var(--wide); margin: 0 auto; padding: clamp(56px, 9vh, 96px) var(--gutter);
+    max-width: var(--wide); margin: 0 auto; padding: clamp(72px, 12vh, 136px) var(--gutter);
     display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(28px, 5vw, 80px);
-    border-top: 1px solid var(--line);
 }
-.ar-sec--wide { grid-template-columns: minmax(0, 1fr); }
-.ar-sec__head { display: flex; flex-direction: column; gap: 10px; align-self: start; position: sticky; top: 100px; }
+.ar-sec + .ar-sec { border-top: 1px solid var(--line); }
+.ar-sec--wide { grid-template-columns: minmax(0, 1fr); border-top: 1px solid var(--line); }
+.ar-sec__head { display: flex; flex-direction: column; gap: 12px; align-self: start; position: sticky; top: 100px; }
 .ar-sec--wide .ar-sec__head { position: static; flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 6px 18px; }
 .ar-sec__num { font-size: 12px; letter-spacing: .3em; color: var(--gold); font-variant-numeric: tabular-nums; }
-.ar-sec__title { font-size: clamp(26px, 2.6vw, 38px); font-weight: 200; line-height: 1.15; color: #fff; letter-spacing: -.01em; }
+.ar-sec__title { font-size: clamp(28px, 2.8vw, 42px); font-weight: 200; line-height: 1.1; color: #fff; letter-spacing: -.015em; }
 [dir="rtl"] .ar-sec__title { letter-spacing: 0; font-weight: 400; line-height: 1.5; }
 .ar-projects__all {
     margin-inline-start: auto; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); white-space: nowrap;
 }
 [dir="rtl"] .ar-projects__all { letter-spacing: 0; font-size: 14px; }
 
-/* 01 — profile */
-.ar-bio { max-width: 64ch; font-size: 17px; font-weight: 300; line-height: 1.9; color: var(--text); }
-.ar-bio + .ar-bio { margin-top: 20px; }
+/* 01 — profile, as an essay: the first paragraph set larger as its lede */
+.ar-bio { max-width: 64ch; font-size: 17px; font-weight: 300; line-height: 1.9; color: rgba(229,226,220,.86); }
+.ar-bio + .ar-bio { margin-top: 22px; }
+.ar-bio--lede { font-size: clamp(20px, 1.7vw, 25px); line-height: 1.6; color: #fff; font-weight: 300; }
 [dir="rtl"] .ar-bio { font-size: 18px; line-height: 2.05; }
-.ar-quote { margin-top: 44px; padding-inline-start: 24px; border-inline-start: 1px solid var(--gold); }
-.ar-quote p { font-size: clamp(20px, 1.9vw, 26px); font-weight: 200; line-height: 1.5; color: #fff; }
-.ar-quote cite { display: block; margin-top: 14px; font-style: normal; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
-[dir="rtl"] .ar-quote cite { letter-spacing: 0; font-size: 14px; text-transform: none; }
+[dir="rtl"] .ar-bio--lede { font-size: clamp(21px, 1.8vw, 26px); line-height: 1.9; }
 
-/* 02 — career: a line down the side, a node at each step */
-.ar-timeline { list-style: none; position: relative; }
-.ar-timeline::before {
-    content: ''; position: absolute; top: 8px; bottom: 8px; inset-inline-start: 5px;
-    width: 1px; background: linear-gradient(var(--gold), rgba(245,197,24,.15));
+/* his words, across the page */
+.ar-quote {
+    margin: 0; padding: clamp(72px, 13vh, 144px) var(--gutter);
+    border-top: 1px solid var(--line); background: #0c0c0c; text-align: center;
 }
-.ar-step {
-    position: relative; display: grid; grid-template-columns: minmax(120px, 170px) minmax(0, 1fr); gap: 8px 28px;
-    padding: 0 0 36px; padding-inline-start: 36px;
+.ar-quote blockquote p {
+    max-width: 22ch; margin: 0 auto;
+    font-size: clamp(30px, 4.2vw, 64px); font-weight: 200; line-height: 1.15; letter-spacing: -.02em; color: #fff;
 }
-.ar-step:last-child { padding-bottom: 0; }
-.ar-step::before {
-    content: ''; position: absolute; top: 6px; inset-inline-start: 0;
-    width: 11px; height: 11px; border-radius: 50%;
-    background: var(--black); border: 1px solid var(--gold);
+[dir="rtl"] .ar-quote blockquote p { letter-spacing: 0; line-height: 1.6; font-weight: 400; }
+.ar-quote figcaption {
+    margin-top: 28px; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--gold);
 }
-.ar-step:last-child::before { background: var(--gold); box-shadow: 0 0 0 5px rgba(245,197,24,.14); }
-.ar-step__when { font-size: 13px; letter-spacing: .08em; color: var(--gold); font-variant-numeric: tabular-nums; padding-top: 2px; }
-[dir="rtl"] .ar-step__when { letter-spacing: 0; font-size: 14px; }
-.ar-step__role { font-size: 20px; font-weight: 300; line-height: 1.3; color: #fff; }
-.ar-step__where { margin-top: 4px; font-size: 13px; letter-spacing: .04em; color: var(--muted); }
-.ar-step__what { margin-top: 10px; max-width: 60ch; font-size: 15px; font-weight: 300; line-height: 1.75; color: rgba(229,226,220,.82); }
-[dir="rtl"] .ar-step__what { font-size: 16px; line-height: 1.95; }
+[dir="rtl"] .ar-quote figcaption { letter-spacing: 0; font-size: 14px; }
+
+/* 02 — career: a dated index, ruled, the latest first */
+.ar-index { list-style: none; border-top: 1px solid var(--line); }
+.ar-row {
+    display: grid; grid-template-columns: minmax(110px, 150px) minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 10px clamp(20px, 3vw, 40px); padding: 26px 0; border-bottom: 1px solid var(--line);
+    transition: background-color .3s;
+}
+.ar-row__when { font-size: 13px; letter-spacing: .06em; color: var(--faint); font-variant-numeric: tabular-nums; padding-top: 3px; }
+.ar-row.is-latest .ar-row__when { color: var(--gold); }
+[dir="rtl"] .ar-row__when { letter-spacing: 0; font-size: 14px; }
+.ar-row__role { font-size: 19px; font-weight: 300; line-height: 1.3; color: #fff; }
+.ar-row__where { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.ar-row__what { font-size: 14.5px; font-weight: 300; line-height: 1.75; color: rgba(229,226,220,.72); }
+[dir="rtl"] .ar-row__what { font-size: 15.5px; line-height: 1.95; }
 
 /* 03 — expertise and education */
 .ar-record { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(28px, 4vw, 48px); align-content: start; }
-.ar-list { list-style: none; display: flex; flex-direction: column; }
-.ar-list li { padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 300; line-height: 1.55; color: var(--text); }
+.ar-list { list-style: none; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.ar-list li { padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 300; line-height: 1.55; color: var(--text); }
 .ar-list a { color: #fff; border-bottom: 1px solid rgba(245,197,24,.45); transition: color .25s, border-color .25s; }
 .ar-list a:hover { color: var(--gold); border-color: var(--gold); }
 
-/* the close */
+/* the close: on to the work, or to him */
 .ar-cta {
     display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center;
-    padding: clamp(64px, 11vh, 120px) var(--gutter) clamp(80px, 13vh, 140px); border-top: 1px solid var(--line);
+    padding: clamp(72px, 12vh, 128px) var(--gutter) clamp(88px, 14vh, 150px); border-top: 1px solid var(--line);
 }
 .ar-cta__name { font-size: clamp(34px, 5vw, 72px); font-weight: 200; letter-spacing: -.03em; color: #fff; line-height: 1; }
 [dir="rtl"] .ar-cta__name { letter-spacing: 0; font-weight: 400; line-height: 1.4; }
 
-/* ---- Tablet and phone ------------------------------------- */
-@media (max-width: 960px) {
-    .ar-hero { grid-template-columns: minmax(0, 1fr); padding-top: 104px; }
-    .ar-portrait { width: min(100%, 460px); }
-    .ar-portrait__frame img { max-height: none; }
+/* ---- Tablet and phone --------------------------------------- */
+@media (max-width: 1100px) {
+    .ar-row { grid-template-columns: minmax(100px, 130px) minmax(0, 1fr); }
+    .ar-row__what { grid-column: 2; }
+}
+@media (max-width: 900px) {
+    .ar-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-top: 80px; align-items: start; }
+    .ar-portrait { justify-self: center; }
+    .ar-portrait img { max-width: 100%; max-height: 72svh; }
+    .ar-hero__text { padding-top: 8px; }
+    .ar-crumbs { margin-bottom: 24px; }
     .ar-sec { grid-template-columns: minmax(0, 1fr); }
     .ar-sec__head { position: static; flex-direction: row; align-items: baseline; gap: 14px; }
 }
+/* tablet and phone: the figures two by two, never three and one */
+@media (max-width: 1100px) {
+    .ar-strip { grid-template-columns: 1fr 1fr; }
+    .ar-strip__cell { border-top: 1px solid var(--line); }
+    .ar-strip__cell:nth-child(-n+2) { border-top: 0; }
+    .ar-strip__cell:nth-child(odd) { border-inline-start: 0; padding-inline-start: 0; }
+}
 @media (max-width: 560px) {
-    .ar-figure { padding: 16px; }
-    .ar-step { grid-template-columns: minmax(0, 1fr); padding-inline-start: 28px; }
-    .ar-step__when { padding-top: 0; }
+    .ar-strip { padding-inline: 16px; }
+    .ar-strip__cell { padding: 18px 14px; }
+    .ar-strip__cell:nth-child(odd) { padding-inline-start: 0; }
+    .ar-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .ar-row__what { grid-column: 1; margin-top: 4px; }
 }
