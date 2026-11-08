@@ -1,0 +1,90 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — blueprint.css
+   The blueprint view (html.bp, switched by blueprint.js): the site as a
+   sheet of blueprint paper. Every surface gives way to one deep blue with
+   a white drafting grid; text, rules and outlines are white; the gold
+   becomes white line. Photographs are printed as cyanotypes — greyscale,
+   then screened onto the blue, so their light parts turn white and their
+   dark parts sink into the paper.
+   ========================================================= */
+
+html.bp {
+    --bp-blue: #0E3A63;
+    --bp-line: rgba(255, 255, 255, .55);
+    --bp-faint: rgba(255, 255, 255, .14);
+    /* the site's own black and panel colours become the paper: every fade
+       and edge drawn from them (logo strip, sliders, shades) turns blue too */
+    --black: #0E3A63;
+    --panel: #0E3A63;
+    color-scheme: dark;
+}
+/* the client logos: full white line on the paper */
+html.bp .client-logo, html.bp .client-logo * { opacity: 1 !important; }
+html.bp body {
+    background-color: var(--bp-blue) !important;
+    background-image:
+        linear-gradient(var(--bp-faint) 1px, transparent 1px),
+        linear-gradient(90deg, var(--bp-faint) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px) !important;
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px !important;
+    background-attachment: fixed !important;
+}
+
+/* every surface transparent, so the paper shows through; type and lines white */
+html.bp body *:not(img):not(video):not(canvas):not(svg):not(svg *):not(iframe):not(.leaflet-tile):not(.leaflet-tile-container) {
+    background-color: transparent !important;
+    color: #fff !important;
+    border-color: var(--bp-line) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+/* decorative glows, auroras and photo backdrops off — the paper is the background */
+html.bp .hero__aurora, html.bp .hero__grain, html.bp .about__pattern, html.bp .loader::before,
+html.bp .ar-portrait::after, html.bp .portrait__sun, html.bp [class*="ambient"] {
+    background-image: none !important;
+    opacity: 0 !important;
+}
+
+/* the dark shades laid over photographs (for the type on them) turn to the
+   paper's blue, so a photograph fades into the sheet instead of into black */
+html.bp .pp-hero__shade, html.bp .pp-pager__shade, html.bp .pgc__overlay, html.bp .px-tb,
+html.bp .od-bg__veil, html.bp .od-panel__scrim, html.bp .proj-map__veil {
+    background-image: linear-gradient(to top, rgba(14,58,99,.96) 0%, rgba(14,58,99,.55) 32%, rgba(14,58,99,0) 62%) !important;
+}
+html.bp .pp-hero, html.bp .pp-card__img, html.bp .jr-card__img, html.bp .wk-stop__img, html.bp .pgc { background-color: var(--bp-blue) !important; }
+
+/* photographs and the 3D stage, as cyanotypes */
+html.bp img:not([src$=".svg"]), html.bp video, html.bp canvas, html.bp .leaflet-tile {
+    filter: grayscale(1) contrast(1.25) brightness(1.08) !important;
+    mix-blend-mode: screen !important;
+}
+html.bp .ar-portrait img { -webkit-mask-image: none !important; mask-image: none !important; }
+/* maps: their tiles sit in layers of their own, so the whole map is
+   screened onto the paper instead — streets in white line on the blue */
+html.bp .leaflet-tile { mix-blend-mode: normal !important; filter: grayscale(1) contrast(1.15) brightness(1.5) !important; }
+html.bp .leaflet-container { mix-blend-mode: screen !important; background: #000 !important; }
+
+/* gold becomes white line: buttons, pills, pins */
+html.bp .pp-btn, html.bp .hero__go, html.bp .lang-toggle, html.bp .pp-lang, html.bp button[type=submit] {
+    background: transparent !important;
+    border: 1px solid #fff !important;
+    color: #fff !important;
+}
+html.bp .pp-btn:hover, html.bp .hero__go:hover { background: rgba(255,255,255,.12) !important; }
+html.bp svg [stroke]:not([stroke="none"]) { stroke: #fff !important; }
+html.bp svg [fill]:not([fill="none"]) { fill: #fff !important; }
+html.bp .wk-pin, html.bp .map-pin .pin__dot, html.bp .office-pin, html.bp .ar-dot {
+    background: var(--bp-blue) !important;
+    border: 1.5px solid #fff !important;
+    color: #fff !important;
+}
+
+/* the switch itself, on */
+html.bp [data-blueprint] { border-color: #fff !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+    html.bp body { transition: background-color .6s ease; }
+}

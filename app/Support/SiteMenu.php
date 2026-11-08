@@ -34,6 +34,7 @@ class SiteMenu
             $item(bival('nav_process'), $home('process')),
             $item(bival('nav_contact'), $home('contact')),
             CostEstimate::enabled() ? $item(bival('est_nav'), site_url('/estimate'), $here('estimate')) : null,
+            $item(bival('journal_nav'), site_url('/journal'), $here('journal', 'journal.post'), onlyInSheet: true),
             $item(bival('careers_link'), site_url('/careers'), $here('careers'), onlyInSheet: true),
         ]));
     }

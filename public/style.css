@@ -3969,3 +3969,9 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 [dir="rtl"] .hero__clock time    { letter-spacing: .14em !important; }
 [dir="rtl"] .process__count-now,
 [dir="rtl"] .process__count-total { letter-spacing: .12em !important; }
+
+/* the blueprint view's switch (partials/blueprint-switch) in the menu */
+.bp-switch { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
+.bp-switch__icon { width: 15px; height: 15px; flex: none; }
+.lang-toggle.bp-switch { padding: 5px 9px; }
+.mobile-menu__lang.bp-switch { background: none; cursor: pointer; font: inherit; }

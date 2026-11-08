@@ -118,6 +118,8 @@ class SeoController extends Controller
         $out[] = '- Email: '.setting('contact_email_new', 'Info@arammizuri.com');
         $out[] = '- Website: '.site_url('/', 'en').' (English), '.site_url('/', 'ku').' (Kurdish), '.site_url('/', 'ar').' (Arabic)';
         $out[] = '- [Every project]('.site_url('/projects', 'en').')';
+        $out[] = '- [Build journal — projects as they are built]('.site_url('/journal', 'en').')';
+        $out[] = '- [Erbil architecture walk — a guide to the city\'s buildings by Aram Mizuri]('.site_url('/erbil-walk', 'en').')';
         $out[] = '';
 
         return response(implode("\n", $out), 200, [
@@ -147,6 +149,14 @@ class SeoController extends Controller
         foreach ($projects as $project) {
             $this->page($xml, '/projects/'.$project->slug, $project->updated_at, $project->orderedVariantUrls('lg'));
         }
+
+        // the build journal and its entries, and the Erbil walk
+        $posts = \App\Models\ProjectUpdate::inJournal()->orderByDesc('date')->get();
+        $this->page($xml, '/journal', $posts->max('updated_at'));
+        foreach ($posts as $post) {
+            $this->page($xml, '/journal/'.$post->slug, $post->updated_at, $post->imageUrls('lg'));
+        }
+        $this->page($xml, '/erbil-walk', \App\Models\WalkStop::max('updated_at') ? \Illuminate\Support\Carbon::parse(\App\Models\WalkStop::max('updated_at')) : null);
 
         $this->page($xml, '/careers', JobOpening::query()->max('updated_at') ? Carbon::parse(JobOpening::query()->max('updated_at')) : null);
 

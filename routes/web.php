@@ -7,6 +7,7 @@ use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\JournalController;
 use App\Http\Controllers\PhotosController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProjectPageController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SketchController;
+use App\Http\Controllers\WalkController;
 use App\Http\Middleware\PrivatePage;
 use App\Http\Middleware\SiteLanguage;
 use App\Http\Middleware\TrackPageView;
@@ -42,6 +44,11 @@ $pages = function (string $lang) {
         // the architect himself, as a person (App\Support\Architect)
         Route::get('/aram-mizuri', [ArchitectController::class, 'show'])->name('architect');
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
+        // the build journal: construction updates published as posts
+        Route::get('/journal', [JournalController::class, 'index'])->name('journal');
+        // the studio's guide to Erbil's architecture
+        Route::get('/erbil-walk', [WalkController::class, 'index'])->name('walk');
+        Route::get('/journal/{slug}', [JournalController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('journal.post');
         // every room from every project, side by side
         Route::get('/photos', [PhotosController::class, 'index'])->name('photos');
         // a visitor's hearted projects, or a list someone shared with them

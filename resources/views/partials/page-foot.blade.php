@@ -15,6 +15,8 @@
         <a href="mailto:{{ $footEmail }}">{{ $footEmail }}</a>
         <a href="tel:{{ preg_replace('/[^\d+]/', '', str_replace('(0)', '', $footPhone)) }}" dir="ltr">{{ $footPhone }}</a>
         <a href="{{ site_url(\App\Support\Architect::PATH) }}">{{ bival('arch_name') }}</a>
+        <a href="{{ site_url('/journal') }}">{{ bival('journal_nav') }}</a>
+        <a href="{{ site_url('/erbil-walk') }}">{{ bival('walk_nav') }}</a>
         <a href="{{ site_url('/careers') }}">{{ bival('careers_link') }}</a>
         @if (\App\Support\CostEstimate::enabled())
             <a href="{{ site_url('/estimate') }}">{{ bival('est_nav') }}</a>

@@ -521,6 +521,36 @@ class SiteText
                 'arch_other_names'     => ['Other spellings of his name, one per line — not shown, read by search engines', "Aram Mizzuri\nAram Mizouri\nآرام مزوري", '', 'area'],
             ],
 
+            // The build journal (/journal), the Erbil architecture walk
+            // (/erbil-walk) and the blueprint switch in the menu bar.
+            'Journal, walk & blueprint' => [
+                'journal_nav'     => ['Journal — menu and footer link', 'Journal', 'ڕۆژنامە'],
+                'journal_label'   => ['Journal — page label', 'Build journal', 'ڕۆژنامەی بیناسازی'],
+                'journal_title'   => ['Journal — title', 'From the site', 'لە شوێنی کارەوە'],
+                'journal_intro'   => ['Journal — introduction', 'Our projects as they are built — the site step by step, from the first foundations to the handover of the keys.', 'پرۆژەکانمان لە کاتی دروستکردندا — شوێنی کار هەنگاو بە هەنگاو، لە یەکەم بناغەوە تا ڕادەستکردنی کلیلەکان.', 'area'],
+                'journal_empty'   => ['Journal — no entries yet', 'The first entries are on their way.', 'یەکەم بابەتەکان بەڕێوەن.'],
+                'journal_read'    => ['Journal — read an entry', 'Read', 'بخوێنەوە'],
+                'journal_all'     => ['Journal — back to every entry', 'All entries', 'هەموو بابەتەکان'],
+                'journal_project' => ['Journal — link to the project', 'See the project', 'پرۆژەکە ببینە'],
+                'journal_more'    => ['Journal — more from the same build', 'More from this build', 'زیاتر لەم بیناسازییە'],
+                'journal_in'      => ['Project page — link from a progress step to its journal entry', 'In the journal', 'لە ڕۆژنامەدا'],
+                'walk_nav'        => ['Walk — footer link', 'Erbil architecture walk', 'گەشتی تەڵارسازیی هەولێر'],
+                'walk_label'      => ['Walk — page label', 'Architecture walk', 'گەشتی تەڵارسازی'],
+                'walk_title'      => ['Walk — title', 'Erbil, on foot', 'هەولێر، بە پێ'],
+                'walk_intro'      => ['Walk — introduction', 'A walk through the architecture of Erbil, from the Citadel to the modern city — chosen and annotated by architect Aram Mizuri.', 'گەشتێک بە ناو تەڵارسازیی هەولێردا، لە قەڵاوە تا شاری نوێ — هەڵبژاردن و ڕوونکردنەوەی تەڵارساز ئارام مزووری.', 'area'],
+                'walk_stop'       => ['Walk — "stop" before a number', 'Stop', 'وێستگە'],
+                'walk_built'      => ['Walk — "built" before a date', 'Built', 'دروستکراوە'],
+                'walk_directions' => ['Walk — directions button', 'Directions', 'ڕێنمایی ڕێگا'],
+                'walk_from_prev'  => ['Walk — distance from the stop before, {d}', '{d} from the previous stop', '{d} لە وێستگەی پێشووەوە'],
+                'walk_total'      => ['Walk — length of the walk, {d} and {n} stops', '{n} stops · about {d} on foot', '{n} وێستگە · نزیکەی {d} بە پێ'],
+                'walk_by'         => ['Walk — signature', 'Guided by Aram Mizuri, architect in Erbil', 'ڕێنمایی ئارام مزووری، تەڵارساز لە هەولێر'],
+                'walk_cta'        => ['Walk — closing question', 'Planning to build in Erbil?', 'پلانی بیناسازیت لە هەولێر هەیە؟'],
+                'walk_cta_btn'    => ['Walk — closing button', 'Talk to the studio', 'لەگەڵ ستۆدیۆ قسە بکە'],
+                'walk_photo_soon' => ['Walk — a stop with no photograph yet', 'Photograph coming', 'وێنە بەم زووانە'],
+                'blueprint_on'    => ['Blueprint switch — turn on', 'Blueprint view', 'بینینی نەخشە'],
+                'blueprint_off'   => ['Blueprint switch — turn off', 'Photo view', 'بینینی وێنە'],
+            ],
+
             'Footer' => [
                 'footer_logo'    => ['Logo text', 'ARAM MIZURI', 'ئارام مزووری'],
                 'footer_tagline' => ['Tagline', 'Architecture · Erbil · Kurdistan', 'تەڵارسازی · هەولێر · کوردستان'],

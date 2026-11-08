@@ -57,6 +57,12 @@ class UpdatesRelationManager extends RelationManager
                 ->columnSpanFull(),
             Toggle::make('is_private')->label('Private — only in this project\'s client rooms')
                 ->helperText('Left off, the update is on the project\'s public page too (if the project is published).')
+                ->live()->columnSpanFull(),
+            // the build journal (/journal): this update as a post of its own
+            Toggle::make('in_journal')->label('Publish in the Journal')
+                ->helperText('Also shown as a post on the studio\'s build journal (/journal), with its own page. Ask the owner first. Not possible for a private update.')
+                ->disabled(fn (callable $get) => (bool) $get('is_private'))
+                ->dehydrateStateUsing(fn ($state, callable $get) => (bool) $state && ! $get('is_private'))
                 ->columnSpanFull(),
         ]);
     }
@@ -75,6 +81,9 @@ class UpdatesRelationManager extends RelationManager
                     ->description(fn (ProjectUpdate $r) => $r->note_en ? \Illuminate\Support\Str::limit($r->note_en, 80) : null),
                 TextColumn::make('photos')->label('Photos')
                     ->state(fn (ProjectUpdate $r) => count((array) $r->images)),
+                IconColumn::make('in_journal')->label('Journal')->boolean()
+                    ->trueIcon('heroicon-o-newspaper')->falseIcon('heroicon-o-minus')
+                    ->trueColor('success')->falseColor('gray'),
                 IconColumn::make('is_private')->label('Private')->boolean()
                     ->trueIcon('heroicon-o-lock-closed')->falseIcon('heroicon-o-globe-alt')
                     ->trueColor('warning')->falseColor('gray'),

@@ -42,6 +42,7 @@
                 <span>{{ $backLabel ?? bival('careers_home') }}</span>
             </a>
         @endunless
+        @include('partials.blueprint-switch', ['class' => 'pp-top__link'])
         @foreach ($langLinks as $code => $href)
             <a class="pp-lang" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
         @endforeach

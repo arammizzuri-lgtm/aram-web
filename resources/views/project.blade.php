@@ -353,6 +353,9 @@
                             @if (filled($u->note($lang)))
                                 <p class="pp-step__note" dir="auto">{{ $u->note($lang) }}</p>
                             @endif
+                            @if ($u->in_journal && filled($u->slug))
+                                <a class="pp-step__journal" href="{{ $u->journalUrl() }}">{{ bival('journal_in') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                            @endif
                             @if ($big)
                                 <div class="pp-step__photos" data-images='@json($big)'>
                                     @foreach ($small as $i => $src)
