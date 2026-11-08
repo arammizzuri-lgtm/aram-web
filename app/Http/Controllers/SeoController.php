@@ -68,6 +68,16 @@ class SeoController extends Controller
             $out[] = $clean($paragraph);
             $out[] = '';
         }
+        $career = Architect::rows('arch_timeline', 4, 'en');
+        if ($career) {
+            $out[] = '### Career';
+            $out[] = '';
+            foreach ($career as [$when, $role, $where, $what]) {
+                $out[] = '- '.collect([$clean($when), collect([$clean($role), $clean($where)])->filter()->implode(', ')])->filter()->implode(': ')
+                    .($clean($what) !== '' ? ' — '.$clean($what) : '');
+            }
+            $out[] = '';
+        }
         $sections = [
             'Areas of work' => $lines('arch_expertise'),
             'Education' => $lines('arch_education'),

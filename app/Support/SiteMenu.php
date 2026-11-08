@@ -28,7 +28,8 @@ class SiteMenu
             $item(bival('careers_home'), site_url('/'), onlyInSheet: true),
             $item(bival('nav_projects'), site_url('/projects'), $here('projects', 'project')),
             $item(bival('nav_map'), $home('map')),
-            $item(bival('nav_about'), $home('about')),
+            // About is the architect's own page, not the homepage's section
+            $item(bival('nav_about'), site_url(Architect::PATH), $here('architect')),
             $item(bival('nav_services'), $home('services')),
             $item(bival('nav_process'), $home('process')),
             $item(bival('nav_contact'), $home('contact')),

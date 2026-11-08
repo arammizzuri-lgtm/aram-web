@@ -118,7 +118,7 @@
             <a href="{{ site_url('/projects') }}" class="nav__link"
                data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
             <a href="#map"      class="nav__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
-            <a href="#about"    class="nav__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
+            <a href="{{ site_url(\App\Support\Architect::PATH) }}" class="nav__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
             <a href="#services" class="nav__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
             <a href="#process"  class="nav__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
             <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
@@ -151,7 +151,7 @@
         <a href="{{ site_url('/projects') }}" class="mobile-menu__link"
            data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
         <a href="#map"      class="mobile-menu__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
-        <a href="#about"    class="mobile-menu__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
+        <a href="{{ site_url(\App\Support\Architect::PATH) }}" class="mobile-menu__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
         <a href="#services" class="mobile-menu__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
         <a href="#process"  class="mobile-menu__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
         <a href="#contact"  class="mobile-menu__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>

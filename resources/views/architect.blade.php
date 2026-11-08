@@ -12,6 +12,9 @@
     $ogImage = $portrait ?: asset('og-image.jpg').'?v='.filemtime(public_path('og-image.jpg'));
 
     $bio = Architect::bio($lang);
+    $figures = array_filter(Architect::rows('arch_figures', 2, $lang), fn ($f) => $f[0] !== '');
+    $timeline = array_filter(Architect::rows('arch_timeline', 4, $lang), fn ($s) => $s[0] !== '' || $s[1] !== '');
+    $n = 1;   // the sections are numbered as they appear, like the sheets of a set
     $lists = array_filter([
         'expertise' => [bival('arch_expertise_title'), Architect::lines('arch_expertise', $lang)],
         'education' => [bival('arch_education_title'), Architect::lines('arch_education', $lang)],
@@ -91,14 +94,49 @@
     @include('partials.page-top', ['otherUrl' => site_url($path, $other)])
 
     <main>
-        {{-- Who he is: name, role and portrait, then his story in his words --}}
-        <section class="ar-hero">
+        {{-- Who he is: the whole portrait, uncropped, beside his name, role and
+             the figures that sum up his work so far --}}
+        <section class="ar-hero{{ $portrait ? '' : ' ar-hero--text' }}">
+            @if ($portrait)
+                <figure class="ar-portrait">
+                    <span class="ar-portrait__frame">
+                        <img src="{{ $portrait }}" alt="{{ strip_tags(bival('arch_name')) }} — {{ strip_tags(bival('arch_label')) }}" fetchpriority="high">
+                        <i class="ar-mark ar-mark--tl" aria-hidden="true"></i><i class="ar-mark ar-mark--tr" aria-hidden="true"></i>
+                        <i class="ar-mark ar-mark--bl" aria-hidden="true"></i><i class="ar-mark ar-mark--br" aria-hidden="true"></i>
+                    </span>
+                    <figcaption>{{ bival('about_portrait_caption') }}</figcaption>
+                </figure>
+            @endif
             <div class="ar-hero__text">
                 <p class="pp-label">{{ bival('arch_label') }}</p>
                 <h1 class="ar-hero__name">{{ bival('arch_name') }}</h1>
                 <p class="ar-hero__role">{{ bival('arch_role') }}</p>
+                @if (filled(bival('arch_based')))
+                    <p class="ar-hero__based"><span class="ar-dot" aria-hidden="true"></span>{{ bival('arch_based') }}</p>
+                @endif
+                @if ($figures)
+                    <dl class="ar-figures">
+                        @foreach ($figures as [$number, $what])
+                            <div class="ar-figure">
+                                <dt>{{ $number }}</dt>
+                                <dd dir="auto">{{ $what }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                @endif
+                <a class="pp-btn ar-hero__cta" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+            </div>
+        </section>
+
+        {{-- 01 — his story, in his words --}}
+        <section class="ar-sec">
+            <header class="ar-sec__head">
+                <span class="ar-sec__num">{{ str_pad((string) $n++, 2, '0', STR_PAD_LEFT) }}</span>
+                <h2 class="ar-sec__title">{{ bival('arch_story_title') }}</h2>
+            </header>
+            <div class="ar-sec__body">
                 @foreach ($bio as $paragraph)
-                    <p class="ar-hero__bio" dir="auto">{{ $paragraph }}</p>
+                    <p class="ar-bio" dir="auto">{{ $paragraph }}</p>
                 @endforeach
                 @if (filled(bival('about_quote')))
                     <blockquote class="ar-quote">
@@ -107,38 +145,61 @@
                     </blockquote>
                 @endif
             </div>
-            @if ($portrait)
-                <figure class="ar-hero__portrait">
-                    <img src="{{ $portrait }}" alt="{{ strip_tags(bival('arch_name')) }} — {{ strip_tags(bival('arch_label')) }}" width="720" height="900" fetchpriority="high">
-                    <figcaption>{{ bival('about_portrait_caption') }}</figcaption>
-                </figure>
-            @endif
         </section>
 
-        {{-- The record: what he works on, and — once written in Site Content —
-             his education, awards, publications and talks. --}}
+        {{-- 02 — the career, step by step, oldest first --}}
+        @if ($timeline)
+            <section class="ar-sec">
+                <header class="ar-sec__head">
+                    <span class="ar-sec__num">{{ str_pad((string) $n++, 2, '0', STR_PAD_LEFT) }}</span>
+                    <h2 class="ar-sec__title">{{ bival('arch_timeline_title') }}</h2>
+                </header>
+                <ol class="ar-sec__body ar-timeline">
+                    @foreach ($timeline as [$when, $role, $where, $what])
+                        <li class="ar-step">
+                            <span class="ar-step__when" dir="auto">{{ $when }}</span>
+                            <div class="ar-step__body">
+                                <h3 class="ar-step__role" dir="auto">{{ $role }}</h3>
+                                @if ($where !== '')<p class="ar-step__where" dir="auto">{{ $where }}</p>@endif
+                                @if ($what !== '')<p class="ar-step__what" dir="auto">{{ $what }}</p>@endif
+                            </div>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+        @endif
+
+        {{-- 03 — the record: what he works on, his education, and — once
+             written in Site Content — awards, publications and talks --}}
         @if ($lists)
-            <section class="ar-record">
-                @foreach ($lists as $key => [$heading, $items])
-                    <div class="ar-record__col ar-record__col--{{ $key }}">
-                        <h2 class="pp-label">{{ $heading }}</h2>
-                        <ul class="ar-list">
-                            @foreach ($items as $line)
-                                <li dir="auto">{!! $item($line) !!}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endforeach
+            <section class="ar-sec">
+                <header class="ar-sec__head">
+                    <span class="ar-sec__num">{{ str_pad((string) $n++, 2, '0', STR_PAD_LEFT) }}</span>
+                    <h2 class="ar-sec__title">{{ bival('arch_record_title') }}</h2>
+                </header>
+                <div class="ar-sec__body ar-record">
+                    @foreach ($lists as $key => [$heading, $items])
+                        <div class="ar-record__col ar-record__col--{{ $key }}">
+                            <h3 class="pp-label">{{ $heading }}</h3>
+                            <ul class="ar-list">
+                                @foreach ($items as $line)
+                                    <li dir="auto">{!! $item($line) !!}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endforeach
+                </div>
             </section>
         @endif
 
         @if ($projects->isNotEmpty())
-            <section class="pp-more ar-projects">
-                <div class="ar-projects__head">
-                    <h2 class="pp-label">{{ bival('arch_projects_title') }}</h2>
+            <section class="ar-sec ar-sec--wide">
+                <header class="ar-sec__head">
+                    <span class="ar-sec__num">{{ str_pad((string) $n++, 2, '0', STR_PAD_LEFT) }}</span>
+                    <h2 class="ar-sec__title">{{ bival('arch_projects_title') }}</h2>
                     <a class="ar-projects__all" href="{{ site_url('/projects') }}">{{ bival('arch_all_projects') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
-                </div>
-                <div class="pp-more__grid">
+                </header>
+                <div class="pp-more__grid ar-sec__body">
                     @foreach ($projects as $p)
                         <a class="pp-card" href="{{ $p->pageUrl($lang) }}">
                             <span class="pp-card__img">
@@ -154,6 +215,7 @@
         @endif
 
         <section class="ar-cta">
+            <p class="ar-cta__name">{{ bival('arch_name') }}</p>
             <a class="pp-btn" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
         </section>
     </main>

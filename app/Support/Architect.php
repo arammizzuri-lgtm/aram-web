@@ -37,6 +37,21 @@ class Architect
     }
 
     /**
+     * A one-per-line field whose lines are fields themselves, split on "|":
+     * the career ("when | role | where | what happened") and the key figures
+     * ("number | what it counts"). Missing fields come back as ''.
+     *
+     * @return array<int, array<int, string>>
+     */
+    public static function rows(string $key, int $fields, ?string $lang = null): array
+    {
+        return array_map(
+            fn ($line) => array_pad(array_map('trim', explode('|', $line, $fields)), $fields, ''),
+            self::lines($key, $lang),
+        );
+    }
+
+    /**
      * His biography as paragraphs: his own, once written; until then, the
      * two paragraphs of the homepage's About section.
      *
@@ -100,6 +115,10 @@ class Architect
         $name = SiteText::en('arch_name');
         $parts = preg_split('/\s+/u', trim($name));
         $education = self::lines('arch_education', 'en');
+        // a line naming a qualification ("Degree — where, when") is a credential too
+        $degrees = array_values(array_filter($education, fn ($l) => preg_match('/\s[—–-]\s/u', $l)));
+        $studio = ['@type' => 'ProfessionalService', '@id' => url('/').'#studio', 'name' => 'Aram Mizuri Architecture', 'url' => site_url('/', 'en')];
+        $firms = array_map(fn ($f) => ['@type' => 'Organization', 'name' => $f], self::lines('arch_firms', 'en'));
 
         return array_filter([
             '@type' => 'Person',
@@ -112,13 +131,13 @@ class Architect
             'description' => trim(strip_tags(SiteText::en('arch_seo_description'))) ?: null,
             'url' => site_url(self::PATH, 'en'),
             'image' => self::portrait(),
-            'worksFor' => ['@type' => 'ProfessionalService', '@id' => url('/').'#studio', 'name' => 'Aram Mizuri Architecture', 'url' => site_url('/', 'en')],
+            'worksFor' => $firms ? [$studio, ...$firms] : $studio,
             'workLocation' => ['@type' => 'Place', 'name' => 'Erbil, Kurdistan Region, Iraq', 'address' => [
                 '@type' => 'PostalAddress', 'addressLocality' => 'Erbil', 'addressRegion' => 'Kurdistan Region', 'addressCountry' => 'IQ',
             ]],
             'knowsAbout' => self::lines('arch_expertise', 'en') ?: null,
             'alumniOf' => $education ? array_map(fn ($l) => ['@type' => 'EducationalOrganization', 'name' => self::organisation($l)], $education) : null,
-            'hasCredential' => $education ? array_map(fn ($l) => ['@type' => 'EducationalOccupationalCredential', 'name' => $l], $education) : null,
+            'hasCredential' => $degrees ? array_map(fn ($l) => ['@type' => 'EducationalOccupationalCredential', 'name' => $l, 'credentialCategory' => 'degree'], $degrees) : null,
             'award' => self::lines('arch_awards', 'en') ?: null,
             'sameAs' => self::profiles() ?: null,
         ]);
