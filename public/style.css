@@ -3969,3 +3969,41 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 [dir="rtl"] .hero__clock time    { letter-spacing: .14em !important; }
 [dir="rtl"] .process__count-now,
 [dir="rtl"] .process__count-total { letter-spacing: .12em !important; }
+
+/* ── Partners: who we build with (homepage) ──────────────────────────
+   The partners' one-colour logos on a hairline grid — white, gold on
+   hover — each opening its partner on /partners. */
+.hp-partners { padding: clamp(80px, 11vh, 140px) 40px; background: var(--black); color: var(--text); border-top: 1px solid rgba(255,255,255,.06); }
+.hp-partners__head { max-width: 1240px; margin: 0 auto; text-align: center; }
+.hp-partners__title { font-size: clamp(32px, 4vw, 58px); font-weight: 200; line-height: 1.04; letter-spacing: -.02em; color: #fff; margin-top: 4px; }
+[dir="rtl"] .hp-partners__title { letter-spacing: 0; line-height: 1.35; font-weight: 400; }
+.hp-partners__text { max-width: 56ch; margin: 16px auto 0; font-size: 16px; font-weight: 300; line-height: 1.8; color: var(--grey-2); }
+.hp-partners__wall {
+    list-style: none; max-width: 1240px; margin: clamp(32px, 5vh, 52px) auto 0; padding: 0;
+    /* centred rows, so two logos or twelve sit in the middle */
+    display: flex; flex-wrap: wrap; justify-content: center;
+}
+.hp-partners__wall li { width: 200px; border: 1px solid rgba(255,255,255,.08); margin: 0 -1px -1px 0; }
+.hp-partners__tile { display: grid; place-items: center; height: 130px; padding: 18px; transition: background-color .35s; }
+.hp-partners__tile:hover { background: rgba(255,255,255,.035); }
+.hp-partners__logo {
+    display: block; width: min(140px, 84%); height: 58px; background-color: rgba(255,255,255,.78);
+    -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat;
+    transition: background-color .35s, transform .35s;
+}
+.hp-partners__tile:hover .hp-partners__logo { background-color: var(--gold); transform: scale(1.05); }
+.hp-partners__word { font-size: 19px; font-weight: 300; letter-spacing: .03em; color: rgba(255,255,255,.82); text-align: center; transition: color .35s; }
+.hp-partners__tile:hover .hp-partners__word { color: var(--gold); }
+.hp-partners__all {
+    display: flex; width: fit-content; align-items: center; gap: 10px; margin: 28px auto 0;
+    height: 46px; padding: 0 24px; border-radius: 100px; border: 1px solid rgba(245,197,24,.45);
+    color: var(--gold); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; transition: background-color .25s;
+}
+.hp-partners__all:hover { background: rgba(245,197,24,.08); }
+[dir="rtl"] .hp-partners__all { letter-spacing: 0; font-size: 14px; }
+[dir="rtl"] .hp-partners__arrow { display: inline-block; transform: scaleX(-1); }
+@media (max-width: 600px) {
+    .hp-partners { padding-inline: 20px; }
+    .hp-partners__wall li { width: 50%; }
+    .hp-partners__tile { height: 100px; }
+}

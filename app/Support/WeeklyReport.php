@@ -125,6 +125,30 @@ class WeeklyReport
             'sources' => array_slice(Insights::sources($start, $end), 0, 5),
             'projects' => array_slice(Insights::topProjects($start, $end, 5), 0, 5),
             'pages' => $pages,
+            'partners' => self::partners($start, $end),
         ];
+    }
+
+    /**
+     * The partners visitors did something with this week, busiest first:
+     * opened, reached (calls, WhatsApp, website, directions), and arrivals
+     * from the partner's own badge. Empty in a quiet week.
+     *
+     * @return list<array{name: string, open: int, reached: int, badge: int}>
+     */
+    private static function partners(Carbon $start, Carbon $end): array
+    {
+        $counts = rescue(fn () => \App\Models\PartnerEvent::countsSince($start, $end), [], false);
+        if (! $counts) {
+            return [];
+        }
+        $names = \App\Models\Partner::query()->whereIn('id', array_keys($counts))->pluck('name', 'id');
+
+        return collect($counts)->map(fn ($c, $id) => [
+            'name' => (string) ($names[$id] ?? 'Partner #'.$id),
+            'open' => $c['open'] ?? 0,
+            'reached' => collect(\App\Models\PartnerEvent::CONTACTS)->sum(fn ($t) => $c[$t] ?? 0),
+            'badge' => $c['badge'] ?? 0,
+        ])->sortByDesc(fn ($p) => $p['reached'] * 3 + $p['open'] + $p['badge'])->take(6)->values()->all();
     }
 }

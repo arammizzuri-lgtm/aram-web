@@ -542,11 +542,14 @@
                 <div class="pgc__inner">
                     <img class="pgc__img" data-src="{{ $project->coverThumbUrl() }}" src="" alt="{{ $project->name }}" loading="lazy" decoding="async" style="object-position: {{ $project->coverPosition() }}">
                     <div class="pgc__overlay">
-                        <div class="pgc__status pgc__status--{{ $project->statusClass() }}">{{ site_lang() === 'ar' ? $project->statusLabel('ar') : $project->statusBadge() }}</div>
+                        {{-- in the page's language, and both, for the in-place language switch --}}
+                        @php $pgcSecond = site_lang() === 'ar' ? 'ar' : 'ku'; @endphp
+                        <div class="pgc__status pgc__status--{{ $project->statusClass() }}"
+                             data-en="{{ $project->statusBadge() }}" data-ku="{{ $project->statusLabel($pgcSecond) }}">{{ site_lang() === 'en' ? $project->statusBadge() : $project->statusLabel($pgcSecond) }}</div>
                         <div class="pgc__info">
                             <div class="pgc__num">{{ $project->num }}</div>
                             <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ rtl_slot($project->name, $project->name_ku ?: $project->name, $project->name_ar) }}">{{ bi($project->name, $project->name_ku, $project->name_ar) }}</h3>
-                            <p class="pgc__meta">{{ site_lang() === 'ar' ? collect([...$project->categoryLabelsIn('ar'), $project->cityLabel('ar'), $project->endYear()])->filter()->implode(' · ') : $project->metaLabel() }}</p>
+                            <p class="pgc__meta" data-en="{{ $project->metaLabel() }}" data-ku="{{ $project->metaLabelIn($pgcSecond) }}">{{ site_lang() === 'en' ? $project->metaLabel() : $project->metaLabelIn($pgcSecond) }}</p>
                         </div>
                         <span class="pgc__cta"><span {!! bitext('pg_view_project') !!}>{{ bival('pg_view_project') }}</span> <span class="pgc__cta-arrow">↗&#xFE0E;</span></span>
                     </div>
@@ -882,6 +885,38 @@
         </div>
     </section>
 
+    <!-- ========== PARTNERS ========== -->
+    {{-- Who we build with: the partners' one-colour logos, each opening its
+         partner on /partners. Only once a partner is shown on the website. --}}
+    @php $homePartners = rescue(fn () => \App\Models\Partner::publishedOrdered()->limit(12)->get(), collect(), false); @endphp
+    @if ($homePartners->isNotEmpty())
+        <section class="hp-partners" id="partners">
+            <div class="hp-partners__head">
+                <p class="section-label" {!! bitext('partners_label') !!}>{{ bival('partners_label') }}</p>
+                <h2 class="hp-partners__title" {!! bitext('partners_title') !!}>{{ bival('partners_title') }}</h2>
+                <p class="hp-partners__text" {!! bitext('partners_home_text') !!}>{{ bival('partners_home_text') }}</p>
+            </div>
+            <ul class="hp-partners__wall">
+                @foreach ($homePartners as $p)
+                    <li>
+                        <a class="hp-partners__tile" href="{{ site_url('/partners') }}#{{ $p->anchor() }}"
+                           data-href-en="{{ site_url('/partners', 'en') }}#{{ $p->anchor() }}" data-href-ku="{{ site_url('/partners', 'ku') }}#{{ $p->anchor() }}">
+                            @if ($p->monoUrl())
+                                <span class="hp-partners__logo" style="--logo: url('{{ $p->monoUrl() }}')" role="img" aria-label="{{ $p->name }}"></span>
+                            @else
+                                <span class="hp-partners__word">{{ $p->name }}</span>
+                            @endif
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+            <a class="hp-partners__all" href="{{ site_url('/partners') }}"
+               data-href-en="{{ site_url('/partners', 'en') }}" data-href-ku="{{ site_url('/partners', 'ku') }}">
+                <span {!! bitext('partners_all') !!}>{{ bival('partners_all') }}</span> <span class="hp-partners__arrow" aria-hidden="true">→</span>
+            </a>
+        </section>
+    @endif
+
     <!-- ========== HERITAGE ========== -->
     <section class="heritage">
         <div class="heritage__bg" aria-hidden="true">
@@ -1158,7 +1193,8 @@
                     @endforeach
                 </nav>
                 @php $copy = footer_copy(); if (site_lang() === 'ar' && preg_match('/©\s*[\d–-]+/u', $copy, $years)) { $copy = $years[0]." آرام مزوري للعمارة.
-جميع الحقوق محفوظة."; } @endphp
+جميع الحقوق محفوظة."; } elseif (site_lang() === 'ku' && preg_match('/©\s*[\d–-]+/u', $copy, $years)) { $copy = $years[0]." تەلارسازیی ئارام مزووری.
+هەموو مافەکان پارێزراون."; } @endphp
                 <p class="footer__copy">{!! nl2br(e($copy)) !!}</p>
             </div>
         </div>

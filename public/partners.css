@@ -1,7 +1,9 @@
 /* =========================================================
    ARAM MIZURI ARCHITECTURE — partners.css
-   Partners & suppliers (/partners), on top of project.css: the trades one
-   after another, each a grid of cards — logo, name, a line, the link.
+   Partners & suppliers (/partners), on top of project.css: a logo wall —
+   one-colour logos in white, gold on hover — with trade filters, and each
+   partner opening in a dialog: its line, the projects done together, and
+   how to reach it.
    ========================================================= */
 
 .pt-hero { max-width: var(--wide); margin: 0 auto; padding: clamp(120px, 17vh, 170px) var(--gutter) clamp(32px, 6vh, 56px); }
@@ -11,32 +13,196 @@
 [dir="rtl"] .pt-hero__intro { font-size: 17px; line-height: 2; }
 .pt-empty { max-width: var(--wide); margin: 0 auto; padding: 0 var(--gutter) 40px; color: var(--muted); }
 
-.pt-group { max-width: var(--wide); margin: 0 auto; padding: clamp(28px, 5vh, 48px) var(--gutter); border-top: 1px solid var(--line); }
-.pt-group__title { font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: var(--gold); font-weight: 400; margin-bottom: 22px; }
-/* wide screens: the trade in a column of its own, the cards beside it */
-@media (min-width: 900px) {
-    .pt-group { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: start; }
-    .pt-group__title { margin: 22px 0 0; }
+/* ---- Filters -------------------------------------------------------- */
+.pt-filters { max-width: var(--wide); margin: 0 auto; padding: 0 var(--gutter) 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+.pt-chip {
+    height: 32px; padding: 0 14px; border-radius: 100px; cursor: pointer;
+    font: 400 12px/1 var(--font); color: rgba(255,255,255,.75);
+    background: rgba(255,255,255,.03); border: 1px solid var(--line); transition: border-color .25s, color .25s, background-color .25s;
 }
-[dir="rtl"] .pt-group__title { letter-spacing: 0; font-size: 14px; }
-.pt-grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-.pt-card {
-    display: flex; flex-direction: column; gap: 8px; padding: 22px; border-radius: 10px;
-    background: rgba(255,255,255,.025); border: 1px solid var(--line); transition: border-color .3s, background-color .3s;
-}
-.pt-card:hover { border-color: rgba(245,197,24,.45); background: rgba(255,255,255,.04); }
-.pt-card__logo { height: 52px; display: flex; align-items: center; margin-bottom: 6px; }
-.pt-card__logo img { max-height: 52px; max-width: 160px; width: auto; object-fit: contain; }
-.pt-card__initial {
-    display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%;
-    border: 1px solid rgba(245,197,24,.5); color: var(--gold); font-size: 20px; font-weight: 300;
-}
-.pt-card__name { font-size: 18px; font-weight: 400; color: #fff; }
-.pt-card__desc { font-size: 14px; font-weight: 300; line-height: 1.6; color: var(--muted); }
-.pt-card__link { margin-top: auto; padding-top: 8px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
-.pt-card__link:hover { color: #fff; }
-[dir="rtl"] .pt-card__link { letter-spacing: 0; font-size: 13px; }
+[dir="rtl"] .pt-chip { font-size: 13px; }
+.pt-chip:hover { border-color: rgba(245,197,24,.45); color: #fff; }
+.pt-chip.is-on { background: var(--gold); border-color: var(--gold); color: #0a0a0a; font-weight: 500; }
 
-.pt-join { text-align: center; padding: clamp(56px, 10vh, 104px) var(--gutter) clamp(72px, 12vh, 128px); border-top: 1px solid var(--line); }
+/* ---- The logo wall -------------------------------------------------- */
+/* hairline grid: the tiles share their borders, like a printed roster */
+.pt-wall {
+    list-style: none; max-width: var(--wide); margin: 0 auto; padding: 0 var(--gutter);
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+}
+.pt-tile { border: 1px solid var(--line); margin: 0 -1px -1px 0; }
+.pt-tile[hidden] { display: none; }
+.pt-tile__btn {
+    width: 100%; height: 100%; min-height: 210px; padding: 28px 20px 22px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    background: transparent; border: 0; color: inherit; font: inherit; text-align: center;
+    transition: background-color .35s;
+}
+.pt-tile__btn:hover, .pt-tile__btn:focus-visible { background: rgba(255,255,255,.035); }
+.pt-tile__btn:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+/* the one-colour logo as a mask, so it can be painted white, then gold */
+.pt-tile__logo {
+    display: block; width: min(170px, 80%); height: 76px; margin-bottom: 8px;
+    background-color: rgba(255,255,255,.82);
+    -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat;
+    transition: background-color .35s, transform .35s;
+}
+.pt-tile__btn:hover .pt-tile__logo, .pt-tile__btn:focus-visible .pt-tile__logo { background-color: var(--gold); transform: scale(1.04); }
+.pt-tile__word {
+    display: grid; place-items: center; min-height: 76px; margin-bottom: 8px; max-width: 90%;
+    font-size: 24px; font-weight: 300; letter-spacing: .04em; color: rgba(255,255,255,.85); line-height: 1.2;
+    transition: color .35s;
+}
+.pt-tile__btn:hover .pt-tile__word { color: var(--gold); }
+.pt-tile__name { font-size: 14px; color: #fff; }
+.pt-tile__trade { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+[dir="rtl"] .pt-tile__trade { letter-spacing: 0; font-size: 12px; }
+
+/* ---- A partner, opened ---------------------------------------------- */
+.pt-dlg {
+    /* centred (the site reset takes away the browser's own margin: auto) */
+    position: fixed; inset: 0; margin: auto; height: fit-content;
+    width: min(620px, calc(100% - 32px)); max-height: calc(100% - 48px); padding: 0; border: 0;
+    background: transparent; color: inherit; overflow: visible;
+}
+.pt-dlg:focus { outline: none; }
+.pt-dlg::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(6px); }
+.pt-dlg[open] { animation: pt-in .3s ease; }
+@keyframes pt-in { from { opacity: 0; transform: translateY(12px); } }
+.pt-dlg__panel {
+    position: relative; max-height: calc(100vh - 48px); overflow: auto; padding: clamp(24px, 4vw, 36px);
+    border-radius: 14px; background: #101010; border: 1px solid rgba(245,197,24,.3); box-shadow: 0 30px 70px rgba(0,0,0,.6);
+}
+.pt-dlg__close {
+    position: absolute; top: 14px; inset-inline-end: 14px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    background: transparent; border: 1px solid var(--line); color: #fff; font-size: 20px; line-height: 1; transition: border-color .25s, color .25s;
+}
+.pt-dlg__close:hover { color: var(--gold); border-color: rgba(245,197,24,.5); }
+.pt-dlg__head { display: flex; align-items: center; gap: 18px; padding-inline-end: 44px; }
+/* the original logo, in colour, on a light card so any logo reads */
+.pt-dlg__logo { flex: none; display: grid; place-items: center; width: 84px; height: 84px; padding: 10px; border-radius: 12px; background: #f4f2ee; }
+.pt-dlg__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pt-dlg__trade { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .pt-dlg__trade { letter-spacing: 0; font-size: 12.5px; }
+.pt-dlg__name { margin-top: 6px; font-size: clamp(24px, 3vw, 32px); font-weight: 300; line-height: 1.2; color: #fff; }
+.pt-dlg__desc { margin-top: 18px; font-size: 15.5px; font-weight: 300; line-height: 1.75; color: rgba(255,255,255,.78); }
+.pt-dlg__h { margin-top: 26px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); font-weight: 400; }
+[dir="rtl"] .pt-dlg__h { letter-spacing: 0; font-size: 13px; }
+.pt-dlg__projects { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; }
+.pt-dlg__projects a { display: block; }
+.pt-dlg__thumb { display: block; aspect-ratio: 4 / 3; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.pt-dlg__thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+.pt-dlg__projects a:hover img { transform: scale(1.05); }
+.pt-dlg__pname { display: block; margin-top: 8px; font-size: 13.5px; color: #fff; transition: color .25s; }
+.pt-dlg__projects a:hover .pt-dlg__pname { color: var(--gold); }
+.pt-dlg__contact { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+.pt-dlg__addr { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+.pt-dlg__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.pt-act {
+    display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 100px;
+    font-size: 13px; color: #fff; border: 1px solid var(--line); transition: border-color .25s, color .25s;
+}
+.pt-act:hover { border-color: rgba(245,197,24,.5); color: var(--gold); }
+.pt-act--gold { border-color: rgba(245,197,24,.5); color: var(--gold); }
+
+.pt-join { text-align: center; margin-top: clamp(48px, 8vh, 88px); padding: clamp(56px, 10vh, 104px) var(--gutter) clamp(72px, 12vh, 128px); border-top: 1px solid var(--line); }
 .pt-join__title { font-size: clamp(24px, 2.8vw, 38px); font-weight: 200; color: #fff; margin-bottom: 24px; }
 [dir="rtl"] .pt-join__title { font-weight: 400; line-height: 1.5; }
+
+@media (max-width: 520px) {
+    .pt-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pt-tile__btn { min-height: 170px; padding: 20px 10px 16px; }
+    .pt-tile__logo { height: 56px; }
+    .pt-tile__word { font-size: 18px; min-height: 56px; }
+}
+
+/* ---- Logos / Showrooms map ------------------------------------------- */
+.pt-switch {
+    display: flex; width: fit-content; margin: 0 auto 26px; padding: 4px; border-radius: 100px;
+    background: rgba(255,255,255,.04); border: 1px solid var(--line);
+}
+.pt-switch__btn {
+    height: 38px; padding: 0 20px; border-radius: 100px; border: 0; cursor: pointer;
+    background: transparent; color: rgba(255,255,255,.7); font: 400 13px/1 var(--font); transition: background-color .25s, color .25s;
+}
+.pt-switch__btn:hover { color: #fff; }
+.pt-switch__btn.is-on { background: var(--gold); color: #0a0a0a; font-weight: 500; }
+.pt-view[hidden] { display: none; }
+.pt-view--map { max-width: var(--wide); margin: 0 auto; padding: 0 var(--gutter); }
+.pt-map { height: clamp(380px, 66vh, 640px); border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #0d0d0d; }
+.pt-map.leaflet-container { font-family: var(--font); }
+.pt-map .leaflet-bar a { background: rgba(14,14,14,.9); color: #fff; border-color: var(--line); }
+.pt-map .leaflet-control-attribution { background: rgba(0,0,0,.55); color: rgba(255,255,255,.5); }
+.pt-map .leaflet-control-attribution a { color: rgba(255,255,255,.65); }
+.pt-pin {
+    display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--gold); cursor: pointer;
+    box-shadow: 0 0 0 5px rgba(245,197,24,.22), 0 6px 14px rgba(0,0,0,.55); transition: transform .25s;
+}
+.pt-pin:hover { transform: scale(1.25); }
+/* the card a pin opens */
+.pt-popup .leaflet-popup-content-wrapper { background: #101010; color: #fff; border: 1px solid rgba(245,197,24,.35); border-radius: 12px; box-shadow: 0 18px 40px rgba(0,0,0,.55); }
+.pt-popup .leaflet-popup-tip { background: #101010; border: 1px solid rgba(245,197,24,.35); }
+.pt-popup .leaflet-popup-content { margin: 16px 18px; }
+.pt-popup a.leaflet-popup-close-button { color: rgba(255,255,255,.6); top: 6px; right: 6px; }
+.pt-mcard__logo { display: grid; place-items: center; width: 58px; height: 58px; padding: 7px; margin-bottom: 10px; border-radius: 10px; background: #f4f2ee; }
+.pt-mcard__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pt-mcard p { margin: 0; }
+.pt-mcard__trade { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .pt-mcard__trade { letter-spacing: 0; font-size: 12px; }
+.pt-mcard__name { margin-top: 4px !important; font-size: 17px; font-weight: 400; color: #fff; }
+.pt-mcard__addr { margin-top: 6px !important; font-size: 13px; color: var(--muted); }
+.pt-mcard__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.pt-mcard__btn {
+    display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 100px; cursor: pointer;
+    font: 400 12.5px/1 var(--font); color: #fff !important; background: transparent; border: 1px solid var(--line);
+}
+.pt-mcard__btn--gold { color: #0a0a0a !important; background: var(--gold); border-color: var(--gold); font-weight: 500; }
+
+/* ---- A partner's words ------------------------------------------------ */
+.pt-quote { margin: 22px 0 0; padding: 18px 20px; border-radius: 10px; background: rgba(245,197,24,.05); border-inline-start: 2px solid var(--gold); }
+.pt-quote blockquote { margin: 0; font-size: 16px; font-weight: 300; line-height: 1.75; color: rgba(255,255,255,.88); font-style: italic; }
+[dir="rtl"] .pt-quote blockquote { font-style: normal; font-size: 16.5px; line-height: 2; }
+.pt-quote blockquote::before { content: '“'; color: var(--gold); margin-inline-end: 2px; }
+.pt-quote blockquote::after { content: '”'; color: var(--gold); margin-inline-start: 2px; }
+[dir="rtl"] .pt-quote blockquote::before { content: '«'; }
+[dir="rtl"] .pt-quote blockquote::after { content: '»'; }
+.pt-quote figcaption { margin-top: 12px; font-size: 13px; color: #fff; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.pt-quote figcaption span { color: var(--muted); }
+
+/* ---- Become a partner ------------------------------------------------- */
+.pt-apply { max-width: 760px; margin: 0 auto; }
+.pt-apply > summary { list-style: none; cursor: pointer; }
+.pt-apply > summary::-webkit-details-marker { display: none; }
+.pt-apply[open] > summary { display: none; }
+.pt-apply__intro { max-width: 56ch; margin: 0 auto 26px; font-size: 15px; line-height: 1.75; color: var(--muted); }
+.pt-form {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; text-align: start;
+    padding: clamp(22px, 4vw, 34px); border-radius: 16px; background: rgba(255,255,255,.03); border: 1px solid var(--line);
+}
+.pt-form [hidden] { display: none !important; }
+.pt-field { display: flex; flex-direction: column; gap: 8px; }
+.pt-field--full { grid-column: 1 / -1; }
+.pt-field > label, .pt-field__label { font-size: 12.5px; color: rgba(255,255,255,.7); }
+.pt-field input[type=text], .pt-field input[type=email], .pt-field input[type=tel], .pt-field select, .pt-field textarea {
+    width: 100%; padding: 12px 14px; border-radius: 10px; font: 400 15px/1.4 var(--font); color: #fff;
+    background: rgba(0,0,0,.35); border: 1px solid var(--line); transition: border-color .25s;
+}
+.pt-field select option { background: #111; }
+.pt-field textarea { resize: vertical; min-height: 110px; }
+.pt-field input:focus, .pt-field select:focus, .pt-field textarea:focus { outline: none; border-color: rgba(245,197,24,.6); }
+.pt-check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.75); cursor: pointer; }
+.pt-check input { accent-color: var(--gold); width: 16px; height: 16px; }
+.pt-field--full { position: relative; }
+.pt-file {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; cursor: pointer;
+    border: 1px dashed rgba(245,197,24,.4); background: rgba(245,197,24,.03); color: rgba(255,255,255,.8); font-size: 14px;
+}
+.pt-file svg { width: 20px; height: 20px; flex: none; fill: none; stroke: var(--gold); stroke-width: 1.6; }
+.pt-file__input { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; }
+.pt-file__input:focus-visible + .pt-file, .pt-field--full:focus-within .pt-file { outline: 2px solid var(--gold); outline-offset: 3px; }
+.pt-hp { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; }
+.pt-form__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 4px; }
+.pt-form__status { font-size: 14px; color: var(--muted); }
+.pt-form__status.is-ok { color: #8fd18f; }
+.pt-form__status.is-err { color: #f0a0a0; }
+@media (max-width: 640px) { .pt-form { grid-template-columns: 1fr; } }

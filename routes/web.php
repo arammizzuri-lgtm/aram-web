@@ -120,6 +120,19 @@ Route::get('/sketches/{token}', [SketchController::class, 'show'])
     ->where('token', '[A-Za-z0-9]{40}')
     ->name('sketch.show');
 
+// "Become a partner" applications, from /partners (any language)
+Route::post('/partners/apply', [PartnersController::class, 'apply'])
+    ->middleware('throttle:applications')
+    ->name('partners.apply');
+
+// a partner's badge on its own website links here: counted, then on to its panel
+Route::get('/p/{partner}', [PartnersController::class, 'badge'])->whereNumber('partner')->name('partners.badge');
+
+// what visitors do with a partner (open, call, WhatsApp…), as for /t below
+Route::post('/tp', [PartnersController::class, 'track'])
+    ->middleware('throttle:events')
+    ->name('partners.track');
+
 Route::post('/careers/apply', [CareersController::class, 'apply'])
     ->middleware('throttle:applications')
     ->name('careers.apply');

@@ -302,6 +302,8 @@ html.pp-menu-open { overflow: hidden; }
     box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 }
 .pp-fact:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.pp-fact--wide { grid-column: 1 / -1; }
+.pp-fact__sep { color: var(--faint); }
 .pp-fact dt {
     font-size: 8px; letter-spacing: .28em; text-transform: uppercase;
     color: var(--faint); margin-bottom: 7px;

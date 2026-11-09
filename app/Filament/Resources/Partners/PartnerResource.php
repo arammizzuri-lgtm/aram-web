@@ -28,11 +28,29 @@ class PartnerResource extends Resource
 
     protected static ?int $navigationSort = 13;
 
-    protected static ?string $navigationLabel = 'Partners';
+    protected static ?string $navigationLabel = 'Partners & suppliers';
 
     protected static ?string $modelLabel = 'partner';
 
     protected static ?string $pluralModelLabel = 'Partners & suppliers';
+
+    /** New applications from the "Become a partner" form, beside the menu item. */
+    public static function getNavigationBadge(): ?string
+    {
+        $n = rescue(fn () => Partner::query()->where('is_application', true)->count(), 0, false);
+
+        return $n ? (string) $n : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'New partner applications';
+    }
 
     public static function form(Schema $schema): Schema
     {

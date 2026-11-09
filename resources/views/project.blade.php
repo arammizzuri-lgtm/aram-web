@@ -260,6 +260,18 @@
                     <dt>{{ bival('arch_credit') }}</dt>
                     <dd><a class="pp-fact__link" href="{{ site_url(\App\Support\Architect::PATH) }}"><bdi>{{ bival('arch_name') }}</bdi></a></dd>
                 </div>
+                {{-- the partners who worked on it, each opening on /partners — only when there are any --}}
+                @php $madeWith = rescue(fn () => $project->partners()->where('is_published', true)->orderBy('sort_order')->get(), collect(), false); @endphp
+                @if ($madeWith->isNotEmpty())
+                    <div class="pp-fact pp-fact--wide">
+                        <dt>{{ bival('partners_made_with') }}</dt>
+                        <dd>
+                            @foreach ($madeWith as $mw)
+                                <a class="pp-fact__link" href="{{ site_url('/partners') }}#{{ $mw->anchor() }}"><bdi>{{ $mw->name }}</bdi></a>@if (! $loop->last)<span class="pp-fact__sep" aria-hidden="true"> · </span>@endif
+                            @endforeach
+                        </dd>
+                    </div>
+                @endif
             </dl>
         </section>
 

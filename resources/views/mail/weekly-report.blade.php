@@ -23,7 +23,7 @@
         $in = 'English';
         if (preg_match('#^/(ku|ar)(/.*)?$#', $path, $m)) { $in = $lang[$m[1]]; $path = $m[2] ?? '/'; }
         $named = ['/' => 'Homepage', '/projects' => 'All projects', '/aram-mizuri' => 'About page', '/journal' => 'Journal',
-            '/kurdistan-heritage' => 'Kurdistan heritage', '/estimate' => 'Cost estimate', '/careers' => 'Careers', '/photos' => 'Photos by room', '/saved' => 'Saved projects'];
+            '/kurdistan-heritage' => 'Kurdistan heritage', '/partners' => 'Partners', '/estimate' => 'Cost estimate', '/careers' => 'Careers', '/photos' => 'Photos by room', '/saved' => 'Saved projects'];
         if (isset($named[$path])) return $named[$path].' ('.$in.')';
         if (preg_match('#^/projects/([a-z0-9-]+)$#', $path, $m)) {
             return (\App\Models\Project::where('slug', $m[1])->value('name') ?? $m[1]).' ('.$in.')';
@@ -89,6 +89,18 @@
             @foreach ($r['projects'] as $p)
                 <div style="{{ $row }}">{{ $p['project']->name }} <span style="float:right;color:#555;">{{ $p['views'] }} {{ $p['views'] === 1 ? 'view' : 'views' }}{{ $p['saves'] ? ' · '.$p['saves'].' saved' : '' }}</span></div>
             @endforeach
+        @endif
+
+        {{-- what visitors did with the partners — only in a week something happened --}}
+        @if (! empty($r['partners']))
+            <div style="{{ $h2 }}">Partners this week</div>
+            @foreach ($r['partners'] as $pp)
+                <div style="{{ $row }}">
+                    <strong>{{ $pp['name'] }}</strong>
+                    <span style="float:right;color:#555;">{{ $pp['open'] }} opened{{ $pp['reached'] ? ' · '.$pp['reached'].' reached them' : '' }}{{ $pp['badge'] ? ' · '.$pp['badge'].' from their badge' : '' }}</span>
+                </div>
+            @endforeach
+            <p style="margin:8px 0 0;color:#888;font-size:12px;">"Reached them" = calls, WhatsApp, website visits and directions.</p>
         @endif
 
         {{-- the pages read most --}}

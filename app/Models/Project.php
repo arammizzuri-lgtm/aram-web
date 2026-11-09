@@ -214,6 +214,12 @@ class Project extends Model
         return site_url('/projects/'.$this->slug, $lang);
     }
 
+    /** The partners & suppliers who worked on it ("Made with" on its page). */
+    public function partners(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Partner::class);
+    }
+
     /** Clients' words about this project (shown on its page). */
     public function testimonials(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
@@ -486,14 +492,28 @@ class Project extends Model
     public function cityLabel(?string $lang = null): string
     {
         $city = $this->city ?: trim(explode(',', (string) $this->location)[0] ?? '');
-        if (($lang ?? site_lang()) !== 'ar' || $city === '') {
+        $places = match ($lang ?? site_lang()) { 'ar' => self::ARABIC_PLACES, 'ku' => self::KURDISH_PLACES, default => null };
+        if (! $places || $city === '') {
             return $city;
         }
 
         return collect(explode(',', $city))
-            ->map(fn ($part) => self::ARABIC_PLACES[mb_strtolower(trim($part))] ?? trim($part))
+            ->map(fn ($part) => $places[mb_strtolower(trim($part))] ?? trim($part))
             ->implode('، ');
     }
+
+    /** Places the studio works in, as Kurdish (Sorani) names them (for cityLabel). */
+    private const KURDISH_PLACES = [
+        'erbil' => 'هەولێر', 'hawler' => 'هەولێر', 'soran' => 'سۆران', 'mergasur' => 'مێرگەسۆر',
+        'massif' => 'مەسیف', 'shaqlawa' => 'شەقڵاوە', 'koya' => 'کۆیە', 'ranya' => 'ڕانیە',
+        'dohuk' => 'دهۆک', 'duhok' => 'دهۆک', 'zakho' => 'زاخۆ', 'amadiyah' => 'ئامێدی', 'akre' => 'ئاکرێ',
+        'sulaymaniyah' => 'سلێمانی', 'sulaimani' => 'سلێمانی', 'halabja' => 'هەڵەبجە',
+        'kirkuk' => 'کەرکووک', 'baghdad' => 'بەغدا', 'mosul' => 'مووسڵ', 'basra' => 'بەسرە',
+        'kurdistan' => 'کوردستان', 'kurdistan region' => 'هەرێمی کوردستان', 'iraq' => 'عێراق',
+        'madrid' => 'مەدرید', 'spain' => 'ئیسپانیا', 'diyarbakır' => 'ئامەد', 'diyarbakir' => 'ئامەد',
+        'erbil old city' => 'هەولێری کۆن', 'erbil city centre' => 'ناوەندی هەولێر', 'sinjar' => 'شەنگال',
+        'afrin' => 'عەفرین', 'kobani' => 'کۆبانێ', 'kermanshah' => 'کرماشان', 'qamishli' => 'قامیشلۆ',
+    ];
 
     /** Places the studio works in, as Arabic names them (for cityLabel). */
     private const ARABIC_PLACES = [
@@ -520,6 +540,17 @@ class Project extends Model
     public function metaLabel(): string
     {
         return collect([...$this->categoryLabels(), $this->cityLabel('en'), $this->endYear()])
+            ->filter()->implode(' · ');
+    }
+
+    /** The card's line in Kurdish or Arabic: categories, place, year. */
+    public function metaLabelIn(string $lang): string
+    {
+        if ($lang === 'en') {
+            return $this->metaLabel();
+        }
+
+        return collect([...$this->categoryLabelsIn($lang), $this->cityLabel($lang), $this->endYear()])
             ->filter()->implode(' · ');
     }
 
