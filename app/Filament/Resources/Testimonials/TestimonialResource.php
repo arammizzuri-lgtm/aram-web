@@ -37,6 +37,24 @@ class TestimonialResource extends Resource
 
     protected static ?string $pluralModelLabel = 'client quotes';
 
+    /** Quotes clients sent through a review link, still waiting to be published. */
+    public static function getNavigationBadge(): ?string
+    {
+        $n = rescue(fn () => Testimonial::query()->where('from_client', true)->where('is_published', false)->count(), 0, false);
+
+        return $n ? (string) $n : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'New quotes from clients, waiting for your approval';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return TestimonialForm::configure($schema);

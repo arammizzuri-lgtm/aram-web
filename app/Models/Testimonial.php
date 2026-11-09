@@ -35,11 +35,15 @@ class Testimonial extends Model
         'quote_en', 'quote_ku', 'quote_ar', 'person_name', 'person_name_ku', 'person_name_ar', 'person_role_en', 'person_role_ku', 'person_role_ar',
         'client_id', 'project_id', 'sort_order', 'is_published',
         'voice', 'portrait', 'sketch_detail', 'media_consent',
+        // sent by the client through a review link, waiting for the studio's approval
+        'from_client', 'submitted_at',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'media_consent' => 'boolean',
+        'from_client' => 'boolean',
+        'submitted_at' => 'datetime',
         'sort_order' => 'integer',
     ];
 

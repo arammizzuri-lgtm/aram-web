@@ -9,6 +9,7 @@ use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HeritageController;
 use App\Http\Controllers\JournalController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\PartnersController;
 use App\Http\Controllers\PhotosController;
 use App\Http\Controllers\PortfolioController;
@@ -54,6 +55,8 @@ $pages = function (string $lang) {
         Route::get('/erbil-walk', fn () => redirect(site_url('/kurdistan-heritage'), 301));
         // the suppliers and brands the studio builds with
         Route::get('/partners', [PartnersController::class, 'index'])->name('partners');
+        // a client's private review page, from a review link (never indexed)
+        Route::get('/review/{token}', [ReviewController::class, 'show'])->where('token', '[A-Za-z0-9]{40}')->name('review');
         Route::get('/journal/{slug}', [JournalController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('journal.post');
         // every room from every project, side by side
         Route::get('/photos', [PhotosController::class, 'index'])->name('photos');
@@ -119,6 +122,12 @@ Route::post('/sketches', [SketchController::class, 'store'])
 Route::get('/sketches/{token}', [SketchController::class, 'show'])
     ->where('token', '[A-Za-z0-9]{40}')
     ->name('sketch.show');
+
+// what a client sends from their review page (any language)
+Route::post('/review/{token}', [ReviewController::class, 'store'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->middleware('throttle:applications')
+    ->name('review.store');
 
 // "Become a partner" applications, from /partners (any language)
 Route::post('/partners/apply', [PartnersController::class, 'apply'])

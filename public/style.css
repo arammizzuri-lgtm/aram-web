@@ -2384,7 +2384,8 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 [dir="ltr"] .quote:not([data-has-en]), [dir="rtl"] .quote:not([data-has-ku]) { display: none; }
 .quote__text {
     font-family: var(--serif); font-style: italic; font-weight: 400;
-    font-size: clamp(20px, 2.3vw, 31px); line-height: 1.55; color: rgba(255,255,255,.88);
+    font-size: clamp(17px, 1.6vw, 23px); line-height: 1.65; color: rgba(255,255,255,.88);
+    max-width: 46ch; margin-inline: auto;   /* a comfortable line, not a banner */
 }
 .quote__text::before { content: '“'; color: var(--gold); margin-inline-end: .08em; }
 .quote__text::after  { content: '”'; color: var(--gold); margin-inline-start: .08em; }

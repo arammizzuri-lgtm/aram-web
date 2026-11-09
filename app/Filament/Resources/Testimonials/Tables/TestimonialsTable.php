@@ -22,8 +22,10 @@ class TestimonialsTable
             ->defaultSort('sort_order')
             ->columns([
                 TextColumn::make('quote_en')->label('Quote')
-                    ->state(fn (Testimonial $r) => $r->quote_en ?: $r->quote_ku)
-                    ->limit(90)->wrap(),
+                    ->state(fn (Testimonial $r) => $r->quote_en ?: $r->quote_ku ?: $r->quote_ar)
+                    ->limit(90)->wrap()
+                    // sent by the client through a review link, not yet published
+                    ->description(fn (Testimonial $r) => $r->from_client && ! $r->is_published ? '✉ New from the client — check it, add translations, then switch on Live' : null),
                 TextColumn::make('person_name')->label('Who')->searchable()
                     ->description(fn (Testimonial $r) => $r->attribution('en')),
                 TextColumn::make('project.name')->label('Project')->placeholder('—'),
@@ -31,11 +33,12 @@ class TestimonialsTable
                     ->state(fn (Testimonial $r) => array_values(array_filter([
                         filled($r->quote_en) ? 'EN' : null,
                         filled($r->quote_ku) ? 'KU' : null,
+                        filled($r->quote_ar) ? 'AR' : null,
                     ]))),
                 TextColumn::make('media')->label('Voice · portrait')->badge()->placeholder('—')
                     ->state(fn (Testimonial $r) => array_values(array_filter([
                         $r->voice ? 'Voice' : null,
-                        $r->portrait_sketch ? 'Portrait' : null,
+                        $r->portrait_sketch ? 'Portrait' : ($r->portrait ? 'Photo — open to draw' : null),
                     ])))
                     ->color(fn (Testimonial $r) => $r->media_consent ? 'success' : 'gray')
                     ->tooltip(fn (Testimonial $r) => $r->media_consent ? null : 'Not shown until they agree'),

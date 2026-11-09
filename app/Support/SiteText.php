@@ -593,6 +593,39 @@ class SiteText
                 'landmarks_cta_btn'   => ['Closing button', 'Talk to the studio', 'لەگەڵ ستۆدیۆ قسە بکە'],
             ],
 
+            // A client's private review page (/review/…), opened from a review
+            // link made under Manage → Review links. {name} and {project} are
+            // filled in for each client.
+            'Client review page' => [
+                'review_label'      => ['Small label', 'Aram Mizuri Architecture', 'ستۆدیۆی تەلارسازیی ئارام مزووری'],
+                'review_greeting'   => ['Greeting, {name}', 'Dear {name},', '{name}ی ئازیز،'],
+                'review_title'      => ['Title', 'How was building with us?', 'کارکردن لەگەڵمان چۆن بوو؟'],
+                'review_intro'      => ['Introduction, with a project — {project}', 'Thank you for trusting us with {project}. A few honest words from you help other families choose with confidence. It takes two minutes.', 'سوپاس بۆ متمانەت بە ئێمە بۆ {project}. چەند وشەیەکی ڕاستگۆیانەی تۆ یارمەتی خێزانەکانی تر دەدات بە دڵنیاییەوە هەڵبژێرن. تەنها دوو خولەک دەخایەنێت.', 'area'],
+                'review_intro_plain'=> ['Introduction, without a project', 'Thank you for trusting us. A few honest words from you help other families choose with confidence. It takes two minutes.', 'سوپاس بۆ متمانەت پێمان. چەند وشەیەکی ڕاستگۆیانەی تۆ یارمەتی خێزانەکانی تر دەدات بە دڵنیاییەوە هەڵبژێرن. تەنها دوو خولەک دەخایەنێت.', 'area'],
+                'review_words'      => ['Your words — label', 'Your words', 'وشەکانی تۆ'],
+                'review_words_hint' => ['Your words — placeholder', 'What was it like to work with the studio? What do you love about the result?', 'کارکردن لەگەڵ ستۆدیۆ چۆن بوو؟ چیت لە ئەنجامەکە پێ خۆشە؟'],
+                'review_name'       => ['Name', 'Your name, as it should appear', 'ناوت، وەک دەتەوێت دەربکەوێت'],
+                'review_role'       => ['Role', 'Your role or company (optional)', 'پیشە یان کۆمپانیاکەت (ئارەزوومەندانە)'],
+                'review_voice_title'=> ['Voice — heading', 'Your voice (optional)', 'دەنگی تۆ (ئارەزوومەندانە)'],
+                'review_voice_hint' => ['Voice — explanation', 'Say your words in your own voice — up to 90 seconds. It plays beside your quote on the website.', 'وشەکانت بە دەنگی خۆت بڵێ — تا ٩٠ چرکە. لە تەنیشت وشەکانت لە ماڵپەڕەکەدا لێدەدرێت.', 'area'],
+                'review_rec'        => ['Voice — record', 'Record', 'تۆمارکردن'],
+                'review_stop'       => ['Voice — stop', 'Stop', 'وەستان'],
+                'review_again'      => ['Voice — record again', 'Record again', 'دووبارە تۆمارکردنەوە'],
+                'review_remove'     => ['Voice / photo — remove', 'Remove', 'لابردن'],
+                'review_upload'     => ['Voice — choose a file instead', 'or choose a voice note', 'یان دەنگێکی تۆمارکراو هەڵبژێرە'],
+                'review_mic'        => ['Voice — the microphone could not be used', 'The microphone could not be used here. You can choose a voice note instead.', 'لێرە مایکرۆفۆن بەکارنەهات. دەتوانیت دەنگێکی تۆمارکراو هەڵبژێریت.', 'area'],
+                'review_photo_title'=> ['Photo — heading', 'Your photo (optional)', 'وێنەکەت (ئارەزوومەندانە)'],
+                'review_photo_hint' => ['Photo — explanation', 'We draw a pencil portrait from it. The photo itself is never published.', 'وێنەیەکی قەڵەمڕەساسیی لێ دەکێشین. خودی وێنەکە هەرگیز بڵاو ناکرێتەوە.', 'area'],
+                'review_photo_choose'=> ['Photo — choose', 'Choose a photo…', 'وێنەیەک هەڵبژێرە…'],
+                'review_consent'    => ['Agreement', 'I agree that my words — and my voice and the portrait drawn from my photo, if I add them — may be published on arammizuri.com.', 'ڕازیم کە وشەکانم — و دەنگم و ئەو وێنە قەڵەمڕەساسییەی لە وێنەکەم دەکێشرێت، ئەگەر زیادیان بکەم — لە arammizuri.com بڵاو بکرێنەوە.', 'area'],
+                'review_send'       => ['Send', 'Send my words', 'ناردنی وشەکانم'],
+                'review_ok_title'   => ['Sent — title', 'Thank you!', 'زۆر سوپاس!'],
+                'review_ok'         => ['Sent — text', 'Your words have reached us. We read every one personally — thank you for building with us.', 'وشەکانت گەیشتن. هەموویان خۆمان دەیانخوێنینەوە — سوپاس کە لەگەڵمان بنیاتت نا.', 'area'],
+                'review_used'       => ['Link already used', 'Thank you — we have already received your words.', 'سوپاس — وشەکانمان پێشتر وەرگرتووە.'],
+                'review_expired'    => ['Link expired', 'This link has expired. Please ask us for a new one.', 'ماوەی ئەم بەستەرە بەسەرچووە. تکایە داوای بەستەرێکی نوێمان لێ بکە.'],
+                'review_big'        => ['File too large', 'That file is too large.', 'ئەو فایلە زۆر گەورەیە.'],
+            ],
+
             // The partners and suppliers page (/partners). The partners
             // themselves are under Manage → Partners.
             'Partners' => [
