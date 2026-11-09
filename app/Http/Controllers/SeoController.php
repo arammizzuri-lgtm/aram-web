@@ -123,8 +123,22 @@ class SeoController extends Controller
             $out[] = '- [Partners & suppliers the studio builds with]('.site_url('/partners', 'en').')';
         }
         $out[] = '- [Careers — open applications welcome all year from architects, interior designers, fresh graduates and architecture students (training) in Erbil and Kurdistan]('.site_url('/careers', 'en').')';
-        $out[] = '- [Erbil architecture walk — a guide to the city\'s buildings by Aram Mizuri]('.site_url('/erbil-walk', 'en').')';
+        $out[] = '- [Kurdistan\'s architectural heritage — the landmarks of Greater Kurdistan on one map, introduced by Aram Mizuri]('.site_url(\App\Models\Landmark::PATH, 'en').')';
         $out[] = '';
+
+        // the heritage map's landmarks, one line each
+        $landmarks = \App\Models\Landmark::publishedOrdered()->get();
+        if ($landmarks->isNotEmpty()) {
+            $out[] = '## Kurdistan\'s architectural heritage';
+            $out[] = '';
+            $out[] = "Landmarks across all four parts of Kurdistan, chosen and introduced by {$name}.";
+            $out[] = '';
+            foreach ($landmarks as $l) {
+                $facts = collect([$l->place_en, $l->period_en, \App\Models\Landmark::REGIONS[$l->region][0] ?? null, $l->unesco ? 'UNESCO World Heritage Site' : null])->filter()->implode(' · ');
+                $out[] = '- ['.$clean($l->name_en).']('.$l->url('en').') — '.$facts.($l->summary_en ? ': '.$clean($l->summary_en) : '');
+            }
+            $out[] = '';
+        }
 
         return response(implode("\n", $out), 200, [
             'Content-Type' => 'text/plain; charset=UTF-8',
@@ -154,13 +168,17 @@ class SeoController extends Controller
             $this->page($xml, '/projects/'.$project->slug, $project->updated_at, $project->orderedVariantUrls('lg'));
         }
 
-        // the build journal and its entries, and the Erbil walk
+        // the build journal and its entries, and the heritage map and its landmarks
         $posts = \App\Models\ProjectUpdate::inJournal()->orderByDesc('date')->get();
         $this->page($xml, '/journal', $posts->max('updated_at'));
         foreach ($posts as $post) {
             $this->page($xml, '/journal/'.$post->slug, $post->updated_at, $post->imageUrls('lg'));
         }
-        $this->page($xml, '/erbil-walk', \App\Models\WalkStop::max('updated_at') ? \Illuminate\Support\Carbon::parse(\App\Models\WalkStop::max('updated_at')) : null);
+        $landmarks = \App\Models\Landmark::publishedOrdered()->get();
+        $this->page($xml, \App\Models\Landmark::PATH, $landmarks->max('updated_at'));
+        foreach ($landmarks as $landmark) {
+            $this->page($xml, \App\Models\Landmark::PATH.'/'.$landmark->slug, $landmark->updated_at, $landmark->imageUrl() ? [url($landmark->imageUrl())] : []);
+        }
 
         if (\App\Models\Partner::anyPublished()) {
             $this->page($xml, '/partners', \Illuminate\Support\Carbon::parse(\App\Models\Partner::max('updated_at')));

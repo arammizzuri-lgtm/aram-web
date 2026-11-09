@@ -1,5 +1,5 @@
 {{-- The head shared by the standalone pages added since the journal (the
-     journal and the Erbil walk): title, description, the three language
+     journal, the partners and the heritage map): title, description, the three language
      versions, the link preview, fonts, icons and project.css — plus the
      page's own stylesheet ($css) and structured data ($schema).
      $title, $description, $path, $image (optional), $css (optional),

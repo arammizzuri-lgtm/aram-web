@@ -7,6 +7,7 @@ use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\HeritageController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\PartnersController;
 use App\Http\Controllers\PhotosController;
@@ -17,7 +18,6 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SketchController;
-use App\Http\Controllers\WalkController;
 use App\Http\Middleware\PrivatePage;
 use App\Http\Middleware\SiteLanguage;
 use App\Http\Middleware\TrackPageView;
@@ -47,8 +47,11 @@ $pages = function (string $lang) {
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
         // the build journal: construction updates published as posts
         Route::get('/journal', [JournalController::class, 'index'])->name('journal');
-        // the studio's guide to Erbil's architecture
-        Route::get('/erbil-walk', [WalkController::class, 'index'])->name('walk');
+        // Kurdistan's architectural heritage: the map of Greater Kurdistan, and a
+        // page per landmark. The Erbil walk it replaced points here.
+        Route::get('/kurdistan-heritage', [HeritageController::class, 'index'])->name('heritage');
+        Route::get('/kurdistan-heritage/{slug}', [HeritageController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('landmark');
+        Route::get('/erbil-walk', fn () => redirect(site_url('/kurdistan-heritage'), 301));
         // the suppliers and brands the studio builds with
         Route::get('/partners', [PartnersController::class, 'index'])->name('partners');
         Route::get('/journal/{slug}', [JournalController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('journal.post');

@@ -23,7 +23,7 @@
         $in = 'English';
         if (preg_match('#^/(ku|ar)(/.*)?$#', $path, $m)) { $in = $lang[$m[1]]; $path = $m[2] ?? '/'; }
         $named = ['/' => 'Homepage', '/projects' => 'All projects', '/aram-mizuri' => 'About page', '/journal' => 'Journal',
-            '/erbil-walk' => 'Erbil walk', '/estimate' => 'Cost estimate', '/careers' => 'Careers', '/photos' => 'Photos by room', '/saved' => 'Saved projects'];
+            '/kurdistan-heritage' => 'Kurdistan heritage', '/estimate' => 'Cost estimate', '/careers' => 'Careers', '/photos' => 'Photos by room', '/saved' => 'Saved projects'];
         if (isset($named[$path])) return $named[$path].' ('.$in.')';
         if (preg_match('#^/projects/([a-z0-9-]+)$#', $path, $m)) {
             return (\App\Models\Project::where('slug', $m[1])->value('name') ?? $m[1]).' ('.$in.')';

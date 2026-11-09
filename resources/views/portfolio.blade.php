@@ -1140,7 +1140,7 @@
             <div class="footer__col footer__col--links">
                 <nav class="footer__social">
                     <a href="{{ site_url('/journal') }}" class="footer__link" {!! bitext('journal_nav') !!}>{{ bival('journal_nav') }}</a>
-                    <a href="{{ site_url('/erbil-walk') }}" class="footer__link" {!! bitext('walk_nav') !!}>{{ bival('walk_nav') }}</a>
+                    <a href="{{ site_url('/kurdistan-heritage') }}" class="footer__link" {!! bitext('landmarks_nav') !!}>{{ bival('landmarks_nav') }}</a>
                     @if (\App\Models\Partner::anyPublished())
                         <a href="{{ site_url('/partners') }}" class="footer__link" {!! bitext('partners_nav') !!}>{{ bival('partners_nav') }}</a>
                     @endif

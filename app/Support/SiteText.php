@@ -484,7 +484,7 @@ class SiteText
 
                 // what search engines show — written the way job seekers search
                 'careers_seo_title' => ['Search title (Google tab and result)', 'Architecture jobs in Erbil — open applications for architects', 'هەلی کاری تەلارسازی لە هەولێر — داواکاریی گشتی بۆ ئەندازیارانی تەلارساز'],
-                'careers_seo_desc'  => ['Search description', 'Architect, interior designer, fresh graduate or architecture student looking for work in Erbil or Kurdistan? Aram Mizuri Architecture welcomes open applications all year — send your CV and portfolio.', 'ئەندازیاری تەلارساز، دیزاینەری ناوەوە، دەرچووی نوێ یان خوێندکاری تەلارسازیت و بەدوای کاردا دەگەڕێیت لە هەولێر یان کوردستان؟ ستۆدیۆی ئارام میزوری بە درێژایی ساڵ داواکاریی گشتی وەردەگرێت — سیڤی و پۆرتفۆلیۆکەت بنێرە.', 'area'],
+                'careers_seo_desc'  => ['Search description', 'Architect, interior designer, fresh graduate or architecture student looking for work in Erbil or Kurdistan? Aram Mizuri Architecture welcomes open applications all year — send your CV and portfolio.', 'ئەندازیاری تەلارساز، دیزاینەری ناوەوە، دەرچووی نوێ یان خوێندکاری تەلارسازیت و بەدوای کاردا دەگەڕێیت لە هەولێر یان کوردستان؟ ستۆدیۆی ئارام مزووری بە درێژایی ساڵ داواکاریی گشتی وەردەگرێت — سیڤی و پۆرتفۆلیۆکەت بنێرە.', 'area'],
 
                 // the open-application section, shown whether or not positions are open
                 'careers_oa_label'  => ['Open applications — label', 'Open applications · all year', 'داواکاریی گشتی · بە درێژایی ساڵ'],
@@ -551,9 +551,8 @@ class SiteText
                 'arch_other_names'     => ['Other spellings of his name, one per line — not shown, read by search engines', "Aram Mizzuri\nAram Mizouri\nآرام مزوري", '', 'area'],
             ],
 
-            // The build journal (/journal) and the Erbil architecture walk
-            // (/erbil-walk).
-            'Journal & walk' => [
+            // The build journal (/journal).
+            'Journal' => [
                 'journal_nav'     => ['Journal — menu and footer link', 'Journal', 'ڕۆژنامە'],
                 'journal_label'   => ['Journal — page label', 'Build journal', 'ڕۆژنامەی بیناسازی'],
                 'journal_title'   => ['Journal — title', 'From the site', 'لە شوێنی کارەوە'],
@@ -564,19 +563,34 @@ class SiteText
                 'journal_project' => ['Journal — link to the project', 'See the project', 'پرۆژەکە ببینە'],
                 'journal_more'    => ['Journal — more from the same build', 'More from this build', 'زیاتر لەم بیناسازییە'],
                 'journal_in'      => ['Project page — link from a progress step to its journal entry', 'In the journal', 'لە ڕۆژنامەدا'],
-                'walk_nav'        => ['Walk — footer link', 'Erbil architecture walk', 'گەشتی تەڵارسازیی هەولێر'],
-                'walk_label'      => ['Walk — page label', 'Architecture walk', 'گەشتی تەڵارسازی'],
-                'walk_title'      => ['Walk — title', 'Erbil, on foot', 'هەولێر، بە پێ'],
-                'walk_intro'      => ['Walk — introduction', 'A walk through the architecture of Erbil, from the Citadel to the modern city — chosen and annotated by architect Aram Mizuri.', 'گەشتێک بە ناو تەڵارسازیی هەولێردا، لە قەڵاوە تا شاری نوێ — هەڵبژاردن و ڕوونکردنەوەی تەڵارساز ئارام مزووری.', 'area'],
-                'walk_stop'       => ['Walk — "stop" before a number', 'Stop', 'وێستگە'],
-                'walk_built'      => ['Walk — "built" before a date', 'Built', 'دروستکراوە'],
-                'walk_directions' => ['Walk — directions button', 'Directions', 'ڕێنمایی ڕێگا'],
-                'walk_from_prev'  => ['Walk — distance from the stop before, {d}', '{d} from the previous stop', '{d} لە وێستگەی پێشووەوە'],
-                'walk_total'      => ['Walk — length of the walk, {d} and {n} stops', '{n} stops · about {d} on foot', '{n} وێستگە · نزیکەی {d} بە پێ'],
-                'walk_by'         => ['Walk — signature', 'Guided by Aram Mizuri, architect in Erbil', 'ڕێنمایی ئارام مزووری، تەڵارساز لە هەولێر'],
-                'walk_cta'        => ['Walk — closing question', 'Planning to build in Erbil?', 'پلانی بیناسازیت لە هەولێر هەیە؟'],
-                'walk_cta_btn'    => ['Walk — closing button', 'Talk to the studio', 'لەگەڵ ستۆدیۆ قسە بکە'],
-                'walk_photo_soon' => ['Walk — a stop with no photograph yet', 'Photograph coming', 'وێنە بەم زووانە'],
+            ],
+
+            // Kurdistan's architectural heritage (/kurdistan-heritage). The
+            // landmarks themselves are under Manage → Heritage landmarks.
+            'Kurdistan heritage' => [
+                'landmarks_nav'       => ['Footer link', "Kurdistan's architectural heritage", 'میراتی تەلارسازیی کوردستان'],
+                'landmarks_label'     => ['Page label', 'Architectural heritage of Kurdistan', 'میراتی تەلارسازیی کوردستان'],
+                'landmarks_title'     => ['Title', 'Eleven thousand years of building', 'یازدە هەزار ساڵ بیناسازی'],
+                'landmarks_intro'     => ['Introduction', 'From the stone circles of Göbekli Tepe to the citadel of Erbil, Kurdistan — on the northern rim of Mesopotamia, one of the cradles of civilisation — holds some of the oldest architecture on earth. These are its landmarks across all four parts of Kurdistan, chosen and introduced by architect Aram Mizuri.', 'لە بازنە بەردینەکانی گرێ مرازانەوە تا قەڵای هەولێر، کوردستان — لە لێواری باکووری میزۆپۆتامیا، یەکێک لە لانکەکانی شارستانییەت — هەندێک لە کۆنترین تەلارسازییەکانی سەر زەوی لە خۆ دەگرێت. ئەمانە شوێنەوارە دیارەکانین لە هەر چوار پارچەی کوردستان، هەڵبژاردن و ناساندنی تەلارساز ئارام مزووری.', 'area'],
+                'landmarks_count'     => ['Count — {n} landmarks, {u} UNESCO sites', '{n} landmarks · {u} UNESCO World Heritage Sites', '{n} شوێنەوار · {u} میراتی جیهانیی یونسکۆ'],
+                'landmarks_all'       => ['Filter — everything', 'All', 'هەمووی'],
+                'landmarks_by_era'    => ['Filter — by age', 'By age', 'بەپێی سەردەم'],
+                'landmarks_by_region' => ['Filter — by part of Kurdistan', 'By region', 'بەپێی پارچە'],
+                'landmarks_map_hint'  => ['Map — hint', 'Tap a pin to meet the landmark', 'دەست لە نیشانەیەک بدە بۆ ناسینی شوێنەوارەکە'],
+                'landmarks_read'      => ['Read more link', 'Read more', 'زیاتر بخوێنەوە'],
+                'landmarks_period'    => ['Facts — period', 'Period', 'سەردەم'],
+                'landmarks_place'     => ['Facts — place', 'Place', 'شوێن'],
+                'landmarks_region'    => ['Facts — region', 'Region', 'پارچە'],
+                'landmarks_era'       => ['Facts — age', 'Age', 'قۆناغ'],
+                'landmarks_unesco'    => ['UNESCO badge', 'UNESCO World Heritage Site', 'میراتی جیهانیی یونسکۆ'],
+                'landmarks_directions'=> ['Directions link', 'Open in Google Maps', 'لە گووگڵ ماپ بیکەرەوە'],
+                'landmarks_back'      => ['Back to the map', 'The heritage map', 'نەخشەی میرات'],
+                'landmarks_prev'      => ['Previous landmark', 'Previous', 'پێشوو'],
+                'landmarks_next'      => ['Next landmark', 'Next', 'دواتر'],
+                'landmarks_photo_soon'=> ['A landmark with no photograph yet', 'Photograph coming', 'وێنە بەم زووانە'],
+                'landmarks_by'        => ['Signature', 'Chosen and introduced by Aram Mizuri, architect in Erbil', 'هەڵبژاردن و ناساندنی ئارام مزووری، تەلارساز لە هەولێر'],
+                'landmarks_cta'       => ['Closing question', 'Building on this ground today?', 'ئەمڕۆ لەسەر ئەم خاکە بنیات دەنێیت؟'],
+                'landmarks_cta_btn'   => ['Closing button', 'Talk to the studio', 'لەگەڵ ستۆدیۆ قسە بکە'],
             ],
 
             // The partners and suppliers page (/partners). The partners
