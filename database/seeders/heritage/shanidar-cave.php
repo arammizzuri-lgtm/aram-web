@@ -130,7 +130,7 @@ return [
                 ['title' => 'Shanidar Cave — Wikipedia', 'url' => 'https://en.wikipedia.org/wiki/Shanidar_Cave', 'note' => 'With Solecki\'s reports and the 2020 Antiquity paper'],
                 ['title' => 'Ralph S. Solecki, Shanidar: The First Flower People (1971)', 'url' => '', 'note' => 'Knopf, New York'],
                 ['title' => 'Pomeroy, Barker et al., "New Neanderthal remains associated with the flower burial at Shanidar Cave", Antiquity 94 (2020)', 'url' => 'https://doi.org/10.15184/aqy.2019.207', 'note' => 'The Shanidar Z publication'],
-                ['title' => 'Shanidar 3 — Smithsonian National Museum of Natural History', 'url' => 'https://humanorigins.si.edu/evidence/human-fossils/fossils/shanidar-3', 'note' => 'Hall of Human Origins'],
+                ['title' => 'Shanidar 3 — Smithsonian National Museum of Natural History', 'url' => 'https://humanorigins.si.edu/evidence/human-fossils/shanidar-3-neanderthal-skeleton', 'note' => 'Hall of Human Origins'],
             ],
         ]],
     ],

@@ -137,7 +137,7 @@ return [
         ['type' => 'sources', 'data' => [
             'items' => [
                 ['title' => 'Taq-e Bostan — Wikipedia', 'url' => 'https://en.wikipedia.org/wiki/Taq-e_Bostan', 'note' => 'With the dimensions and inscriptions'],
-                ['title' => 'Ṭāq-e Bostān — Encyclopaedia Iranica', 'url' => 'https://www.iranicaonline.org/articles/taq-e-bostan', 'note' => 'The scholarly account of the reliefs'],
+                ['title' => 'Sasanian Rock Reliefs — Encyclopaedia Iranica', 'url' => 'https://www.iranicaonline.org/articles/sasanian-rock-reliefs/', 'note' => 'Ṭāq-e Bostān among the reliefs of the dynasty, and their dating'],
                 ['title' => 'Taq-e Bostan — Livius.org', 'url' => 'https://www.livius.org/articles/place/taq-e-bostan/', 'note' => 'Photographs and commentary'],
                 ['title' => 'Ernst Herzfeld Papers: Records of Taq-e Bostan — Smithsonian Institution', 'url' => 'https://www.si.edu/object/archives/sova-fsa-a-06-ref1091', 'note' => 'Early twentieth-century documentation'],
             ],

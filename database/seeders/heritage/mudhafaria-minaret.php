@@ -133,7 +133,7 @@ return [
                 ['title' => 'Mudhafaria Minaret — Wikipedia', 'url' => 'https://en.wikipedia.org/wiki/Mudhafaria_Minaret', 'note' => 'Dates, dimensions and description'],
                 ['title' => 'Gökböri — Wikipedia', 'url' => 'https://en.wikipedia.org/wiki/G%C3%B6kb%C3%B6ri', 'note' => 'The ruler who built it'],
                 ['title' => 'Ibn Khallikan, Wafayāt al-aʿyān — the life of Muzaffar al-Din Gökböri', 'url' => '', 'note' => 'Translated by de Slane (1842–71)'],
-                ['title' => 'Claudius James Rich, Narrative of a Residence in Koordistan (1836)', 'url' => 'https://archive.org/details/narrativeofresid01rich', 'note' => 'With the engraving of Erbil'],
+                ['title' => 'Claudius James Rich, Narrative of a Residence in Koordistan (1836)', 'url' => 'https://archive.org/details/narrativeofresi02rich', 'note' => 'Volume 2: Erbil in 1820, and the minaret measured'],
             ],
         ]],
     ],

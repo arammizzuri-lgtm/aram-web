@@ -100,13 +100,34 @@ class Landmark extends Model
     /** A text in a language (default: the page's), the English where none was written. */
     public function tr(string $field, ?string $lang = null): ?string
     {
-        return bi_record($lang ?? site_lang(), $this->{$field.'_en'}, $this->{$field.'_ku'}, $this->{$field.'_ar'});
+        $lang ??= site_lang();
+
+        return self::separators(bi_record($lang, $this->{$field.'_en'}, $this->{$field.'_ku'}, $this->{$field.'_ar'}), $lang);
     }
 
     /** A block's text in a language (default: the page's) — field_en / field_ku / field_ar. */
     public static function t(array $data, string $field, ?string $lang = null): ?string
     {
-        return bi_record($lang ?? site_lang(), $data[$field.'_en'] ?? null, $data[$field.'_ku'] ?? null, $data[$field.'_ar'] ?? null);
+        $lang ??= site_lang();
+
+        return self::separators(bi_record($lang, $data[$field.'_en'] ?? null, $data[$field.'_ku'] ?? null, $data[$field.'_ar'] ?? null), $lang);
+    }
+
+    /**
+     * A number's separators as Kurdish and Arabic write them: ٬ between the
+     * thousands (٤٦٬٠٠٠, not ٤٦,٠٠٠) and ٫ before the decimals (١٫٥). Only a
+     * comma or point between Eastern Arabic digits is touched — a comma
+     * followed by exactly three digits, a point followed by any — so English
+     * text, and the Kurdish comma (،) in a sentence, are left alone.
+     */
+    public static function separators(?string $s, ?string $lang = null): ?string
+    {
+        if ($s === null || ($lang ?? site_lang()) === 'en' || ! preg_match('/[٠-٩]/u', $s)) {
+            return $s;
+        }
+        $s = preg_replace('/(?<=[٠-٩]),(?=[٠-٩]{3}(?![٠-٩]))/u', '٬', $s);
+
+        return preg_replace('/(?<=[٠-٩])\.(?=[٠-٩])/u', '٫', $s);
     }
 
     /** The body as paragraphs (a blank line between them). */
@@ -155,13 +176,14 @@ class Landmark extends Model
         return implode("\n", $out);
     }
 
-    /** A number's digits in the page's language — Eastern Arabic in Kurdish and Arabic. */
+    /** A number's digits in the page's language — Eastern Arabic in Kurdish and Arabic, with their separators. */
     public static function digits(string|int|null $s, ?string $lang = null): string
     {
         $s = (string) $s;
+        $lang ??= site_lang();
 
-        return ($lang ?? site_lang()) === 'en' ? $s
-            : strtr($s, ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤', '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']);
+        return $lang === 'en' ? $s
+            : (string) self::separators(strtr($s, ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤', '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']), $lang);
     }
 
     /* ── The page's sections ─────────────────────────────────────────── */

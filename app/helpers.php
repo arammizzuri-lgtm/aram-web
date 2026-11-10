@@ -78,7 +78,11 @@ if (! function_exists('text_dir')) {
 if (! function_exists('site_lang_urls')) {
     /**
      * This page's address in every language — the path the visitor is on,
-     * under /, /ku or /ar, with its query string kept.
+     * under /, /ku or /ar, with its query string kept: a category, a page
+     * number, a search. Only parameters that read as one (a plain name, and
+     * a value of letters, digits, spaces, - _ . ,) are kept, so whatever else
+     * is typed into the address (?type=<script>) is not repeated into the
+     * language links and the hreflang tags.
      *
      * @return array<string, string>
      */
@@ -86,10 +90,14 @@ if (! function_exists('site_lang_urls')) {
     {
         $path = '/'.ltrim(request()->path(), '/');
         $path = preg_replace('#^/(ku|ar)(?=/|$)#', '', $path) ?: '/';
-        $query = request()->getQueryString();
+        $query = http_build_query(array_filter(
+            request()->query(),
+            fn ($v, $k) => is_string($v) && preg_match('/^[\w-]+$/', (string) $k) && preg_match('/^[\p{L}\p{N} _.,-]*$/u', $v),
+            ARRAY_FILTER_USE_BOTH,
+        ));
 
         return collect(array_keys(site_langs()))->mapWithKeys(fn ($l) => [
-            $l => site_url($path, $l).($query ? '?'.$query : ''),
+            $l => site_url($path, $l).($query !== '' ? '?'.$query : ''),
         ])->all();
     }
 }

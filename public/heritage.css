@@ -10,6 +10,11 @@
 @view-transition { navigation: auto; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* The small grey text here — photo credits, which the licences require to be
+   legible, notes, the timeline's years and hints — at the site's --faint
+   (32% white) read at about 2.6:1 on the dark ground. 50% gives about 5:1,
+   past the 4.5:1 that small text needs. The bar and footer keep the site's. */
+.pp--heritage main, .lm-lb { --faint: rgba(255,255,255,.5); }
 
 /* ---- Introduction -------------------------------------------------- */
 .hr-hero { max-width: var(--wide); margin: 0 auto; padding: clamp(120px, 17vh, 170px) var(--gutter) clamp(28px, 5vh, 48px); }

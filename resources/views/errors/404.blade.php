@@ -39,7 +39,10 @@
 </head>
 <body class="pp pp--not-found">
 
-    @include('partials.page-top', ['otherUrl' => site_url('/', $other), 'markHere' => false])
+    {{-- the language links lead home in each language: the same missing page
+         in another language would only be another dead end --}}
+    @include('partials.page-top', ['otherUrl' => site_url('/', $other), 'markHere' => false,
+        'langUrls' => collect(array_keys(site_langs()))->mapWithKeys(fn ($code) => [$code => site_url('/', $code)])->all()])
 
     <main class="nf">
         {{-- the number, drawn in outline with its dimension line, as a sheet's would be --}}

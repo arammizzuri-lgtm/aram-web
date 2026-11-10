@@ -99,7 +99,7 @@ class HeritageTest extends TestCase
     public function test_sections_fall_back_to_english_and_digits_follow_the_language(): void
     {
         $l = $this->landmark();
-        $this->get($l->url('ku'))->assertOk()->assertSee('قەڵای تاقیکردنەوە')->assertSee('١٠٢,٠٠٠')->assertSee('Alexander nearby.');
+        $this->get($l->url('ku'))->assertOk()->assertSee('قەڵای تاقیکردنەوە')->assertSee('١٠٢٬٠٠٠')->assertSee('Alexander nearby.');
         $this->get($l->url('ar'))->assertOk()->assertSee('قلعة الاختبار')->assertSee('هل تعلم؟');
     }
 
@@ -119,6 +119,53 @@ class HeritageTest extends TestCase
         $html = $this->get($this->landmark()->url('ku'))->assertOk()->getContent();
         $this->assertStringContainsString('<span class="lm-tl__date">٢٠١٤</span>', $html);
         $this->assertStringContainsString('<p class="lm-tl__text" dir="ltr">Alexander nearby.</p>', $html);
+    }
+
+    public function test_kurdish_and_arabic_numbers_carry_their_own_separators(): void
+    {
+        $this->assertSame('٦٥٬٠٠٠', Landmark::digits('65,000', 'ku'));
+        $this->assertSame('١٫٥', Landmark::digits('1.5', 'ar'));
+        $this->assertSame('65,000', Landmark::digits('65,000', 'en'));
+        // inside written text: only a comma or point between Eastern Arabic digits
+        $this->assertSame('نزیکەی ٤٦٬٠٠٠ ساڵ، و ١٫٢ کم', Landmark::separators('نزیکەی ٤٦,٠٠٠ ساڵ، و ١.٢ کم', 'ku'));
+        $this->assertSame('١٩٥١,١٩٥٣', Landmark::separators('١٩٥١,١٩٥٣', 'ku'));    // two years, not a thousands mark
+        $this->assertSame('46,000 years', Landmark::separators('46,000 years', 'ku'));
+
+        $l = $this->landmark(['sections' => [['type' => 'facts', 'data' => ['items' => [['text_en' => 'About 46,000 years old.', 'text_ku' => 'نزیکەی ٤٦,٠٠٠ ساڵ.']]]]]]);
+        $this->get($l->url('ku'))->assertOk()->assertSee('نزیکەی ٤٦٬٠٠٠ ساڵ.')->assertDontSee('٤٦,٠٠٠');
+    }
+
+    public function test_the_unesco_panel_keeps_the_official_name_under_the_landmarks_own(): void
+    {
+        $l = $this->landmark(['unesco_name' => 'Erbil Citadel', 'sections' => [['type' => 'unesco', 'data' => []]]]);
+
+        $this->get($l->url())->assertOk()->assertSee('<h2 class="lm-h2">Erbil Citadel</h2>', false)->assertDontSee('lm-unesco__official', false);
+        $this->get($l->url('ku'))->assertOk()
+            ->assertSee('<h2 class="lm-h2">قەڵای تاقیکردنەوە</h2>', false)
+            ->assertSee('ناوی فەرمی: <span lang="en" dir="ltr">Erbil Citadel</span>', false);
+        $this->get($l->url('ar'))->assertOk()->assertSee('<h2 class="lm-h2">قلعة الاختبار</h2>', false)->assertSee('الاسم الرسمي', false);
+    }
+
+    public function test_the_collection_counts_years_of_building_as_its_title_does(): void
+    {
+        // from Göbekli Tepe (9500 BC), not Shanidar's hearths (63,000 BC)
+        $html = $this->get('/kurdistan-heritage')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#data-count>11,000\+</span></dd><dt>Years of building</dt>#', $html);
+        $this->assertStringContainsString('From the first hearths to today', $html);
+        $this->get('/ku/kurdistan-heritage')->assertOk()->assertSee('١١٬٠٠٠+')->assertSee('ساڵ بیناسازی');
+    }
+
+    public function test_the_moved_source_links_are_repaired(): void
+    {
+        $html = implode('', array_map(fn ($slug) => $this->get('/kurdistan-heritage/'.$slug)->getContent(),
+            ['shanidar-cave', 'jerwan-aqueduct', 'amedi', 'taq-e-bostan', 'mudhafaria-minaret']));
+        foreach (['humanorigins.si.edu/evidence/human-fossils/shanidar-3-neanderthal-skeleton', 'isac.uchicago.edu/publications/sennacheribs-aqueduct-jerwan',
+            'mapping-mesopotamian-monuments/amadiyaamedi-citadel', 'iranicaonline.org/articles/sasanian-rock-reliefs/', 'archive.org/details/narrativeofresi02rich'] as $url) {
+            $this->assertStringContainsString($url, $html);
+        }
+        foreach (['fossils/shanidar-3"', 'oip-24-sennacheribs', 'node/87269', 'articles/taq-e-bostan', 'narrativeofresid01rich'] as $gone) {
+            $this->assertStringNotContainsString($gone, $html);
+        }
     }
 
     public function test_the_timeline_names_each_anchor_year_and_no_mark_covers_another(): void

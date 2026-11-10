@@ -121,7 +121,7 @@ return [
 
         ['type' => 'sources', 'data' => [
             'items' => [
-                ['title' => 'T. Jacobsen & S. Lloyd, Sennacherib\'s Aqueduct at Jerwan, OIP 24 (1935)', 'url' => 'https://isac.uchicago.edu/research/publications/oip/oip-24-sennacheribs-aqueduct-jerwan', 'note' => 'Oriental Institute, Chicago — free PDF'],
+                ['title' => 'T. Jacobsen & S. Lloyd, Sennacherib\'s Aqueduct at Jerwan, OIP 24 (1935)', 'url' => 'https://isac.uchicago.edu/publications/sennacheribs-aqueduct-jerwan', 'note' => 'Oriental Institute, Chicago — free PDF'],
                 ['title' => 'Jerwan — Wikipedia', 'url' => 'https://en.wikipedia.org/wiki/Jerwan', 'note' => 'With the inscription translations'],
                 ['title' => 'Jerwan Aqueduct — Mapping Mesopotamian Monuments, Columbia University', 'url' => 'https://mcid.mcah.columbia.edu/mapping-mesopotamian-monuments/jerwan-aqueduct', 'note' => 'Measurements and photographs'],
                 ['title' => 'S. Dalley, The Mystery of the Hanging Garden of Babylon (2013)', 'url' => '', 'note' => 'The Nineveh hypothesis'],

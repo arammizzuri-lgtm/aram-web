@@ -2,6 +2,12 @@
 @php
     use App\Models\Landmark;
     $text = Landmark::rich(Landmark::t($d, 'text'));
+    // The property's official name is UNESCO's, in English. On an English page
+    // it is the heading; in Kurdish and Arabic the heading is the landmark's
+    // own name, with the official one set small beneath it.
+    $official = filled($l->unesco_name) ? $l->unesco_name : null;
+    $heading = site_lang() === 'en' ? ($official ?: $l->tr('name')) : $l->tr('name');
+    $showOfficial = $official && site_lang() !== 'en';
 @endphp
 @if ($l->unesco)
     <section class="lm-sec lm-unesco reveal">
@@ -10,7 +16,10 @@
             <span>{{ bival('landmarks_unesco') }}</span>
         </div>
         <div class="lm-unesco__body">
-            <h2 class="lm-h2"{{ text_dir($l->unesco_name ?: $l->tr('name')) }}>{{ $l->unesco_name ?: $l->tr('name') }}</h2>
+            <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
+            @if ($showOfficial)
+                <p class="lm-unesco__official">{{ bival('landmarks_unesco_official') }}: <span lang="en" dir="ltr">{{ $official }}</span></p>
+            @endif
             @if ($l->unesco_year || $l->unesco_criteria)
                 <p class="lm-unesco__meta">
                     @if ($l->unesco_year){{ str_replace('{y}', Landmark::digits($l->unesco_year), bival('landmarks_unesco_inscribed')) }}@endif

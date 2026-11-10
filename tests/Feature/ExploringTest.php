@@ -68,13 +68,15 @@ class ExploringTest extends TestCase
             ->assertSee('<a class="pp-menu__link" href="'.url('/estimate').'">Cost estimate</a>', false)
             ->getContent();
 
-        // the folded menu on a phone has Home and Careers too, numbered as sheets
+        // the folded menu on a phone has Home, the Journal and Careers too, numbered as sheets
         $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">01</span>\s*<span class="pp-sheet__label">Home</span>#', $html);
-        $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">09</span>\s*<span class="pp-sheet__label">Careers</span>#', $html);
+        $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">09</span>\s*<span class="pp-sheet__label">Journal</span>#', $html);
+        $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">10</span>\s*<span class="pp-sheet__label">Careers</span>#', $html);
 
         $this->get('/ku/estimate')->assertOk()
             ->assertSee('<a class="pp-menu__link" href="'.url('/ku/estimate').'" aria-current="page">', false)
-            ->assertSee('<a class="pp-menu__link" href="'.url('/ku').'#about">دەربارەی</a>', false);
+            // "About" is the architect's own page now, no longer a part of the homepage
+            ->assertSee('<a class="pp-menu__link" href="'.url('/ku/aram-mizuri').'">دەربارەی</a>', false);
 
         // the estimator switched off leaves the menu too
         SiteSetting::updateOrCreate(['key' => 'est_enabled'], ['value' => '0']);

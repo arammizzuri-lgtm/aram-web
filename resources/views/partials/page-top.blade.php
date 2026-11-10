@@ -4,7 +4,10 @@
      estimator — the visitor's saved projects once there are any (saved.js),
      and this page in the other language. On a computer the menu runs across
      the bar; on a tablet or phone it folds into a Menu button (site-menu.js).
-     $otherUrl: this page in the other language. $markHere: false where the
+     $otherUrl: this page in the other language. $langUrls: where the language
+     links lead instead of this page in each language ([code => url]) — a page
+     not found sends them home, not to the same missing page again.
+     $markHere: false where the
      menu should not say which page this is (a page not found). $withMenu: false on a page
      that is not for browsing (a client's room), which keeps a single way
      back instead: $backHref / $backLabel (default: home). $withSaved: false
@@ -12,7 +15,7 @@
 @php
     // this page in the two other languages (site_lang_urls); $otherUrl, which
     // pages still pass, was the one other language when there were two
-    $langLinks = collect(site_lang_urls())->except(site_lang());
+    $langLinks = collect($langUrls ?? site_lang_urls())->except(site_lang());
     $topMenu = ($withMenu ?? true) ? \App\Support\SiteMenu::items($markHere ?? true) : [];
     $topWa = $topMenu ? whatsapp_url(bival('wa_text')) : null;
 @endphp

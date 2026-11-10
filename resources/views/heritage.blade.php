@@ -20,10 +20,15 @@
         'era' => $l->era, 'eraName' => Landmark::eraName($l->era), 'region' => $l->region, 'unesco' => $l->unesco, 'img' => $l->imageUrl('md'),
     ])->values();
 
-    // the figures: how many, how many UNESCO, how many years since the oldest, how many parts
+    // the figures: how many, how many UNESCO, how many years of building, how many parts
     $now = (int) date('Y');
     $oldest = $landmarks->whereNotNull('year_from')->min('year_from');
-    $years = $oldest !== null ? $now - $oldest : null;
+    // "years of building", like the title: counted from the oldest landmark
+    // people built — not from a cave lived in long before anyone built
+    // (Shanidar's hearths, 65,000 years ago). Nothing built survives from
+    // before the end of the Ice Age, about 12,000 BC.
+    $oldestBuilt = $landmarks->whereNotNull('year_from')->where('year_from', '>=', -12000)->min('year_from');
+    $years = $oldestBuilt !== null ? $now - $oldestBuilt : null;
     $yearsLabel = $years ? $digits(number_format(floor($years / 1000) * 1000)).'+' : null;
 
     // the collection across time: one row per age, each landmark a mark at

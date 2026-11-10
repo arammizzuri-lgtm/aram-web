@@ -37,6 +37,14 @@ Thumbs.db
 # data that must never be committed.
 /storage/app/private/
 
+# The public disk holds what visitors and the admin upload — partner logos,
+# testimonial voice notes, project photos. Each copy of the site keeps its
+# own: committed, the deploy (cp -R) would carry a laptop's test uploads to
+# the live site. Only the heritage photographs, the researched pages' own
+# pictures, are part of the site and committed.
+/storage/app/public/*
+!/storage/app/public/heritage/
+
 # ── ERP mount (public/erp is the ERP's public directory) ──
 /public/erp/hot
 /public/erp/storage
