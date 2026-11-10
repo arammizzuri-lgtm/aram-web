@@ -66,6 +66,7 @@
         } catch (e) { /* storage blocked: the loader, as on a first visit */ }
     </script>
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
+    <link rel="stylesheet" href="{{ asset('site-index.css') }}?v={{ filemtime(public_path('site-index.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()); @endphp
     @if ($quotesHaveVoices)
@@ -110,26 +111,19 @@
     <div class="cursor" id="cursor"></div>
     <div class="cursor-follower" id="cursorFollower"></div>
 
-    <!-- Navigation -->
-    <nav class="nav" id="nav">
+    <!-- Navigation: the studio's name, and a short bar — the Index (the
+         whole site as a sheet index, partials/site-index), Contact, the
+         visitor's saved projects once there are any, and the three
+         languages. The same Index opens from every other page's bar. -->
+    <nav class="nav" id="nav" data-tuck aria-label="{{ bival('nav_menu') }}">
         <a href="#home" class="nav__logo">
             <span class="logo-name" {!! bitext('brand_name') !!}>{{ bival('brand_name') }}</span>
             <span class="logo-sub" {!! bitext('brand_sub') !!}>{{ bival('brand_sub') }}</span>
         </a>
 
         <div class="nav__bar">
-            {{-- "Projects" opens every project on its own page; the hero's arrow still scrolls to the grid below --}}
-            <a href="{{ site_url('/projects') }}" class="nav__link"
-               data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
-            <a href="#map"      class="nav__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
-            <a href="{{ site_url(\App\Support\Architect::PATH) }}" class="nav__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
-            <a href="#services" class="nav__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
-            <a href="#process"  class="nav__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
-            <a href="#contact"  class="nav__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
-            @if (\App\Support\CostEstimate::enabled())
-                <a href="{{ site_url('/estimate') }}" class="nav__link"
-                   data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
-            @endif
+            @include('partials.index-button', ['class' => 'nav__index'])
+            <a href="#contact" class="nav__link nav__contact" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
             {{-- The visitor's hearted projects (saved.js), once there are any --}}
             <a href="{{ site_url('/saved') }}" class="nav__link nav__saved" data-saved-link hidden>
                 @include('partials.icon-heart')
@@ -137,42 +131,11 @@
                 <span class="nav__saved-n" data-saved-count></span>
             </a>
             <span class="nav__sep"></span>
-            {{-- The page in the two other languages: a link to each version
-                 (/, /ku, /ar). With three languages the old in-place toggle
-                 gave way to plain links, each loading its page whole. --}}
-            @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
-                <a class="lang-toggle" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
-            @endforeach
+            {{-- The three languages, this one marked: a link to each version (/, /ku, /ar) --}}
+            @include('partials.lang-switch', ['class' => 'lsw--bar'])
         </div>
-
-        <a href="{{ site_url('/saved') }}" class="nav__saved-m" data-saved-link hidden aria-label="{{ bival('saved_nav') }}">
-            @include('partials.icon-heart')
-            <span data-saved-count></span>
-        </a>
-        <button class="nav__hamburger" id="hamburger" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
     </nav>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
-        <a href="{{ site_url('/projects') }}" class="mobile-menu__link"
-           data-href-en="{{ site_url('/projects', 'en') }}" data-href-ku="{{ site_url('/projects', 'ku') }}" {!! bitext('nav_projects') !!}>{{ bival('nav_projects') }}</a>
-        <a href="#map"      class="mobile-menu__link" {!! bitext('nav_map') !!}>{{ bival('nav_map') }}</a>
-        <a href="{{ site_url(\App\Support\Architect::PATH) }}" class="mobile-menu__link" {!! bitext('nav_about') !!}>{{ bival('nav_about') }}</a>
-        <a href="#services" class="mobile-menu__link" {!! bitext('nav_services') !!}>{{ bival('nav_services') }}</a>
-        <a href="#process"  class="mobile-menu__link" {!! bitext('nav_process') !!}>{{ bival('nav_process') }}</a>
-        <a href="#contact"  class="mobile-menu__link" {!! bitext('nav_contact') !!}>{{ bival('nav_contact') }}</a>
-        @if (\App\Support\CostEstimate::enabled())
-            <a href="{{ site_url('/estimate') }}" class="mobile-menu__link"
-               data-href-en="{{ site_url('/estimate', 'en') }}" data-href-ku="{{ site_url('/estimate', 'ku') }}" {!! bitext('est_nav') !!}>{{ bival('est_nav') }}</a>
-        @endif
-        <div class="mobile-menu__langs">
-            @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
-                <a class="mobile-menu__lang" href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto">{{ site_langs()[$code] }}</a>
-            @endforeach
-        </div>
-    </div>
+    @include('partials.site-index', ['sheets' => \App\Support\SiteMenu::items()])
 
     {{-- The page's own content, between the menu and the footer — the
          landmark screen readers (and AI agents) jump to. --}}
@@ -244,15 +207,6 @@
             <span class="hero__scroll-line"></span>
         </a>
 
-        {{-- Mobile-only language switch — small fixed badges in the top-left
-             corner (the nav bar and its language pills are hidden below
-             768px): one for each of the two other languages. --}}
-        @php $short = ['en' => 'EN', 'ku' => 'کوردی', 'ar' => 'عربي']; @endphp
-        <div class="hero__lang" role="group" aria-label="Language / زمان / اللغة">
-            @foreach (collect(site_lang_urls())->except(site_lang()) as $code => $href)
-                <a href="{{ $href }}" hreflang="{{ $code }}" lang="{{ $code === 'ku' ? 'ckb' : $code }}" dir="auto" aria-label="{{ site_langs()[$code] }}">{{ $short[$code] }}</a>
-            @endforeach
-        </div>
     </section>
 
     <!-- ========== STATS BAND ========== -->
@@ -1405,6 +1359,7 @@
          The HEX flags keep it inert inside <script> (no "</script>", no quotes). --}}
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}" defer></script>
+    <script src="{{ asset('site-index.js') }}?v={{ filemtime(public_path('site-index.js')) }}" defer></script>
     <script src="{{ asset('map-growth.js') }}?v={{ filemtime(public_path('map-growth.js')) }}" defer></script>
     @include('partials.sketch-assets')
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>

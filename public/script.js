@@ -688,35 +688,7 @@ const SEEN_KEY = 'am_loader_seen';
     });
 })();
 
-/* ---- Navigation ---------------------------------------- */
-(function initNav() {
-    const nav       = document.getElementById('nav');
-    const hamburger = document.getElementById('hamburger');
-    const menu      = document.getElementById('mobileMenu');
-    if (!nav || !hamburger || !menu) return;
-
-    // Scroll shadow
-    window.addEventListener('scroll', () => {
-        nav.style.boxShadow = window.scrollY > 10
-            ? '0 2px 20px rgba(0,0,0,.08)'
-            : 'none';
-    }, { passive: true });
-
-    // Hamburger toggle
-    let open = false;
-    function toggleMenu(force) {
-        open = typeof force === 'boolean' ? force : !open;
-        menu.classList.toggle('open', open);
-        hamburger.classList.toggle('open', open);
-        document.body.style.overflow = open ? 'hidden' : '';
-    }
-
-    hamburger.addEventListener('click', () => toggleMenu());
-
-    menu.querySelectorAll('.mobile-menu__link').forEach(link => {
-        link.addEventListener('click', () => toggleMenu(false));
-    });
-})();
+/* ---- Navigation: the Index and the bar that steps aside are site-index.js ---- */
 
 /* ---- Hero parallax on mouse move ----------------------- */
 (function initHeroParallax() {

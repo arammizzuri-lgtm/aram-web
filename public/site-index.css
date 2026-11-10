@@ -1,0 +1,235 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — site-index.css
+   The menu on every page: the Index button, Contact and the three
+   languages in the bar, and the Index itself — the site as the index sheet
+   of a set of drawings (partials/site-index): a frame drawn in, the sheets
+   numbered A-00 to A-10 in a schedule, H-01 Kurdistan's architectural
+   heritage with the landmark of the day, and a title block along the foot.
+   Loaded by the homepage (style.css) and by every other page (project.css),
+   so it carries its own colours rather than relying on either.
+   ========================================================= */
+
+/* ---- In the bar ------------------------------------------------------ */
+.sx-open {
+    display: inline-flex; align-items: center; gap: 9px; flex: none;
+    height: 34px; padding: 0 15px 0 13px; border-radius: 100px;
+    border: 1px solid rgba(245,197,24,.5); background: rgba(245,197,24,.1);
+    font: inherit; font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; line-height: 1;
+    color: #F5C518; transition: background .25s, color .25s, border-color .25s;
+}
+.sx-open:hover, .sx-open[aria-expanded="true"] { background: #F5C518; color: #0a0a0a; border-color: #F5C518; }
+.sx-open:focus-visible { outline: 2px solid #F5C518; outline-offset: 3px; }
+.sx-open__icon { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.1; }
+.sx-open__icon rect { transition: transform .35s cubic-bezier(.2,.7,.2,1); transform-origin: 6px 6px; }
+.sx-open:hover .sx-open__icon rect:nth-child(1) { transform: translate(-1px, -1px); }
+.sx-open:hover .sx-open__icon rect:nth-child(4) { transform: translate(1px, 1px); }
+[dir="rtl"] .sx-open { letter-spacing: 0; font-size: 13px; font-weight: 400; }
+.pp-top .sx-open, .pp-top .bar-contact, .pp-top .lsw a { cursor: pointer; }
+
+/* Contact, a plain link beside the Index on every page but the homepage
+   (where it is the homepage's own .nav__link) */
+.bar-contact { padding: 0 6px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.8); transition: color .2s; white-space: nowrap; }
+.bar-contact:hover { color: #F5C518; }
+[dir="rtl"] .bar-contact { letter-spacing: 0; font-size: 13px; }
+
+/* The three languages, the page's own marked */
+.lsw {
+    display: inline-flex; align-items: center; flex: none; gap: 2px;
+    height: 34px; padding: 3px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,.12); background: rgba(20,20,20,.55);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.lsw__item {
+    display: inline-flex; align-items: center; height: 100%; padding: 0 11px; border-radius: 100px;
+    font-size: 12.5px; line-height: 1; white-space: nowrap; color: rgba(255,255,255,.62);
+    transition: color .2s, background .2s;
+}
+.lsw__item[lang="en"] { font-size: 10.5px; letter-spacing: .14em; }
+a.lsw__item:hover { color: #F5C518; }
+a.lsw__item:focus-visible { outline: 2px solid #F5C518; outline-offset: 1px; }
+.lsw__item.is-on { background: rgba(245,197,24,.16); color: #F5C518; }
+/* in the homepage's glass bar it needs no pill of its own */
+.nav__bar .lsw { height: auto; padding: 0; border: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.nav__bar .lsw__item { height: 26px; }
+.nav__bar .nav__contact { white-space: nowrap; }
+
+/* ---- The bar steps aside while reading -------------------------------
+   Scrolling down the page it slides away; the first scroll up brings it
+   back (site-index.js). The transitions the bars had stay with them. */
+[data-tuck] { transition: transform .45s cubic-bezier(.2,.7,.2,1), background .35s, padding .35s, box-shadow .35s; }
+[data-tuck].is-tucked { transform: translateY(calc(-100% - 14px)); }
+@media (prefers-reduced-motion: reduce) { [data-tuck] { transition: none; } }
+
+/* ---- The index --------------------------------------------------------- */
+.sx {
+    position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+    margin: 0; padding: clamp(8px, 1.4vw, 20px); border: 0;
+    color: #E5E2DC; cursor: auto; overflow-y: auto; overscroll-behavior: contain;
+    background-color: #0a0a0a;
+    /* drawing paper: a fine grid, and a coarser one every five squares */
+    background-image:
+        linear-gradient(rgba(245,197,24,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,197,24,.05) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+}
+.sx:not([open]) { display: none; }
+.sx::backdrop { background: #0a0a0a; }
+.sx a, .sx button { cursor: pointer; color: inherit; text-decoration: none; }
+.sx a:focus-visible, .sx button:focus-visible { outline: 2px solid #F5C518; outline-offset: 2px; }
+/* the frame: a border line, and a finer one inside it */
+.sx__sheet {
+    position: relative; min-height: 100%;
+    display: grid; grid-template-rows: auto 1fr auto;
+    border: 1px solid rgba(245,197,24,.45);
+    box-shadow: inset 0 0 0 5px #0a0a0a, inset 0 0 0 6px rgba(245,197,24,.18);
+}
+/* registration marks at two corners */
+.sx__sheet::before, .sx__sheet::after {
+    content: ''; position: absolute; width: 18px; height: 18px; pointer-events: none;
+    background: linear-gradient(#F5C518, #F5C518) center / 100% 1px no-repeat, linear-gradient(#F5C518, #F5C518) center / 1px 100% no-repeat;
+    opacity: .7;
+}
+.sx__sheet::before { top: -9px; left: -9px; }
+.sx__sheet::after { bottom: -9px; right: -9px; }
+
+.sx__head {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px clamp(16px, 3vw, 36px); border-bottom: 1px solid rgba(245,197,24,.25);
+}
+.sx__title { margin: 0; font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: #F5C518; }
+.sx__brand { font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.sx__close {
+    display: inline-flex; align-items: center; gap: 10px; height: 36px; padding: 0 16px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.03);
+    font: inherit; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #fff;
+    transition: border-color .2s, color .2s;
+}
+.sx__close svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.sx__close:hover { border-color: #F5C518; color: #F5C518; }
+[dir="rtl"] .sx__title, [dir="rtl"] .sx__brand, [dir="rtl"] .sx__close { letter-spacing: 0; font-size: 13px; }
+
+.sx__body {
+    display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: clamp(28px, 4vw, 72px);
+    align-items: start; padding: clamp(22px, 4vh, 52px) clamp(16px, 3vw, 36px);
+}
+
+/* the schedule of sheets: two columns, read down then across */
+.sx__list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: clamp(24px, 3vw, 56px); }
+.sx__item { break-inside: avoid; }
+.sx__link {
+    position: relative; display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; align-items: baseline;
+    gap: 2px 12px; padding: 15px 2px 14px; border-bottom: 1px solid rgba(255,255,255,.1);
+}
+/* a gold line draws along the sheet's row */
+.sx__link::after {
+    content: ''; position: absolute; inset-inline-start: 0; bottom: -1px; width: 0; height: 1px; background: #F5C518;
+    transition: width .5s cubic-bezier(.2,.7,.2,1);
+}
+.sx__link:hover::after, .sx__link:focus-visible::after, .sx__link[aria-current]::after { width: 100%; }
+.sx__code { grid-row: 1; font-size: 11px; letter-spacing: .14em; color: rgba(245,197,24,.85); font-variant-numeric: tabular-nums; unicode-bidi: isolate; white-space: nowrap; }
+.sx__label {
+    grid-row: 1; font-size: clamp(22px, 2.3vw, 34px); font-weight: 200; line-height: 1.15; letter-spacing: -.01em; color: #fff;
+    transition: color .25s, transform .4s cubic-bezier(.2,.7,.2,1);
+}
+[dir="rtl"] .sx__label { font-weight: 400; letter-spacing: 0; font-size: clamp(20px, 2vw, 30px); line-height: 1.5; }
+.sx__link:hover .sx__label, .sx__link:focus-visible .sx__label { color: #F5C518; transform: translateX(6px); }
+[dir="rtl"] .sx__link:hover .sx__label, [dir="rtl"] .sx__link:focus-visible .sx__label { transform: translateX(-6px); }
+.sx__link[aria-current] .sx__label { color: #F5C518; }
+.sx__here { grid-column: 2; grid-row: 2; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgba(245,197,24,.8); }
+[dir="rtl"] .sx__here { letter-spacing: 0; font-size: 12px; }
+.sx__arrow { grid-column: 3; grid-row: 1; display: inline-block; color: #F5C518; opacity: 0; transform: translateX(-8px); transition: opacity .25s, transform .4s cubic-bezier(.2,.7,.2,1); }
+.sx__link:hover .sx__arrow, .sx__link:focus-visible .sx__arrow { opacity: 1; transform: none; }
+[dir="rtl"] .sx__arrow { transform: scaleX(-1) translateX(-8px); }
+[dir="rtl"] .sx__link:hover .sx__arrow, [dir="rtl"] .sx__link:focus-visible .sx__arrow { transform: scaleX(-1); }
+
+/* H-01: the heritage collection, its own sheet */
+.sx__h { display: grid; gap: 18px; padding-inline-start: clamp(20px, 2.4vw, 36px); border-inline-start: 1px solid rgba(245,197,24,.3); }
+.sx__h-head { display: grid; gap: 8px; }
+.sx__h-head .sx__here { grid-column: auto; grid-row: auto; }
+.sx__h-label { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: #F5C518; line-height: 1.5; }
+.sx__h-title { font-size: clamp(22px, 2vw, 30px); font-weight: 200; line-height: 1.2; color: #fff; transition: color .25s; }
+[dir="rtl"] .sx__h-label { letter-spacing: 0; font-size: 13px; }
+[dir="rtl"] .sx__h-title { font-weight: 400; line-height: 1.5; }
+.sx__h-head .sx__arrow { opacity: .55; transform: none; }
+[dir="rtl"] .sx__h-head .sx__arrow { transform: scaleX(-1); }
+.sx__h-head:hover .sx__h-title, .sx__h-head[aria-current] .sx__h-title { color: #F5C518; }
+.sx__h-head:hover .sx__arrow { opacity: 1; }
+.sx__today { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 8px; background: #151515; border: 1px solid rgba(255,255,255,.08); }
+.sx__today-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+.sx__today:hover .sx__today-img { transform: scale(1.04); }
+.sx__today-text {
+    position: absolute; inset: auto 0 0 0; display: grid; gap: 3px; padding: 48px 16px 14px;
+    background: linear-gradient(to top, rgba(0,0,0,.88), rgba(0,0,0,0));
+}
+.sx__today-tag { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #F5C518; }
+.sx__today-name { font-size: 19px; font-weight: 300; line-height: 1.3; color: #fff; }
+.sx__today-place { font-size: 12.5px; color: rgba(255,255,255,.72); }
+[dir="rtl"] .sx__today-tag { letter-spacing: 0; font-size: 12px; }
+[dir="rtl"] .sx__today-name { font-weight: 400; }
+.sx__figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border-top: 1px solid rgba(255,255,255,.1); }
+.sx__figures > div { display: flex; flex-direction: column; padding: 12px 10px 0; border-inline-start: 1px solid rgba(255,255,255,.1); }
+.sx__figures > div:first-child { padding-inline-start: 0; border-inline-start: 0; }
+.sx__figures dd { order: 1; margin: 0; font-size: 22px; font-weight: 200; color: #fff; font-variant-numeric: tabular-nums; }
+.sx__figures dt { order: 2; margin-top: 4px; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; line-height: 1.45; color: rgba(255,255,255,.58); }
+[dir="rtl"] .sx__figures dt { letter-spacing: 0; font-size: 11.5px; }
+
+/* the title block, as along the foot of a drawing */
+.sx__block { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); border-top: 1px solid rgba(245,197,24,.3); }
+.sx__cell { display: grid; align-content: center; justify-items: start; gap: 6px; min-height: 66px; padding: 12px clamp(16px, 2vw, 26px); border-inline-start: 1px solid rgba(245,197,24,.18); }
+.sx__cell:first-child { border-inline-start: 0; }
+.sx__k { font-size: 9.5px; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.sx__v { font-size: 13px; letter-spacing: .04em; color: #fff; }
+[dir="rtl"] .sx__k { letter-spacing: 0; font-size: 11.5px; }
+.sx__wa {
+    display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 18px; border-radius: 100px;
+    background: #25D366; color: #06240e !important; font-size: 13px; font-weight: 500; transition: filter .2s;
+}
+.sx__wa:hover { filter: brightness(1.08); }
+.sx__wa svg { width: 17px; height: 17px; }
+.lsw--sheet { height: 32px; }
+
+/* ---- Opening: the frame draws in, the sheets follow -------------------- */
+@keyframes sxFade { from { opacity: 0; } }
+@keyframes sxDraw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes sxIn { from { opacity: 0; transform: translateY(12px); } }
+@keyframes sxOut { to { opacity: 0; } }
+.sx[open] { animation: sxFade .3s ease both; }
+.sx[open] .sx__sheet { animation: sxDraw .75s cubic-bezier(.2,.7,.2,1) both; }
+.sx[open] .sx__item, .sx[open] .sx__h { animation: sxIn .55s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(.2s + var(--i, 0) * 35ms); }
+.sx.is-closing { animation: sxOut .2s ease both; }
+html.has-index { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+    .sx[open], .sx[open] .sx__sheet, .sx[open] .sx__item, .sx[open] .sx__h, .sx.is-closing { animation: none; }
+    .sx__label, .sx__arrow, .sx__link::after, .sx__today-img { transition: none; }
+}
+
+/* ---- Smaller screens --------------------------------------------------- */
+@media (max-width: 960px) {
+    .sx__body { grid-template-columns: minmax(0, 1fr); }
+    .sx__h { padding: 26px 0 0; border-inline-start: 0; border-top: 1px solid rgba(245,197,24,.3); }
+    .sx__today { aspect-ratio: 16 / 9; }
+}
+/* the homepage's bar no longer folds away on a phone: it is short enough */
+@media (max-width: 768px) {
+    .nav .nav__bar { display: flex; gap: 12px; padding: 6px 12px 6px 6px; }
+    [dir="rtl"] .nav .nav__bar { padding: 6px 6px 6px 12px; }
+}
+@media (max-width: 640px) {
+    /* the bar keeps the Index (and Saved); Contact is in the index. The
+       homepage's centred bar has room for the languages too; beside the
+       name on every other page they move into the index. */
+    .pp-top .lsw--bar, .bar-contact, .nav__bar .nav__contact, .nav__bar .nav__sep { display: none; }
+    .nav__bar .lsw__item { padding: 0 9px; }
+    .sx__brand { display: none; }
+    .sx__list { columns: 1; }
+    .sx__link { grid-template-columns: 44px minmax(0, 1fr) auto; padding: 12px 2px 11px; }
+    .sx__label { font-size: 24px; }
+    [dir="rtl"] .sx__label { font-size: 21px; }
+    .sx__block { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .sx__cell:nth-child(3) { border-inline-start: 0; }
+    .sx__cell:nth-child(n+3) { border-top: 1px solid rgba(245,197,24,.18); }
+    .sx__cell--wa { grid-column: 1 / -1; border-inline-start: 0; }
+    .sx__wa { width: 100%; justify-content: center; }
+}

@@ -292,13 +292,12 @@
         keep('q', q);
         keep('view', view === 'sheets' ? 'sheets' : '');
         history.replaceState(null, '', url);
-        // the other language keeps them too
-        const other = document.querySelector('.pp-lang');
-        if (other) {
+        // the other languages keep them too (the bar's and the index's links)
+        document.querySelectorAll('a.lsw__item').forEach(other => {
             const there = new URL(other.href, location.href);
             there.search = url.search;
             other.href = there.toString();
-        }
+        });
     }
 
     const mark = (list, attr, value) => list.forEach(k => {

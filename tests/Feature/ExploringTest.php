@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\ClientRoom;
+use App\Models\Landmark;
 use App\Models\Project;
 use App\Models\SiteEvent;
 use App\Models\SiteSetting;
@@ -45,44 +46,74 @@ class ExploringTest extends TestCase
         ]);
     }
 
-    /* ---- 1. The menu's "Projects" opens every project -------------------- */
+    /* ---- 1. The menu: the bar, and the index it opens --------------------- */
 
-    public function test_the_homepage_menu_opens_the_projects_page_in_either_language(): void
+    public function test_the_homepage_bar_opens_the_index_and_its_projects_sheet_in_either_language(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(url('/projects'), '#').'" class="nav__link"\s+data-href-en="'.preg_quote(url('/projects'), '#').'" data-href-ku="'.preg_quote(url('/ku/projects'), '#').'"#', $html);
-        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(url('/projects'), '#').'" class="mobile-menu__link"#', $html);
+
+        // the bar: the Index, Contact and the three languages, this one marked
+        $this->assertStringContainsString('aria-controls="siteIndex"', $html);
+        $this->assertStringContainsString('<a href="#contact" class="nav__link nav__contact"', $html);
+        $this->assertMatchesRegularExpression('#<span class="lsw__item is-on" aria-current="true" lang="en" aria-label="English">EN</span>#', $html);
+        $this->assertStringContainsString('<a class="lsw__item" href="'.url('/ku').'" hreflang="ku"', $html);
+        $this->assertStringContainsString('site-index.js', $html);
+
+        // the index: "Projects" opens every project, as sheet A-01; the homepage is A-00, marked
+        $this->assertMatchesRegularExpression('#<a class="sx__link" href="'.preg_quote(url('/projects'), '#').'" data-sheet="projects">\s*<span class="sx__code" dir="ltr">A-01</span>\s*<span class="sx__label">Projects</span>#', $html);
+        $this->assertStringContainsString('<a class="sx__link" href="'.url('/').'" data-sheet="home" aria-current="page">', $html);
         $this->assertStringNotContainsString('<a href="#projects" class="nav__link"', $html);
 
-        $this->get('/ku')->assertOk()->assertSee('<a href="'.url('/ku/projects').'" class="nav__link"', false);
+        $this->get('/ku')->assertOk()->assertSee('<a class="sx__link" href="'.url('/ku/projects').'" data-sheet="projects">', false);
     }
 
-    /* ---- 5. The same menu on every other page ----------------------------- */
+    /* ---- 5. The same index on every other page ---------------------------- */
 
-    public function test_every_other_page_carries_the_site_menu_with_its_own_place_marked(): void
+    public function test_every_other_page_carries_the_index_with_its_own_place_marked(): void
     {
         $html = $this->get('/projects/stone-house')->assertOk()
-            ->assertSee('site-menu.js')
-            ->assertSee('<a class="pp-menu__link" href="'.url('/projects').'" aria-current="page">Projects</a>', false)
-            ->assertSee('<a class="pp-menu__link" href="'.url('/').'#contact">Contact</a>', false)
-            ->assertSee('<a class="pp-menu__link" href="'.url('/estimate').'">Cost estimate</a>', false)
+            ->assertSee('site-index.js')
+            ->assertSee('<a class="sx__link" href="'.url('/projects').'" data-sheet="projects" aria-current="page">', false)
+            ->assertSee('<a class="bar-contact" href="'.url('/').'#contact">Contact</a>', false)
+            ->assertSee('<a class="sx__link" href="'.url('/estimate').'" data-sheet="estimate">', false)
             ->getContent();
 
-        // the folded menu on a phone has Home, the Journal and Careers too, numbered as sheets
-        $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">01</span>\s*<span class="pp-sheet__label">Home</span>#', $html);
-        $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">09</span>\s*<span class="pp-sheet__label">Journal</span>#', $html);
-        $this->assertMatchesRegularExpression('#<span class="pp-sheet__num">10</span>\s*<span class="pp-sheet__label">Careers</span>#', $html);
+        // every page a numbered sheet, Home to Contact
+        foreach (['A-00' => 'Home', 'A-06' => 'Cost estimate', 'A-07' => 'Journal', 'A-08' => 'Careers', 'A-09' => 'Contact'] as $code => $label) {
+            $this->assertMatchesRegularExpression('#<span class="sx__code" dir="ltr">'.$code.'</span>\s*<span class="sx__label">'.$label.'</span>#', $html);
+        }
 
         $this->get('/ku/estimate')->assertOk()
-            ->assertSee('<a class="pp-menu__link" href="'.url('/ku/estimate').'" aria-current="page">', false)
-            // "About" is the architect's own page now, no longer a part of the homepage
-            ->assertSee('<a class="pp-menu__link" href="'.url('/ku/aram-mizuri').'">دەربارەی</a>', false);
+            ->assertSee('<a class="sx__link" href="'.url('/ku/estimate').'" data-sheet="estimate" aria-current="page">', false)
+            // "About" is the architect's own page, no longer a part of the homepage
+            ->assertSee('<a class="sx__link" href="'.url('/ku/aram-mizuri').'" data-sheet="about">', false)
+            ->assertSee('دەربارەی');
 
-        // the estimator switched off leaves the menu too
+        // the estimator switched off leaves the index too, and the sheets after it close up
         SiteSetting::updateOrCreate(['key' => 'est_enabled'], ['value' => '0']);
-        $this->get('/careers')->assertOk()
-            ->assertSee('<a class="pp-sheet__link" href="'.url('/careers').'" aria-current="page">', false)
-            ->assertDontSee('href="'.url('/estimate').'"', false);
+        $html = $this->get('/careers')->assertOk()
+            ->assertSee('<a class="sx__link" href="'.url('/careers').'" data-sheet="careers" aria-current="page">', false)
+            ->assertDontSee('href="'.url('/estimate').'"', false)
+            ->getContent();
+        $this->assertMatchesRegularExpression('#<span class="sx__code" dir="ltr">A-07</span>\s*<span class="sx__label">Careers</span>#', $html);
+    }
+
+    public function test_the_index_gives_kurdistans_heritage_a_sheet_of_its_own(): void
+    {
+        $this->assertSame(21, Landmark::count());
+        $html = $this->get('/journal')->assertOk()->getContent();
+
+        // H-01: the collection, its figures, and a landmark of the day with its photograph
+        $this->assertStringContainsString('<span class="sx__code" dir="ltr">H-01</span>', $html);
+        $this->assertStringContainsString('<a class="sx__h-head" href="'.url('/kurdistan-heritage').'">', $html);
+        $this->assertStringContainsString('Landmark of the day', $html);
+        $this->assertMatchesRegularExpression('#<a class="sx__today" href="'.preg_quote(url('/kurdistan-heritage'), '#').'/[a-z0-9-]+">\s*<img class="sx__today-img" src="[^"]+\.webp"#', $html);
+        $this->assertMatchesRegularExpression('#<dd>21</dd><dt>Landmarks</dt>.*<dd>11,000\+</dd><dt>Years of building</dt>#s', $html);
+
+        // on the heritage pages it is the sheet the visitor is on
+        $this->get('/ku/kurdistan-heritage/amedi')->assertOk()
+            ->assertSee('<a class="sx__h-head" href="'.url('/ku/kurdistan-heritage').'" aria-current="page">', false)
+            ->assertSee('شوێنەواری ئەمڕۆ');
     }
 
     public function test_a_clients_room_keeps_its_single_way_back_and_no_menu(): void
@@ -91,14 +122,14 @@ class ExploringTest extends TestCase
 
         // before the PIN, and after it
         $this->get('/room/'.$room->token)->assertOk()
-            ->assertDontSee('pp-menu__link', false)
-            ->assertDontSee('site-menu.js')
+            ->assertDontSee('id="siteIndex"', false)
+            ->assertDontSee('data-index-open', false)
             ->assertSee('pp-arrow--back', false);
         $in = $this->post('/room/'.$room->token.'/pin', ['pin' => $room->pin])->assertRedirect();
         $this->withCookie($room->accessCookie(), $in->getCookie($room->accessCookie())->getValue())
             ->get('/room/'.$room->token)->assertOk()
             ->assertSee('Shilan')
-            ->assertDontSee('pp-menu__link', false)
+            ->assertDontSee('id="siteIndex"', false)
             ->assertSee('pp-arrow--back', false);
     }
 
@@ -121,7 +152,7 @@ class ExploringTest extends TestCase
             ->assertSee('<html lang="ku" dir="rtl">', false)
             ->assertSee('ئەم پەڕەیە لەناو نەخشەکاندا نییە.')
             ->assertSee(url('/ku/projects/stone-house'), false)
-            ->assertSee('<a class="pp-lang" href="'.url('/').'"', false);
+            ->assertSee('<a class="lsw__item" href="'.url('/').'" hreflang="en"', false);
 
         // asked for JSON, it is still answered in JSON
         $this->getJson('/no-such-page')->assertNotFound()->assertJsonStructure(['message']);
@@ -171,7 +202,7 @@ class ExploringTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('#data-status="under-construction" data-search[^>]*hidden#', $html);
         // a category picked keeps the status, and the other language keeps both
         $this->assertStringContainsString('href="'.url('/projects').'?type=residential&amp;status=under-construction"', $html);
-        $this->assertStringContainsString('<a class="pp-lang" href="'.url('/ku/projects').'?status=under-construction"', $html);
+        $this->assertStringContainsString('<a class="lsw__item" href="'.url('/ku/projects').'?status=under-construction"', $html);
 
         // the statuses in Kurdish; one that does not exist shows everything
         $this->get('/ku/projects')->assertOk()->assertSee('<bdi>لەژێر بنیاتنان</bdi>', false);

@@ -126,7 +126,7 @@ class ProjectPagesTest extends TestCase
         $ku = $this->get('/ku')->assertOk();
         $ku->assertSee('<html lang="ku" dir="rtl">', false);
         $ku->assertSee('<title>تەڵارسازیی ئارام مزووری | هەولێر، کوردستان</title>', false);
-        $ku->assertSee('>پرۆژەکان</a>', false);                       // nav, server-rendered in Kurdish
+        $ku->assertSee('<span class="sx__label">پرۆژەکان</span>', false);   // the menu, server-rendered in Kurdish
         $ku->assertSee('class="pgc__link" href="'.url('/ku/projects/mountain-villa-shaqlawa').'"', false);
     }
 
