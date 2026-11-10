@@ -751,6 +751,7 @@ class SiteText
                 'map_failed'       => ['Map — could not load', 'The map could not be loaded.', 'نەتوانرا نەخشەکە باربکرێت.'],
                 'form_sending'     => ['Form — sending', 'Sending…', 'دەنێردرێت…'],
                 'form_failed'      => ['Form — failed', '⚠ Something went wrong — please email us directly.', '⚠ هەڵەیەک ڕوویدا — تکایە ڕاستەوخۆ ئیمەیڵمان بۆ بنێرە.', 'area'],
+                'form_wait'        => ['Form — too many tries in a minute', '⚠ Too many tries — please wait a minute and send again.', '⚠ هەوڵی زۆر — تکایە خولەکێک چاوەڕێ بکە و دووبارە بینێرەوە.', 'area'],
                 'form_need_contact' => ['Form — no email or phone given', 'Please leave an email or a phone number so we can reply.', 'تکایە ئیمەیڵ یان ژمارەی تەلەفۆنێک بنووسە بۆ ئەوەی وەڵامت بدەینەوە.', 'area'],
                 'form_check'       => ['Form — a field needs fixing', 'Please check the highlighted field.', 'تکایە ئەو خانەیە بپشکنە کە دیاری کراوە.'],
             ],

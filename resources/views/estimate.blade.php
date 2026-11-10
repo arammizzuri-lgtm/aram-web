@@ -23,7 +23,7 @@
     $pct = rtrim(rtrim(number_format($coverage, 1), '0'), '.');
 
     // the words estimate.js writes itself, in the page's language
-    $jsText = collect(['form_sending', 'form_failed', 'form_need_contact', 'form_check', 'est_pdf_ready',
+    $jsText = collect(['form_sending', 'form_failed', 'form_need_contact', 'form_check', 'form_wait', 'est_pdf_ready',
         // and the drawing's labels (estimate-house.js)
         'est_house_floors', 'est_house_floor', 'est_house_plot', 'est_house_built', 'est_basement', 'est_line_pool', 'est_house_empty'])
         ->mapWithKeys(fn ($k) => [$k => bival($k)]);

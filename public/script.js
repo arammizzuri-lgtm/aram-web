@@ -1359,7 +1359,13 @@ function imgVariant(proj, size, i) {
         };
         Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
 
-        fetch('/contact', {
+        // A page left open past its session (419) gets a fresh token from the
+        // page loaded again and is sent once more, unseen; too many tries in a
+        // minute (429) says so.
+        const renewToken = () => fetch(location.href, { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
+            .then(r => r.text())
+            .then(html => { const m = html.match(/<meta name="csrf-token" content="([^"]+)"/); if (m && token) token.setAttribute('content', m[1]); });
+        const post = retried => fetch('/contact', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1367,8 +1373,11 @@ function imgVariant(proj, size, i) {
                 'X-CSRF-TOKEN': token ? token.content : '',
             },
             body: JSON.stringify(payload),
-        })
+        }).then(res => (res.status === 419 && !retried ? renewToken().then(() => post(true)) : res));
+
+        post(false)
         .then(res => {
+            if (res.status === 429) throw new Error('form_wait');
             if (res.status === 422) {
                 // the server disagreed with a field: point at it
                 return res.json().then(body => {
@@ -1377,7 +1386,7 @@ function imgVariant(proj, size, i) {
                     throw new Error(errors.email && errors.phone ? 'form_need_contact' : 'form_check');
                 });
             }
-            if (!res.ok) throw new Error('form_failed');
+            if (!res.ok) { console.warn('Enquiry not sent: HTTP ' + res.status); throw new Error('form_failed'); }
             return res.json().catch(() => ({}));
         })
         .then(() => {

@@ -112,6 +112,17 @@
         status.classList.toggle('is-error', !!isError);
     }
 
+    /** A fresh security token, from this page loaded again (the old one expired with the session). */
+    function renewToken() {
+        return fetch(location.href, { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
+            .then(r => r.text())
+            .then(html => {
+                const m = html.match(/<meta name="csrf-token" content="([^"]+)"/);
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (m && meta) meta.setAttribute('content', m[1]);
+            });
+    }
+
     sform.addEventListener('submit', e => {
         e.preventDefault();
         const value = name => ((sform.querySelector('[name="' + name + '"]') || {}).value || '').trim();
@@ -133,15 +144,21 @@
         };
         Object.keys(body).forEach(k => { if (body[k] === '') delete body[k]; });
 
-        fetch('/contact', {
+        // A page left open past its session (419) gets a fresh token and is
+        // sent once more, unseen; too many tries in a minute (429) says so.
+        const post = retried => fetch('/contact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token ? token.content : '' },
             body: JSON.stringify(body),
-        })
-            .then(r => {
-                if (r.status === 422) throw new Error('form_check');
-                if (!r.ok) throw new Error('form_failed');
-            })
+        }).then(r => {
+            if (r.status === 419 && !retried) return renewToken().then(() => post(true));
+            if (r.status === 422) throw new Error('form_check');
+            if (r.status === 429) throw new Error('form_wait');
+            if (!r.ok) { console.warn('Enquiry not sent: HTTP ' + r.status); throw new Error('form_failed'); }
+            return r;
+        });
+
+        post(false)
             .then(() => {
                 sform.classList.add('is-sent');
                 say('est_pdf_ready');
