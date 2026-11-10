@@ -67,6 +67,7 @@
     </script>
     <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ filemtime(public_path('style.css')) }}">
     <link rel="stylesheet" href="{{ asset('site-index.css') }}?v={{ filemtime(public_path('site-index.css')) }}">
+    @if (site_rtl())<link rel="stylesheet" href="{{ asset('rtl-type.css') }}?v={{ filemtime(public_path('rtl-type.css')) }}">@endif
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()); @endphp
     @if ($quotesHaveVoices)
@@ -951,7 +952,7 @@
                                 <span class="cmethod__icon">@include('partials.icon-whatsapp')</span>
                                 <span class="cmethod__text">
                                     <span class="cmethod__label" {!! bitext('wa_label') !!}>{{ bival('wa_label') }}</span>
-                                    <span class="cmethod__value" dir="ltr">{{ setting('contact_whatsapp') }}</span>
+                                    <span class="cmethod__value"><bdi dir="ltr">{{ setting('contact_whatsapp') }}</bdi></span>
                                 </span>
                                 <span class="cmethod__hint"><span {!! bitext('wa_cta') !!}>{{ bival('wa_cta') }}</span> ↗&#xFE0E;</span>
                             </a>
@@ -964,7 +965,7 @@
                         </span>
                         <div class="cmethod__text">
                             <span class="cmethod__label" {!! bitext('contact_email_lbl') !!}>{{ bival('contact_email_lbl') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_email_new', 'Info@arammizuri.com') }}</span>
+                            <span class="cmethod__value"><bdi dir="ltr">{{ setting('contact_email_new', 'Info@arammizuri.com') }}</bdi></span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </div>
@@ -974,7 +975,7 @@
                         </span>
                         <div class="cmethod__text">
                             <span class="cmethod__label" {!! bitext('contact_phone_lbl') !!}>{{ bival('contact_phone_lbl') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_phone', '+964 (0) 782 445 4414') }}</span>
+                            <span class="cmethod__value"><bdi dir="ltr">{{ setting('contact_phone', '+964 (0) 782 445 4414') }}</bdi></span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </div>
@@ -984,7 +985,7 @@
                         </span>
                         <div class="cmethod__text">
                             <span class="cmethod__label" {!! bitext('contact_phone2_lbl') !!}>{{ bival('contact_phone2_lbl') }}</span>
-                            <span class="cmethod__value">{{ setting('contact_phone2', '+964 (0) 750 408 6367') }}</span>
+                            <span class="cmethod__value"><bdi dir="ltr">{{ setting('contact_phone2', '+964 (0) 750 408 6367') }}</bdi></span>
                         </div>
                         <span class="cmethod__hint" {!! bitext('contact_copy') !!}>{{ bival('contact_copy') }}</span>
                     </div>

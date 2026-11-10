@@ -65,7 +65,7 @@ return [
                 ['value' => '10.4', 'unit_en' => 'bn m³', 'unit_ku' => 'ملیار م³', 'unit_ar' => 'مليار م³', 'label_en' => 'Of water', 'label_ku' => 'ئاو', 'label_ar' => 'من الماء', 'note_en' => 'over 313 km² of valley', 'note_ku' => 'بەسەر ٣١٣ کم² دۆڵدا', 'note_ar' => 'فوق ٣١٣ كم² من الوادي'],
                 ['value' => '1,200', 'unit_en' => 'MW', 'unit_ku' => 'مێگاوات', 'unit_ar' => 'ميغاواط', 'label_en' => 'Of power', 'label_ku' => 'کارەبا', 'label_ar' => 'من الطاقة', 'note_en' => 'begun 2006, completed 2018', 'note_ku' => 'لە ٢٠٠٦ دەستی پێکرا، لە ٢٠١٨ تەواو بوو', 'note_ar' => 'بُدئ ٢٠٠٦، أُنجز ٢٠١٨'],
                 ['value' => '1,100', 'unit_en' => 't', 'unit_ku' => 'تەن', 'unit_ar' => 'طن', 'label_en' => 'The tomb that was moved', 'label_ku' => 'ئەو گۆڕەی گوازرایەوە', 'label_ar' => 'الضريح الذي نُقل', 'note_en' => 'Zeynel Bey, 2 km on wheels, 12 May 2017', 'note_ku' => 'زەینەل بەگ، ٢ کم لەسەر تایە، ١٢ی ئایاری ٢٠١٧', 'note_ar' => 'زينل بك، ٢ كم على عجلات، ١٢ أيار ٢٠١٧'],
-                ['value' => '1 Apr 2020', 'label_en' => 'The water reaches the town', 'label_ku' => 'ئاو دەگاتە شارۆچکەکە', 'label_ar' => 'الماء يبلغ البلدة', 'note_en' => '498 m; the old town gone by midsummer', 'note_ku' => '٤٩٨ م؛ شاری کۆن تا ناوەڕاستی هاوین نەما', 'note_ar' => '٤٩٨ م؛ البلدة القديمة ذهبت بحلول منتصف الصيف'],
+                ['value' => '1 Apr 2020', 'value_ku' => '١ی نیسانی ٢٠٢٠', 'value_ar' => '١ نيسان ٢٠٢٠', 'label_en' => 'The water reaches the town', 'label_ku' => 'ئاو دەگاتە شارۆچکەکە', 'label_ar' => 'الماء يبلغ البلدة', 'note_en' => '498 m; the old town gone by midsummer', 'note_ku' => '٤٩٨ م؛ شاری کۆن تا ناوەڕاستی هاوین نەما', 'note_ar' => '٤٩٨ م؛ البلدة القديمة ذهبت بحلول منتصف الصيف'],
             ],
         ]],
 

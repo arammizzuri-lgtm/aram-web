@@ -17,6 +17,8 @@
     $topMenu = ($withMenu ?? true) ? \App\Support\SiteMenu::items($markHere ?? true) : [];
 @endphp
 <link rel="stylesheet" href="{{ asset('site-index.css') }}?v={{ filemtime(public_path('site-index.css')) }}">
+{{-- Kurdish and Arabic a step larger on a laptop (rtl-type.css) --}}
+@if (site_rtl())<link rel="stylesheet" href="{{ asset('rtl-type.css') }}?v={{ filemtime(public_path('rtl-type.css')) }}">@endif
 <header class="pp-top" data-tuck>
     <a class="pp-brand" href="{{ site_url('/') }}">
         <span class="pp-brand__name">{{ bival('brand_name') }}</span>

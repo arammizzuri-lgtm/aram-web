@@ -1,0 +1,239 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — rtl-type.css
+   Kurdish and Arabic text on a laptop or desktop, a step larger.
+
+   The site's text sizes are the same on a phone and a laptop. On a phone,
+   read close and filling the screen, they read well; on a laptop, read
+   further off across a wide layout, Kurdish and Arabic looked small —
+   above all the labels drawn for English capitals with wide spacing
+   (8–10px reads in capitals, not in Kurdish, which has none).
+
+   So on screens 1024px and wider, on the Kurdish and Arabic pages only,
+   each size moves to a standard step:
+     labels        under 11px        → 13px
+     small text    11 – 13.5px       → 14px
+     descriptions  13.5 – 15px       → 15.5 – 16px, keeping their order
+     body text     15 – 18px         → 1px larger
+     headings      18px and up       — as they are
+   Phones and the English pages are untouched. The wordmark, the index's
+   drawing codes and labels made only of digits or arrows keep their size;
+   the line under the wordmark and the photo credits stay a step quieter.
+
+   Each rule is the selector of the rule that sets that text's size, scoped
+   to right-to-left pages (html[dir="rtl"] adds to its specificity, so it
+   wins without !important). Loaded after the page's own styles, on the
+   Kurdish and Arabic pages only (portfolio, partials/page-top).
+   ========================================================= */
+@media (min-width: 1024px) {
+
+    /* style.css */
+    html[dir="rtl"] .pgc__status,
+    html[dir="rtl"] .map-stat__lbl,
+    html[dir="rtl"] .cmethod__hint,
+    html[dir="rtl"] .pgc__meta,
+    html[dir="rtl"] .client-logo__sub,
+    html[dir="rtl"] .contact__map-open,
+    html[dir="rtl"] .hero__scroll,
+    html[dir="rtl"] .pgf-btn,
+    html[dir="rtl"] .process__kicker,
+    html[dir="rtl"] .pshow__label,
+    html[dir="rtl"] .clients__hint,
+    html[dir="rtl"] .contact__map-note,
+    html[dir="rtl"] .client-logo__name,
+    html[dir="rtl"] .footer__copy,
+    html[dir="rtl"] .pg__more,
+    html[dir="rtl"] .section-label { font-size: 13px; }
+    html[dir="rtl"] .logo-sub { font-size: 12px; }
+    html[dir="rtl"] .about__quote cite,
+    html[dir="rtl"] .footer__tagline,
+    html[dir="rtl"] .portrait__caption,
+    html[dir="rtl"] .nav__link,
+    html[dir="rtl"] .cmethod__label,
+    html[dir="rtl"] .footer__link,
+    html[dir="rtl"] .footer__member,
+    html[dir="rtl"] .form-more__toggle,
+    html[dir="rtl"] .form-note,
+    html[dir="rtl"] .form-sketch-open,
+    html[dir="rtl"] .form-submit,
+    html[dir="rtl"] .heritage__age-lbl,
+    html[dir="rtl"] .hero__go,
+    html[dir="rtl"] .contact__map-addr,
+    html[dir="rtl"] .service__go,
+    html[dir="rtl"] .about__more,
+    html[dir="rtl"] .footer__kurdish,
+    html[dir="rtl"] .heritage__cta,
+    html[dir="rtl"] .pg__all,
+    html[dir="rtl"] .statbar__sub { font-size: 14px; }
+    html[dir="rtl"] .hero__eyebrow { font-size: max(14px, clamp(9.5px, 1vw, 11px)); }
+    html[dir="rtl"] .statbar__label { font-size: max(14px, clamp(9px, 0.95vw, 11px)); }
+    html[dir="rtl"] .service__desc { font-size: 15.5px; }
+    html[dir="rtl"] .form-field label { font-size: 15.67px; }
+    html[dir="rtl"] .process__card-desc { font-size: 15.83px; }
+    html[dir="rtl"] .about__bio,
+    html[dir="rtl"] .cmethod__value,
+    html[dir="rtl"] .est-band__btn,
+    html[dir="rtl"] .heritage__desc { font-size: 16px; }
+    html[dir="rtl"] .est-band__sub { font-size: 17px; }
+    html[dir="rtl"] .hero__sub { font-size: calc(clamp(14px, 1.5vw, 17px) + 1px); }
+
+    /* project.css */
+    html[dir="rtl"] .pp-brand__sub { font-size: 12px; }
+    html[dir="rtl"] .pp-foot__member,
+    html[dir="rtl"] .pp-card__meta,
+    html[dir="rtl"] .pp-chips li,
+    html[dir="rtl"] .pp-fact dt,
+    html[dir="rtl"] .pp-foot,
+    html[dir="rtl"] .pp-act,
+    html[dir="rtl"] .pp-foot__brand a,
+    html[dir="rtl"] .pp-hero__kicker,
+    html[dir="rtl"] .pp-label,
+    html[dir="rtl"] .pp-pager__dir,
+    html[dir="rtl"] .pp-status { font-size: 14px; }
+    html[dir="rtl"] .pp-btn,
+    html[dir="rtl"] .pp-fact dd,
+    html[dir="rtl"] .pp-hero__meta { font-size: 15.67px; }
+    html[dir="rtl"] .pp-cta__text { font-size: 16px; }
+
+    /* site-index.css */
+    html[dir="rtl"] .lsw__item[lang="en"] { font-size: 13px; }
+    html[dir="rtl"] .sx__figures dt,
+    html[dir="rtl"] .sx__k,
+    html[dir="rtl"] .sx__here,
+    html[dir="rtl"] .sx__today-tag,
+    html[dir="rtl"] .lsw__item,
+    html[dir="rtl"] .sx__today-place,
+    html[dir="rtl"] .bar-contact,
+    html[dir="rtl"] .sx__brand,
+    html[dir="rtl"] .sx__close,
+    html[dir="rtl"] .sx__h-label,
+    html[dir="rtl"] .sx__title,
+    html[dir="rtl"] .sx-open { font-size: 14px; }
+    html[dir="rtl"] .sx__v { font-size: 14px; letter-spacing: 0; }
+
+    /* projects.css */
+    html[dir="rtl"] .px-cols,
+    html[dir="rtl"] .px-row__place,
+    html[dir="rtl"] .px-row__status,
+    html[dir="rtl"] .px-row__typetext,
+    html[dir="rtl"] .px-dim__label,
+    html[dir="rtl"] .px-key,
+    html[dir="rtl"] .px-legend__title,
+    html[dir="rtl"] .px-view { font-size: 14px; }
+
+    /* architect.css */
+    html[dir="rtl"] .ar-crumbs,
+    html[dir="rtl"] .ar-portrait figcaption,
+    html[dir="rtl"] .ar-row__where { font-size: 14px; }
+    html[dir="rtl"] .ar-hero__based,
+    html[dir="rtl"] .ar-hero__member,
+    html[dir="rtl"] .ar-hero__more,
+    html[dir="rtl"] .ar-projects__all,
+    html[dir="rtl"] .ar-quote figcaption,
+    html[dir="rtl"] .ar-row__when,
+    html[dir="rtl"] .ar-strip dd { font-size: 15.67px; }
+    html[dir="rtl"] .ar-list li { font-size: 16px; }
+    html[dir="rtl"] .ar-hero__role { font-size: calc(clamp(14px, 1.05vw, 16px) + 1px); }
+    html[dir="rtl"] .ar-row__what { font-size: 16.5px; }
+
+    /* journal.css */
+    html[dir="rtl"] .jr-empty { font-size: 17px; }
+    html[dir="rtl"] .jr-hero__intro { font-size: 18px; }
+
+    /* careers.css */
+    html[dir="rtl"] .cr-field label,
+    html[dir="rtl"] .cr-field__label { font-size: 14px; letter-spacing: 0; }
+    html[dir="rtl"] .cr-job__apply,
+    html[dir="rtl"] .cr-who__text { font-size: 15.67px; }
+    html[dir="rtl"] .cr-faq__item p,
+    html[dir="rtl"] .cr-oa__send { font-size: 16px; }
+    html[dir="rtl"] .cr-none,
+    html[dir="rtl"] .cr-oa__text { font-size: 17px; }
+    html[dir="rtl"] .cr-faq__item summary { font-size: 18px; }
+
+    /* estimate.css */
+    html[dir="rtl"] .es-finish__rate,
+    html[dir="rtl"] .es-built span { font-size: 14px; }
+    html[dir="rtl"] .es-built,
+    html[dir="rtl"] .es-check,
+    html[dir="rtl"] .es-label,
+    html[dir="rtl"] .es-switch span,
+    html[dir="rtl"] .es-unit span { font-size: 15.67px; }
+    html[dir="rtl"] .es-empty { font-size: 16px; }
+    html[dir="rtl"] .es-finish__name { font-size: 17px; }
+
+    /* partners.css */
+    html[dir="rtl"] .pt-field > label,
+    html[dir="rtl"] .pt-field__label { font-size: 14px; }
+    html[dir="rtl"] .pt-apply__intro { font-size: 16px; }
+    html[dir="rtl"] .pt-hero__intro { font-size: 18px; }
+
+    /* photos.css */
+    html[dir="rtl"] .ph-empty p,
+    html[dir="rtl"] .ph-intro { font-size: 17px; }
+
+    /* saved.css */
+    html[dir="rtl"] .sv-empty p { font-size: 17px; }
+
+    /* not-found.css */
+    html[dir="rtl"] .nf-pick__meta,
+    html[dir="rtl"] .nf-find button { font-size: 14px; }
+    html[dir="rtl"] .nf-text { font-size: 17px; }
+
+    /* heritage.css */
+    html[dir="rtl"] .hr-time__axis span,
+    html[dir="rtl"] .hr-time__hint,
+    html[dir="rtl"] .hr-card__meta,
+    html[dir="rtl"] .hr-filters__label,
+    html[dir="rtl"] .hr-map__hint,
+    html[dir="rtl"] .hr-card__more,
+    html[dir="rtl"] .hr-card__where,
+    html[dir="rtl"] .hr-chip,
+    html[dir="rtl"] .hr-group__years,
+    html[dir="rtl"] .hr-stat dt { font-size: 14px; }
+    html[dir="rtl"] .hr-card__summary,
+    html[dir="rtl"] .hr-collection__title,
+    html[dir="rtl"] .hr-end__by,
+    html[dir="rtl"] .hr-hero__count,
+    html[dir="rtl"] .hr-time__title { font-size: 15.67px; }
+    html[dir="rtl"] .hr-time__label { font-size: 15.67px; line-height: 1.45; }
+    html[dir="rtl"] .hr-hero__intro { font-size: 18px; }
+
+    /* landmark.css */
+    html[dir="rtl"] .lm-facts--callout .lm-h2 { font-size: 14px; letter-spacing: 0; }
+    html[dir="rtl"] .lm-credit { font-size: 13px; letter-spacing: 0; }
+    html[dir="rtl"] .lm-hero__scroll,
+    html[dir="rtl"] .lm-gal__cap,
+    html[dir="rtl"] .lm-mapsec__facts dt,
+    html[dir="rtl"] .lm-rel__meta,
+    html[dir="rtl"] .lm-src__note,
+    html[dir="rtl"] .lm-stat__note,
+    html[dir="rtl"] .lm-back,
+    html[dir="rtl"] .lm-fact__label,
+    html[dir="rtl"] .lm-go,
+    html[dir="rtl"] .lm-nav__dir,
+    html[dir="rtl"] .lm-rel__where,
+    html[dir="rtl"] .lm-stat__label,
+    html[dir="rtl"] .lm-tl__date,
+    html[dir="rtl"] .lm-unesco__badge,
+    html[dir="rtl"] .lm-unesco__official { font-size: 14px; }
+    html[dir="rtl"] .lm-by,
+    html[dir="rtl"] .lm-quote__src,
+    html[dir="rtl"] .lm-statement__kicker,
+    html[dir="rtl"] .lm-unesco__meta { font-size: 15.5px; }
+    html[dir="rtl"] .lm-meta { font-size: 15.5px; line-height: 1.5; }
+    html[dir="rtl"] .lm-anno__body span,
+    html[dir="rtl"] .lm-src__list { font-size: 15.67px; }
+    html[dir="rtl"] .lm-fig__cap { font-size: 15.83px; }
+    html[dir="rtl"] .lm-anno__body strong,
+    html[dir="rtl"] .lm-facts--world .lm-fact__text,
+    html[dir="rtl"] .lm-fig--offset-end .lm-fig__cap,
+    html[dir="rtl"] .lm-fig--offset-start .lm-fig__cap,
+    html[dir="rtl"] .lm-mapsec__facts dd,
+    html[dir="rtl"] .lm-stat__unit,
+    html[dir="rtl"] .lm-tl__text { font-size: 16px; }
+    html[dir="rtl"] .lm-tl--compact .lm-tl__title { font-size: 17px; }
+    html[dir="rtl"] .lm-fact__text,
+    html[dir="rtl"] .lm-mapsec__words,
+    html[dir="rtl"] .lm-sec__lead { font-size: 17.5px; }
+    html[dir="rtl"] .lm-statement__text { font-size: 18px; }
+}

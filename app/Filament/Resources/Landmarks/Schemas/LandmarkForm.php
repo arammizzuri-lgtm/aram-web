@@ -232,6 +232,11 @@ class LandmarkForm
                                 TextInput::make('unit_ar')->label('Unit (Arabic)')->maxLength(40)->extraInputAttributes(self::AR),
                             ]),
                         ]),
+                        // a figure with words in it (88 BC – AD 33, 1 Apr 2020) needs them in each language
+                        Grid::make(2)->schema([
+                            TextInput::make('value_ku')->label('Figure in Kurdish (only if it has words)')->maxLength(40)->placeholder('٨٨ پ.ز – ٣٣ ز')->extraInputAttributes(self::KU),
+                            TextInput::make('value_ar')->label('Figure in Arabic (only if it has words)')->maxLength(40)->placeholder('٨٨ ق.م – ٣٣ م')->extraInputAttributes(self::AR),
+                        ]),
                         self::tri('label', 'What it is'),
                         self::tri('note', 'Small print', help: 'e.g. "estimate", "UNESCO 2018", "longest edge"'),
                     ])->itemLabel(fn (array $state) => trim(($state['value'] ?? '').' '.($state['label_en'] ?? '')))
