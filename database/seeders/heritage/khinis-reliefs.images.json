@@ -1,0 +1,32 @@
+[
+    {
+        "file": "heritage/khinis-reliefs/01-the-cliff.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 317862,
+        "credit": "David Gewargis, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Reliefs_of_Khinnis_(aka_Bavian),_photographed_in_2019.jpg",
+        "desc": "A wall relief of Assyrian deities from Sennachereb's aqueduct located at Khinnis area at Duhok, Iraq.",
+        "date": "2019-04-06"
+    },
+    {
+        "file": "heritage/khinis-reliefs/02-great-relief.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 415510,
+        "credit": "Severin vandewalle, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Grand_relief_khinis.jpg",
+        "desc": "The Great Relief is a large sculpted panel measuring circa 9 x 9 m (Figs. 39-40). It portrays four standing figures, each about 6.5 m tall. On the left, facing to the right, is the sovereign Sennacher",
+        "date": "2023-02-11"
+    },
+    {
+        "file": "heritage/khinis-reliefs/03-inscription.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 450488,
+        "credit": "Severin vandewalle, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Inscription_cunéiformes_a_khinis.jpg",
+        "desc": "inscription cunéiformes sur le plateau rocheux au dessus du grand relief a khinis",
+        "date": "2023-02-11"
+    }
+]

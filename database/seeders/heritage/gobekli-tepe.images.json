@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/gobekli-tepe/01-under-the-roof.webp",
+        "w": 1800,
+        "h": 808,
+        "bytes": 507232,
+        "credit": "Spica-Vega Photo Arts (Banu Nazikcan), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Gobeklitepe_Panorama.jpg",
+        "desc": "Potbelly Hill (Gobeklitepe), dated to the Pre-Pottery Neolithic, between c. 9500 and 8000 BCE, the site comprises a number of large circular structures supported by massive stone pillars – the world's",
+        "date": "2021-08-09"
+    },
+    {
+        "file": "heritage/gobekli-tepe/02-enclosure.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 682470,
+        "credit": "Beytullah eles, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Göbeklitepe_Şanlıurfa.jpg",
+        "desc": "Göbekli Tepe, Şanlıurfa il merkezinin yaklaşık olarak 22 km kuzeydoğusunda, Örencik Köyü yakınlarında[1] yer alan dünyanın bilinen en eski kült yapılar topluluğudur.[2] Bu yapıların ortak özelliği, T ",
+        "date": "2019-03-03"
+    },
+    {
+        "file": "heritage/gobekli-tepe/03-pillar-relief.webp",
+        "w": 1200,
+        "h": 1800,
+        "bytes": 349672,
+        "credit": "Dosseman, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Urfa_Göbeklitepe_Building_A_5340.jpg",
+        "desc": "Building A was the first of the monumental megalithic building to be discovered during archaeological excavations at the site. Remarkably, this building is not round-oval but has straight lateral wall",
+        "date": "2019-09-22"
+    },
+    {
+        "file": "heritage/gobekli-tepe/04-t-pillar.webp",
+        "w": 1196,
+        "h": 1800,
+        "bytes": 629458,
+        "credit": "Teomancimit, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Gobekli_Tepe_2.jpg",
+        "desc": "Gobekli Tepe, Urfa",
+        "date": "2011-09-06"
+    },
+    {
+        "file": "heritage/gobekli-tepe/05-building-b.webp",
+        "w": 1800,
+        "h": 1200,
+        "bytes": 777500,
+        "credit": "Dosseman, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Urfa_Göbeklitepe_Building_B_5326.jpg",
+        "desc": "Building B is located in the Southeast-Hollow (Main Excavation Area) of Göbekli Tepe. It has a round ground plan and measures roughly 10 metres in diameter. A total of seven T-shaped limestone pillars",
+        "date": "2019-09-22"
+    },
+    {
+        "file": "heritage/gobekli-tepe/06-bird-man.webp",
+        "w": 1289,
+        "h": 1800,
+        "bytes": 489658,
+        "credit": "Bautsch, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Vogelmenschenrelief.Kalkstein.Goebeklitepe.MNR.23450.P1067712.jpg",
+        "desc": "Vogelmenschenrelief aus Kalkstein, Göbeklitepe, MNR.23450",
+        "date": "2026-03-05"
+    },
+    {
+        "file": "heritage/gobekli-tepe/07-harran-plain.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 278684,
+        "credit": "Radosław Botev, CC BY 3.0 pl, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Göbekli_Tepe_-_landscape.jpg",
+        "desc": "Landscape surrounding Göbekli Tepe, Turkey",
+        "date": "2022-07-21"
+    },
+    {
+        "file": "heritage/gobekli-tepe/08-shelter.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 383492,
+        "credit": "Bjelica, CC BY 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Göbeklitepe_Ören_Yeri_2023.jpg",
+        "desc": "Göbeklitpe",
+        "date": "2023-12-31"
+    }
+]

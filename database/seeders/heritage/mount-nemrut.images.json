@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/mount-nemrut/01-east-terrace.webp",
+        "w": 1600,
+        "h": 649,
+        "bytes": 156070,
+        "credit": "Spica-Vega Photo Arts (Banu Nazikcan), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Nemrut_Mountain.jpg",
+        "desc": "Nemrut mountain is in southeastern Turkey, notable for the summit where a number of large statues of Greek and Persian Gods are erected around what is assumed to be a royal tomb for Commagene kings fr",
+        "date": "2021-08-07"
+    },
+    {
+        "file": "heritage/mount-nemrut/02-sunrise.webp",
+        "w": 1600,
+        "h": 1150,
+        "bytes": 369124,
+        "credit": "Liselottediehl, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Mount_Nemrut_sunrise.jpg",
+        "desc": "Sunrise at the summit and ancient ruins of Mount Nemrut",
+        "date": "2021-11-08"
+    },
+    {
+        "file": "heritage/mount-nemrut/03-the-heads.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 279744,
+        "credit": "Nur Çağlar, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Mount_Nemrut_National_Park_Statues_light.jpg",
+        "desc": "monumental sculptures on Mount Nemrut",
+        "date": "2018-10-19"
+    },
+    {
+        "file": "heritage/mount-nemrut/04-antiochus.webp",
+        "w": 1067,
+        "h": 1600,
+        "bytes": 215960,
+        "credit": "Bernard Gagnon, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Nemrut_Dağı_06.jpg",
+        "desc": "Head of Antiochus I Theos of Commagene on the western terrace of the Nemrut Dağı, Turkey",
+        "date": "2014-05-23"
+    },
+    {
+        "file": "heritage/mount-nemrut/05-heracles.webp",
+        "w": 1074,
+        "h": 1600,
+        "bytes": 407738,
+        "credit": "Bernard Gagnon, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Nemrut_Dağı_04.jpg",
+        "desc": "Head of Heracles-Artagnes-Ares on the eastern terrace of the Nemrut Dağı, Turkey",
+        "date": "2014-05-23"
+    },
+    {
+        "file": "heritage/mount-nemrut/06-the-tumulus.webp",
+        "w": 1600,
+        "h": 486,
+        "bytes": 161814,
+        "credit": "Herbert Frank from Wien (Vienna), AT, CC BY 2.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Berg_Nemrut_Nemrut_Dağı_(1._Jhdt.v.Chr.)_(26586827098).jpg",
+        "desc": "Berg Nemrut / Nemrut Dağı (1. Jhdt.v.Chr.)",
+        "date": "2018-02-24"
+    },
+    {
+        "file": "heritage/mount-nemrut/07-thrones.webp",
+        "w": 1600,
+        "h": 1060,
+        "bytes": 282336,
+        "credit": "Carole Raddato from FRANKFURT, Germany, CC BY-SA 2.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:The_Eastern_Terrace_with_thrones_and_heads,_Nemrut_Dagi,_Turkey_(26914425168).jpg",
+        "desc": "The Eastern Terrace with thrones and heads, Nemrut Dagi, Turkey",
+        "date": "2017-07-10"
+    },
+    {
+        "file": "heritage/mount-nemrut/08-towards-the-euphrates.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 244664,
+        "credit": "Ingeborg Simon, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:NemrutLandschaftSüdosten.jpg",
+        "desc": "Blick vom Nemrut Dağı, Türkei, nach Südosten zum Euphrat",
+        "date": "2011-09-05"
+    }
+]

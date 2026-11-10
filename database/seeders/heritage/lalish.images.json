@@ -1,0 +1,92 @@
+[
+    {
+        "file": "heritage/lalish/01-the-valley.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 194004,
+        "credit": "Lamacchiacosta, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Lalish_panorama.jpg",
+        "desc": "Panorama sulla città sacra di Lalish.",
+        "date": "2018-03-10"
+    },
+    {
+        "file": "heritage/lalish/02-the-gate.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 243072,
+        "credit": "Levi Clancy, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Views_around_Lalish_and_of_Ezidi_pilgrims_and_worshippers_there_01.jpg",
+        "desc": "Views around Lalish and of Ezidi pilgrims and worshippers there",
+        "date": "2019-07-19"
+    },
+    {
+        "file": "heritage/lalish/03-courtyard.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 304880,
+        "credit": "Levi Clancy, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Views_around_Lalish_and_of_Ezidi_pilgrims_and_worshippers_there_04.jpg",
+        "desc": "Views around Lalish and of Ezidi pilgrims and worshippers there",
+        "date": "2019-07-19"
+    },
+    {
+        "file": "heritage/lalish/04-terraces.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 305768,
+        "credit": "Safahabash, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:لالش_شمال_العراق.jpg",
+        "desc": "لالش شمال العراق",
+        "date": "2024-09-17"
+    },
+    {
+        "file": "heritage/lalish/05-khans.webp",
+        "w": 1600,
+        "h": 1065,
+        "bytes": 503720,
+        "credit": "MikaelF, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Xana_Lalishê_2012.JPG",
+        "desc": "Khans at Lalish.",
+        "date": "25 May 201"
+    },
+    {
+        "file": "heritage/lalish/06-shrine-door.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 352142,
+        "credit": "Leviclancy, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Entrance_to_the_shrine_of_'Khatuna_Fakhra'_at_Lalish_002.jpg",
+        "desc": "Entrance to the shrine of 'Khatuna Fakhra' at Lalish",
+        "date": "2018-08-10"
+    },
+    {
+        "file": "heritage/lalish/07-spring-tradition.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 270654,
+        "credit": "Leviclancy, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Celebratory_egg,_mud,_and_flower_mix_pasted_next_to_a_doorway_at_Lalish.jpg",
+        "desc": "Celebratory egg, mud, and flower mix pasted next to a doorway at Lalish",
+        "date": "2018-08-10"
+    },
+    {
+        "file": "heritage/lalish/08-babe-chawish.webp",
+        "w": 1067,
+        "h": 1600,
+        "bytes": 74590,
+        "credit": "Levi Meir Clancy, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:An_Ezidi_priest_at_Lalish_DSF4068.jpg",
+        "desc": "An Ezidi priest at Lalish",
+        "date": "2020-12-14"
+    },
+    {
+        "file": "heritage/lalish/09-spire-view.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 508656,
+        "credit": "J.Merena, CC BY 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Tomb_of_Sheikh_Adi_ibn_Musafir_in_Lalish_-_holy_place_of_Yazidi_pilgrimage_1981_ئێزیدی_-_panoramio.jpg",
+        "desc": "View from the tomb of Sheikh Adi ibn Musafir in Lalish - holy place of Yazidi pilgrimage 1981 ئێزیدی",
+        "date": "20 July 20"
+    }
+]

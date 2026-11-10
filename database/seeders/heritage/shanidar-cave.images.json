@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/shanidar-cave/01-cave-mouth.webp",
+        "w": 1800,
+        "h": 1189,
+        "bytes": 761520,
+        "credit": "Dûrzan Cîrano, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Şaneder.jpg",
+        "desc": "Şikefta ku ji Neandertalan re bû ye war.",
+        "date": "2018-08-09"
+    },
+    {
+        "file": "heritage/shanidar-cave/02-looking-out.webp",
+        "w": 1800,
+        "h": 1200,
+        "bytes": 648862,
+        "credit": "Hardscarf, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Shanidar_Cave_-_overview.jpg",
+        "desc": "Shanidar Cave",
+        "date": "2016-10-17"
+    },
+    {
+        "file": "heritage/shanidar-cave/03-excavation.webp",
+        "w": 1800,
+        "h": 1286,
+        "bytes": 626522,
+        "credit": "Hardscarf, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Shanidar_Cave_-_excavations.jpg",
+        "desc": "Excavations in Shanidar Cave",
+        "date": "2016-10-17"
+    },
+    {
+        "file": "heritage/shanidar-cave/04-shanidar-1.webp",
+        "w": 1800,
+        "h": 1279,
+        "bytes": 271420,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Shanidar_I_skull_and_skeleton,_c._60,000_to_45,00o_BCE._Iraq_Museum.jpg",
+        "desc": "Shanidar I's skull and skeleton; on the ventral surface of the right clavicle, someone wrote \"Shanidar I\". From Shanidar Cave, Erbil, Iraq. Circa 60,000 to 45,00o BCE. On display at the Pre-History Ga",
+        "date": "2019-03-14"
+    },
+    {
+        "file": "heritage/shanidar-cave/05-panorama.webp",
+        "w": 1800,
+        "h": 539,
+        "bytes": 279008,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:14._Panorama._Shanidar_cave,_a_paleolithic_cave_in_Bradost_Mountain,_Erbil_Governorate,_Iraqi_Kurdistan._April_4,_2014.jpg",
+        "desc": "Shanidar cave, a paleolithic cave in Bradost Mountain, Erbil Governorate, Iraqi Kurdistan. April 4, 2014.",
+        "date": "2014-04-04"
+    },
+    {
+        "file": "heritage/shanidar-cave/06-approach.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 510280,
+        "credit": "Khoshhat, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Shanidar_Cave1.jpg",
+        "desc": "Shanidar Cave is an archaeological site located on Bradost Mountain in the Erbil Governorate of Kurdistan Region in northern Iraq. I took this photo",
+        "date": "2020-11-28"
+    },
+    {
+        "file": "heritage/shanidar-cave/07-solecki.webp",
+        "w": 1800,
+        "h": 1200,
+        "bytes": 581526,
+        "credit": "Khoshhat, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Ralph_Solecki_statue.jpg",
+        "desc": "Ralph Solecki statue at Shanidar Cave archaeological Park",
+        "date": "2022-03-30"
+    },
+    {
+        "file": "heritage/shanidar-cave/08-stalactites.webp",
+        "w": 1800,
+        "h": 1013,
+        "bytes": 566676,
+        "credit": "Hardscarf, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Shanidar_Cave_-_stalactites.jpg",
+        "desc": "Stalactites in Shanidar Cave",
+        "date": "2016-10-17"
+    }
+]

@@ -17,12 +17,29 @@
     /* ── Filters: one age or one part of Kurdistan at a time ─────────── */
     const chips = document.querySelectorAll('.hr-chip');
     const cards = document.querySelectorAll('.hr-card');
+    const groups = document.querySelectorAll('.hr-group');
+    const dots = document.querySelectorAll('.hr-time__dot');
+    const rows = document.querySelectorAll('.hr-time__row, .hr-time__label');
     let onFilter = null;     // set by the map, to dim its pins too
+    function filter(key, value) {
+        cards.forEach(card => { card.hidden = !!value && card.dataset[key] !== value; });
+        // an age with nothing left to show folds away
+        groups.forEach(g => { g.hidden = !g.querySelector('.hr-card:not([hidden])'); });
+        dots.forEach(d => d.classList.toggle('is-dim', !!value && d.dataset[key] !== value));
+        rows.forEach(r => r.classList.toggle('is-dim', key === 'era' && !!value && r.dataset.era !== value));
+        rows.forEach(r => r.classList.toggle('is-on', key === 'era' && !!value && r.dataset.era === value));
+        if (onFilter) onFilter(key, value);
+    }
     chips.forEach(chip => chip.addEventListener('click', () => {
         chips.forEach(c => c.classList.toggle('is-on', c === chip));
         const [key, value] = (chip.dataset.filter || ':').split(':');
-        cards.forEach(card => { card.hidden = !!value && card.dataset[key] !== value; });
-        if (onFilter) onFilter(key, value);
+        filter(key, value);
+    }));
+    // an age's name on the timeline is the same filter — a second tap clears it
+    document.querySelectorAll('.hr-time__label').forEach(label => label.addEventListener('click', () => {
+        const on = label.classList.contains('is-on');
+        const chip = document.querySelector('.hr-chip[data-filter="' + (on ? '' : 'era:' + label.dataset.era) + '"]');
+        if (chip) chip.click();
     }));
 
     const el = document.getElementById('hrMap');
@@ -398,17 +415,28 @@
         pop.innerHTML =
             '<button type="button" class="hr-pop__close" aria-label="×">×</button>' +
             (p.img ? '<img class="hr-pop__img" src="' + esc(p.img) + '" alt="">' : '') +
-            '<p class="hr-pop__meta">' + esc(p.n) + ' · ' + esc(p.eraName) + '</p>' +
+            '<div class="hr-pop__body">' +
+            '<p class="hr-pop__meta">' + esc(p.n) + ' · ' + esc(p.eraName) + (p.place ? ' <span dir="auto">· ' + esc(p.place) + '</span>' : '') + '</p>' +
             '<h3 class="hr-pop__name" dir="auto">' + esc(p.name) + '</h3>' +
             '<p class="hr-pop__period" dir="auto">' + esc(p.period) + '</p>' +
             (p.unesco ? '<p class="hr-pop__unesco">' + esc(el.dataset.unesco) + '</p>' : '') +
             (p.summary ? '<p class="hr-pop__text" dir="auto">' + esc(p.summary) + '</p>' : '') +
-            '<a class="hr-pop__more" href="' + esc(p.url) + '">' + esc(el.dataset.read) + ' <span class="pp-arrow" aria-hidden="true">→</span></a>';
+            '<a class="hr-pop__more" href="' + esc(p.url) + '">' + esc(el.dataset.read) + ' <span class="pp-arrow" aria-hidden="true">→</span></a>' +
+            '</div>';
         pop.hidden = false;
         pop.querySelector('.hr-pop__close').addEventListener('click', hide);
         markers.forEach((m, j) => { const e = m.getElement(); if (e) e.classList.toggle('is-open', j === i); });
         map.panTo([p.lat, p.lng], { animate: true });
     }
+
+    // a mark on the timeline opens its landmark on the map
+    dots.forEach(d => d.addEventListener('click', e => {
+        const i = pins.findIndex(p => p.slug === (d.getAttribute('href') || '').slice(1));
+        if (i < 0) return;
+        e.preventDefault();
+        show(i);
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }));
     function hide() {
         pop.hidden = true;
         openIdx = null;

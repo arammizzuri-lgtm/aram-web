@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/tell-brak/01-the-mound.webp",
+        "w": 1800,
+        "h": 963,
+        "bytes": 308744,
+        "credit": "Zoeperkoe, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Tell_Brak_001.jpg",
+        "desc": "The important archaeological site of Tell Brak, Syria, as seen from a distance",
+        "date": "2005-06-10"
+    },
+    {
+        "file": "heritage/tell-brak/02-eye-idols.webp",
+        "w": 1800,
+        "h": 1240,
+        "bytes": 124832,
+        "credit": "Zunkir, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Eye_idols_Ashmolean.jpg",
+        "desc": "Eye idols from Tell Brak, in the Ashmolean Museum. Alabaster. Ca middle 4th millennium BC.",
+        "date": "2022-08-23"
+    },
+    {
+        "file": "heritage/tell-brak/03-eye-idol.webp",
+        "w": 1350,
+        "h": 1800,
+        "bytes": 138614,
+        "credit": ", CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Eye_idol_MET_DP224739.jpg",
+        "desc": "Sculpture; Stone-Sculpture",
+        "date": "circa 3700"
+    },
+    {
+        "file": "heritage/tell-brak/04-naram-sin-palace.webp",
+        "w": 1800,
+        "h": 1205,
+        "bytes": 410090,
+        "credit": "Bertramz, CC BY 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:TellBrakNaramsinN.jpg",
+        "desc": "Tell Brak, Syria, Naram-Sin temple, centre from north",
+        "date": "2009-10"
+    },
+    {
+        "file": "heritage/tell-brak/05-area-tw.webp",
+        "w": 1800,
+        "h": 1205,
+        "bytes": 305404,
+        "credit": "Bertramz, CC BY 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:TellBrakTW-W.jpg",
+        "desc": "Tell Brak, Syria, area TW from west",
+        "date": "2009-10"
+    },
+    {
+        "file": "heritage/tell-brak/06-cone-mosaic.webp",
+        "w": 1011,
+        "h": 1800,
+        "bytes": 172636,
+        "credit": "Zunkir, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Mosaic_temple_wall_Brak_Ashmolean.jpg",
+        "desc": "Portion of wallplaster imbedded with long baked clay cones, painted red and black at exposed butt-ends. Found in Tell Brak, dated ca 3200 BC. Ashmolean Museum AN1939.330 https://collections.ashmolean.",
+        "date": "2022-08-23"
+    },
+    {
+        "file": "heritage/tell-brak/07-beads.webp",
+        "w": 1800,
+        "h": 1387,
+        "bytes": 444050,
+        "credit": "Vassil, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:British_Museum_Middle_east_14022019_Faience_beads_Tell_Brak_Late_Uruk_period_3660.jpg",
+        "desc": "String of faience beads, from the Eye Temple in Tell Brak, Late Uruk Period, 3300-3000 BC. These beads are some of the earliest examples of glazing in Mesopotamia. The original colour has faded. Briti",
+        "date": "2019-02-14"
+    },
+    {
+        "file": "heritage/tell-brak/08-mitanni-palace.webp",
+        "w": 1800,
+        "h": 1205,
+        "bytes": 379510,
+        "credit": "Bertramz, CC BY 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:TellBrakMitanni.jpg",
+        "desc": "Tell Brak, Syria, area HH, Mitanni palace",
+        "date": "2009-10"
+    }
+]

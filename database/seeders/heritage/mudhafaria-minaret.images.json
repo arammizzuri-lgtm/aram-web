@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/mudhafaria-minaret/01-the-minaret.webp",
+        "w": 1068,
+        "h": 1600,
+        "bytes": 237980,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Mudhafaria_Minaret,_Minaret_Park,_Erbil.jpg",
+        "desc": "Mudhafaria Minaret, Minaret Park, Erbil.",
+        "date": "2022-10-01"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/02-base-niches.webp",
+        "w": 1600,
+        "h": 1068,
+        "bytes": 450326,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Detail._Mudhafaria_Minaret,_Minaret_Park,_Erbil.jpg",
+        "desc": "Detail. Mudhafaria Minaret, Minaret Park, Erbil",
+        "date": "2022-10-01"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/03-brick-panel.webp",
+        "w": 1068,
+        "h": 1600,
+        "bytes": 265488,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Detail_3._Mudhafaria_Minaret,_Minaret_Park,_Erbil.jpg",
+        "desc": "Detail. Mudhafaria Minaret, Minaret Park, Erbil",
+        "date": "2022-10-01"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/04-upper-base.webp",
+        "w": 1600,
+        "h": 1068,
+        "bytes": 467896,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Detail_5._Mudhafaria_Minaret,_Minaret_Park,_Erbil.jpg",
+        "desc": "Detail. Mudhafaria Minaret, Minaret Park, Erbil",
+        "date": "2022-10-01"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/05-at-night.webp",
+        "w": 1200,
+        "h": 1600,
+        "bytes": 178968,
+        "credit": "DiyarKamaran, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Mudhafaria_Minaret_at_night.jpg",
+        "desc": "Night view of the illuminated Mudhafaria Minaret in Erbil",
+        "date": "2025-10-10"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/06-in-the-park.webp",
+        "w": 1600,
+        "h": 1125,
+        "bytes": 121314,
+        "credit": "Myararat83, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Hewler_Old_Minaret.jpg",
+        "desc": "Old Minaret",
+        "date": "2010-05-26"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/07-rich-1836.webp",
+        "w": 1600,
+        "h": 789,
+        "bytes": 65874,
+        "credit": "Claudius Rich, Public domain, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:The-city_of-Arbela-rich.png",
+        "desc": "Gravure de la citadelle d'Erbil et Minaret de Mudhafaria, 1836",
+        "date": "1836"
+    },
+    {
+        "file": "heritage/mudhafaria-minaret/08-from-afar.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 183772,
+        "credit": "MSinjari, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Erbil_Minaret,_Erbil,_Kurdistan_Region_of_Iraq.JPG",
+        "desc": "The Minaret, Erbil, Kurdistan Region of Iraq",
+        "date": "2008-01-25"
+    }
+]

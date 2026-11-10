@@ -1,0 +1,62 @@
+[
+    {
+        "file": "heritage/urkesh/01-palace-from-above.webp",
+        "w": 1800,
+        "h": 1177,
+        "bytes": 167192,
+        "credit": "Uqnitum, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Aerial_view_of_the_Palace_at_Urkesh,_during_excavations.jpg",
+        "desc": "Aerial view of the Palace at Urkesh, during excavations",
+        "date": "2003-04-11"
+    },
+    {
+        "file": "heritage/urkesh/02-palace.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 402258,
+        "credit": "Uqnitum, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:General_view_of_the_Palace_at_Urkesh.jpg",
+        "desc": "Palace at Urkesh",
+        "date": "2000-01-01"
+    },
+    {
+        "file": "heritage/urkesh/03-tell-mozan.webp",
+        "w": 1800,
+        "h": 1217,
+        "bytes": 287552,
+        "credit": "Zoeperkoe, CC BY-SA 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Tell_Mozan_1.jpg",
+        "desc": "View of Tell Mozan (northeast Syria), ancient Urkesh, from the north. The dighouse can be seen in the middle of the tell.",
+        "date": "2005-06-10"
+    },
+    {
+        "file": "heritage/urkesh/04-lion-peg.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 99898,
+        "credit": ", CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Foundation_peg_in_the_form_of_the_forepart_of_a_lion_MET_DP226597.jpg",
+        "desc": "Hurrian; Foundation peg; Metalwork-Sculpture-Inscribed",
+        "date": "circa 2200"
+    },
+    {
+        "file": "heritage/urkesh/05-lion-and-tablet.webp",
+        "w": 1566,
+        "h": 1800,
+        "bytes": 111172,
+        "credit": "Rama, CC BY-SA 3.0 fr, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Foundation_document-AO_19937_AO_19938-IMG_7676.JPG",
+        "desc": "",
+        "date": "Taken on "
+    },
+    {
+        "file": "heritage/urkesh/06-mitanni-sherds.webp",
+        "w": 1638,
+        "h": 1228,
+        "bytes": 96574,
+        "credit": "Uqnitum, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Sherds_from_Mozan_dated_to_the_Mittani_period,_showing_painted_birds.jpg",
+        "desc": "Sherds from Mozan dated to the Mittani period, showing painted birds",
+        "date": "2009-09-10"
+    }
+]

@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/erbil-citadel/01-from-the-air.webp",
+        "w": 1800,
+        "h": 1260,
+        "bytes": 602516,
+        "credit": "jan kurdistani, CC BY-SA 2.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Hawler_Castle.jpg",
+        "desc": "View of the castle in the middle of Hawler, Kurdistan",
+        "date": "Taken on "
+    },
+    {
+        "file": "heritage/erbil-citadel/02-the-gate.webp",
+        "w": 1800,
+        "h": 1350,
+        "bytes": 274828,
+        "credit": "Abdulsalam Al Dabbagh, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Erbil_Citadel-Erbil.jpg",
+        "desc": "قلعة أربيل-أربيل",
+        "date": "2025-01-10"
+    },
+    {
+        "file": "heritage/erbil-citadel/03-facades.webp",
+        "w": 1800,
+        "h": 1013,
+        "bytes": 436972,
+        "credit": "JEHAN SHERKO, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Old_houses_around_the_Citadel_of_Erbil.jpg",
+        "desc": "قلعة اربيل",
+        "date": "2017-08-27"
+    },
+    {
+        "file": "heritage/erbil-citadel/04-inside.webp",
+        "w": 1800,
+        "h": 1201,
+        "bytes": 402122,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:1._Interior_of_Erbil_Citadel,_Hawler,_Erbil_Governorate,_Iraq.jpg",
+        "desc": "Interior of Erbil Citadel, Hawler, Erbil Governorate, Iraq",
+        "date": "2022-09-30"
+    },
+    {
+        "file": "heritage/erbil-citadel/05-alley.webp",
+        "w": 1800,
+        "h": 1201,
+        "bytes": 394520,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:100._Interior_of_Erbil_Citadel,_Hawler,_Erbil_Governorate,_Iraq.jpg",
+        "desc": "Interior of Erbil Citadel, Hawler, Erbil Governorate, Iraq",
+        "date": "2022-09-30"
+    },
+    {
+        "file": "heritage/erbil-citadel/06-brick-wall.webp",
+        "w": 1202,
+        "h": 1800,
+        "bytes": 344824,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:101._Interior_of_Erbil_Citadel,_Hawler,_Erbil_Governorate,_Iraq.jpg",
+        "desc": "Interior of Erbil Citadel, Hawler, Erbil Governorate, Iraq",
+        "date": "2022-09-30"
+    },
+    {
+        "file": "heritage/erbil-citadel/07-restoration.webp",
+        "w": 1800,
+        "h": 1201,
+        "bytes": 385808,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:10._Interior_of_Erbil_Citadel,_Hawler,_Erbil_Governorate,_Iraq.jpg",
+        "desc": "Interior of Erbil Citadel, Hawler, Erbil Governorate, Iraq",
+        "date": "2022-09-30"
+    },
+    {
+        "file": "heritage/erbil-citadel/08-panorama.webp",
+        "w": 1800,
+        "h": 875,
+        "bytes": 486976,
+        "credit": "User:Zirguezi, Public domain, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:20190505_110756.Erbil_Citadel.Erbil.Kurdistan.jpg",
+        "desc": "Picture of countryside of Kurdistan",
+        "date": "2019-05-05"
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "file": "heritage/jerwan-aqueduct/01-the-masonry.webp",
+        "w": 1600,
+        "h": 1064,
+        "bytes": 246044,
+        "credit": "Levi Clancy, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Jerwan_archaeological_site,_part_of_Neo-Assyrian_king_Sennacherib's_canal_system_06.jpg",
+        "desc": "Jerwan archaeological site, part of Neo-Assyrian king Sennacherib's canal system",
+        "date": "2017-05-26"
+    },
+    {
+        "file": "heritage/jerwan-aqueduct/02-excavation-1933.webp",
+        "w": 1354,
+        "h": 1035,
+        "bytes": 368746,
+        "credit": "Unknown authorUnknown author, Public domain, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Jerwan,_Iraq_Sennacherib_Aqueduct_Excavation_1933_postcard.jpg",
+        "desc": "بطاقة بريدية تصور علميات التنقيب في منطقة جروانة شمال العراق، للقناة المائية التي أمر الملك سنحاريب بحفرها.",
+        "date": "1933"
+    },
+    {
+        "file": "heritage/jerwan-aqueduct/03-the-site.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 278562,
+        "credit": "IbrahimKocher Duhok, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Jerwan_Aqueduct8.jpg",
+        "desc": "Jerwan Aqueduct",
+        "date": "2019-11-16"
+    },
+    {
+        "file": "heritage/jerwan-aqueduct/04-the-plain.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 276672,
+        "credit": "IbrahimKocher Duhok, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Jerwan_Aqueduct9.jpg",
+        "desc": "Jerwan Aqueduct",
+        "date": "2019-11-16"
+    }
+]

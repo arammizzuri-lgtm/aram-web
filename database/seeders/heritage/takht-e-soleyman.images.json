@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/takht-e-soleyman/01-the-lake.webp",
+        "w": 1600,
+        "h": 611,
+        "bytes": 144052,
+        "credit": "Mehrdad Jamali firouzabadi, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:308_تخت_سلیمان_تکاب.jpg",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "2015-10-23"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/02-across-the-water.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 230042,
+        "credit": "Amir sedghie, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:نمای_کلی_از_سایت.jpg",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "2016-07-29"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/03-ruins-and-shelter.webp",
+        "w": 1600,
+        "h": 969,
+        "bytes": 194712,
+        "credit": "Babak.golparian, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Throne_of_Solomon_2.JPG",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "2015-10-03"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/04-reflection.webp",
+        "w": 1600,
+        "h": 805,
+        "bytes": 51252,
+        "credit": "Babak.golparian, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Takht-e_Soleymān.JPG",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "2015-10-03"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/05-the-gate.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 187138,
+        "credit": "Ali nikkhesal61, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:دیواره_و_دروازه_محوطه_باستانی_تخت_سلیمان.jpg",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "2010-06-08"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/06-vaulted-corridor.webp",
+        "w": 1200,
+        "h": 1600,
+        "bytes": 412546,
+        "credit": "Saeidirankhah, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:دالان_های_آتشکده_آذرگشنسب_طراحی_شده_توسط_ساسانیان.jpg",
+        "desc": "Takhte soleyman",
+        "date": "2019-10-07"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/07-inside.webp",
+        "w": 1200,
+        "h": 1600,
+        "bytes": 307224,
+        "credit": "Saeidirankhah, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:اتاق_شاهزاده_ها_در_تخت_سلیمان.jpg",
+        "desc": "Takhte soleyman room",
+        "date": "2019-10-07"
+    },
+    {
+        "file": "heritage/takht-e-soleyman/08-sunset.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 302734,
+        "credit": "Asal Vaseghnia, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:غروب_دریاچه.jpg",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "Taken on "
+    }
+]

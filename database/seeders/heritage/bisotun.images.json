@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/bisotun/01-the-relief.webp",
+        "w": 1600,
+        "h": 850,
+        "bytes": 231380,
+        "credit": "Kaveh Parseh, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Bistoon_Inscription.jpg",
+        "desc": "This is a photo of a monument in Iran identified by the ID",
+        "date": "Taken on "
+    },
+    {
+        "file": "heritage/bisotun/02-darius-and-gaumata.webp",
+        "w": 1238,
+        "h": 1600,
+        "bytes": 297486,
+        "credit": "Patrick C, known as dynamomosquito on Flickr, and Pentocelo on this project, CC BY-SA 2.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Behistun_relief_Darius_and_Gaumata.jpg",
+        "desc": "Behistun relief Darius and Gaumata",
+        "date": "2019-01-20"
+    },
+    {
+        "file": "heritage/bisotun/03-the-cliff.webp",
+        "w": 1051,
+        "h": 1600,
+        "bytes": 494938,
+        "credit": "Ziegler175, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:IranBisotunDareiosRelief1.jpg",
+        "desc": "Bisotun: Dareios-Relieffelsen",
+        "date": "1991-09"
+    },
+    {
+        "file": "heritage/bisotun/04-mount-bisotun.webp",
+        "w": 1600,
+        "h": 433,
+        "bytes": 135148,
+        "credit": "Hamzeh Einy Nezhad, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Bisotun_World_Heritage_Site.jpg",
+        "desc": "Bisotun Inscription is an enormous inscription ordered by Darius, one of the great kings of Achaemenid Empire, the inscription is located within Bisotun World Heritage Site.",
+        "date": "2013-11-07"
+    },
+    {
+        "file": "heritage/bisotun/05-qajar-photograph.webp",
+        "w": 1600,
+        "h": 1519,
+        "bytes": 307658,
+        "credit": "Aqa Reza Akasbashi, Public domain, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Golestan_Palace_Album_No._171-51.jpg",
+        "desc": "",
+        "date": "1870 <a hr"
+    },
+    {
+        "file": "heritage/bisotun/06-farhad-tarash.webp",
+        "w": 1600,
+        "h": 1061,
+        "bytes": 393192,
+        "credit": "FatemeRajabi, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:The-sturdy-mountain-of-Bisotun-Fateme-Rajabi.jpg",
+        "desc": "کوه بیستون که قصه دو عاشق شیرین و فرهاد از روی آن ساخته شده که فرهاد کوه را به عشق شیرین میکند",
+        "date": "2011-06-23"
+    },
+    {
+        "file": "heritage/bisotun/07-caravanserai.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 87418,
+        "credit": "Ehsan.Torabi, CC BY 3.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Safavid_Caravansary_^_sassanid_palace_-_panoramio.jpg",
+        "desc": "Safavid Caravansary &amp; sassanid palace",
+        "date": "Taken on "
+    },
+    {
+        "file": "heritage/bisotun/08-darius.webp",
+        "w": 918,
+        "h": 1600,
+        "bytes": 191104,
+        "credit": "Patrick C, known as dynamomosquito on Flickr, and Pentocelo on this project, CC BY-SA 2.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Behistun_relief_Darius.jpg",
+        "desc": "Behistun relief Darius",
+        "date": "2019-01-20"
+    }
+]

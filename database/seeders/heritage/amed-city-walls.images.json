@@ -1,0 +1,82 @@
+[
+    {
+        "file": "heritage/amed-city-walls/01-the-walls.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 507434,
+        "credit": "İbrahimtrn00, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Diyarbakır_Surları,_Diyarbakır_Turkey.jpg",
+        "desc": "Diyarbakır Surları m.s 346 yılında Bizans İmparatoru II. Constantinus döneminde yapılmıştır.",
+        "date": "2019-12-16"
+    },
+    {
+        "file": "heritage/amed-city-walls/02-inscription.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 582370,
+        "credit": "Dosseman, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Diyarbakır_Outside_walls_East_side_D_at_gate_west_of_Fındık_Burcu_in_2025_8652.jpg",
+        "desc": "One of pictures taken walking clockwise around the walls. There is a road upwards to the museums area (in the inner fortress), with its park to its south where formerly there was a lively neighbourhoo",
+        "date": "2025-10-16"
+    },
+    {
+        "file": "heritage/amed-city-walls/03-tower.webp",
+        "w": 1067,
+        "h": 1600,
+        "bytes": 273280,
+        "credit": "Dosseman, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Diyarbakır_Outside_walls_East_side_D_at_gate_west_of_Fındık_Burcu_in_2025_8651.jpg",
+        "desc": "One of pictures taken walking clockwise around the walls. There is a road upwards to the museums area (in the inner fortress), with its park to its south where formerly there was a lively neighbourhoo",
+        "date": "2025-10-16"
+    },
+    {
+        "file": "heritage/amed-city-walls/04-east-side.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 405070,
+        "credit": "Dosseman, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Diyarbakır_Outside_walls_East_side_D_at_breach_west_of_Fındık_Burcu_in_2025_0631.jpg",
+        "desc": "One of pictures taken walking clockwise around the walls. There is a road upwards to the museums area (in the inner fortress), with its park to its south where formerly there was a lively neighbourhoo",
+        "date": "2025-10-16"
+    },
+    {
+        "file": "heritage/amed-city-walls/05-the-long-wall.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 335116,
+        "credit": "Radosław Botev, CC BY 3.0 pl, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:City_walls_in_Diyarbakır_(4).jpg",
+        "desc": "City walls in Diyarbakır, Turkey",
+        "date": "2022-07-22"
+    },
+    {
+        "file": "heritage/amed-city-walls/06-from-the-top.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 265332,
+        "credit": "Radosław Botev, CC BY 3.0 pl, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:City_walls_in_Diyarbakır_(6).jpg",
+        "desc": "City walls in Diyarbakır, Turkey",
+        "date": "2022-07-22"
+    },
+    {
+        "file": "heritage/amed-city-walls/07-surici-lane.webp",
+        "w": 1067,
+        "h": 1600,
+        "bytes": 272154,
+        "credit": "Hamdigumus, CC0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Diyarbakır_Suriçi.jpg",
+        "desc": "Diyarbakır walled city",
+        "date": "2013-04-19"
+    },
+    {
+        "file": "heritage/amed-city-walls/08-south-side.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 538570,
+        "credit": "Dosseman, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Diyarbakır_Outside_walls_South_side_A_from_gate_west_of_Fındık_Burcu_in_2025_0632.jpg",
+        "desc": "One of pictures taken walking clockwise around the walls. There is a road upwards to the museums area (in the inner fortress), with its park to its south where formerly there was a lively neighbourhoo",
+        "date": "2025-10-16"
+    }
+]

@@ -1,28 +1,59 @@
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\Landmark> $landmarks */
     use App\Models\Landmark;
+    use App\Support\HeritageImage;
     $lang = site_lang();
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('landmarks_label').' — '.bival('landmarks_title').' | '.$brand;
     $description = \Illuminate\Support\Str::limit(bival('landmarks_intro'), 200);
     $tiles = carto_tiles('dark_nolabels');
-    $digits = fn (string $s) => $lang === 'en' ? $s : strtr($s, ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤', '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']);
+    $digits = fn (string|int $s) => Landmark::digits($s);
     $num = fn (int $i) => $digits(str_pad((string) $i, 2, '0', STR_PAD_LEFT));
 
     // only the ages and parts that have a landmark get a filter
-    $eras = collect(array_keys(Landmark::ERAS))->filter(fn ($k) => $landmarks->contains('era', $k));
-    $regions = collect(array_keys(Landmark::REGIONS))->filter(fn ($k) => $landmarks->contains('region', $k));
+    $eras = collect(array_keys(Landmark::ERAS))->filter(fn ($k) => $landmarks->contains('era', $k))->values();
+    $regions = collect(array_keys(Landmark::REGIONS))->filter(fn ($k) => $landmarks->contains('region', $k))->values();
 
     $pins = $landmarks->filter(fn ($l) => $l->lat !== null)->map(fn ($l) => [
-        'n' => $num($landmarks->search($l) + 1), 'lat' => $l->lat, 'lng' => $l->lng, 'url' => $l->url(),
-        'name' => $l->tr('name'), 'period' => $l->tr('period'), 'summary' => $l->tr('summary'),
-        'era' => $l->era, 'eraName' => Landmark::eraName($l->era), 'region' => $l->region, 'unesco' => $l->unesco, 'img' => $l->imageUrl(),
+        'n' => $num($landmarks->search($l) + 1), 'lat' => $l->lat, 'lng' => $l->lng, 'url' => $l->url(), 'slug' => $l->slug,
+        'name' => $l->tr('name'), 'place' => $l->tr('place'), 'period' => $l->tr('period'), 'summary' => $l->tr('summary'),
+        'era' => $l->era, 'eraName' => Landmark::eraName($l->era), 'region' => $l->region, 'unesco' => $l->unesco, 'img' => $l->imageUrl('md'),
     ])->values();
+
+    // the figures: how many, how many UNESCO, how many years since the oldest, how many parts
+    $now = (int) date('Y');
+    $oldest = $landmarks->whereNotNull('year_from')->min('year_from');
+    $years = $oldest !== null ? $now - $oldest : null;
+    $yearsLabel = $years ? $digits(number_format(floor($years / 1000) * 1000)).'+' : null;
+
+    // the collection across time: one row per age, each landmark a mark at
+    // the year it begins, on a scale that compresses the deep past so the
+    // last three thousand years are not crushed against today
+    $ybp = fn (?int $y) => $y === null ? 0 : max(0, $now - $y);
+    $maxYbp = max(1, $landmarks->max(fn ($l) => $ybp($l->year_from)));
+    $pos = fn (?int $y) => $y === null ? 100.0 : round((1 - log10(1 + $ybp($y)) / log10(1 + $maxYbp)) * 100, 2);
+    $ticks = collect([-50000, -10000, -5000, -2000, -500, 1, 1000, 1500])->filter(fn ($y) => $oldest !== null && $y >= $oldest)
+        ->map(fn ($y) => ['x' => $pos($y), 'label' => Landmark::yearLabel($y)])
+        ->push(['x' => 100, 'label' => bival('landmarks_now')]);
+    $rows = $eras->map(function ($era) use ($landmarks, $pos, $now) {
+        $items = $landmarks->filter(fn ($l) => $l->era === $era)->map(fn ($l) => [
+            'i' => $landmarks->search($l), 'x' => $pos($l->year_from), 'name' => $l->tr('name'), 'slug' => $l->slug, 'region' => $l->region,
+        ])->sortBy('x')->values();
+        $lane = 0; $last = -10;
+        $items = $items->map(function ($it) use (&$lane, &$last) {
+            $lane = ($it['x'] - $last) < 3 ? ($lane + 1) % 2 : 0;
+            $last = $it['x'];
+            return $it + ['lane' => $lane];
+        });
+        $from = $landmarks->where('era', $era)->whereNotNull('year_from')->min('year_from');
+        $to = $landmarks->where('era', $era)->contains(fn ($l) => $l->year_to === null) ? null : $landmarks->where('era', $era)->max('year_to');
+        return ['era' => $era, 'items' => $items, 'a' => $from === null ? null : $pos($from), 'b' => $pos($to)];
+    });
 
     $schema = ['@context' => 'https://schema.org', '@type' => 'CollectionPage', 'name' => bival('landmarks_label'), 'description' => $description,
         'url' => site_url(Landmark::PATH), 'inLanguage' => $lang, 'author' => \App\Support\Architect::reference(),
         'mainEntity' => ['@type' => 'ItemList', 'itemListElement' => $landmarks->map(fn ($l, $i) => ['@type' => 'ListItem', 'position' => $i + 1,
-            'url' => $l->url(), 'name' => $l->tr('name')])->all()]];
+            'url' => $l->url(), 'name' => $l->tr('name'), 'image' => $l->imageUrl('md') ? url($l->imageUrl('md')) : null])->all()]];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
@@ -41,65 +72,125 @@
             <h1 class="hr-hero__title">{{ bival('landmarks_title') }}</h1>
             <p class="hr-hero__intro">{{ bival('landmarks_intro') }}</p>
             @if ($landmarks->isNotEmpty())
-                <p class="hr-hero__count">{{ str_replace(['{n}', '{u}'], [$digits((string) $landmarks->count()), $digits((string) $landmarks->where('unesco', true)->count())], bival('landmarks_count')) }}</p>
+                <div class="hr-hero__row">
+                    <a class="pp-btn" href="#map">{{ bival('landmarks_explore') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                    <p class="hr-hero__count">{{ str_replace(['{n}', '{u}'], [$digits($landmarks->count()), $digits($landmarks->where('unesco', true)->count())], bival('landmarks_count')) }}</p>
+                </div>
             @endif
         </header>
 
         @if ($landmarks->isNotEmpty())
-            {{-- filters: one age or one part of Kurdistan at a time (heritage.js) --}}
-            <nav class="hr-filters" aria-label="{{ bival('landmarks_by_era') }} / {{ bival('landmarks_by_region') }}">
-                <button type="button" class="hr-chip is-on" data-filter="">{{ bival('landmarks_all') }}</button>
-                <span class="hr-filters__group">
-                    <span class="hr-filters__label">{{ bival('landmarks_by_era') }}</span>
-                    @foreach ($eras as $k)
-                        <button type="button" class="hr-chip" data-filter="era:{{ $k }}">{{ Landmark::eraName($k) }}</button>
-                    @endforeach
-                </span>
-                <span class="hr-filters__group">
-                    <span class="hr-filters__label">{{ bival('landmarks_by_region') }}</span>
-                    @foreach ($regions as $k)
-                        <button type="button" class="hr-chip" data-filter="region:{{ $k }}">{{ Landmark::regionName($k) }}</button>
-                    @endforeach
-                </span>
-            </nav>
-        @endif
+            <dl class="hr-stats reveal">
+                <div class="hr-stat"><dd><span class="lm-stat__value" data-count>{{ $digits($landmarks->count()) }}</span></dd><dt>{{ bival('landmarks_stat_landmarks') }}</dt></div>
+                @if ($yearsLabel)<div class="hr-stat"><dd><span class="lm-stat__value" data-count>{{ $yearsLabel }}</span></dd><dt>{{ bival('landmarks_stat_years') }}</dt></div>@endif
+                <div class="hr-stat"><dd><span class="lm-stat__value" data-count>{{ $digits($landmarks->where('unesco', true)->count()) }}</span></dd><dt>{{ bival('landmarks_stat_unesco') }}</dt></div>
+                <div class="hr-stat"><dd><span class="lm-stat__value" data-count>{{ $digits($regions->count()) }}</span></dd><dt>{{ bival('landmarks_stat_parts') }}</dt></div>
+            </dl>
 
-        @if ($tiles && $pins->isNotEmpty())
-            {{-- Greater Kurdistan, with the homepage map's border (heritage.js) --}}
-            <div class="hr-map-wrap">
-                <div class="hr-map" id="hrMap" data-tiles="{{ $tiles }}" data-pins='@json($pins)'
-                     data-outline="{{ asset('kurdistan-data.js') }}?v={{ filemtime(public_path('kurdistan-data.js')) }}"
-                     data-read="{{ bival('landmarks_read') }}" data-unesco="{{ bival('landmarks_unesco') }}"></div>
-                <p class="hr-map__hint" aria-hidden="true">{{ bival('landmarks_map_hint') }}</p>
-            </div>
-        @endif
+            <section class="hr-explore" id="map">
+                {{-- filters: one age or one part of Kurdistan at a time (heritage.js) --}}
+                <nav class="hr-filters" aria-label="{{ bival('landmarks_by_era') }} / {{ bival('landmarks_by_region') }}">
+                    <button type="button" class="hr-chip is-on" data-filter="">{{ bival('landmarks_all') }} <span class="hr-chip__n">{{ $digits($landmarks->count()) }}</span></button>
+                    <span class="hr-filters__group">
+                        <span class="hr-filters__label">{{ bival('landmarks_by_era') }}</span>
+                        @foreach ($eras as $k)
+                            <button type="button" class="hr-chip" data-filter="era:{{ $k }}">{{ Landmark::eraName($k) }} <span class="hr-chip__n">{{ $digits($landmarks->where('era', $k)->count()) }}</span></button>
+                        @endforeach
+                    </span>
+                    <span class="hr-filters__group">
+                        <span class="hr-filters__label">{{ bival('landmarks_by_region') }}</span>
+                        @foreach ($regions as $k)
+                            <button type="button" class="hr-chip" data-filter="region:{{ $k }}">{{ Landmark::regionName($k) }} <span class="hr-chip__n">{{ $digits($landmarks->where('region', $k)->count()) }}</span></button>
+                        @endforeach
+                    </span>
+                </nav>
 
-        <ol class="hr-list">
-            @foreach ($landmarks as $i => $l)
-                <li class="hr-card" data-era="{{ $l->era }}" data-region="{{ $l->region }}" id="{{ $l->slug }}">
-                    <a class="hr-card__link" href="{{ $l->url() }}">
-                        <span class="hr-card__img">
-                            @if ($l->imageUrl())
-                                <img src="{{ $l->imageUrl() }}" alt="{{ $l->tr('name') }}" loading="lazy" decoding="async">
-                            @else
-                                <span class="hr-card__ph" aria-hidden="true">{{ $num($i + 1) }}</span>
-                            @endif
-                        </span>
-                        <span class="hr-card__meta">
-                            <span>{{ $num($i + 1) }}</span>
-                            <span>{{ Landmark::eraName($l->era) }}</span>
-                            @if ($l->unesco)<span class="hr-card__unesco">UNESCO</span>@endif
-                        </span>
-                        <span class="hr-card__name" dir="auto">{{ $l->tr('name') }}</span>
-                        <span class="hr-card__where" dir="auto">{{ $l->tr('place') }} · {{ $l->tr('period') }}</span>
-                        @if (filled($l->tr('summary')))
-                            <span class="hr-card__summary" dir="auto">{{ $l->tr('summary') }}</span>
-                        @endif
-                        <span class="hr-card__more">{{ bival('landmarks_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
-                    </a>
-                </li>
-            @endforeach
-        </ol>
+                @if ($tiles && $pins->isNotEmpty())
+                    {{-- Greater Kurdistan, with the homepage map's border (heritage.js) --}}
+                    <div class="hr-map-wrap">
+                        <div class="hr-map" id="hrMap" data-tiles="{{ $tiles }}" data-pins='@json($pins)'
+                             data-outline="{{ asset('kurdistan-data.js') }}?v={{ filemtime(public_path('kurdistan-data.js')) }}"
+                             data-read="{{ bival('landmarks_read') }}" data-unesco="{{ bival('landmarks_unesco') }}"></div>
+                        <p class="hr-map__hint" aria-hidden="true">{{ bival('landmarks_map_hint') }}</p>
+                    </div>
+                @endif
+
+                @if ($oldest !== null)
+                    {{-- the collection across time: a row per age, a mark per landmark (heritage.js opens its card) --}}
+                    <div class="hr-time reveal" aria-label="{{ bival('landmarks_timeline_title') }}">
+                        <div class="hr-time__head">
+                            <h2 class="hr-time__title">{{ bival('landmarks_timeline_title') }}</h2>
+                            <p class="hr-time__hint">{{ bival('landmarks_timeline_hint') }}</p>
+                        </div>
+                        <div class="hr-time__grid">
+                            @foreach ($rows as $row)
+                                <button type="button" class="hr-time__label" data-era="{{ $row['era'] }}">{{ Landmark::eraName($row['era']) }}</button>
+                                <div class="hr-time__row" data-era="{{ $row['era'] }}">
+                                    @if ($row['a'] !== null)
+                                        <span class="hr-time__bar" style="--a: {{ $row['a'] }}%; --b: {{ $row['b'] }}%" aria-hidden="true"></span>
+                                    @endif
+                                    @foreach ($row['items'] as $it)
+                                        <a class="hr-time__dot" href="#{{ $it['slug'] }}" style="--x: {{ $it['x'] }}%; --lane: {{ $it['lane'] }}" data-i="{{ $it['i'] }}" data-era="{{ $row['era'] }}" data-region="{{ $it['region'] }}" data-name="{{ $it['name'] }}" aria-label="{{ $it['name'] }}">{{ $num($it['i'] + 1) }}</a>
+                                    @endforeach
+                                </div>
+                            @endforeach
+                            <span class="hr-time__corner" aria-hidden="true"></span>
+                            <div class="hr-time__axis" aria-hidden="true">
+                                @foreach ($ticks as $t)
+                                    <span style="--x: {{ $t['x'] }}%">{{ $t['label'] }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </section>
+
+            <section class="hr-collection">
+                <h2 class="hr-collection__title">{{ bival('landmarks_collection') }}</h2>
+                @foreach ($eras as $ei => $era)
+                    @php
+                        $group = $landmarks->filter(fn ($l) => $l->era === $era);
+                        $gFrom = $group->whereNotNull('year_from')->min('year_from');
+                        $gTo = $group->contains(fn ($l) => $l->year_to === null) ? null : $group->max('year_to');
+                        $span = $gFrom === null ? '' : Landmark::yearLabel($gFrom).' – '.($gTo === null ? bival('landmarks_now') : Landmark::yearLabel($gTo));
+                    @endphp
+                    <section class="hr-group" data-era="{{ $era }}">
+                        <h3 class="hr-group__title">
+                            <span class="hr-group__n">{{ $digits($ei + 1) }}</span>
+                            <span class="hr-group__name">{{ Landmark::eraName($era) }}</span>
+                            @if ($span)<span class="hr-group__years">{{ $span }}</span>@endif
+                        </h3>
+                        <ol class="hr-list">
+                            @foreach ($group as $l)
+                                @php $i = $landmarks->search($l); @endphp
+                                <li class="hr-card reveal" data-era="{{ $l->era }}" data-region="{{ $l->region }}" id="{{ $l->slug }}">
+                                    <a class="hr-card__link" href="{{ $l->url() }}">
+                                        <span class="hr-card__img">
+                                            @if ($l->image)
+                                                <img src="{{ $l->imageUrl('sm') }}" srcset="{{ HeritageImage::srcset($l->image) }}" sizes="(min-width: 1000px) 30vw, (min-width: 640px) 50vw, 100vw" alt="{{ $l->tr('name') }}" loading="lazy" decoding="async">
+                                            @else
+                                                <span class="hr-card__ph" aria-hidden="true">{{ $num($i + 1) }}</span>
+                                            @endif
+                                            <span class="hr-card__n">{{ $num($i + 1) }}</span>
+                                        </span>
+                                        <span class="hr-card__meta">
+                                            <span dir="auto">{{ $l->tr('place') }}</span>
+                                            @if ($l->unesco)<span class="hr-card__unesco">UNESCO</span>@endif
+                                        </span>
+                                        <span class="hr-card__name" dir="auto">{{ $l->tr('name') }}</span>
+                                        <span class="hr-card__where" dir="auto">{{ $l->tr('period') }}</span>
+                                        @if (filled($l->tr('summary')))
+                                            <span class="hr-card__summary" dir="auto">{{ $l->tr('summary') }}</span>
+                                        @endif
+                                        <span class="hr-card__more">{{ bival('landmarks_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </section>
+                @endforeach
+            </section>
+        @endif
 
         <section class="hr-end">
             <p class="hr-end__by">{{ bival('landmarks_by') }}</p>
@@ -116,5 +207,6 @@
         <script src="{{ asset('vendor/leaflet.js') }}?v={{ filemtime(public_path('vendor/leaflet.js')) }}" defer></script>
     @endif
     <script src="{{ asset('heritage.js') }}?v={{ filemtime(public_path('heritage.js')) }}" defer></script>
+    <script src="{{ asset('landmark.js') }}?v={{ filemtime(public_path('landmark.js')) }}" defer></script>
 </body>
 </html>

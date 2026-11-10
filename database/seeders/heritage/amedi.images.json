@@ -1,0 +1,92 @@
+[
+    {
+        "file": "heritage/amedi/01-the-mesa.webp",
+        "w": 1600,
+        "h": 1067,
+        "bytes": 288820,
+        "credit": "U.S. Army photo by SGT Daniel Nelson, Public domain, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:173606_The_picturesque_village_of_Amedye,_Iraq_in_2009.jpg",
+        "desc": "The picturesque village of Amedye, Iraq, sits on a mountain top between the desert and the fertile lands of Northern Iraq. Soldiers from Command Post-North, Task Force Lightning, flew over the village",
+        "date": "2009-05-01"
+    },
+    {
+        "file": "heritage/amedi/02-panorama.webp",
+        "w": 1600,
+        "h": 420,
+        "bytes": 130050,
+        "credit": "Hardscarf, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Amadiya_-_panorama.jpg",
+        "desc": "Panorama over the mountain which contains Amadiya",
+        "date": "2016-10-17"
+    },
+    {
+        "file": "heritage/amedi/03-the-town.webp",
+        "w": 1600,
+        "h": 1064,
+        "bytes": 245938,
+        "credit": "Levi Clancy, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Amedi_in_Dohuk_Governorate,_Kurdistan_Region_of_Iraq_01.jpg",
+        "desc": "Amedi in Dohuk Governorate, Kurdistan Region of Iraq",
+        "date": "2017-07-01"
+    },
+    {
+        "file": "heritage/amedi/04-the-gate.webp",
+        "w": 1600,
+        "h": 1064,
+        "bytes": 330478,
+        "credit": "Levi Clancy, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Gate_of_Amedi_in_Kurdistan_01.jpg",
+        "desc": "Ottoman-era Gate of Amedi in Kurdistan with mix of Kurdish, Mesopotamian, Ottoman, and Zoroastrian elements",
+        "date": "2016-02-27"
+    },
+    {
+        "file": "heritage/amedi/05-gate-reliefs.webp",
+        "w": 1064,
+        "h": 1600,
+        "bytes": 503070,
+        "credit": "Levi Clancy, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Sassano-Parthian_relief_at_the_gate_of_Amedi_in_Kurdistan_01.jpg",
+        "desc": "Sassano-Parthian relief at the gate of Amedi in Kurdistan",
+        "date": "2016-02-27"
+    },
+    {
+        "file": "heritage/amedi/06-qubahan.webp",
+        "w": 1600,
+        "h": 1200,
+        "bytes": 400418,
+        "credit": "Levi Clancy, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Qobhana_Madrasa_in_Amedi,_Kurdistan_3.jpg",
+        "desc": "Qobhana Madrasa in Amedi, Kurdistan",
+        "date": "2016-02-27"
+    },
+    {
+        "file": "heritage/amedi/07-royal-graveyard.webp",
+        "w": 1600,
+        "h": 1064,
+        "bytes": 78018,
+        "credit": "Levi Clancy, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Royal_Graveyard_in_Amedi,_Kurdistan_02.jpg",
+        "desc": "Royal Graveyard in Amedi, Kurdistan",
+        "date": "2016-02-27"
+    },
+    {
+        "file": "heritage/amedi/08-walking-up.webp",
+        "w": 1064,
+        "h": 1600,
+        "bytes": 365798,
+        "credit": "Levi Clancy, CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Walking_up_to_the_gate_of_Amedi_in_Kurdistan.jpg",
+        "desc": "Walking up to the gate of Amedi in Kurdistan",
+        "date": "2016-02-27"
+    },
+    {
+        "file": "heritage/amedi/09-minbar.webp",
+        "w": 1009,
+        "h": 1600,
+        "bytes": 136656,
+        "credit": "Osama Shukir Muhammed Amin FRCP(Glasg), CC BY-SA 4.0, via Wikimedia Commons",
+        "source": "https://commons.wikimedia.org/wiki/File:Minbar_of_the_Great_Mosque_of_Amadiya,_Iraq,_6th_century_AH._Iraq_Museum.jpg",
+        "desc": "Tectona. Minbar of the Great Mosque of the city of Amadiya, Iraq. 6th century AH (12th century CE). Built during the reign of Sultan Qarajah of Amadiya, 548 AH (1153 CE) as the Arabic Kufic inscriptio",
+        "date": "2019-03-14"
+    }
+]
