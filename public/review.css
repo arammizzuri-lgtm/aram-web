@@ -78,6 +78,9 @@
 .rv-done img { margin: 0 auto 22px; animation: rv-sun 14s linear infinite; }
 @keyframes rv-sun { to { transform: rotate(360deg); } }
 .rv-done h2 { font-size: clamp(30px, 5vw, 44px); font-weight: 200; color: #fff; }
+/* and the same words on Google, if they would */
+.rv-done .rv-google { margin: 34px auto 0; padding-top: 26px; max-width: 42ch; border-top: 1px solid var(--line); color: var(--muted); line-height: 1.8; }
+.rv-google__btn { margin-top: 16px; }
 .rv-done p { max-width: 44ch; margin: 14px auto 0; font-size: 16px; line-height: 1.8; color: rgba(255,255,255,.75); }
 
 @media (max-width: 560px) { .rv-row { grid-template-columns: 1fr; } }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\CostEstimate;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -37,6 +38,36 @@ class EstimateController extends Controller
             'levels' => CostEstimate::levels(),
             'maxFloors' => CostEstimate::maxFloors(),
             'coverage' => CostEstimate::num('coverage'),
+        ]);
+    }
+
+    /**
+     * The estimate as one sheet of paper — the answers, the figures, the
+     * studio's details — laid out to print or save as a PDF from the
+     * browser (which sets Kurdish and Arabic properly, where a PDF library on
+     * the server would not join the letters). Reached from "Get this
+     * estimate as a PDF" once the visitor has left a way to reach them;
+     * ?for= puts their name on it, ?print=1 opens the print dialog.
+     */
+    public function sheet(Request $request): View|RedirectResponse
+    {
+        abort_unless(CostEstimate::enabled(), 404);
+        $inputs = CostEstimate::inputs($request->query());
+        $estimate = $inputs ? CostEstimate::calculate($inputs) : null;
+        if (! $estimate) {
+            return redirect(site_url('/estimate'));
+        }
+
+        return view('estimate-sheet', [
+            'estimate' => $estimate,
+            'inputs' => $inputs,
+            'for' => mb_substr(trim(strip_tags((string) $request->query('for', ''))), 0, 80),
+            'print' => $request->boolean('print'),
+            'back' => site_url('/estimate').'?'.http_build_query(array_filter([
+                'plot' => $inputs['plot'] ?: null, 'floors' => $inputs['floors'], 'built' => $inputs['built'],
+                'basement' => $inputs['basement'] ? 1 : null, 'bedrooms' => $inputs['bedrooms'], 'bathrooms' => $inputs['bathrooms'],
+                'finish' => $inputs['finish'], 'pool' => $inputs['pool'] ? 1 : null,
+            ], fn ($v) => $v !== null)),
         ]);
     }
 

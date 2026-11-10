@@ -72,6 +72,9 @@ $pages = function (string $lang) {
     Route::middleware(SiteLanguage::class.':'.$lang)->group(function () {
         Route::get('/estimate/calc', [EstimateController::class, 'calc'])
             ->middleware('throttle:120,1')->name('estimate.calc');
+        // the estimate as one printable sheet, to save as a PDF
+        Route::get('/estimate/sheet', [EstimateController::class, 'sheet'])
+            ->middleware('throttle:60,1')->name('estimate.sheet');
     });
 };
 

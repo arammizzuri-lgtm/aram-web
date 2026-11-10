@@ -113,6 +113,11 @@
                 <img src="/favicon.svg" width="64" height="64" alt="">
                 <h2>{{ bival('review_ok_title') }}</h2>
                 <p>{{ bival('review_ok') }}</p>
+                {{-- the same words on Google, where the next family looking for an architect will see them --}}
+                @if ($googleReview = google_profile()['review_url'] ?? null)
+                    <p class="rv-google">{{ bival('review_google') }}</p>
+                    <a class="pp-btn rv-google__btn" href="{{ $googleReview }}" target="_blank" rel="noopener">{{ bival('review_google_btn') }} <span aria-hidden="true">↗</span></a>
+                @endif
             </div>
         @else
             <div class="rv-done">

@@ -84,7 +84,7 @@ class CostEstimatorTest extends TestCase
         $page->assertSee('$446,000 – $554,000')->assertSee("≈ \u{2066}584 – 726\u{2069} million IQD")
             ->assertSee('720 m² built, Premium finish')->assertSee('360 m² basement')->assertSee('3 bathrooms')
             ->assertSee('$22,300 – $44,400')->assertSee("\u{2066}5 – 8\u{2069}% of the building cost")
-            ->assertSee('Send this to the studio');
+            ->assertSee('Get this estimate as a PDF');
 
         $this->get('/ku/estimate?'.http_build_query(self::HOUSE))->assertOk()
             ->assertSee('<html lang="ku" dir="rtl">', false)

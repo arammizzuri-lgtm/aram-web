@@ -23,7 +23,7 @@
     $pct = rtrim(rtrim(number_format($coverage, 1), '0'), '.');
 
     // the words estimate.js writes itself, in the page's language
-    $jsText = collect(['form_sending', 'form_failed', 'form_need_contact', 'form_check', 'est_sent',
+    $jsText = collect(['form_sending', 'form_failed', 'form_need_contact', 'form_check', 'est_pdf_ready',
         // and the drawing's labels (estimate-house.js)
         'est_house_floors', 'est_house_floor', 'est_house_plot', 'est_house_built', 'est_basement', 'est_line_pool', 'est_house_empty'])
         ->mapWithKeys(fn ($k) => [$k => bival($k)]);
@@ -152,25 +152,32 @@
                 <p class="pp-label">{{ bival('est_result') }}</p>
                 <div id="esResult" aria-live="polite">@include('partials.estimate-result', ['estimate' => $estimate])</div>
 
-                {{-- "Send this to the studio": a short form right here, sent with
-                     the answers — the server works the estimate out again and
-                     files it with the enquiry, its plot, budget band and type. --}}
+                {{-- "Get this estimate as a PDF": a name and a way to reach them,
+                     sent with the answers (the server works the estimate out
+                     again and files it with the enquiry, its plot, budget band
+                     and type); then the estimate on one sheet to save as a PDF
+                     (/estimate/sheet). The studio gets the enquiry, the visitor
+                     their copy. --}}
                 <div class="es-send" id="esSend" @unless ($estimate) hidden @endunless>
                     <button class="pp-btn es-send__open" type="button" id="esSendOpen">
-                        <span>{{ bival('est_send') }}</span>
+                        <span>{{ bival('est_pdf') }}</span>
                         <span class="pp-arrow" aria-hidden="true">→</span>
                     </button>
-                    <form class="es-send__form" id="esSendForm" hidden novalidate>
-                        <p class="es-send__title">{{ bival('est_send_title') }}</p>
+                    <form class="es-send__form" id="esSendForm" hidden novalidate data-sheet="{{ site_url('/estimate/sheet') }}">
+                        <p class="es-send__title">{{ bival('est_pdf_title') }}</p>
                         <input name="name" type="text" required autocomplete="name" placeholder="{{ bival('form_name') }}" aria-label="{{ bival('form_name') }}">
                         <input name="phone" type="tel" autocomplete="tel" inputmode="tel" dir="ltr" placeholder="{{ bival('form_phone') }}" aria-label="{{ bival('form_phone') }}">
                         <input name="email" type="email" autocomplete="email" dir="ltr" placeholder="{{ bival('form_email') }}" aria-label="{{ bival('form_email') }}">
                         <p class="es-send__hint">{{ bival('form_reach') }}</p>
-                        <textarea name="message" rows="3" dir="auto" placeholder="{{ bival('form_message') }}" aria-label="{{ bival('form_message') }}"></textarea>
+                        <textarea name="message" rows="2" dir="auto" placeholder="{{ bival('est_pdf_question') }}" aria-label="{{ bival('est_pdf_question') }}"></textarea>
                         <div class="form-hp" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-                        <button class="pp-btn" type="submit"><span>{{ bival('est_send_btn') }}</span></button>
+                        <button class="pp-btn" type="submit"><span>{{ bival('est_pdf_btn') }}</span></button>
                         <p class="es-send__status" id="esSendStatus" role="status" hidden></p>
                     </form>
+                    <a class="pp-btn es-send__pdf" id="esSendPdf" href="#" target="_blank" rel="noopener" hidden>
+                        <span>{{ bival('est_pdf_open') }}</span>
+                        <span class="pp-arrow" aria-hidden="true">↗</span>
+                    </a>
                 </div>
             </aside>
         </div>

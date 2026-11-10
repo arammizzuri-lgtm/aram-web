@@ -54,7 +54,12 @@ class ContactController extends Controller
             'sketch' => ['nullable', 'string', 'size:40', 'alpha_num'],
             'lang' => ['nullable', Rule::in(['en', 'ku', 'ar'])],
             'page' => ['nullable', 'string', 'max:255'],
+            // what they came for: the estimator's "Get this estimate as a PDF"
+            'intent' => ['nullable', Rule::in(['estimate_pdf'])],
         ]);
+        if (($data['intent'] ?? null) === 'estimate_pdf') {
+            $data['message'] = trim('Took this estimate as a PDF.'."\n\n".($data['message'] ?? ''));
+        }
 
         $saved = SavedProjects::projects(SavedProjects::slugs($data['saved'] ?? []))->pluck('id')->all();
 

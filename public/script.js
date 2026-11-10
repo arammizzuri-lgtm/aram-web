@@ -1008,7 +1008,8 @@ function imgVariant(proj, size, i) {
 
     // the map is a door to directions: click/Enter opens Google Maps — this
     // works before (and without) the map itself
-    const gmaps = 'https://www.google.com/maps/search/?api=1&query=' + OFFICE[0] + ',' + OFFICE[1];
+    // the studio's own Google listing (with its reviews) once it is set in the admin, else the pin
+    const gmaps = el.dataset.maps || 'https://www.google.com/maps/search/?api=1&query=' + OFFICE[0] + ',' + OFFICE[1];
     const go = () => window.open(gmaps, '_blank', 'noopener');
     el.addEventListener('click', go);
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });

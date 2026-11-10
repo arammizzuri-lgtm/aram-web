@@ -29,7 +29,8 @@
         'areaServed' => 'Kurdistan Region of Iraq',
         // the same person his own page describes in full (App\Support\Architect)
         'founder' => \App\Support\Architect::reference() + ['jobTitle' => 'Principal Architect'],
-        'sameAs' => collect(socials())->pluck('url')
+        // its social profiles, and its Google Business Profile once set
+        'sameAs' => collect(socials())->pluck('url')->push(google_profile()['url'] ?? null)
             ->filter(fn ($u) => preg_match('#^https?://#i', (string) $u))->values()->all(),
     ];
 @endphp

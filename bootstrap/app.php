@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\RecordMissingPage;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\SiteAlerts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SecurityHeaders::class,
         ]);
+
+        // Pages asked for that do not exist, for the admin's Broken links —
+        // global, so an address no route answers is counted too.
+        $middleware->append(RecordMissingPage::class);
 
         // The dashboard pings (routes/web.php, /t) carry no CSRF token.
         $middleware->validateCsrfTokens(except: ['t', 'tp']);
@@ -48,4 +54,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // A server error mails the studio (App\Support\SiteAlerts: the same
+        // error at most once in half an hour); it is still logged as before.
+        // A page not found, a failed form check and the like are not errors.
+        $exceptions->report(fn (Throwable $e) => SiteAlerts::error($e));
     })->create();

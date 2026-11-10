@@ -94,7 +94,9 @@
         soon();
     });
 
-    /* ---- Send this to the studio ----------------------------- */
+    /* ---- Get this estimate as a PDF ---------------------------
+       A name and a way to reach them go to the studio with the answers, as
+       an enquiry; then the estimate on one sheet opens, to save as a PDF. */
     const open   = document.getElementById('esSendOpen');
     const sform  = document.getElementById('esSendForm');
     const status = document.getElementById('esSendStatus');
@@ -124,6 +126,7 @@
         const body = {
             name: value('name'), phone: value('phone'), email: value('email'),
             message: value('message'), website: value('website'),     // the last is the spam trap
+            intent: 'estimate_pdf',
             estimate: Object.fromEntries(params()),
             lang: document.documentElement.getAttribute('lang') || 'en',   // en, ku or ar
             page: location.pathname,
@@ -141,7 +144,15 @@
             })
             .then(() => {
                 sform.classList.add('is-sent');
-                say('est_sent');
+                say('est_pdf_ready');
+                // the sheet: these answers, their name on it, the print dialog ready
+                const pdf = document.getElementById('esSendPdf');
+                const q = params();
+                q.set('for', value('name'));
+                q.set('print', '1');
+                pdf.href = sform.dataset.sheet + '?' + q.toString();
+                pdf.hidden = false;
+                pdf.focus();
             })
             .catch(err => say(err && /^form_/.test(err.message) ? err.message : 'form_failed', true))
             .finally(() => { btn.disabled = false; });

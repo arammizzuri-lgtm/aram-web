@@ -308,6 +308,34 @@ if (! function_exists('bitext')) {
     }
 }
 
+if (! function_exists('google_profile')) {
+    /**
+     * The studio's Google Business Profile, as set in the admin (Manage →
+     * Site content → Google): its link, the "write a review" link, and the
+     * rating and number of reviews copied from it. Null until the link is
+     * set; rating and count are null until they are.
+     *
+     * @return array{url: string, review_url: ?string, rating: ?float, count: ?int}|null
+     */
+    function google_profile(): ?array
+    {
+        $url = trim((string) setting('google_profile_url'));
+        if (! preg_match('#^https?://#i', $url)) {
+            return null;
+        }
+        $review = trim((string) setting('google_review_url'));
+        $rating = (float) str_replace(',', '.', (string) setting('google_rating'));
+        $count = (int) setting('google_review_count');
+
+        return [
+            'url' => $url,
+            'review_url' => preg_match('#^https?://#i', $review) ? $review : null,
+            'rating' => $rating >= 1 && $rating <= 5 ? round($rating, 1) : null,
+            'count' => $count > 0 ? $count : null,
+        ];
+    }
+}
+
 if (! function_exists('socials')) {
     /**
      * Footer social links as an ordered list of ['label','url'] rows.

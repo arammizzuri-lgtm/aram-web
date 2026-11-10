@@ -126,6 +126,10 @@
 .es-send__status { font-size: 14px; color: #b9f0c9; }
 .es-send__status.is-error { color: #ff8a8a; }
 .es-send__form.is-sent > :not(.es-send__status) { display: none; }
+/* once sent: the sheet, to open and save as a PDF */
+.es-send__pdf { width: 100%; justify-content: center; margin-top: 12px; }
+.es-send__pdf[hidden] { display: none; }
+.es-send__title { line-height: 1.6; }
 .form-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
 /* ---- The house, drawn from the answers (estimate-house.js) ---------- */

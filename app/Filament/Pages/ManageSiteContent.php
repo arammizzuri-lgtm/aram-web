@@ -178,6 +178,23 @@ class ManageSiteContent extends Page
                     ->placeholder('Paste the whole <meta …> tag, or only its content="…" code')
                     ->dehydrateStateUsing(fn ($state) => self::verificationCode($state)),
             ],
+            // The studio's Google Business Profile: its link (the contact
+            // map opens it, and search engines are told it is the studio's),
+            // the link that opens "write a review" (clients are offered it
+            // once they have sent their words), and the rating and number of
+            // reviews shown on the homepage — copied from the profile, so
+            // update them now and then. The badge shows once the link and the
+            // rating are set.
+            'Google' => [
+                $this->text('google_profile_url', 'Google Business Profile — its link (Google Maps → your studio → Share → Copy link)', true)
+                    ->placeholder('https://maps.app.goo.gl/…')->url(),
+                $this->text('google_review_url', 'Google — the "write a review" link (Business Profile → Ask for reviews → copy)', true)
+                    ->placeholder('https://g.page/r/…/review')->url(),
+                $this->text('google_rating', 'Google rating, as shown on the profile (e.g. 4.9)')
+                    ->placeholder('4.9')->numeric()->minValue(1)->maxValue(5),
+                $this->text('google_review_count', 'Number of Google reviews')
+                    ->placeholder('23')->numeric()->minValue(0),
+            ],
             'Contact' => [
                 $this->text('contact_email_new', 'Email address (value)', true),
                 $this->text('contact_phone', 'Phone 01 — number (value)'),

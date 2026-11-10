@@ -567,6 +567,15 @@
         <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ((site_lang() === "ar" ? $quotesEn : $quotesKu)->isNotEmpty()) data-has-ku @endif>
             <p class="section-label section-label--center" {!! bitext('quotes_label') !!}>{{ bival('quotes_label') }}</p>
             <h2 class="quotes__title" {!! bitext('quotes_title') !!}>{{ bival('quotes_title') }}</h2>
+            {{-- the studio's rating on Google, once it is set in the admin: a link to read the reviews there --}}
+            @if (($google = google_profile()) && $google['rating'])
+                <a class="gbadge" href="{{ $google['url'] }}" target="_blank" rel="noopener">
+                    <span class="gbadge__stars" style="--r: {{ $google['rating'] / 5 * 100 }}%" role="img" aria-label="{{ $google['rating'] }} / 5"></span>
+                    <b class="gbadge__rating">{{ \App\Models\Landmark::digits(number_format($google['rating'], 1)) }}</b>
+                    @if ($google['count'])<span class="gbadge__count">{{ str_replace('{n}', \App\Models\Landmark::digits($google['count']), bival('google_badge')) }}</span>@endif
+                    <span class="gbadge__read">{{ bival('google_badge_read') }} <span aria-hidden="true">↗&#xFE0E;</span></span>
+                </a>
+            @endif
             <div class="quotes__stage" id="quotesStage" aria-live="polite">
                 @foreach ($quotes as $q)
                     <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled(rtl_slot($q->quote_en, $q->quote_ku, $q->quote_ar))) data-has-ku @endif>
@@ -994,7 +1003,7 @@
                 {{-- Office locator — dark map, pulsing gold pin, and the
                      visiting policy. Initialised in script.js (initOfficeMap). --}}
                 <div class="contact__map">
-                    <div class="contact__map-canvas" id="officeMapEl" role="link" tabindex="0" aria-label="Open office location in Google Maps — Italian Village 2, Erbil"></div>
+                    <div class="contact__map-canvas" id="officeMapEl" role="link" tabindex="0" aria-label="Open office location in Google Maps — Italian Village 2, Erbil"@if ($gmaps = google_profile()) data-maps="{{ $gmaps['url'] }}"@endif></div>
                     <span class="contact__map-open" aria-hidden="true">
                         <span {!! bitext('contact_open_maps') !!}>{{ bival('contact_open_maps') }}</span> ↗&#xFE0E;
                     </span>
