@@ -50,6 +50,31 @@ if (! function_exists('site_rtl')) {
     }
 }
 
+if (! function_exists('text_dir')) {
+    /**
+     * A dir attribute for a piece of text, only when its script runs the
+     * other way from the page — an English fallback on a Kurdish page, an
+     * Arabic name on an English one. Text with no letters (a year, "1685–1784",
+     * a figure) and text in the page's own script get nothing and follow the
+     * page. (dir="auto" made digit-only text left-to-right on Kurdish and
+     * Arabic pages, which threw dates to the wrong side.) The script with
+     * more letters wins, so a Kurdish sentence that opens with "UNESCO"
+     * stays right-to-left.
+     */
+    function text_dir(?string $text, ?string $lang = null): \Illuminate\Support\HtmlString
+    {
+        $text = (string) $text;
+        $rtl = preg_match_all('/(?=\p{L})[\p{Arabic}\p{Hebrew}]/u', $text);
+        $ltr = preg_match_all('/\p{Latin}/u', $text);
+        if (! $rtl && ! $ltr) {
+            return new \Illuminate\Support\HtmlString('');
+        }
+        $isRtl = $rtl >= $ltr;
+
+        return new \Illuminate\Support\HtmlString($isRtl === site_rtl($lang) ? '' : ' dir="'.($isRtl ? 'rtl' : 'ltr').'"');
+    }
+}
+
 if (! function_exists('site_lang_urls')) {
     /**
      * This page's address in every language — the path the visitor is on,

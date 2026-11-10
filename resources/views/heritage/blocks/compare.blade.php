@@ -13,7 +13,7 @@
 @if ($both)
     <section class="lm-sec lm-cmp reveal">
         @if (filled($heading))
-            <h2 class="lm-h2" dir="auto">{{ $heading }}</h2>
+            <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
         @endif
         <div class="lm-cmp__stage" style="--pos: 50%" @if (($after['w'] ?? 0) && ($after['h'] ?? 0)) data-ar="{{ $after['w'] }} / {{ $after['h'] }}" @endif>
             <div class="lm-cmp__after">
@@ -22,13 +22,13 @@
             <div class="lm-cmp__before" aria-hidden="true">
                 @include('heritage.img', ['img' => $before, 'size' => 'lg', 'sizes' => '(min-width: 1400px) 1320px, 100vw', 'lightbox' => false, 'alt' => $lb])
             </div>
-            <span class="lm-cmp__label lm-cmp__label--before" dir="auto">{{ $lb }}</span>
-            <span class="lm-cmp__label lm-cmp__label--after" dir="auto">{{ $la }}</span>
+            <span class="lm-cmp__label lm-cmp__label--before"{{ text_dir($lb) }}>{{ $lb }}</span>
+            <span class="lm-cmp__label lm-cmp__label--after"{{ text_dir($la) }}>{{ $la }}</span>
             <span class="lm-cmp__handle" aria-hidden="true"></span>
             <input type="range" class="lm-cmp__range" min="0" max="100" value="50" aria-label="{{ bival('landmarks_compare_hint') }}">
         </div>
         <p class="lm-fig__cap">
-            @if (filled($caption))<span class="lm-fig__text" dir="auto">{{ $caption }}</span>@endif
+            @if (filled($caption))<span class="lm-fig__text"{{ text_dir($caption) }}>{{ $caption }}</span>@endif
             <span class="lm-credit">{{ bival('landmarks_before') }}: {{ $before['credit'] ?? '' }} · {{ bival('landmarks_after') }}: {{ $after['credit'] ?? '' }}</span>
         </p>
     </section>

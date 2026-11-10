@@ -12,7 +12,7 @@
         </div>
         @if (filled($caption) || filled($d['credit'] ?? null))
             <figcaption class="lm-fig__cap">
-                @if (filled($caption))<span class="lm-fig__text" dir="auto">{{ $caption }}</span>@endif
+                @if (filled($caption))<span class="lm-fig__text"{{ text_dir($caption) }}>{{ $caption }}</span>@endif
                 @include('heritage.credit', ['img' => $d])
             </figcaption>
         @endif

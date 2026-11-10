@@ -11,8 +11,8 @@
     <section class="lm-sec lm-gal lm-gal--{{ $layout }} reveal" data-count="{{ count($images) }}">
         @if (filled($heading) || filled($text))
             <header class="lm-sec__head">
-                <h2 class="lm-h2" dir="auto">{{ $heading ?: bival('landmarks_gallery_default') }}</h2>
-                @if (filled($text))<p class="lm-sec__lead" dir="auto">{{ $text }}</p>@endif
+                <h2 class="lm-h2"{{ text_dir($heading ?: bival('landmarks_gallery_default')) }}>{{ $heading ?: bival('landmarks_gallery_default') }}</h2>
+                @if (filled($text))<p class="lm-sec__lead"{{ text_dir($text) }}>{{ $text }}</p>@endif
             </header>
         @endif
         <div class="lm-gal__grid">
@@ -22,7 +22,7 @@
                     @include('heritage.img', ['img' => $img, 'size' => $layout === 'stack' || ($layout === 'collage' && $k === 0) ? 'lg' : 'md', 'sizes' => $layout === 'collage' && $k === 0 ? '(min-width: 900px) 66vw, 100vw' : $sizes, 'lightbox' => true, 'alt' => $l->tr('name')])
                     @if (filled($cap) || filled($img['credit'] ?? null))
                         <figcaption class="lm-gal__cap">
-                            @if (filled($cap))<span dir="auto">{{ $cap }}</span>@endif
+                            @if (filled($cap))<span{{ text_dir($cap) }}>{{ $cap }}</span>@endif
                             @include('heritage.credit', ['img' => $img])
                         </figcaption>
                     @endif

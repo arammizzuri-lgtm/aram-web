@@ -85,7 +85,7 @@
                         <a class="lm-nav__link" href="{{ $prev->url() }}">
                             <span class="lm-nav__img">@if ($prev->image)<img src="{{ $prev->imageUrl('sm') }}" alt="" loading="lazy" decoding="async">@endif</span>
                             <span class="lm-nav__dir"><span class="pp-arrow" aria-hidden="true">←</span> {{ bival('landmarks_prev') }}</span>
-                            <span class="lm-nav__name" dir="auto">{{ $prev->tr('name') }}</span>
+                            <span class="lm-nav__name"{{ text_dir($prev->tr('name')) }}>{{ $prev->tr('name') }}</span>
                         </a>
                     @else
                         <span></span>
@@ -94,7 +94,7 @@
                         <a class="lm-nav__link lm-nav__link--next" href="{{ $next->url() }}">
                             <span class="lm-nav__img">@if ($next->image)<img src="{{ $next->imageUrl('sm') }}" alt="" loading="lazy" decoding="async">@endif</span>
                             <span class="lm-nav__dir">{{ bival('landmarks_next') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
-                            <span class="lm-nav__name" dir="auto">{{ $next->tr('name') }}</span>
+                            <span class="lm-nav__name"{{ text_dir($next->tr('name')) }}>{{ $next->tr('name') }}</span>
                         </a>
                     @endif
                 </nav>

@@ -154,30 +154,38 @@
 .lm-fig--offset-start .lm-fig__cap, .lm-fig--offset-end .lm-fig__cap { flex-direction: column; margin: 0; padding-bottom: 6px; font-size: 15px; color: rgba(255,255,255,.8); }
 
 /* ---- Gallery -------------------------------------------------------- */
-.lm-gal__grid { display: grid; gap: 14px; }
-.lm-gal__item { margin: 0; min-width: 0; }
-.lm-gal__item .lm-zoom { height: 100%; }
-.lm-gal__item img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; background: #111; }
-.lm-gal__cap { margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+/* Each figure is the photograph, then its caption, in the flow: the photo
+   never stretches to the height of its grid row, so a caption always sits
+   under its own photo and pushes the next row down. Where a layout crops
+   to one shape, the shape is on the link (.lm-zoom) and the photograph
+   fills it — the <img>'s own aspect-ratio (inline) is left alone. */
+.lm-gal__grid { display: grid; gap: 28px 14px; align-items: start; }
+.lm-gal__item { margin: 0; min-width: 0; display: flex; flex-direction: column; }
+.lm-gal__item .lm-zoom { position: relative; overflow: hidden; border-radius: 6px; background: #111; }
+.lm-gal__item img { display: block; width: 100%; height: auto; object-fit: cover; border-radius: 6px; background: #111; }
+.lm-gal__cap { margin-top: 10px; font-size: 12.5px; line-height: 1.55; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .lm-gal--grid .lm-gal__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.lm-gal--grid .lm-gal__item img { aspect-ratio: 4 / 3; }
+.lm-gal--grid .lm-zoom, .lm-gal--collage .lm-zoom { aspect-ratio: 4 / 3; }
+.lm-gal--grid .lm-zoom img, .lm-gal--collage .lm-zoom img { position: absolute; inset: 0; height: 100%; }
 .lm-gal--collage .lm-gal__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-flow: dense; }
-.lm-gal--collage .lm-gal__item img { aspect-ratio: 4 / 3; }
-.lm-gal--collage .lm-gal__item:first-child { grid-column: span 2; grid-row: span 2; }
-.lm-gal--collage .lm-gal__item:first-child img { aspect-ratio: auto; }
-.lm-gal--collage .lm-gal__item:first-child .lm-zoom { display: flex; flex-direction: column; }
-.lm-gal--collage .lm-gal__item:first-child { display: flex; flex-direction: column; }
-.lm-gal--collage .lm-gal__item:first-child .lm-zoom { flex: 1; min-height: 0; }
-.lm-gal--pairs .lm-gal__grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-auto-flow: dense; gap: 18px; }
-.lm-gal--pairs .lm-gal__item img { aspect-ratio: var(--ar, 3 / 2); }
+/* the first photograph spans two columns and two rows and fills them */
+.lm-gal--collage .lm-gal__item:first-child { grid-column: span 2; grid-row: span 2; align-self: stretch; }
+.lm-gal--collage .lm-gal__item:first-child .lm-zoom { flex: 1; aspect-ratio: auto; min-height: 280px; }
+.lm-gal--pairs .lm-gal__grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-auto-flow: dense; gap: 32px 18px; }
 .lm-gal--pairs .lm-gal__item:nth-child(4n+3) { grid-column: 2; }
 .lm-gal--pairs .lm-gal__item:nth-child(4n+4) { grid-column: 1; }
+/* a row of two: the wide column cropped 3:2, the narrow one 15:14, so both
+   photographs end at the same line (7/5 × 3/2 = 15/14) */
+.lm-gal--pairs .lm-zoom { aspect-ratio: 3 / 2; }
+.lm-gal--pairs .lm-gal__item:nth-child(4n+2) .lm-zoom, .lm-gal--pairs .lm-gal__item:nth-child(4n+3) .lm-zoom { aspect-ratio: 15 / 14; }
+.lm-gal--pairs .lm-zoom img { position: absolute; inset: 0; height: 100%; }
+/* sideways: every photograph the same height, as wide as its proportions,
+   and the caption wraps to the photograph's width instead of widening it */
 .lm-gal--strip .lm-gal__grid { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); margin-inline: calc(-1 * var(--gutter)); padding: 0 var(--gutter) 10px; scrollbar-width: thin; scrollbar-color: rgba(245,197,24,.4) transparent; }
-.lm-gal--strip .lm-gal__item { flex: none; scroll-snap-align: start; height: clamp(300px, 56vh, 560px); display: flex; flex-direction: column; }
-.lm-gal--strip .lm-gal__item .lm-zoom { flex: 1; min-height: 0; }
-.lm-gal--strip .lm-gal__item img { width: auto; height: 100%; max-width: 86vw; aspect-ratio: var(--ar, 3 / 2); }
+.lm-gal--strip .lm-gal__item { flex: none; scroll-snap-align: start; }
+.lm-gal--strip .lm-gal__item img { width: auto; height: clamp(280px, 52vh, 520px); max-width: 86vw; }
+.lm-gal--strip .lm-gal__cap { width: 0; min-width: 100%; }
 .lm-gal--stack .lm-gal__grid { grid-template-columns: 1fr; gap: 40px; }
-.lm-gal--stack .lm-gal__item img { aspect-ratio: auto; height: auto; }
 
 /* ---- Figures -------------------------------------------------------- */
 .lm-stats__list { display: grid; gap: 28px; margin: 0; }
@@ -303,10 +311,11 @@
 .lm-mapsec { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(28px, 5vw, 72px); align-items: start; }
 .lm-mapsec__words { margin-bottom: 26px; font-size: 16.5px; font-weight: 300; line-height: 1.8; color: rgba(255,255,255,.82); }
 .lm-mapsec .hr-map--single { height: clamp(320px, 52vh, 560px); }
-.lm-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; margin-bottom: 24px; position: static; }
-.lm-facts dt { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
-[dir="rtl"] .lm-facts dt { letter-spacing: 0; font-size: 12.5px; }
-.lm-facts dd { margin-top: 6px; font-size: 15px; line-height: 1.6; font-weight: 300; color: #fff; }
+/* the place and period beside the map (not the facts section, .lm-facts--*) */
+.lm-mapsec__facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 20px; margin-bottom: 24px; position: static; }
+.lm-mapsec__facts dt { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .lm-mapsec__facts dt { letter-spacing: 0; font-size: 12.5px; }
+.lm-mapsec__facts dd { margin-top: 6px; font-size: 15px; line-height: 1.6; font-weight: 300; color: #fff; }
 
 /* ---- UNESCO --------------------------------------------------------- */
 .lm-unesco {
@@ -400,9 +409,11 @@ body.lm-lb-open { overflow: hidden; }
     .lm-fig--offset-end .lm-fig__media { order: 0; }
     .lm-gal--grid .lm-gal__grid, .lm-gal--collage .lm-gal__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .lm-gal--collage .lm-gal__item:first-child { grid-column: span 2; grid-row: span 1; }
-    .lm-gal--collage .lm-gal__item:first-child img { aspect-ratio: 3 / 2; }
+    .lm-gal--collage .lm-gal__item:first-child .lm-zoom { flex: none; aspect-ratio: 3 / 2; min-height: 0; }
     .lm-gal--pairs .lm-gal__grid { grid-template-columns: minmax(0, 1fr); }
     .lm-gal--pairs .lm-gal__item:nth-child(4n+3), .lm-gal--pairs .lm-gal__item:nth-child(4n+4) { grid-column: auto; }
+    .lm-gal--pairs .lm-gal__item:nth-child(n) .lm-zoom { aspect-ratio: auto; }
+    .lm-gal--pairs .lm-gal__item:nth-child(n) .lm-zoom img { position: static; height: auto; }
     .lm-stats--list .lm-stat { grid-template-columns: minmax(0, 1fr); gap: 6px; }
     .lm-tl--vertical .lm-tl__list { padding-inline-start: 28px; }
     .lm-tl--vertical .lm-tl__list::before { inset-inline-start: 4px; }
@@ -416,8 +427,7 @@ body.lm-lb-open { overflow: hidden; }
 }
 @media (max-width: 560px) {
     .lm-gal--grid .lm-gal__grid { grid-template-columns: minmax(0, 1fr); }
-    .lm-gal--grid .lm-gal__item img { aspect-ratio: 3 / 2; }
-    .lm-facts { grid-template-columns: 1fr 1fr; }
+    .lm-gal--grid .lm-zoom { aspect-ratio: 3 / 2; }
     .lm-statement__big { font-size: clamp(40px, 13vw, 72px); }
     .lm-hero__big { font-size: clamp(44px, 15vw, 90px); }
 }

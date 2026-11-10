@@ -27,27 +27,43 @@
     $yearsLabel = $years ? $digits(number_format(floor($years / 1000) * 1000)).'+' : null;
 
     // the collection across time: one row per age, each landmark a mark at
-    // the year it begins, on a scale that compresses the deep past so the
-    // last three thousand years are not crushed against today
-    $ybp = fn (?int $y) => $y === null ? 0 : max(0, $now - $y);
-    $maxYbp = max(1, $landmarks->max(fn ($l) => $ybp($l->year_from)));
-    $pos = fn (?int $y) => $y === null ? 100.0 : round((1 - log10(1 + $ybp($y)) / log10(1 + $maxYbp)) * 100, 2);
-    $ticks = collect([-50000, -10000, -5000, -2000, -500, 1, 1000, 1500])->filter(fn ($y) => $oldest !== null && $y >= $oldest)
-        ->map(fn ($y) => ['x' => $pos($y), 'label' => Landmark::yearLabel($y)])
-        ->push(['x' => 100, 'label' => bival('landmarks_now')]);
-    $rows = $eras->map(function ($era) use ($landmarks, $pos, $now) {
+    // the year it begins. The scale gives every stretch between two anchor
+    // years the same width — the deep past, where a few sites lie tens of
+    // thousands of years apart, and the last three thousand years, where
+    // most of them crowd — so no age is crushed and the axis labels, one per
+    // anchor, never run into each other. Faint lines mark the anchors.
+    $start = $oldest === null ? $now : (int) ($oldest < -10000 ? floor($oldest / 5000) * 5000 : floor($oldest / 1000) * 1000);
+    $anchors = array_values(array_merge([$start], array_filter([-10000, -5000, -3000, -1000, 1, 1000], fn ($y) => $y > $start && $y < $now), [$now]));
+    $segs = max(1, count($anchors) - 1);
+    $pos = function (?int $y) use ($anchors, $segs, $now): float {
+        $y = $y === null ? $now : max($anchors[0], min($now, $y));
+        for ($i = 0; $i < $segs; $i++) {
+            if ($y <= $anchors[$i + 1]) {
+                return round(($i + ($y - $anchors[$i]) / max(1, $anchors[$i + 1] - $anchors[$i])) / $segs * 100, 2);
+            }
+        }
+
+        return 100.0;
+    };
+    $ticks = collect($anchors)->map(fn ($y, $k) => ['x' => $pos($y), 'label' => $k === $segs ? bival('landmarks_now') : Landmark::yearLabel($y)]);
+    // marks closer than a mark's width share no lane: the next one drops a
+    // lane (heritage.js redoes this at the real width, so phones get more)
+    $rows = $eras->map(function ($era) use ($landmarks, $pos) {
+        $ends = [];
         $items = $landmarks->filter(fn ($l) => $l->era === $era)->map(fn ($l) => [
             'i' => $landmarks->search($l), 'x' => $pos($l->year_from), 'name' => $l->tr('name'), 'slug' => $l->slug, 'region' => $l->region,
-        ])->sortBy('x')->values();
-        $lane = 0; $last = -10;
-        $items = $items->map(function ($it) use (&$lane, &$last) {
-            $lane = ($it['x'] - $last) < 3 ? ($lane + 1) % 2 : 0;
-            $last = $it['x'];
+        ])->sortBy('x')->values()->map(function ($it) use (&$ends) {
+            $lane = 0;
+            while (isset($ends[$lane]) && $it['x'] - $ends[$lane] < 2.8) {
+                $lane++;
+            }
+            $ends[$lane] = $it['x'];
+
             return $it + ['lane' => $lane];
         });
-        $from = $landmarks->where('era', $era)->whereNotNull('year_from')->min('year_from');
-        $to = $landmarks->where('era', $era)->contains(fn ($l) => $l->year_to === null) ? null : $landmarks->where('era', $era)->max('year_to');
-        return ['era' => $era, 'items' => $items, 'a' => $from === null ? null : $pos($from), 'b' => $pos($to)];
+        // the bar runs from the age's first mark to its last
+        return ['era' => $era, 'items' => $items, 'lanes' => max(1, count($ends)),
+            'a' => $items->min('x'), 'b' => $items->max('x')];
     });
 
     $schema = ['@context' => 'https://schema.org', '@type' => 'CollectionPage', 'name' => bival('landmarks_label'), 'description' => $description,
@@ -122,22 +138,22 @@
                             <h2 class="hr-time__title">{{ bival('landmarks_timeline_title') }}</h2>
                             <p class="hr-time__hint">{{ bival('landmarks_timeline_hint') }}</p>
                         </div>
-                        <div class="hr-time__grid">
+                        <div class="hr-time__grid" style="--segs: {{ $segs }}">
                             @foreach ($rows as $row)
                                 <button type="button" class="hr-time__label" data-era="{{ $row['era'] }}">{{ Landmark::eraName($row['era']) }}</button>
-                                <div class="hr-time__row" data-era="{{ $row['era'] }}">
-                                    @if ($row['a'] !== null)
-                                        <span class="hr-time__bar" style="--a: {{ $row['a'] }}%; --b: {{ $row['b'] }}%" aria-hidden="true"></span>
+                                <div class="hr-time__row" data-era="{{ $row['era'] }}" style="--lanes: {{ $row['lanes'] }}">
+                                    @if ($row['b'] > $row['a'])
+                                        <span class="hr-time__bar" style="--a: {{ $row['a'] }}; --b: {{ $row['b'] }}" aria-hidden="true"></span>
                                     @endif
                                     @foreach ($row['items'] as $it)
-                                        <a class="hr-time__dot" href="#{{ $it['slug'] }}" style="--x: {{ $it['x'] }}%; --lane: {{ $it['lane'] }}" data-i="{{ $it['i'] }}" data-era="{{ $row['era'] }}" data-region="{{ $it['region'] }}" data-name="{{ $it['name'] }}" aria-label="{{ $it['name'] }}">{{ $num($it['i'] + 1) }}</a>
+                                        <a class="hr-time__dot{{ $it['x'] > 80 ? ' is-end' : ($it['x'] < 20 ? ' is-start' : '') }}" href="#{{ $it['slug'] }}" style="--x: {{ $it['x'] }}; --lane: {{ $it['lane'] }}" data-i="{{ $it['i'] }}" data-era="{{ $row['era'] }}" data-region="{{ $it['region'] }}" data-name="{{ $it['name'] }}" aria-label="{{ $it['name'] }}">{{ $num($it['i'] + 1) }}</a>
                                     @endforeach
                                 </div>
                             @endforeach
                             <span class="hr-time__corner" aria-hidden="true"></span>
                             <div class="hr-time__axis" aria-hidden="true">
                                 @foreach ($ticks as $t)
-                                    <span style="--x: {{ $t['x'] }}%">{{ $t['label'] }}</span>
+                                    <span style="--x: {{ $t['x'] }}">{{ $t['label'] }}</span>
                                 @endforeach
                             </div>
                         </div>
@@ -174,13 +190,13 @@
                                             <span class="hr-card__n">{{ $num($i + 1) }}</span>
                                         </span>
                                         <span class="hr-card__meta">
-                                            <span dir="auto">{{ $l->tr('place') }}</span>
+                                            <span{{ text_dir($l->tr('place')) }}>{{ $l->tr('place') }}</span>
                                             @if ($l->unesco)<span class="hr-card__unesco">UNESCO</span>@endif
                                         </span>
-                                        <span class="hr-card__name" dir="auto">{{ $l->tr('name') }}</span>
-                                        <span class="hr-card__where" dir="auto">{{ $l->tr('period') }}</span>
+                                        <span class="hr-card__name"{{ text_dir($l->tr('name')) }}>{{ $l->tr('name') }}</span>
+                                        <span class="hr-card__where"{{ text_dir($l->tr('period')) }}>{{ $l->tr('period') }}</span>
                                         @if (filled($l->tr('summary')))
-                                            <span class="hr-card__summary" dir="auto">{{ $l->tr('summary') }}</span>
+                                            <span class="hr-card__summary"{{ text_dir($l->tr('summary')) }}>{{ $l->tr('summary') }}</span>
                                         @endif
                                         <span class="hr-card__more">{{ bival('landmarks_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
                                     </a>

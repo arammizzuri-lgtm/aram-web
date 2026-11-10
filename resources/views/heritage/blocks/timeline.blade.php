@@ -7,16 +7,16 @@
 @endphp
 @if ($events)
     <section class="lm-sec lm-tl lm-tl--{{ $layout }} reveal" data-count="{{ count($events) }}">
-        <h2 class="lm-h2" dir="auto">{{ $heading }}</h2>
+        <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
         <ol class="lm-tl__list">
             @foreach ($events as $ev)
                 @php $text = Landmark::t($ev, 'text'); @endphp
                 <li class="lm-tl__ev">
                     <span class="lm-tl__dot" aria-hidden="true"></span>
-                    <span class="lm-tl__date" dir="auto">{{ Landmark::digits(Landmark::t($ev, 'date')) }}</span>
-                    <h3 class="lm-tl__title" dir="auto">{{ Landmark::t($ev, 'title') }}</h3>
+                    <span class="lm-tl__date"{{ text_dir(Landmark::digits(Landmark::t($ev, 'date'))) }}>{{ Landmark::digits(Landmark::t($ev, 'date')) }}</span>
+                    <h3 class="lm-tl__title"{{ text_dir(Landmark::t($ev, 'title')) }}>{{ Landmark::t($ev, 'title') }}</h3>
                     @if (filled($text) && $layout !== 'compact')
-                        <p class="lm-tl__text" dir="auto">{{ $text }}</p>
+                        <p class="lm-tl__text"{{ text_dir($text) }}>{{ $text }}</p>
                     @endif
                 </li>
             @endforeach

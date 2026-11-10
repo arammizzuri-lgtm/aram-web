@@ -6,7 +6,7 @@
 @endphp
 @if ($items->isNotEmpty())
     <section class="lm-sec lm-rel reveal">
-        <h2 class="lm-h2" dir="auto">{{ $heading }}</h2>
+        <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
         <div class="lm-rel__grid">
             @foreach ($items as $r)
                 <a class="lm-rel__card" href="{{ $r->url() }}">
@@ -16,8 +16,8 @@
                         @endif
                     </span>
                     <span class="lm-rel__meta">{{ Landmark::eraName($r->era) }}@if ($r->unesco) · UNESCO @endif</span>
-                    <span class="lm-rel__name" dir="auto">{{ $r->tr('name') }}</span>
-                    <span class="lm-rel__where" dir="auto">{{ $r->tr('place') }}</span>
+                    <span class="lm-rel__name"{{ text_dir($r->tr('name')) }}>{{ $r->tr('name') }}</span>
+                    <span class="lm-rel__where"{{ text_dir($r->tr('place')) }}>{{ $r->tr('place') }}</span>
                 </a>
             @endforeach
         </div>

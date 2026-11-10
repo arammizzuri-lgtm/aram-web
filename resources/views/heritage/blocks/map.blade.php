@@ -7,14 +7,14 @@
 @endphp
 <section class="lm-sec lm-mapsec reveal">
     <div class="lm-mapsec__text">
-        <h2 class="lm-h2" dir="auto">{{ $heading }}</h2>
+        <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
         @if (filled($text))
-            <p class="lm-mapsec__words" dir="auto">{{ $text }}</p>
+            <p class="lm-mapsec__words"{{ text_dir($text) }}>{{ $text }}</p>
         @endif
-        <dl class="lm-facts">
-            <div><dt>{{ bival('landmarks_place') }}</dt><dd dir="auto">{{ $l->tr('place') }}</dd></div>
+        <dl class="lm-mapsec__facts">
+            <div><dt>{{ bival('landmarks_place') }}</dt><dd{{ text_dir($l->tr('place')) }}>{{ $l->tr('place') }}</dd></div>
             <div><dt>{{ bival('landmarks_region') }}</dt><dd>{{ Landmark::regionName($l->region) }}</dd></div>
-            <div><dt>{{ bival('landmarks_period') }}</dt><dd dir="auto">{{ $l->tr('period') }}</dd></div>
+            <div><dt>{{ bival('landmarks_period') }}</dt><dd{{ text_dir($l->tr('period')) }}>{{ $l->tr('period') }}</dd></div>
             <div><dt>{{ bival('landmarks_era') }}</dt><dd>{{ Landmark::eraName($l->era) }}</dd></div>
         </dl>
         @if ($l->lat !== null)

@@ -8,7 +8,7 @@
 @if (filled($d['file'] ?? null))
     <section class="lm-sec lm-anno reveal" data-count="{{ count($points) }}">
         @if (filled($heading))
-            <h2 class="lm-h2" dir="auto">{{ $heading }}</h2>
+            <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
         @endif
         <div class="lm-anno__wrap">
             <div class="lm-anno__stage">
@@ -25,8 +25,8 @@
                         <li class="lm-anno__item" data-point="{{ $k }}" tabindex="0">
                             <span class="lm-anno__n" aria-hidden="true">{{ Landmark::digits($k + 1) }}</span>
                             <span class="lm-anno__body">
-                                <strong dir="auto">{{ Landmark::t($p, 'label') }}</strong>
-                                <span dir="auto">{{ Landmark::t($p, 'text') }}</span>
+                                <strong{{ text_dir(Landmark::t($p, 'label')) }}>{{ Landmark::t($p, 'label') }}</strong>
+                                <span{{ text_dir(Landmark::t($p, 'text')) }}>{{ Landmark::t($p, 'text') }}</span>
                             </span>
                         </li>
                     @endforeach
@@ -35,7 +35,7 @@
         </div>
         @if (filled($caption) || filled($d['credit'] ?? null))
             <p class="lm-fig__cap">
-                @if (filled($caption))<span class="lm-fig__text" dir="auto">{{ $caption }}</span>@endif
+                @if (filled($caption))<span class="lm-fig__text"{{ text_dir($caption) }}>{{ $caption }}</span>@endif
                 @include('heritage.credit', ['img' => $d])
             </p>
         @endif

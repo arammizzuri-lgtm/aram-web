@@ -122,19 +122,26 @@ html { scroll-behavior: smooth; }
 [dir="rtl"] .hr-pop__more { letter-spacing: 0; font-size: 13px; }
 
 /* ---- The collection across time ------------------------------------ */
-.hr-time { max-width: var(--wide); margin: 0 auto; padding: clamp(28px, 5vh, 48px) var(--gutter) 0; }
+.hr-time { max-width: var(--wide); margin: 0 auto; padding: clamp(28px, 5vh, 48px) var(--gutter) 0; overflow-x: clip; }
 .hr-time__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 24px; margin-bottom: 16px; }
 .hr-time__title { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); font-weight: 400; }
 [dir="rtl"] .hr-time__title { letter-spacing: 0; font-size: 14px; }
 .hr-time__hint { font-size: 12px; color: var(--faint); }
 .hr-time__grid { display: grid; grid-template-columns: 190px minmax(0, 1fr); column-gap: 18px; }
-.hr-time__label { display: block; padding: 14px 0 0; text-align: start; font: 300 13px/1.3 var(--font); color: var(--muted); cursor: pointer; border-top: 1px solid var(--line); transition: color .25s; }
+.hr-time__label { display: block; align-self: start; padding: 14px 0 0; text-align: start; font: 300 13px/1.3 var(--font); color: var(--muted); cursor: pointer; border-top: 1px solid var(--line); transition: color .25s; }
 .hr-time__label:hover, .hr-time__label.is-on { color: var(--gold); }
 [dir="rtl"] .hr-time__label { font-size: 14px; }
-.hr-time__row { position: relative; height: 46px; border-top: 1px solid var(--line); }
-.hr-time__bar { position: absolute; top: 21px; height: 3px; inset-inline-start: var(--a); width: calc(var(--b) - var(--a)); min-width: 3px; border-radius: 2px; background: rgba(245,197,24,.22); }
+/* --x, --a, --b: 0–100 along the track, which stops --pad short of each end
+   so a mark at the very first or last year is not cut in half. Each lane
+   below the first holds marks that would otherwise touch (heritage.js). */
+.hr-time__grid { --pad: 12px; --lane-h: 24px; }
+.hr-time__row, .hr-time__axis {
+    background: linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px) var(--pad) 0 / calc((100% - 2 * var(--pad)) / var(--segs, 1)) 100% repeat-x;
+}
+.hr-time__row { position: relative; height: calc(44px + (var(--lanes, 1) - 1) * var(--lane-h)); border-top: 1px solid var(--line); transition: height .3s; }
+.hr-time__bar { position: absolute; top: 21px; height: 3px; inset-inline-start: calc(var(--pad) + (100% - 2 * var(--pad)) * var(--a) / 100); width: calc((100% - 2 * var(--pad)) * (var(--b) - var(--a)) / 100); min-width: 3px; border-radius: 2px; background: rgba(245,197,24,.28); }
 .hr-time__dot {
-    position: absolute; top: calc(22px - 10px - var(--lane) * 14px); inset-inline-start: var(--x); z-index: 1;
+    position: absolute; top: calc(12px + var(--lane, 0) * var(--lane-h)); inset-inline-start: calc(var(--pad) + (100% - 2 * var(--pad)) * var(--x) / 100); z-index: 1;
     display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; transform: translateX(-50%);
     background: var(--gold); color: #0a0a0a; font: 600 9px/1 var(--font); box-shadow: 0 0 0 3px #090909;
     transition: transform .25s, opacity .3s;
@@ -148,15 +155,17 @@ html { scroll-behavior: smooth; }
 .hr-time__dot:hover, .hr-time__dot:focus-visible { transform: translateX(-50%) scale(1.25); z-index: 2; }
 [dir="rtl"] .hr-time__dot:hover, [dir="rtl"] .hr-time__dot:focus-visible { transform: translateX(50%) scale(1.25); }
 .hr-time__dot:hover::after, .hr-time__dot:focus-visible::after { opacity: 1; }
+/* near either end the name opens inward, so it never runs off the screen */
+.hr-time__dot.is-start::after { left: auto; right: auto; inset-inline-start: -4px; transform: none; }
+.hr-time__dot.is-end::after { left: auto; right: auto; inset-inline-end: -4px; transform: none; }
 .hr-time__dot.is-dim { opacity: .2; }
 .hr-time__row.is-dim .hr-time__bar { opacity: .35; }
 .hr-time__corner { border-top: 1px solid var(--line); }
-.hr-time__axis { position: relative; height: 26px; border-top: 1px solid var(--line); }
-.hr-time__axis span { position: absolute; top: 7px; inset-inline-start: var(--x); transform: translateX(-50%); font-size: 10.5px; letter-spacing: .06em; color: var(--faint); white-space: nowrap; }
+.hr-time__axis { position: relative; height: 30px; border-top: 1px solid var(--line); background-size: calc((100% - 2 * var(--pad)) / var(--segs, 1)) 6px; }
+.hr-time__axis span { position: absolute; top: 9px; inset-inline-start: calc(var(--pad) + (100% - 2 * var(--pad)) * var(--x) / 100); transform: translateX(-50%); font-size: 10.5px; letter-spacing: .06em; color: var(--faint); white-space: nowrap; }
 [dir="rtl"] .hr-time__axis span { transform: translateX(50%); letter-spacing: 0; font-size: 12px; }
-.hr-time__axis span:first-child { transform: none; }
-.hr-time__axis span:last-child { transform: translateX(-100%); }
-[dir="rtl"] .hr-time__axis span:last-child { transform: translateX(100%); }
+.hr-time__axis span:first-child { inset-inline-start: 0; transform: none; }
+.hr-time__axis span:last-child { inset-inline-start: auto; inset-inline-end: 0; transform: none; }
 
 /* ---- The landmarks, as cards by age --------------------------------- */
 .hr-collection { max-width: var(--wide); margin: clamp(56px, 9vh, 96px) auto 0; padding: 0 var(--gutter); }
@@ -216,7 +225,9 @@ html { scroll-behavior: smooth; }
     .hr-pop__img { aspect-ratio: 21 / 9; }
     .hr-time__grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
     .hr-time__label { border-top: 0; padding: 12px 0 2px; font-size: 12px; }
-    .hr-time__row { border-top: 0; height: 40px; }
+    .hr-time__row { border-top: 0; }
     .hr-time__corner { display: none; }
-    .hr-time__axis span:nth-child(even) { display: none; }
+    /* every other anchor named, the last ("today") always, the one before it never */
+    .hr-time__axis span:nth-child(even), .hr-time__axis span:nth-last-child(2) { display: none; }
+    .hr-time__axis span:last-child { display: block; }
 }

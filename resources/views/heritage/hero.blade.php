@@ -21,16 +21,16 @@
         <div class="lm-hero__text">
             <a class="lm-back" href="{{ site_url(Landmark::PATH) }}#{{ $l->slug }}"><span class="pp-arrow" aria-hidden="true">←</span> {{ bival('landmarks_back') }}</a>
             <p class="pp-label">{{ Landmark::regionName($l->region) }} · {{ Landmark::eraName($l->era) }}</p>
-            <h1 class="lm-title" dir="auto">{{ $l->tr('name') }}</h1>
+            <h1 class="lm-title"{{ text_dir($l->tr('name')) }}>{{ $l->tr('name') }}</h1>
             @if ($style === 'dark')
-                <p class="lm-hero__big" dir="auto">{{ Landmark::digits($l->tr('period')) }}</p>
+                <p class="lm-hero__big"{{ text_dir(Landmark::digits($l->tr('period'))) }}>{{ Landmark::digits($l->tr('period')) }}</p>
             @endif
             @if (filled($intro))
-                <p class="lm-intro" dir="auto">{{ $intro }}</p>
+                <p class="lm-intro"{{ text_dir($intro) }}>{{ $intro }}</p>
             @endif
             <ul class="lm-meta">
-                @if (filled($l->tr('place')))<li dir="auto">{{ $l->tr('place') }}</li>@endif
-                @if (filled($l->tr('period')) && $style !== 'dark')<li dir="auto">{{ $l->tr('period') }}</li>@endif
+                @if (filled($l->tr('place')))<li{{ text_dir($l->tr('place')) }}>{{ $l->tr('place') }}</li>@endif
+                @if (filled($l->tr('period')) && $style !== 'dark')<li{{ text_dir($l->tr('period')) }}>{{ $l->tr('period') }}</li>@endif
                 @if ($l->unesco)
                     <li class="lm-meta__unesco"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8h18zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>{{ bival('landmarks_unesco') }}@if ($l->unesco_year) · {{ Landmark::digits($l->unesco_year) }}@endif</li>
                 @endif

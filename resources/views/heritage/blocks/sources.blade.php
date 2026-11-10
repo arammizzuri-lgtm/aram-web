@@ -6,7 +6,7 @@
 @endphp
 @if ($items)
     <section class="lm-sec lm-src reveal">
-        <h2 class="lm-h2" dir="auto">{{ $heading }}</h2>
+        <h2 class="lm-h2"{{ text_dir($heading) }}>{{ $heading }}</h2>
         <ol class="lm-src__list">
             @foreach ($items as $it)
                 <li>

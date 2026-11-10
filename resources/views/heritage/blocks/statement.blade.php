@@ -8,11 +8,11 @@
 @if (filled($big))
     <section class="lm-sec lm-statement lm-statement--{{ ($d['align'] ?? 'start') === 'center' ? 'center' : 'start' }} reveal">
         @if (filled($kicker))
-            <p class="lm-statement__kicker" dir="auto">{{ $kicker }}</p>
+            <p class="lm-statement__kicker"{{ text_dir($kicker) }}>{{ $kicker }}</p>
         @endif
-        <p class="lm-statement__big" dir="auto">{{ Landmark::digits($big) }}</p>
+        <p class="lm-statement__big"{{ text_dir(Landmark::digits($big)) }}>{{ Landmark::digits($big) }}</p>
         @if (filled($text))
-            <p class="lm-statement__text" dir="auto">{{ $text }}</p>
+            <p class="lm-statement__text"{{ text_dir($text) }}>{{ $text }}</p>
         @endif
     </section>
 @endif

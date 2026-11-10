@@ -42,6 +42,35 @@
         if (chip) chip.click();
     }));
 
+    /* ── The marks across time: lanes at the real width ──────────────── */
+    // The page sets the lanes for a desktop-wide track; here they are redone
+    // in pixels, so on a phone marks that would touch drop to another lane
+    // instead of covering each other.
+    const MARK = 24;   // a mark's width and the gap after it, in px (heritage.css --lane-h)
+    const PAD = 12;    // heritage.css --pad
+    function laneTime() {
+        document.querySelectorAll('.hr-time__row').forEach(row => {
+            const track = row.clientWidth - 2 * PAD;
+            if (track <= 0) return;
+            const marks = [...row.querySelectorAll('.hr-time__dot')]
+                .map(d => ({ d, px: parseFloat(d.style.getPropertyValue('--x')) / 100 * track }))
+                .sort((a, b) => a.px - b.px);
+            const ends = [];
+            marks.forEach(m => {
+                let lane = 0;
+                while (ends[lane] !== undefined && m.px - ends[lane] < MARK) lane++;
+                ends[lane] = m.px;
+                m.d.style.setProperty('--lane', lane);
+            });
+            row.style.setProperty('--lanes', Math.max(1, ends.length));
+        });
+    }
+    if (document.querySelector('.hr-time__row')) {
+        laneTime();
+        let frame = 0;
+        window.addEventListener('resize', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(laneTime); });
+    }
+
     const el = document.getElementById('hrMap');
     if (!el || typeof L === 'undefined') return;
 

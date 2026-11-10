@@ -10,7 +10,7 @@
             <span>{{ bival('landmarks_unesco') }}</span>
         </div>
         <div class="lm-unesco__body">
-            <h2 class="lm-h2" dir="auto">{{ $l->unesco_name ?: $l->tr('name') }}</h2>
+            <h2 class="lm-h2"{{ text_dir($l->unesco_name ?: $l->tr('name')) }}>{{ $l->unesco_name ?: $l->tr('name') }}</h2>
             @if ($l->unesco_year || $l->unesco_criteria)
                 <p class="lm-unesco__meta">
                     @if ($l->unesco_year){{ str_replace('{y}', Landmark::digits($l->unesco_year), bival('landmarks_unesco_inscribed')) }}@endif
@@ -19,7 +19,7 @@
                 </p>
             @endif
             @if ($text !== '')
-                <div class="lm-prose" dir="auto">{!! $text !!}</div>
+                <div class="lm-prose"{{ text_dir(strip_tags((string) $text)) }}>{!! $text !!}</div>
             @endif
             @if ($l->unesco_ref)
                 <a class="lm-go" href="https://whc.unesco.org/en/list/{{ $l->unesco_ref }}/" target="_blank" rel="noopener">{{ bival('landmarks_unesco_link') }} <span aria-hidden="true">↗</span></a>

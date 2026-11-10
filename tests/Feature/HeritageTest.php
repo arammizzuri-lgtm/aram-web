@@ -103,6 +103,56 @@ class HeritageTest extends TestCase
         $this->get($l->url('ar'))->assertOk()->assertSee('قلعة الاختبار')->assertSee('هل تعلم؟');
     }
 
+    public function test_text_runs_the_way_its_script_does_and_dates_follow_the_page(): void
+    {
+        // a year or a span of years has no letters: it follows the page
+        $this->assertSame('', (string) text_dir('١٦٨٥–١٧٨٤', 'ku'));
+        $this->assertSame('', (string) text_dir('1685–1784', 'ar'));
+        $this->assertSame('', (string) text_dir('قەڵای هەولێر', 'ku'));
+        // the other script turns it; the script with more letters wins
+        $this->assertSame(' dir="ltr"', (string) text_dir('Alexander nearby.', 'ku'));
+        $this->assertSame(' dir="rtl"', (string) text_dir('قلعة أربيل', 'en'));
+        $this->assertSame('', (string) text_dir('UNESCO لە ساڵی ٢٠١٤ تۆماری کرد', 'ku'));
+
+        // on a Kurdish page a timeline's date stays on the page's side (dir="auto"
+        // made a date of digits run left to right and sit on the wrong side)
+        $html = $this->get($this->landmark()->url('ku'))->assertOk()->getContent();
+        $this->assertStringContainsString('<span class="lm-tl__date">٢٠١٤</span>', $html);
+        $this->assertStringContainsString('<p class="lm-tl__text" dir="ltr">Alexander nearby.</p>', $html);
+    }
+
+    public function test_the_timeline_names_each_anchor_year_and_no_mark_covers_another(): void
+    {
+        $html = $this->get('/kurdistan-heritage')->assertOk()->getContent();
+
+        // one label per anchor year, evenly spaced, from the oldest landmark to today
+        $this->assertSame(1, preg_match('/<div class="hr-time__axis".*?<\/div>/s', $html, $axis));
+        preg_match_all('/--x: ([\d.]+)">([^<]+)</', $axis[0], $ticks);
+        $this->assertSame(['65,000 BC', '10,000 BC', '5000 BC', '3000 BC', '1000 BC', 'AD 1', '1000', 'today'], $ticks[2]);
+        foreach ($ticks[1] as $i => $x) {
+            $this->assertEqualsWithDelta($i * 100 / 7, (float) $x, 0.02);
+        }
+
+        // every landmark has a mark; two marks in one lane are never closer than a mark's width
+        preg_match_all('/<div class="hr-time__row" data-era="(\w+)"[^>]*>(.*?)<\/div>/s', $html, $rows, PREG_SET_ORDER);
+        $marks = 0;
+        foreach ($rows as [, $era, $row]) {
+            preg_match_all('/--x: ([\d.]+); --lane: (\d+)/', $row, $found, PREG_SET_ORDER);
+            $lanes = [];
+            foreach ($found as [, $x, $lane]) {
+                $lanes[$lane][] = (float) $x;
+                $marks++;
+            }
+            foreach ($lanes as $xs) {
+                sort($xs);
+                for ($i = 1; $i < count($xs); $i++) {
+                    $this->assertGreaterThanOrEqual(2.8, $xs[$i] - $xs[$i - 1], "marks touch in $era");
+                }
+            }
+        }
+        $this->assertSame(21, $marks);
+    }
+
     public function test_every_opening_style_renders_and_a_page_without_a_photograph_opens_dark(): void
     {
         foreach (array_keys(Landmark::HERO_STYLES) as $style) {

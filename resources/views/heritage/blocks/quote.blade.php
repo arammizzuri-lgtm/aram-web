@@ -6,9 +6,9 @@
 @endphp
 @if (filled($text))
     <figure class="lm-sec lm-quote reveal">
-        <blockquote class="lm-quote__text" dir="auto"><p>{{ $text }}</p></blockquote>
+        <blockquote class="lm-quote__text"{{ text_dir($text) }}><p>{{ $text }}</p></blockquote>
         @if (filled($source))
-            <figcaption class="lm-quote__src" dir="auto">{{ $source }}</figcaption>
+            <figcaption class="lm-quote__src"{{ text_dir($source) }}>{{ $source }}</figcaption>
         @endif
     </figure>
 @endif
