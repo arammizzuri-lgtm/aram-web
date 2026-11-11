@@ -44,6 +44,15 @@
                     @endforeach
                 </p>
             @endif
+            {{-- its state today, in one sourced line --}}
+            @if ($l->conditionName())
+                <p class="lm-state lm-state--{{ $l->condition }}">
+                    <span class="lm-state__label">{{ bival('landmarks_state') }}</span>
+                    <span class="lm-state__tag">{{ $l->conditionName() }}</span>
+                    @if (filled($l->tr('condition')))<span class="lm-state__note"{{ text_dir($l->tr('condition')) }}>{{ $l->tr('condition') }}</span>@endif
+                    @if (filled($l->condition_url))<a class="lm-state__src" href="{{ $l->condition_url }}" target="_blank" rel="noopener">{{ bival('landmarks_state_source') }} <span aria-hidden="true">↗</span></a>@endif
+                </p>
+            @endif
         </div>
         @if (in_array($style, ['split', 'editorial', 'frame'], true))
             <figure class="lm-hero__fig">

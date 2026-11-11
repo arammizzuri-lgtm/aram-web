@@ -211,6 +211,30 @@
                 </section>
             @endif
 
+            {{-- Lost and at risk: the landmarks bombed, flooded or left to the
+                 weather (Landmark::CONDITIONS), each with its sourced line. --}}
+            @php $risk = $landmarks->filter(fn ($l) => $l->atRisk())->values(); @endphp
+            @if ($risk->isNotEmpty())
+                <section class="hr-risk reveal" id="at-risk" aria-labelledby="hrRiskTitle">
+                    <header class="hr-mat__head">
+                        <p class="pp-label">{{ bival('landmarks_risk_label') }}</p>
+                        <h2 class="hr-mat__title" id="hrRiskTitle">{{ bival('landmarks_risk_title') }}</h2>
+                        <p class="hr-mat__intro">{{ bival('landmarks_risk_intro') }}</p>
+                    </header>
+                    <ul class="hr-risk__list">
+                        @foreach ($risk as $l)
+                            <li class="hr-risk__item lm-state--{{ $l->condition }}">
+                                <span class="lm-state__tag">{{ $l->conditionName() }}</span>
+                                <h3 class="hr-risk__name"><a href="{{ $l->url() }}"{{ text_dir($l->tr('name')) }}>{{ $l->tr('name') }}</a></h3>
+                                <p class="hr-risk__place">{{ $l->tr('place') }}</p>
+                                @if (filled($l->tr('condition')))<p class="hr-mat__note"{{ text_dir($l->tr('condition')) }}>{{ $l->tr('condition') }}</p>@endif
+                                @if (filled($l->condition_url))<a class="lm-state__src" href="{{ $l->condition_url }}" target="_blank" rel="noopener">{{ bival('landmarks_state_source') }} <span aria-hidden="true">↗</span></a>@endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
+
             <section class="hr-collection">
                 <h2 class="hr-collection__title">{{ bival('landmarks_collection') }}</h2>
                 @foreach ($eras as $ei => $era)

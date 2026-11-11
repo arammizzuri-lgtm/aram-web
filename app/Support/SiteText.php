@@ -619,6 +619,12 @@ class SiteText
                 'landmarks_mat_rock_note' => ['Material — living rock, why here', 'Not built but cut: caves lived in, and cliffs carved where they stand. Here the mountain itself is the monument.', 'دروستنەکراوە، بەڵکو هەڵکەنراوە: ئەشکەوتی تێدا ژیاو، و تاشەبەردی نەخشێنراو لە شوێنی خۆیدا. لێرە چیاکە خۆی شوێنەوارەکەیە.', 'area'],
                 'landmarks_mat_timber'  => ['Material — timber', 'Timber', 'دار'],
                 'landmarks_mat_timber_note' => ['Material — timber, why here', 'Scarce in this country and used sparingly: kept for roofs, posts and ceilings.', 'لەم وڵاتەدا کەمە و بە دەستپێوەگرتن بەکاردێت: بۆ سەقف، کۆڵەکە و بنمیچ هەڵدەگیرێت.', 'area'],
+                // each landmark's state today: the line on its page, and the "Lost and at risk" section
+                'landmarks_state'       => ['Landmark page — its state today', 'Today', 'ئەمڕۆ'],
+                'landmarks_state_source' => ['State — source link', 'Source', 'سەرچاوە'],
+                'landmarks_risk_label'  => ['Lost and at risk — small label', 'Lost and at risk', 'لەدەستچوو و لە مەترسیدا'],
+                'landmarks_risk_title'  => ['Lost and at risk — title', 'What war, water and weather have taken', 'ئەوەی شەڕ و ئاو و کەشوهەوا بردوویانە'],
+                'landmarks_risk_intro'  => ['Lost and at risk — introduction', 'Some of these places have been bombed, flooded or left to the weather. What happened to each, as the sources report it.', 'هەندێک لەم شوێنانە بۆمباران کراون، ژێر ئاو کەوتوون یان بۆ کەشوهەوا بەجێهێڵراون. ئەوەی بەسەر هەریەکەیاندا هاتووە، وەک سەرچاوەکان دەیگێڕنەوە.', 'area'],
                 'landmarks_map_hint'  => ['Map — hint', 'Tap a pin to meet the landmark', 'دەست لە نیشانەیەک بدە بۆ ناسینی شوێنەوارەکە'],
                 'landmarks_read'      => ['Read more link', 'Read more', 'زیاتر بخوێنەوە'],
                 'landmarks_period'    => ['Facts — period', 'Period', 'سەردەم'],

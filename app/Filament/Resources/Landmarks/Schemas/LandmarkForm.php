@@ -99,6 +99,16 @@ class LandmarkForm
                     ->helperText('When it differs from the landmark\'s name.')->columnSpanFull()->visible(fn (Get $get) => $get('unesco')),
             ]),
 
+            Section::make('Its state today')->columns(3)->columnSpanFull()
+                ->description('Shown on its page. At risk, damaged, partly lost and under water also list it under "Lost and at risk" on the heritage page. Plain facts, causes named as the source names them.')
+                ->schema([
+                    Select::make('condition')->label('State')->options(Landmark::options(Landmark::CONDITIONS))->native(false),
+                    TextInput::make('condition_url')->label('Source link')->url()->maxLength(300)->columnSpan(2)->placeholder('https://…'),
+                    Textarea::make('condition_en')->label('What happened (English)')->rows(3),
+                    Textarea::make('condition_ku')->label('What happened (Kurdish)')->rows(3)->extraInputAttributes(self::KU),
+                    Textarea::make('condition_ar')->label('What happened (Arabic)')->rows(3)->extraInputAttributes(self::AR),
+                ]),
+
             Section::make('Where')->columnSpanFull()->schema([
                 Hidden::make('lat'),
                 Hidden::make('lng'),

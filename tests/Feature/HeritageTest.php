@@ -332,6 +332,40 @@ class HeritageTest extends TestCase
         $this->get($l->url())->assertOk()->assertDontSee('lm-built', false);
     }
 
+    /* ── Their state today ─────────────────────────────────────────── */
+
+    public function test_every_landmark_says_its_state_today_and_the_lost_and_at_risk_are_gathered(): void
+    {
+        // each of the 21 has a known state, a line in three languages and a source
+        foreach (Landmark::all() as $l) {
+            $this->assertArrayHasKey($l->condition, Landmark::CONDITIONS, $l->slug);
+            $this->assertTrue(filled($l->condition_en) && filled($l->condition_ku) && filled($l->condition_ar), $l->slug);
+            $this->assertStringStartsWith('https://', $l->condition_url, $l->slug);
+        }
+        $this->assertSame('submerged', Landmark::where('slug', 'hasankeyf')->sole()->condition);
+
+        // the heritage page lists the at-risk ones, and only those
+        $html = $this->get('/kurdistan-heritage')->assertOk()->assertSee('Lost and at risk')->getContent();
+        $risk = substr($html, strpos($html, 'id="at-risk"'), strpos($html, 'class="hr-collection"') - strpos($html, 'id="at-risk"'));
+        $this->assertStringContainsString('Under water', $risk);
+        $this->assertStringContainsString('Ilısu Dam', $risk);
+        $this->assertStringContainsString('earthobservatory.nasa.gov', $risk);
+        $this->assertStringNotContainsString('Taq-e Bostan', $risk);
+        $this->assertSame(Landmark::all()->filter->atRisk()->count(), substr_count($risk, 'class="hr-risk__item'));
+        $this->get('/ku/kurdistan-heritage')->assertOk()->assertSee('لەدەستچوو و لە مەترسیدا')->assertSee('لەژێر ئاودایە');
+        $this->get('/ar/kurdistan-heritage')->assertOk()->assertSee('ما فُقد وما هو مهدَّد');
+
+        // and each page says it, with its source
+        $this->get('/kurdistan-heritage/ain-dara-temple')->assertOk()
+            ->assertSee('lm-state--damaged', false)->assertSee('Damaged')->assertSee('20–22 January 2018')->assertSee('href="https://www.asor.org/chi/"', false);
+        $this->get('/ar/kurdistan-heritage/taq-e-bostan')->assertOk()->assertSee('سليم')->assertSee('اليوم');
+
+        // none set: no line, and no place in the list
+        $l = $this->landmark(['condition' => null]);
+        $this->assertFalse($l->atRisk());
+        $this->get($l->url())->assertOk()->assertDontSee('class="lm-state ', false);
+    }
+
     /* ── How it was built ───────────────────────────────────────────── */
 
     public function test_six_landmarks_show_how_they_were_built_in_steps(): void
@@ -388,7 +422,7 @@ class HeritageTest extends TestCase
         $l = $this->landmark();
 
         $this->actingAs($admin)->get(LandmarkResource::getUrl('index'))->assertOk()->assertSee('Göbekli Tepe')->assertSee('Duplicate');
-        $this->actingAs($admin)->get(LandmarkResource::getUrl('create'))->assertOk()->assertSee('Add a section')->assertSee('Built of');
+        $this->actingAs($admin)->get(LandmarkResource::getUrl('create'))->assertOk()->assertSee('Add a section')->assertSee('Built of')->assertSee('Its state today');
         $this->actingAs($admin)->get(LandmarkResource::getUrl('edit', ['record' => $l]))->assertOk()
             ->assertSee('Preview')->assertSee('The hill')->assertSee('Cover photograph');
         // a page with a "how it was built" section opens in the editor too

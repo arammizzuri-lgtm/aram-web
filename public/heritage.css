@@ -272,3 +272,28 @@ html { scroll-behavior: smooth; }
     .hr-time__axis span:nth-child(even), .hr-time__axis span:nth-last-child(2) { display: none; }
     .hr-time__axis span:last-child { display: block; }
 }
+
+/* ---- Its state today (a landmark's hero line, and the tags in Lost and at risk) */
+.lm-state { --st: #8FBF8A; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; max-width: 62ch; margin-top: 14px; font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.78); }
+.lm-state--at_risk { --st: #E2B04A; }
+.lm-state--damaged, .lm-state--partly_lost { --st: #E0705A; }
+.lm-state--submerged { --st: #6FA8D8; }
+.lm-state__label { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.lm-state__tag { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--st); }
+.lm-state__tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--st); }
+.lm-state__src { font-size: 12.5px; color: var(--gold); white-space: nowrap; }
+.lm-state__src:hover { color: #fff; }
+[dir="rtl"] .lm-state { font-size: 15.5px; line-height: 1.95; }
+[dir="rtl"] .lm-state__label, [dir="rtl"] .lm-state__tag { letter-spacing: 0; font-size: 14px; }
+[dir="rtl"] .lm-state__src { font-size: 14px; }
+
+/* ---- Lost and at risk */
+.hr-risk { max-width: var(--wide); margin: clamp(56px, 9vh, 96px) auto 0; padding: 0 var(--gutter); scroll-margin-top: 90px; }
+.hr-risk__list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 0 28px; margin-top: 30px; }
+.hr-risk__item { display: flex; flex-direction: column; align-items: flex-start; padding: 18px 0 26px; border-top: 2px solid color-mix(in srgb, var(--st) 55%, transparent); }
+.hr-risk__name { margin-top: 10px; font-size: 21px; font-weight: 300; color: #fff; }
+[dir="rtl"] .hr-risk__name { font-weight: 400; }
+.hr-risk__name a:hover { color: var(--gold); }
+.hr-risk__place { margin-top: 2px; font-size: 13px; color: var(--muted); }
+[dir="rtl"] .hr-risk__place { font-size: 14.5px; }
+.hr-risk__item .lm-state__src { margin-top: auto; padding-top: 14px; }

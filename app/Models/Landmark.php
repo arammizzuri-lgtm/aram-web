@@ -61,6 +61,21 @@ class Landmark extends Model
         'timber' => '#86B257',
     ];
 
+    /**
+     * A landmark's state today, as its sources report it: the names in the
+     * three languages, and whether it belongs in "Lost and at risk" on the
+     * heritage page.
+     */
+    public const CONDITIONS = [
+        'intact' => ['Intact', 'ساغ', 'سليم', false],
+        'restored' => ['Restored', 'نۆژەنکراوە', 'مُرمَّم', false],
+        'restoring' => ['Being restored', 'لە نۆژەنکردنەوەدایە', 'قيد الترميم', false],
+        'at_risk' => ['At risk', 'لە مەترسیدایە', 'مهدَّد', true],
+        'damaged' => ['Damaged', 'زیانی پێگەیشتووە', 'متضرِّر', true],
+        'partly_lost' => ['Partly lost', 'بەشێکی لەدەستچووە', 'فُقد جزء منه', true],
+        'submerged' => ['Under water', 'لەژێر ئاودایە', 'غارق تحت الماء', true],
+    ];
+
     /** How a page opens — the admin's choices, with what each looks like. */
     public const HERO_STYLES = [
         'cinematic' => 'Cinematic — the photograph fills the screen, the name over it',
@@ -92,6 +107,7 @@ class Landmark extends Model
         'name_en', 'name_ku', 'name_ar', 'place_en', 'place_ku', 'place_ar', 'period_en', 'period_ku', 'period_ar',
         'summary_en', 'summary_ku', 'summary_ar', 'intro_en', 'intro_ku', 'intro_ar', 'body_en', 'body_ku', 'body_ar',
         'sections', 'year_from', 'year_to', 'materials',
+        'condition', 'condition_en', 'condition_ku', 'condition_ar', 'condition_url',
         'lat', 'lng', 'image', 'image_credit', 'image_source',
         'unesco', 'unesco_year', 'unesco_ref', 'unesco_criteria', 'unesco_name', 'is_published',
     ];
@@ -405,6 +421,20 @@ class Landmark extends Model
             'ar' => SiteText::ar('landmarks_mat_'.$key),
             default => SiteText::en('landmarks_mat_'.$key),
         } ?: $key;
+    }
+
+    /** The landmark's state today in a language (default: the page's), or null if none is set. */
+    public function conditionName(?string $lang = null): ?string
+    {
+        $names = self::CONDITIONS[$this->condition] ?? null;
+
+        return $names ? bi_record($lang ?? site_lang(), $names[0], $names[1], $names[2]) : null;
+    }
+
+    /** Whether it is one of the landmarks lost, damaged or at risk. */
+    public function atRisk(): bool
+    {
+        return self::CONDITIONS[$this->condition][3] ?? false;
     }
 
     public static function eraName(string $key, ?string $lang = null): string
