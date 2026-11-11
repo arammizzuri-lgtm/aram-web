@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\HeritageImage;
+use App\Support\SiteText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -43,6 +44,23 @@ class Landmark extends Model
         'living' => ['Living heritage', 'میراتی زیندوو', 'تراث حيّ'],
     ];
 
+    /**
+     * What a landmark is built of, and the colour each has on the map and in
+     * the tags — the stone's or the clay's own, near enough. The names and the
+     * line on each are site texts (landmarks_mat_<key>, …_note), so the admin
+     * can reword them.
+     */
+    public const MATERIALS = [
+        'limestone' => '#E9D9A6',
+        'basalt' => '#8892A4',
+        'sandstone' => '#DE9160',
+        'stone' => '#BDB5A4',
+        'brick' => '#D4553B',
+        'mudbrick' => '#B27F3F',
+        'rock' => '#6FB8B0',
+        'timber' => '#86B257',
+    ];
+
     /** How a page opens — the admin's choices, with what each looks like. */
     public const HERO_STYLES = [
         'cinematic' => 'Cinematic — the photograph fills the screen, the name over it',
@@ -59,14 +77,14 @@ class Landmark extends Model
         'slug', 'sort_order', 'region', 'era', 'hero_style',
         'name_en', 'name_ku', 'name_ar', 'place_en', 'place_ku', 'place_ar', 'period_en', 'period_ku', 'period_ar',
         'summary_en', 'summary_ku', 'summary_ar', 'intro_en', 'intro_ku', 'intro_ar', 'body_en', 'body_ku', 'body_ar',
-        'sections', 'year_from', 'year_to',
+        'sections', 'year_from', 'year_to', 'materials',
         'lat', 'lng', 'image', 'image_credit', 'image_source',
         'unesco', 'unesco_year', 'unesco_ref', 'unesco_criteria', 'unesco_name', 'is_published',
     ];
 
     protected $casts = [
         'is_published' => 'boolean', 'unesco' => 'boolean', 'lat' => 'float', 'lng' => 'float', 'sort_order' => 'integer',
-        'sections' => 'array', 'year_from' => 'integer', 'year_to' => 'integer', 'unesco_year' => 'integer', 'unesco_ref' => 'integer',
+        'sections' => 'array', 'materials' => 'array', 'year_from' => 'integer', 'year_to' => 'integer', 'unesco_year' => 'integer', 'unesco_ref' => 'integer',
     ];
 
     protected static function booted(): void
@@ -357,6 +375,22 @@ class Landmark extends Model
         $names = self::REGIONS[$key] ?? [$key, $key, $key];
 
         return bi_record($lang ?? site_lang(), ...$names);
+    }
+
+    /** The landmark's materials, the main one first — only the ones the site knows. */
+    public function materialKeys(): array
+    {
+        return array_values(array_intersect((array) $this->materials, array_keys(self::MATERIALS)));
+    }
+
+    /** A material's name in a language (default: the page's). */
+    public static function materialName(string $key, ?string $lang = null): string
+    {
+        return match ($lang ?? site_lang()) {
+            'ku' => SiteText::ku('landmarks_mat_'.$key),
+            'ar' => SiteText::ar('landmarks_mat_'.$key),
+            default => SiteText::en('landmarks_mat_'.$key),
+        } ?: $key;
     }
 
     public static function eraName(string $key, ?string $lang = null): string

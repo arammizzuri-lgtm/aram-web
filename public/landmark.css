@@ -79,6 +79,13 @@
 .lm-meta li:last-child { padding-inline-end: 0; margin-inline-end: 0; border: 0; }
 .lm-meta__unesco { display: inline-flex; align-items: center; gap: 8px; color: var(--gold); }
 .lm-meta__unesco svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+/* built of: a tag for each material, in its own colour (the swatch is heritage.css) */
+.lm-built { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 18px; }
+.lm-built__label { margin-inline-end: 4px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+[dir="rtl"] .lm-built__label { letter-spacing: 0; font-size: 14px; }
+.lm-built__tag { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 13px 0 11px; border-radius: 100px; font-size: 13px; color: rgba(255,255,255,.88); background: rgba(10,10,10,.45); border: 1px solid color-mix(in srgb, var(--mat) 45%, transparent); transition: border-color .25s, color .25s; }
+[dir="rtl"] .lm-built__tag { font-size: 14.5px; padding: 0 11px 0 13px; }
+.lm-built__tag:hover { border-color: var(--mat); color: #fff; }
 .lm-hero__fig { position: relative; margin: 0; }
 .lm-hero__fig img { width: 100%; height: 100%; object-fit: cover; display: block; background: #111; }
 .lm-hero__fig .lm-fig__cap { margin-top: 10px; }

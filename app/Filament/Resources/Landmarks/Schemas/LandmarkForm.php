@@ -55,6 +55,10 @@ class LandmarkForm
                     TextInput::make('year_to')->label('To (year)')->numeric()->placeholder('-8200')
                         ->helperText('Empty = still lived in or in use.'),
                 ]),
+                // what it is built of: the map's "By material" filter and the tags on its page
+                Select::make('materials')->label('Built of')->multiple()->native(false)->columnSpanFull()
+                    ->options(collect(Landmark::MATERIALS)->mapWithKeys(fn ($colour, $key) => [$key => Landmark::materialName($key, 'en')])->all())
+                    ->helperText('The main material first, then any others. Shown as tags on the page, and the heritage map can be filtered by it. The names and the line about each material are in Site content → Kurdistan heritage.'),
             ]),
 
             Section::make('How the page opens')->columns(3)->columnSpanFull()

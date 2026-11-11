@@ -292,6 +292,46 @@ class HeritageTest extends TestCase
         $this->get('/llms.txt')->assertOk()->assertSee('Test Citadel')->assertSee('UNESCO World Heritage Site');
     }
 
+    /* ── What they are built of ─────────────────────────────────────── */
+
+    public function test_every_landmark_has_its_materials_and_the_map_can_be_filtered_by_them(): void
+    {
+        // each of the 21 has at least one, and only materials the site knows
+        foreach (Landmark::all() as $l) {
+            $this->assertNotEmpty($l->materialKeys(), $l->slug);
+            $this->assertSame($l->materials, $l->materialKeys(), $l->slug);
+        }
+        $this->assertSame(['basalt', 'limestone'], Landmark::where('slug', 'amed-city-walls')->sole()->materials);
+
+        $html = $this->get('/kurdistan-heritage')->assertOk()->assertSee('By material')->assertSee('Built from the land')->getContent();
+        // a chip for each material in use, with its count and its colour
+        $this->assertMatchesRegularExpression('#data-filter="material:basalt" style="--mat: \#8892A4"><i class="hr-swatch" aria-hidden="true"></i>Basalt <span class="hr-chip__n">3</span>#', $html);
+        $this->assertMatchesRegularExpression('#data-filter="material:limestone"[^>]*>.*?Limestone <span class="hr-chip__n">8</span>#s', $html);
+        // the cards and the timeline's marks say what they are built of, and the pins too
+        $this->assertStringContainsString('data-material="basalt limestone" id="amed-city-walls"', $html);
+        $this->assertStringContainsString('data-material="brick mudbrick timber" data-name="Erbil Citadel"', $html);
+        $this->assertStringContainsString('"material":["rock","stone","brick"]', $html);
+        // the section: why here, and where
+        $this->assertStringContainsString('Black volcanic stone.', $html);
+        $this->assertStringContainsString('data-material-show="basalt"', $html);
+
+        $this->get('/ku/kurdistan-heritage')->assertOk()->assertSee('بەپێی کەرەستە')->assertSee('بازاڵت')->assertSee('لە خاکی خۆیەوە بنیاتنراوە');
+        $this->get('/ar/kurdistan-heritage')->assertOk()->assertSee('حسب المادة')->assertSee('الحجر الجيري');
+    }
+
+    public function test_a_landmarks_page_names_what_it_is_built_of(): void
+    {
+        $this->get('/kurdistan-heritage/erbil-citadel')->assertOk()->assertSee('Built of')
+            ->assertSee('href="'.url('/kurdistan-heritage').'?material=brick#map" style="--mat: #D4553B"', false)
+            ->assertSeeInOrder(['Fired brick', 'Mud brick', 'Timber']);
+        $this->get('/ku/kurdistan-heritage/erbil-citadel')->assertOk()->assertSee('دروستکراوە لە')->assertSee('خشتی سووتاو');
+
+        // none chosen, or one the site does not know: no tags, and nothing breaks
+        $l = $this->landmark(['materials' => ['marzipan']]);
+        $this->assertSame([], $l->materialKeys());
+        $this->get($l->url())->assertOk()->assertDontSee('lm-built', false);
+    }
+
     /* ── The admin ──────────────────────────────────────────────────── */
 
     public function test_the_admin_pages_render(): void
@@ -300,7 +340,7 @@ class HeritageTest extends TestCase
         $l = $this->landmark();
 
         $this->actingAs($admin)->get(LandmarkResource::getUrl('index'))->assertOk()->assertSee('Göbekli Tepe')->assertSee('Duplicate');
-        $this->actingAs($admin)->get(LandmarkResource::getUrl('create'))->assertOk()->assertSee('Add a section');
+        $this->actingAs($admin)->get(LandmarkResource::getUrl('create'))->assertOk()->assertSee('Add a section')->assertSee('Built of');
         $this->actingAs($admin)->get(LandmarkResource::getUrl('edit', ['record' => $l]))->assertOk()
             ->assertSee('Preview')->assertSee('The hill')->assertSee('Cover photograph');
     }

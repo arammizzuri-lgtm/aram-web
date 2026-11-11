@@ -13,11 +13,18 @@
     // only the ages and parts that have a landmark get a filter
     $eras = collect(array_keys(Landmark::ERAS))->filter(fn ($k) => $landmarks->contains('era', $k))->values();
     $regions = collect(array_keys(Landmark::REGIONS))->filter(fn ($k) => $landmarks->contains('region', $k))->values();
+    // and the materials a landmark is built of, each with the landmarks that use it
+    $materials = collect(Landmark::MATERIALS)->map(fn ($colour, $k) => [
+        'key' => $k, 'colour' => $colour, 'name' => Landmark::materialName($k), 'note' => bival('landmarks_mat_'.$k.'_note'),
+        'landmarks' => $landmarks->filter(fn ($l) => in_array($k, $l->materialKeys(), true))->values(),
+    ])->filter(fn ($m) => $m['landmarks']->isNotEmpty())->values();
 
     $pins = $landmarks->filter(fn ($l) => $l->lat !== null)->map(fn ($l) => [
         'n' => $num($landmarks->search($l) + 1), 'lat' => $l->lat, 'lng' => $l->lng, 'url' => $l->url(), 'slug' => $l->slug,
         'name' => $l->tr('name'), 'place' => $l->tr('place'), 'period' => $l->tr('period'), 'summary' => $l->tr('summary'),
         'era' => $l->era, 'eraName' => Landmark::eraName($l->era), 'region' => $l->region, 'unesco' => $l->unesco, 'img' => $l->imageUrl('md'),
+        // what it is built of, the main material first, and the names to show for them
+        'material' => $l->materialKeys(), 'builtOf' => implode(' · ', array_map(fn ($k) => Landmark::materialName($k), $l->materialKeys())),
     ])->values();
 
     // the figures: how many, how many UNESCO, how many years of building, how many parts
@@ -57,6 +64,7 @@
         $ends = [];
         $items = $landmarks->filter(fn ($l) => $l->era === $era)->map(fn ($l) => [
             'i' => $landmarks->search($l), 'x' => $pos($l->year_from), 'name' => $l->tr('name'), 'slug' => $l->slug, 'region' => $l->region,
+            'material' => implode(' ', $l->materialKeys()),
         ])->sortBy('x')->values()->map(function ($it) use (&$ends) {
             $lane = 0;
             while (isset($ends[$lane]) && $it['x'] - $ends[$lane] < 2.8) {
@@ -124,6 +132,15 @@
                             <button type="button" class="hr-chip" data-filter="region:{{ $k }}">{{ Landmark::regionName($k) }} <span class="hr-chip__n">{{ $digits($landmarks->where('region', $k)->count()) }}</span></button>
                         @endforeach
                     </span>
+                    {{-- what they are built of: a chosen material also colours its pins --}}
+                    @if ($materials->isNotEmpty())
+                        <span class="hr-filters__group">
+                            <span class="hr-filters__label">{{ bival('landmarks_by_material') }}</span>
+                            @foreach ($materials as $m)
+                                <button type="button" class="hr-chip hr-chip--mat" data-filter="material:{{ $m['key'] }}" style="--mat: {{ $m['colour'] }}"><i class="hr-swatch" aria-hidden="true"></i>{{ $m['name'] }} <span class="hr-chip__n">{{ $digits($m['landmarks']->count()) }}</span></button>
+                            @endforeach
+                        </span>
+                    @endif
                 </nav>
 
                 @if ($tiles && $pins->isNotEmpty())
@@ -131,7 +148,8 @@
                     <div class="hr-map-wrap">
                         <div class="hr-map" id="hrMap" data-tiles="{{ $tiles }}" data-pins='@json($pins)'
                              data-outline="{{ asset('kurdistan-data.js') }}?v={{ filemtime(public_path('kurdistan-data.js')) }}"
-                             data-read="{{ bival('landmarks_read') }}" data-unesco="{{ bival('landmarks_unesco') }}"></div>
+                             data-read="{{ bival('landmarks_read') }}" data-unesco="{{ bival('landmarks_unesco') }}"
+                             data-built="{{ bival('landmarks_built_of') }}" data-colours='@json(Landmark::MATERIALS)'></div>
                         <p class="hr-map__hint" aria-hidden="true">{{ bival('landmarks_map_hint') }}</p>
                     </div>
                 @endif
@@ -151,7 +169,7 @@
                                         <span class="hr-time__bar" style="--a: {{ $row['a'] }}; --b: {{ $row['b'] }}" aria-hidden="true"></span>
                                     @endif
                                     @foreach ($row['items'] as $it)
-                                        <a class="hr-time__dot{{ $it['x'] > 80 ? ' is-end' : ($it['x'] < 20 ? ' is-start' : '') }}" href="#{{ $it['slug'] }}" style="--x: {{ $it['x'] }}; --lane: {{ $it['lane'] }}" data-i="{{ $it['i'] }}" data-era="{{ $row['era'] }}" data-region="{{ $it['region'] }}" data-name="{{ $it['name'] }}" aria-label="{{ $it['name'] }}">{{ $num($it['i'] + 1) }}</a>
+                                        <a class="hr-time__dot{{ $it['x'] > 80 ? ' is-end' : ($it['x'] < 20 ? ' is-start' : '') }}" href="#{{ $it['slug'] }}" style="--x: {{ $it['x'] }}; --lane: {{ $it['lane'] }}" data-i="{{ $it['i'] }}" data-era="{{ $row['era'] }}" data-region="{{ $it['region'] }}" data-material="{{ $it['material'] }}" data-name="{{ $it['name'] }}" aria-label="{{ $it['name'] }}">{{ $num($it['i'] + 1) }}</a>
                                     @endforeach
                                 </div>
                             @endforeach
@@ -165,6 +183,33 @@
                     </div>
                 @endif
             </section>
+
+            {{-- Built from the land: each material, why it is used here, and the
+                 landmarks built of it. "Show on the map" is the same filter as
+                 the chip above the map (heritage.js). --}}
+            @if ($materials->isNotEmpty())
+                <section class="hr-mat reveal" id="materials" aria-labelledby="hrMatTitle">
+                    <header class="hr-mat__head">
+                        <p class="pp-label">{{ bival('landmarks_mat_label') }}</p>
+                        <h2 class="hr-mat__title" id="hrMatTitle">{{ bival('landmarks_mat_title') }}</h2>
+                        <p class="hr-mat__intro">{{ bival('landmarks_mat_intro') }}</p>
+                    </header>
+                    <ul class="hr-mat__list">
+                        @foreach ($materials as $m)
+                            <li class="hr-mat__item" style="--mat: {{ $m['colour'] }}" data-material="{{ $m['key'] }}">
+                                <h3 class="hr-mat__name"><i class="hr-swatch" aria-hidden="true"></i>{{ $m['name'] }} <span class="hr-mat__n">{{ $digits($m['landmarks']->count()) }}</span></h3>
+                                @if (filled($m['note']))<p class="hr-mat__note">{{ $m['note'] }}</p>@endif
+                                <p class="hr-mat__where">
+                                    @foreach ($m['landmarks'] as $l)
+                                        <a href="{{ $l->url() }}">{{ $l->tr('name') }}</a>@if (! $loop->last)<span aria-hidden="true"> · </span>@endif
+                                    @endforeach
+                                </p>
+                                <button type="button" class="hr-mat__show" data-material-show="{{ $m['key'] }}">{{ bival('landmarks_mat_show') }} <span class="pp-arrow" aria-hidden="true">→</span></button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
 
             <section class="hr-collection">
                 <h2 class="hr-collection__title">{{ bival('landmarks_collection') }}</h2>
@@ -184,7 +229,7 @@
                         <ol class="hr-list">
                             @foreach ($group as $l)
                                 @php $i = $landmarks->search($l); @endphp
-                                <li class="hr-card reveal" data-era="{{ $l->era }}" data-region="{{ $l->region }}" id="{{ $l->slug }}">
+                                <li class="hr-card reveal" data-era="{{ $l->era }}" data-region="{{ $l->region }}" data-material="{{ implode(' ', $l->materialKeys()) }}" id="{{ $l->slug }}">
                                     <a class="hr-card__link" href="{{ $l->url() }}">
                                         <span class="hr-card__img">
                                             @if ($l->image)

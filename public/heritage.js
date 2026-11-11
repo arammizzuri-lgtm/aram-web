@@ -21,11 +21,17 @@
     const dots = document.querySelectorAll('.hr-time__dot');
     const rows = document.querySelectorAll('.hr-time__row, .hr-time__label');
     let onFilter = null;     // set by the map, to dim its pins too
+    // a landmark has one age and one part, but may be built of several
+    // materials (data-material="basalt limestone"): any of them matches
+    const has = (held, key, value) => key === 'material'
+        ? (Array.isArray(held) ? held : String(held || '').split(' ')).includes(value)
+        : held === value;
     function filter(key, value) {
-        cards.forEach(card => { card.hidden = !!value && card.dataset[key] !== value; });
+        cards.forEach(card => { card.hidden = !!value && !has(card.dataset[key], key, value); });
         // an age with nothing left to show folds away
         groups.forEach(g => { g.hidden = !g.querySelector('.hr-card:not([hidden])'); });
-        dots.forEach(d => d.classList.toggle('is-dim', !!value && d.dataset[key] !== value));
+        dots.forEach(d => d.classList.toggle('is-dim', !!value && !has(d.dataset[key], key, value)));
+        document.querySelectorAll('.hr-mat__item').forEach(m => m.classList.toggle('is-on', key === 'material' && m.dataset.material === value));
         rows.forEach(r => r.classList.toggle('is-dim', key === 'era' && !!value && r.dataset.era !== value));
         rows.forEach(r => r.classList.toggle('is-on', key === 'era' && !!value && r.dataset.era === value));
         if (onFilter) onFilter(key, value);
@@ -41,6 +47,21 @@
         const chip = document.querySelector('.hr-chip[data-filter="' + (on ? '' : 'era:' + label.dataset.era) + '"]');
         if (chip) chip.click();
     }));
+
+    // "Show on the map" under a material (Built from the land), and a link
+    // from a landmark's page (…?material=basalt#map): the same filter as the
+    // material's chip, with the map brought into view
+    function showMaterial(key, scroll) {
+        const chip = document.querySelector('.hr-chip[data-filter="material:' + key + '"]');
+        if (!chip) return;
+        chip.click();
+        const target = document.getElementById('map');
+        if (scroll && target) target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+    document.querySelectorAll('[data-material-show]').forEach(b => b.addEventListener('click', () => showMaterial(b.dataset.materialShow, true)));
+    const asked = new URLSearchParams(location.search).get('material');
+    // once the map below has been set up, so its pins are filtered too
+    if (asked && /^[a-z]+$/.test(asked)) setTimeout(() => showMaterial(asked, false), 0);
 
     /* ── The marks across time: lanes at the real width ──────────────── */
     // The page sets the lanes for a desktop-wide track; here they are redone
@@ -449,6 +470,7 @@
             '<h3 class="hr-pop__name" dir="auto">' + esc(p.name) + '</h3>' +
             '<p class="hr-pop__period" dir="auto">' + esc(p.period) + '</p>' +
             (p.unesco ? '<p class="hr-pop__unesco">' + esc(el.dataset.unesco) + '</p>' : '') +
+            (p.builtOf ? '<p class="hr-pop__built">' + esc(el.dataset.built) + ': ' + esc(p.builtOf) + '</p>' : '') +
             (p.summary ? '<p class="hr-pop__text" dir="auto">' + esc(p.summary) + '</p>' : '') +
             '<a class="hr-pop__more" href="' + esc(p.url) + '">' + esc(el.dataset.read) + ' <span class="pp-arrow" aria-hidden="true">→</span></a>' +
             '</div>';
@@ -474,16 +496,23 @@
     map.on('click', hide);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && openIdx !== null) hide(); });
 
-    // a filter dims the other pins and frames the ones left
+    // a filter dims the other pins and frames the ones left; a material
+    // chosen also gives its pins the material's colour
+    const colours = JSON.parse(el.dataset.colours || '{}');
     onFilter = (key, value) => {
         const shown = [];
+        const colour = key === 'material' && value ? colours[value] : null;
         pins.forEach((p, i) => {
-            const on = !value || p[key] === value;
+            const on = !value || has(p[key], key, value);
             const e = markers[i].getElement();
-            if (e) e.classList.toggle('is-dim', !on);
+            if (e) {
+                e.classList.toggle('is-dim', !on);
+                e.classList.toggle('is-mat', on && !!colour);
+                if (on && colour) e.style.setProperty('--mat', colour); else e.style.removeProperty('--mat');
+            }
             if (on) shown.push([p.lat, p.lng]);
         });
-        if (openIdx !== null && value && pins[openIdx][key] !== value) hide();
+        if (openIdx !== null && value && !has(pins[openIdx][key], key, value)) hide();
         if (!value) map.flyToBounds(outline ? outline.getBounds() : all, { padding: [24, 24], duration: .8 });
         else if (shown.length) map.flyToBounds(L.latLngBounds(shown), { padding: [60, 60], maxZoom: 8, duration: .8 });
     };

@@ -35,6 +35,15 @@
                     <li class="lm-meta__unesco"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8h18zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>{{ bival('landmarks_unesco') }}@if ($l->unesco_year) · {{ Landmark::digits($l->unesco_year) }}@endif</li>
                 @endif
             </ul>
+            {{-- what it is built of: each material opens the heritage map on the landmarks built of it --}}
+            @if ($l->materialKeys())
+                <p class="lm-built">
+                    <span class="lm-built__label">{{ bival('landmarks_built_of') }}</span>
+                    @foreach ($l->materialKeys() as $mat)
+                        <a class="lm-built__tag" href="{{ site_url(Landmark::PATH) }}?material={{ $mat }}#map" style="--mat: {{ Landmark::MATERIALS[$mat] }}"><i class="hr-swatch" aria-hidden="true"></i>{{ Landmark::materialName($mat) }}</a>
+                    @endforeach
+                </p>
+            @endif
         </div>
         @if (in_array($style, ['split', 'editorial', 'frame'], true))
             <figure class="lm-hero__fig">
