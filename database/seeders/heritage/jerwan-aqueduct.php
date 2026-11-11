@@ -89,6 +89,9 @@ return [
             ],
         ]],
 
+        // how it was built, in steps, with the studio's drawing (the words are in _techniques.php)
+        ['type' => 'technique', 'data' => (require __DIR__.'/_techniques.php')['jerwan-aqueduct']],
+
         ['type' => 'timeline', 'data' => [
             'layout' => 'compact',
             'events' => [

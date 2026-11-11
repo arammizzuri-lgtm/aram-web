@@ -332,6 +332,54 @@ class HeritageTest extends TestCase
         $this->get($l->url())->assertOk()->assertDontSee('lm-built', false);
     }
 
+    /* ── How it was built ───────────────────────────────────────────── */
+
+    public function test_six_landmarks_show_how_they_were_built_in_steps(): void
+    {
+        $techniques = require database_path('seeders/heritage/_techniques.php');
+        $this->assertSame(array_keys(Landmark::TECHNIQUES), array_keys($techniques));
+
+        foreach ($techniques as $slug => $data) {
+            $l = Landmark::where('slug', $slug)->sole();
+            // once on the page, before its timeline
+            $types = array_column($l->sections(), 'type');
+            $this->assertSame(1, count(array_keys($types, 'technique')), $slug);
+            $this->assertSame(array_search('timeline', $types) - 1, array_search('technique', $types), $slug);
+
+            $html = $this->get($l->url())->assertOk()->assertSee('How it was built')->assertSee($data['heading_en'])->getContent();
+            // the drawing is drawn in exactly as many stages as there are steps of text, each step in three languages
+            preg_match_all('/data-step="(\d+)"/', $html, $m);
+            $this->assertSame(count($data['steps']), max(array_map('intval', $m[1])), $slug);
+            $this->assertSame(count($data['steps']), substr_count($html, 'data-tq-step='), $slug);
+            foreach ($data['steps'] as $step) {
+                $this->assertStringContainsString(e($step['title_en']), $html);
+                foreach (['title_ku', 'title_ar', 'text_ku', 'text_ar'] as $field) {
+                    $this->assertNotEmpty($step[$field], "$slug $field");
+                }
+            }
+        }
+
+        $this->get('/ku/kurdistan-heritage/hawraman')->assertOk()->assertSee('چۆن دروستکراوە')->assertSee('سەربانەکەت، حەوشەی دراوسێکەت');
+        $this->get('/ar/kurdistan-heritage/jerwan-aqueduct')->assertOk()->assertSee('كيف بُني')->assertSee('مليونا حجر');
+    }
+
+    public function test_a_technique_section_needs_a_drawing_the_site_has_and_is_added_only_once(): void
+    {
+        $steps = [['title_en' => 'First', 'text_en' => 'One.'], ['title_en' => 'Second', 'text_en' => 'Two.']];
+        $l = $this->landmark(['slug' => 'with-drawing'], [['type' => 'technique', 'data' => ['drawing' => 'hawraman', 'heading_en' => 'Up the slope', 'steps' => $steps]]]);
+        $this->get($l->url())->assertOk()->assertSee('Up the slope')->assertSee('class="tq__svg"', false)->assertSee('Second')->assertSee('Play again');
+
+        // a drawing that does not exist, or no steps: no section, and nothing breaks
+        $none = $this->landmark(['slug' => 'no-drawing'], [['type' => 'technique', 'data' => ['drawing' => '../../secret', 'steps' => $steps]],
+            ['type' => 'technique', 'data' => ['drawing' => 'hawraman', 'steps' => []]], ['type' => 'text', 'data' => ['body_en' => 'Still here.']]]);
+        $this->get($none->url())->assertOk()->assertSee('Still here.')->assertDontSee('class="tq__svg"', false);
+
+        // the migration that added the sections to the live pages leaves a page that has one alone
+        $before = Landmark::where('slug', 'gobekli-tepe')->sole()->sections;
+        (require database_path('migrations/2026_11_20_000001_add_technique_sections_to_landmarks.php'))->up();
+        $this->assertSame($before, Landmark::where('slug', 'gobekli-tepe')->sole()->sections);
+    }
+
     /* ── The admin ──────────────────────────────────────────────────── */
 
     public function test_the_admin_pages_render(): void
@@ -343,5 +391,8 @@ class HeritageTest extends TestCase
         $this->actingAs($admin)->get(LandmarkResource::getUrl('create'))->assertOk()->assertSee('Add a section')->assertSee('Built of');
         $this->actingAs($admin)->get(LandmarkResource::getUrl('edit', ['record' => $l]))->assertOk()
             ->assertSee('Preview')->assertSee('The hill')->assertSee('Cover photograph');
+        // a page with a "how it was built" section opens in the editor too
+        $this->actingAs($admin)->get(LandmarkResource::getUrl('edit', ['record' => Landmark::where('slug', 'gobekli-tepe')->sole()]))->assertOk()
+            ->assertSee('How it was built')->assertSee('How a ring was raised');
     }
 }

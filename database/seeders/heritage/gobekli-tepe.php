@@ -124,6 +124,9 @@ return [
             ],
         ]],
 
+        // how it was built, in steps, with the studio's drawing (the words are in _techniques.php)
+        ['type' => 'technique', 'data' => (require __DIR__.'/_techniques.php')['gobekli-tepe']],
+
         ['type' => 'timeline', 'data' => [
             'layout' => 'horizontal',
             'heading_en' => 'From the first ring to the World Heritage List', 'heading_ku' => 'لە یەکەم بازنەوە تا لیستی میراتی جیهانی', 'heading_ar' => 'من الحلقة الأولى إلى قائمة التراث العالمي',

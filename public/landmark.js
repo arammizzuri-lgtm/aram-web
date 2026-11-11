@@ -96,6 +96,62 @@
         window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(move); }, { passive: true });
     }
 
+    /* ── How it was built: a drawing in steps ───────────────────────── */
+    // The drawing's parts carry data-step; the steps beside it are buttons.
+    // It plays through once when it scrolls into view — each step's lines
+    // drawing themselves in — and after that the visitor picks a step, or
+    // plays it again. Reduced motion: the finished drawing, no playing.
+    document.querySelectorAll('[data-tq]').forEach(tq => {
+        const parts = Array.from(tq.querySelectorAll('.tq__svg [data-step]'));
+        const items = Array.from(tq.querySelectorAll('[data-tq-step]'));
+        const replay = tq.querySelector('[data-tq-replay]');
+        const fig = tq.querySelector('.tq__fig');
+        if (!parts.length || !items.length) return;
+        const last = items.length;
+
+        // a line draws itself in from nothing: it needs its own length
+        tq.querySelectorAll('.tq__svg [data-step] .tq-l, .tq__svg [data-step] .tq-t:not(.tq-dash)').forEach(el => {
+            try { el.style.setProperty('--len', Math.ceil(el.getTotalLength()) + 2); } catch (e) { /* not a shape with a length */ }
+        });
+
+        let at = 0, timer = null;
+        function paint(n) {
+            at = n;
+            parts.forEach(p => {
+                const s = parseInt(p.dataset.step, 10);
+                // the last step of the words shows whatever is left of the drawing
+                p.classList.toggle('is-now', s === at || (at === last && s > at));
+                p.classList.toggle('is-done', s < at);
+            });
+            items.forEach((it, i) => {
+                it.classList.toggle('is-now', i + 1 === at);
+                it.classList.toggle('is-done', i + 1 < at);
+                it.querySelector('.tq__pick').setAttribute('aria-current', i + 1 === at ? 'step' : 'false');
+            });
+            if (replay) replay.hidden = at < last;
+        }
+        const stop = () => { clearTimeout(timer); timer = null; };
+        function play() {
+            stop();
+            paint(1);
+            const next = () => { if (at < last) timer = setTimeout(() => { paint(at + 1); next(); }, 3400); };
+            next();
+        }
+
+        tq.classList.add('is-live');
+        items.forEach((it, i) => it.querySelector('.tq__pick').addEventListener('click', () => { stop(); paint(i + 1); }));
+        if (replay) replay.addEventListener('click', play);
+
+        if (reduce || !('IntersectionObserver' in window)) { paint(last); return; }
+        paint(0);
+        const seen = new IntersectionObserver(entries => {
+            if (!entries[0].isIntersecting) return;
+            seen.disconnect();
+            play();
+        }, { threshold: 0.5 });
+        seen.observe(fig || tq);
+    });
+
     /* ── The lightbox ───────────────────────────────────────────────── */
     const dlg = document.getElementById('lmLightbox');
     const links = Array.from(document.querySelectorAll('a[data-lightbox]'));

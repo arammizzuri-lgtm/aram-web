@@ -124,6 +124,9 @@ return [
             ],
         ]],
 
+        // how it was built, in steps, with the studio's drawing (the words are in _techniques.php)
+        ['type' => 'technique', 'data' => (require __DIR__.'/_techniques.php')['hawraman']],
+
         ['type' => 'timeline', 'data' => [
             'layout' => 'compact',
             'heading_en' => 'A long time on one slope', 'heading_ku' => 'ماوەیەکی درێژ لەسەر یەک لێژایی', 'heading_ar' => 'زمن طويل على منحدر واحد',

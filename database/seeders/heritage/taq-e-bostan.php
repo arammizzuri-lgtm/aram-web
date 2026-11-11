@@ -113,6 +113,9 @@ return [
             ],
         ]],
 
+        // how it was built, in steps, with the studio's drawing (the words are in _techniques.php)
+        ['type' => 'technique', 'data' => (require __DIR__.'/_techniques.php')['taq-e-bostan']],
+
         ['type' => 'timeline', 'data' => [
             'layout' => 'compact',
             'events' => [

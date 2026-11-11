@@ -269,6 +269,73 @@
 .lm-tl--compact .lm-tl__dot { display: none; }
 .lm-tl--compact .lm-tl__title { font-size: 16px; margin-top: 6px; }
 
+/* ---- How it was built: a drawing in steps ---------------------------- */
+/* The drawing's parts carry data-step; landmark.js marks each as done, now
+   or still to come. Lines draw themselves in (their length is set as --len
+   by the script); filled parts fade in. Without the script (.is-live is
+   not set) the whole drawing shows. */
+.tq { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+.tq__fig { margin: 0; padding: clamp(10px, 2vw, 26px); border-radius: 12px; border: 1px solid var(--line); background:
+    linear-gradient(rgba(245,197,24,.045) 1px, transparent 1px) 0 0 / 100% 28px,
+    linear-gradient(90deg, rgba(245,197,24,.045) 1px, transparent 1px) 0 0 / 28px 100%, #0b0b0b; }
+.tq__svg { display: block; width: 100%; height: auto; color: var(--gold); overflow: visible; }
+.tq__svg .tq-base { stroke: rgba(255,255,255,.3); fill: none; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.tq__svg .tq-l { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.tq__svg .tq-t { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+.tq__svg .tq-dash { stroke-dasharray: 4 5; }
+.tq__svg .tq-f { fill: currentColor; fill-opacity: .1; stroke: none; }
+.tq__svg .tq-k { fill: #0b0b0b; }                       /* cut out of what lies behind */
+.tq__svg .tq-p { stroke: none; }                        /* a patterned face */
+.tq__svg .tq-w { fill: none; stroke: #7fd6cc; stroke-width: 1.5; stroke-linecap: round; }   /* water */
+.tq__svg .tq-wf { fill: #7fd6cc; fill-opacity: .1; stroke: none; }
+.tq__svg .tq-flow { stroke-dasharray: 10 8; animation: tq-flow 1.4s linear infinite; }
+@keyframes tq-flow { to { stroke-dashoffset: -18; } }
+.tq.is-live [data-step] { color: var(--gold); opacity: 0; transition: opacity .6s ease, color .6s ease; }
+.tq.is-live [data-step].is-now, .tq.is-live [data-step].is-done { opacity: 1; }
+.tq.is-live [data-step].is-done { color: rgba(255,255,255,.6); }
+.tq.is-live [data-step] .tq-w, .tq.is-live [data-step] .tq-wf { transition: opacity .6s ease; }
+.tq.is-live [data-step].is-done .tq-w { opacity: .75; }
+.tq.is-live [data-step] .tq-l, .tq.is-live [data-step] .tq-t:not(.tq-dash) { stroke-dasharray: var(--len, 1000); stroke-dashoffset: var(--len, 1000); transition: stroke-dashoffset 1.3s cubic-bezier(.3,.6,.2,1) .1s; }
+.tq.is-live [data-step].is-now .tq-l, .tq.is-live [data-step].is-done .tq-l,
+.tq.is-live [data-step].is-now .tq-t, .tq.is-live [data-step].is-done .tq-t { stroke-dashoffset: 0; }
+.tq.is-live [data-step] .tq-f, .tq.is-live [data-step] .tq-p, .tq.is-live [data-step] .tq-k { opacity: 0; transition: opacity .8s ease .35s; }
+.tq.is-live [data-step].is-now .tq-f, .tq.is-live [data-step].is-done .tq-f,
+.tq.is-live [data-step].is-now .tq-p, .tq.is-live [data-step].is-done .tq-p,
+.tq.is-live [data-step].is-now .tq-k, .tq.is-live [data-step].is-done .tq-k { opacity: 1; }
+
+.tq__steps { list-style: none; border-top: 1px solid var(--line); }
+.tq__step { border-bottom: 1px solid var(--line); }
+.tq__pick { display: flex; align-items: baseline; gap: 14px; width: 100%; padding: 16px 0 6px; text-align: start; cursor: pointer; color: #fff; }
+.tq__n { flex: none; font-size: 11px; letter-spacing: .14em; color: var(--gold); font-variant-numeric: tabular-nums; }
+.tq__title { font-size: 19px; font-weight: 300; line-height: 1.35; transition: color .3s; }
+[dir="rtl"] .tq__title { font-weight: 400; font-size: 20px; line-height: 1.6; }
+[dir="rtl"] .tq__n { letter-spacing: 0; font-size: 13px; }
+.tq__text { padding: 0 0 16px; padding-inline-start: 30px; font-size: 14.5px; font-weight: 300; line-height: 1.75; color: var(--muted); }
+[dir="rtl"] .tq__text { font-size: 16px; line-height: 1.95; padding-inline-start: 32px; }
+/* live: the step being drawn is lit, the ones to come are quiet and folded */
+.tq.is-live .tq__step { opacity: .45; transition: opacity .4s; }
+.tq.is-live .tq__step.is-done { opacity: .78; }
+.tq.is-live .tq__step.is-now { opacity: 1; }
+.tq.is-live .tq__step.is-now .tq__title { color: var(--gold); }
+.tq.is-live .tq__step:hover { opacity: 1; }
+/* the text of the steps not being shown is folded away (no padding of its own: overflow would show through it) */
+.tq.is-live .tq__step { padding-bottom: 10px; }
+.tq.is-live .tq__text { max-height: 0; padding-bottom: 0; overflow: hidden; transition: max-height .5s ease; }
+.tq.is-live .tq__step.is-now .tq__text { max-height: 16em; }
+.tq.is-live .tq__step.is-now { padding-bottom: 18px; }
+.tq__replay { display: inline-flex; align-items: center; gap: 9px; margin-top: 18px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); cursor: pointer; }
+.tq__replay[hidden] { display: none; }
+.tq__replay svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.tq__replay:hover { color: #fff; }
+[dir="rtl"] .tq__replay { letter-spacing: 0; font-size: 14px; }
+@media (prefers-reduced-motion: reduce) {
+    .tq.is-live [data-step], .tq.is-live [data-step] .tq-l, .tq.is-live [data-step] .tq-t, .tq.is-live [data-step] .tq-f, .tq.is-live [data-step] .tq-p, .tq.is-live [data-step] .tq-k, .tq.is-live .tq__text, .tq.is-live .tq__step { transition: none; }
+    .tq__svg .tq-flow { animation: none; }
+}
+@media (max-width: 900px) {
+    .tq { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+
 /* ---- Quotation ------------------------------------------------------ */
 .lm-quote { max-width: 60ch; margin-inline: auto; text-align: center; }
 .lm-quote::before { content: ''; display: block; width: 1px; height: 48px; margin: 0 auto 26px; background: var(--gold); }

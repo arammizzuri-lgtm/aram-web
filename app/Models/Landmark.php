@@ -71,7 +71,21 @@ class Landmark extends Model
     ];
 
     /** The kinds of section a page can be built from. */
-    public const BLOCKS = ['text', 'statement', 'image', 'gallery', 'stats', 'facts', 'timeline', 'quote', 'annotated', 'compare', 'map', 'unesco', 'related', 'sources'];
+    public const BLOCKS = ['text', 'statement', 'image', 'gallery', 'stats', 'facts', 'timeline', 'technique', 'quote', 'annotated', 'compare', 'map', 'unesco', 'related', 'sources'];
+
+    /**
+     * The studio's "how it was built" drawings a technique section can show
+     * (resources/views/heritage/techniques/<key>.blade.php), each with the
+     * number of steps it is drawn in — what the admin picks from.
+     */
+    public const TECHNIQUES = [
+        'gobekli-tepe' => 'Göbekli Tepe — a ring of T-pillars raised (4 steps)',
+        'jerwan-aqueduct' => 'Jerwan — a stone aqueduct across a valley (4 steps)',
+        'hawraman' => 'Hawraman — stepped houses on a slope (4 steps)',
+        'erbil-citadel' => 'Erbil Citadel — a town becomes a mound (4 steps)',
+        'mudhafaria-minaret' => 'Mudhafaria Minaret — a brick tower (4 steps)',
+        'taq-e-bostan' => 'Taq-e Bostan — a hall carved in a cliff (5 steps)',
+    ];
 
     protected $fillable = [
         'slug', 'sort_order', 'region', 'era', 'hero_style',

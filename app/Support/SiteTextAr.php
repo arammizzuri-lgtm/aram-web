@@ -577,6 +577,8 @@ class SiteTextAr
             'landmarks_after'            => 'بعد',
             'landmarks_compare_hint'     => 'اسحب للمقارنة',
             'landmarks_point_hint'       => 'المس رقماً على الصورة',
+            'landmarks_tq_label'         => 'كيف بُني',
+            'landmarks_tq_replay'        => 'أعد العرض',
             'landmarks_photo'            => 'تصوير',
             'landmarks_lb_close'         => 'إغلاق',
             'landmarks_lb_prev'          => 'الصورة السابقة',

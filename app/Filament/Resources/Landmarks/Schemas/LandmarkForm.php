@@ -285,6 +285,21 @@ class LandmarkForm
                     self::tri('source', 'Who, and where it is written'),
                 ]),
 
+            // "How it was built": one of the studio's drawings, built up in steps.
+            // The drawing is fixed (it is code); every word beside it is written here.
+            Block::make('technique')->label(fn (?array $state) => 'How it was built · '.count($state['steps'] ?? []).' steps'.(filled($state['heading_en'] ?? null) ? ' · '.$state['heading_en'] : ''))
+                ->icon(Heroicon::OutlinedPencilSquare)->schema([
+                    Select::make('drawing')->label('Drawing')->required()->native(false)->options(Landmark::TECHNIQUES)
+                        ->helperText('The studio\'s drawings, each made in a set number of steps. Write one step of text for each stage of the drawing, in order; with fewer, the last step shows the rest of the drawing.'),
+                    self::tri('heading', 'Heading'),
+                    self::tri('text', 'One line under the heading', true, 2),
+                    Repeater::make('steps')->label('Steps')->schema([
+                        self::tri('title', 'Step'),
+                        self::tri('text', 'What happens in it', true, 2, 'Only what is documented about how it was built.'),
+                    ])->itemLabel(fn (array $state) => $state['title_en'] ?? null)
+                        ->reorderable()->collapsible()->collapsed()->cloneable()->defaultItems(0)->addActionLabel('Add a step'),
+                ]),
+
             Block::make('annotated')->label(fn (?array $state) => 'Annotated photograph · '.count($state['points'] ?? []).' points')
                 ->icon(Heroicon::OutlinedViewfinderCircle)->schema([
                     self::tri('heading', 'Heading'),

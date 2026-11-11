@@ -85,6 +85,9 @@ return [
             ],
         ]],
 
+        // how it was built, in steps, with the studio's drawing (the words are in _techniques.php)
+        ['type' => 'technique', 'data' => (require __DIR__.'/_techniques.php')['erbil-citadel']],
+
         ['type' => 'timeline', 'data' => [
             'layout' => 'vertical',
             'heading_en' => 'Seven thousand years, briefly', 'heading_ku' => 'حەوت هەزار ساڵ، بە کورتی', 'heading_ar' => 'سبعة آلاف عام، باختصار',

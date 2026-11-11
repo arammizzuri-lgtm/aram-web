@@ -651,6 +651,8 @@ class SiteText
                 'landmarks_after'           => ['Before / after — after', 'After', 'دواتر'],
                 'landmarks_compare_hint'    => ['Before / after — hint', 'Drag to compare', 'ڕایبکێشە بۆ بەراوردکردن'],
                 'landmarks_point_hint'      => ['Annotated photograph — hint', 'Tap a number on the photograph', 'دەست لە ژمارەیەک لەسەر وێنەکە بدە'],
+                'landmarks_tq_label'        => ['How it was built — small label (and the heading, when none is written)', 'How it was built', 'چۆن دروستکراوە'],
+                'landmarks_tq_replay'       => ['How it was built — play the steps again', 'Play again', 'دووبارە پیشانی بدەوە'],
                 'landmarks_photo'           => ['Photo credit prefix', 'Photo', 'وێنە'],
                 'landmarks_lb_close'        => ['Lightbox — close', 'Close', 'داخستن'],
                 'landmarks_lb_prev'         => ['Lightbox — previous', 'Previous photograph', 'وێنەی پێشوو'],
