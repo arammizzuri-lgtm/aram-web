@@ -292,6 +292,29 @@ class HeritageTest extends TestCase
         $this->get('/llms.txt')->assertOk()->assertSee('Test Citadel')->assertSee('UNESCO World Heritage Site');
     }
 
+    public function test_the_home_page_opens_onto_the_heritage_through_seven_doors(): void
+    {
+        $html = $this->get('/')->assertOk()->assertSee('Eleven thousand years of building')->assertSee('Explore the heritage map')->getContent();
+        $section = substr($html, strpos($html, 'id="heritage"'));
+        $section = substr($section, 0, strpos($section, '</section>'));
+        // seven landmarks, oldest first, each a link to its page; the citadel stands open
+        $this->assertSame(7, substr_count($section, 'class="hg-door__link"'));
+        $this->assertLessThan(strpos($section, 'ishak-pasha-palace'), strpos($section, 'gobekli-tepe'));
+        $this->assertMatchesRegularExpression('#class="hg-door is-open">\s*<a class="hg-door__link" href="[^"]*/kurdistan-heritage/erbil-citadel"#', $section);
+        $this->assertStringContainsString('data-href-ku="'.url('/ku/kurdistan-heritage/erbil-citadel').'"', $section);
+        $this->assertStringContainsString('9500 BC', $section);
+        // the figures of the collection, and the way to its map
+        $this->assertMatchesRegularExpression('#<dd data-en="21"#', $section);
+        $this->assertStringContainsString('href="'.url('/kurdistan-heritage').'"', $section);
+
+        $this->get('/ku')->assertOk()->assertSee('یازدە هەزار ساڵ بیناسازی')->assertSee('نەخشەی میرات بگەڕێ')->assertSee('قەڵای هەولێر');
+        $this->get('/ar')->assertOk()->assertSee('استكشف خريطة التراث')->assertSee(url('/ar/kurdistan-heritage/erbil-citadel'), false);
+
+        // with no landmarks published the section is left out, and the page still opens
+        Landmark::query()->update(['is_published' => false]);
+        $this->get('/')->assertOk()->assertDontSee('id="heritage"', false);
+    }
+
     /* ── What they are built of ─────────────────────────────────────── */
 
     public function test_every_landmark_has_its_materials_and_the_map_can_be_filtered_by_them(): void

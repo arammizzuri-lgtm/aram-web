@@ -1652,68 +1652,30 @@ a.service { display: flex; flex-direction: column; color: inherit; text-decorati
 
 /* ---- Heritage ------------------------------------------ */
 /* ═══════════════════════════════════════════════════════════
-   HERITAGE  —  the 7,000-year citadel, on archaeological strata
+   HERITAGE  —  Kurdistan's architectural heritage as seven doors
+   in order of age: tall photographs side by side, the one under
+   the pointer opening wide; a line of years runs beneath them.
    ═══════════════════════════════════════════════════════════ */
 .heritage {
     position: relative; overflow: hidden;
     padding: clamp(96px, 13vh, 160px) 40px;
-    background: radial-gradient(130% 100% at 75% 30%, #16110a 0%, #0c0a08 50%, #090909 100%);
+    background: radial-gradient(120% 90% at 50% 0%, #15100a 0%, #0c0a08 48%, #090909 100%);
 }
-.heritage__bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.heritage__aurora {
-    position: absolute; right: 4%; top: 14%; width: 42vw; height: 42vw;
-    border-radius: 50%; filter: blur(100px); opacity: .42; mix-blend-mode: screen;
-    background: radial-gradient(circle, rgba(245,197,24,.32), transparent 66%);
-    animation: heritageDrift 26s ease-in-out infinite alternate;
-}
-@keyframes heritageDrift { to { transform: translate(-5vw, 5vh) scale(1.14); } }
-/* sediment layers fading upward — the citadel mound is a tell of stacked eras */
-.heritage__strata {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 60%;
-    background: repeating-linear-gradient(to top,
-        rgba(245,197,24,.06) 0, rgba(245,197,24,.06) 1px,
-        transparent 1px, transparent clamp(26px, 4.6vh, 50px));
-    -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 92%);
-            mask-image: linear-gradient(to top, #000 0%, transparent 92%);
-}
-.heritage__inner {
-    max-width: 1320px; margin: 0 auto;
-    display: grid; grid-template-columns: 1.05fr .95fr;
-    gap: clamp(48px, 6vw, 90px); align-items: center;
-    position: relative; z-index: 1;
+.heritage__inner { max-width: 1320px; margin: 0 auto; }
+.heritage__head {
+    display: grid; grid-template-columns: 1.1fr .9fr;
+    gap: 28px clamp(32px, 6vw, 96px); align-items: end;
 }
 .heritage__title {
     font-family: var(--serif); font-weight: 400;
     font-size: clamp(34px, 4.6vw, 66px); line-height: 1.05;
-    color: #fff; letter-spacing: -.01em; margin-bottom: 28px;
+    color: #fff; letter-spacing: -.01em; max-width: 14ch;
 }
+[dir="rtl"] .heritage__title { line-height: 1.4; letter-spacing: 0; }
 .heritage__desc {
     font-size: 15px; font-weight: 300; line-height: 1.85;
-    color: rgba(255,255,255,.55); margin-bottom: 0; max-width: 52ch;
+    color: rgba(255,255,255,.6); margin-bottom: 26px; max-width: 52ch;
 }
-
-/* Focal figure — the citadel's age */
-.heritage__age {
-    display: flex; align-items: center; gap: clamp(16px, 2vw, 26px);
-    margin: clamp(32px, 4vw, 44px) 0;
-    padding: clamp(22px, 2.4vw, 30px) 0;
-    border-top: 1px solid rgba(255,255,255,.1);
-    border-bottom: 1px solid rgba(255,255,255,.1);
-}
-.heritage__age-num {
-    flex: none; font-family: var(--serif); font-weight: 400; line-height: .85;
-    font-size: clamp(54px, 6.5vw, 92px); color: var(--gold);
-    text-shadow: 0 0 56px rgba(245,197,24,.32);
-}
-.heritage__age-meta { display: flex; flex-direction: column; gap: 5px; }
-.heritage__age-unit {
-    font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2vw, 23px);
-    color: rgba(255,255,255,.72);
-}
-.heritage__age-lbl {
-    font-size: 12px; line-height: 1.65; color: rgba(255,255,255,.45); max-width: 36ch;
-}
-
 .heritage__cta {
     display: inline-flex; align-items: center; gap: 12px;
     color: var(--gold); font-size: 13px; letter-spacing: .14em;
@@ -1724,27 +1686,99 @@ a.service { display: flex; flex-direction: column; color: inherit; text-decorati
 .heritage__cta:hover { gap: 20px; border-color: var(--gold); }
 .heritage__cta-arrow { font-size: 16px; }
 
-/* Citadel stage — glow pool beneath the illustration */
-.heritage__visual { position: relative; }
-.heritage__visual::before {
-    content: ''; position: absolute; left: 50%; top: 38%;
-    transform: translate(-50%, -50%);
-    width: 78%; aspect-ratio: 1; border-radius: 50%;
-    background: radial-gradient(circle, rgba(245,197,24,.2), transparent 64%);
-    filter: blur(34px); pointer-events: none; z-index: 0;
+/* the collection in four figures */
+.heritage__figures {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 24px;
+    margin: clamp(40px, 6vh, 64px) 0 clamp(26px, 4vh, 38px);
+    border-top: 1px solid rgba(255,255,255,.1);
 }
-.citadel-img {
-    position: relative; z-index: 1;
-    width: 100%; max-width: 500px; display: block; margin: 0 auto;
-    /* the illustration's dark ground matches the section, and this radial
-       feather melts its square edge into the page so it reads as native art */
-    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 66%, transparent 90%);
-            mask-image: radial-gradient(circle at 50% 50%, #000 66%, transparent 90%);
-    animation: citadelGlow 5.5s ease-in-out infinite;
+.heritage__figure { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: 6px; padding-top: 20px; }
+.heritage__figure dd {
+    font-family: var(--serif); font-size: clamp(28px, 3vw, 44px); line-height: 1; color: var(--gold);
 }
-@keyframes citadelGlow {
-    0%, 100% { filter: drop-shadow(0 24px 60px rgba(245,197,24,.16)); }
-    50%      { filter: drop-shadow(0 24px 80px rgba(245,197,24,.30)); }
+.heritage__figure dt { font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+
+/* the doors */
+.heritage__doors { list-style: none; display: flex; gap: 6px; height: clamp(400px, 58vh, 580px); }
+.hg-door { flex: 1 1 0; min-width: 0; transition: flex-grow .8s cubic-bezier(.2,.7,.2,1); }
+.hg-door__link { position: relative; display: block; height: 100%; overflow: hidden; color: #fff; }
+.hg-door__img {
+    position: absolute; inset: 0 0 46px; width: 100%; height: calc(100% - 46px); object-fit: cover;
+    filter: grayscale(.9) brightness(.46);
+    transition: filter .8s;
+}
+.hg-door__link::after {     /* the photograph darkens toward its foot, under the words */
+    content: ''; position: absolute; inset: 40% 0 46px; pointer-events: none;
+    background: linear-gradient(to top, rgba(9,9,9,.88), transparent);
+}
+/* shut: the name up the spine */
+.hg-door__spine {
+    position: absolute; left: 10px; right: 10px; bottom: 66px; z-index: 1;
+    display: flex;
+    writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;
+    font-size: 11.5px; letter-spacing: .24em; text-transform: uppercase; color: rgba(255,255,255,.82);
+    transition: opacity .35s;
+}
+/* open: its number, name and place */
+.hg-door__card {
+    position: absolute; inset-inline-start: 0; bottom: 46px; z-index: 1;
+    display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+    width: min(440px, 82vw); padding: clamp(18px, 2vw, 28px);
+    opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .5s;
+}
+.hg-door__n { font-size: 12px; letter-spacing: .2em; color: var(--gold); font-variant-numeric: tabular-nums; }
+.hg-door__name { font-family: var(--serif); font-size: clamp(22px, 2.3vw, 34px); line-height: 1.15; text-align: start; }
+.hg-door__place { font-size: 13px; color: rgba(255,255,255,.66); }
+.hg-door__more {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 8px;
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+}
+/* the line of years under the doors */
+.hg-door__year {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 46px;
+    display: flex; align-items: center; gap: 9px; overflow: hidden; white-space: nowrap;
+    border-top: 1px solid rgba(255,255,255,.16);
+    font-size: 12px; letter-spacing: .08em; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.5);
+    transition: color .4s, border-color .4s;
+}
+.hg-door__year::before { content: ''; flex: none; width: 1px; height: 9px; background: currentColor; align-self: flex-start; }
+
+/* the open door: the one under the pointer or the keyboard — or, left alone, the citadel */
+.hg-door:hover, .hg-door:focus-within,
+.heritage__doors:not(:hover):not(:focus-within) .hg-door.is-open { flex-grow: 4.6; }
+.hg-door:hover .hg-door__img, .hg-door:focus-within .hg-door__img,
+.heritage__doors:not(:hover):not(:focus-within) .is-open .hg-door__img { filter: none; }
+.hg-door:hover .hg-door__spine, .hg-door:focus-within .hg-door__spine,
+.heritage__doors:not(:hover):not(:focus-within) .is-open .hg-door__spine { opacity: 0; }
+.hg-door:hover .hg-door__card, .hg-door:focus-within .hg-door__card,
+.heritage__doors:not(:hover):not(:focus-within) .is-open .hg-door__card { opacity: 1; transform: none; transition-delay: .28s; }
+.hg-door:hover .hg-door__year, .hg-door:focus-within .hg-door__year,
+.heritage__doors:not(:hover):not(:focus-within) .is-open .hg-door__year { color: var(--gold); border-color: var(--gold); }
+.hg-door__link:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+
+[dir="rtl"] .hg-door__spine { transform: none; }
+[dir="rtl"] .hg-door__spine, [dir="rtl"] .hg-door__more, [dir="rtl"] .heritage__figure dt, [dir="rtl"] .hg-door__year { letter-spacing: 0; font-size: 14px; }
+[dir="rtl"] .hg-door__place { font-size: 14.5px; }
+[dir="rtl"] .hg-door__name { line-height: 1.5; }
+
+/* narrower than a laptop: the doors stand open in a row to swipe through */
+@media (max-width: 900px) {
+    .heritage__head { grid-template-columns: 1fr; }
+    .heritage__figures { grid-template-columns: repeat(2, 1fr); row-gap: 8px; }
+    .heritage__doors {
+        height: clamp(380px, 62vh, 460px); gap: 10px;
+        margin-inline: -20px; padding-inline: 20px; scroll-padding-inline: 20px;
+        overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    }
+    .heritage__doors::-webkit-scrollbar { display: none; }
+    .hg-door { flex: 0 0 min(78vw, 340px); scroll-snap-align: start; }
+    .hg-door .hg-door__img { filter: none; }
+    .hg-door .hg-door__spine { display: none; }
+    .hg-door .hg-door__card { opacity: 1; transform: none; width: 100%; }
+    .hg-door .hg-door__year { color: var(--gold); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hg-door, .hg-door__img, .hg-door__card, .hg-door__spine, .hg-door__year { transition: none; }
 }
 /* ---- Contact ------------------------------------------- */
 /* ═══════════════════════════════════════════════════════════
@@ -3795,7 +3829,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 
 /* ---- Responsive ---------------------------------------- */
 @media (max-width: 1100px) {
-    .about__inner, .heritage__inner, .contact__inner { grid-template-columns: 1fr; gap: 60px; }
+    .about__inner, .contact__inner { grid-template-columns: 1fr; gap: 60px; }
     .about__top { grid-template-columns: 1fr; }
     .about__portrait { flex: none; min-height: 0; height: clamp(420px, 56vh, 600px); }  /* bounded when stacked */
     .about__quote { margin-top: 36px; }

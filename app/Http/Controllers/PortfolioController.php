@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Client;
 use App\Models\Greeting;
+use App\Models\Landmark;
 use App\Models\Project;
 use App\Models\Status;
 use App\Models\Testimonial;
@@ -105,7 +106,10 @@ class PortfolioController extends Controller
         // a holiday card on offer (Newroz, Eid…): the band under the hero
         $greeting = rescue(fn () => Greeting::current(), null, false);
 
-        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'payload', 'stats', 'greeting'));
+        // Kurdistan's architectural heritage: the strip of landmarks near the foot of the page
+        $heritage = rescue(fn () => Landmark::publishedOrdered()->get(), collect(), false);
+
+        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'payload', 'stats', 'greeting', 'heritage'));
     }
 
     /**

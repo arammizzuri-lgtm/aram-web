@@ -139,12 +139,9 @@ class SiteText
             ],
 
             'Heritage' => [
-                'heritage_label'     => ['Section label', 'Rooted in Heritage', 'ڕەگ لە میرات'],
-                'heritage_title'     => ['Title', "Shaped by\n7,000 years of\nKurdish civilization", 'شێوەپێدراو بە ٧٬٠٠٠ ساڵ شارستانیەتی کوردی', 'area'],
-                'heritage_desc'      => ['Description', 'The Erbil Citadel — one of the oldest continuously inhabited settlements on Earth — stands as testament to the enduring spirit of Kurdistan. Our architecture draws from this deep well of history while building boldly for the future.', 'قەڵای هەولێر — یەکێک لە کۆنترین شوێنە نیشتەجێبووە بەردەوامەکانی سەر زەوی — شایەتی ڕۆحی نەمری کوردستانە. تەڵارسازیمان لەم کانگا مێژووییە قووڵەوە سەرچاوە دەگرێت و بە بوێرییەوە بۆ داهاتوو بنیات دەنێین.', 'area'],
-                'heritage_years'     => ['Age — unit', 'years', 'ساڵ'],
-                'heritage_age_label' => ['Age — caption', "of unbroken life atop the Erbil Citadel — the world's oldest continuously inhabited settlement.", 'ژیانی نەبڕاوە لەسەر قەڵای هەولێر — کۆنترین شوێنی نیشتەجێبوونی بەردەوام لە جیهاندا.', 'area'],
-                'heritage_cta'       => ['Button', 'View our projects', 'پرۆژەکانمان ببینە'],
+                // the home page's heritage strip; its label, title, figures and "read more" are the Kurdistan heritage texts
+                'heritage_home_desc' => ['Introduction', 'Kurdistan holds some of the oldest architecture on earth. The studio has researched, mapped and drawn its landmarks, across all four parts of the country — the ground our own work stands on.', 'کوردستان هەندێک لە کۆنترین تەلارسازییەکانی سەر زەوی لەخۆ دەگرێت. ئۆفیسەکە شوێنەوارەکانی لە هەر چوار پارچەی وڵاتدا لێکۆڵیوەتەوە، خستوویەتییە سەر نەخشە و کێشاویەتی — ئەو زەمینەی کارەکانی خۆمانی لەسەر وەستاوە.', 'area'],
+                'heritage_home_cta'  => ['Button', 'Explore the heritage map', 'نەخشەی میرات بگەڕێ'],
             ],
 
             'About' => [

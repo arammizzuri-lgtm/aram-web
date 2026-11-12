@@ -881,41 +881,81 @@
         </section>
     @endif
 
-    <!-- ========== HERITAGE ========== -->
-    <section class="heritage">
-        <div class="heritage__bg" aria-hidden="true">
-            <span class="heritage__aurora"></span>
-            <span class="heritage__strata"></span>
-        </div>
-        <div class="heritage__inner">
-            <div class="heritage__text reveal">
-                <p class="section-label section-label--light" {!! bitext('heritage_label') !!}>{{ bival('heritage_label') }}</p>
-                <h2 class="heritage__title" {!! bitext('heritage_title') !!}>
-                    {!! nl2br(e(bival('heritage_title'))) !!}
-                </h2>
-                <p class="heritage__desc" {!! bitext('heritage_desc') !!}>
-                    {{ bival('heritage_desc') }}
-                </p>
-                <div class="heritage__age">
-                    <span class="heritage__age-num">7,000</span>
-                    <span class="heritage__age-meta">
-                        <span class="heritage__age-unit" {!! bitext('heritage_years') !!}>{{ bival('heritage_years') }}</span>
-                        <span class="heritage__age-lbl" {!! bitext('heritage_age_label') !!}>{{ bival('heritage_age_label') }}</span>
-                    </span>
-                </div>
-                <a href="#projects" class="heritage__cta">
-                    <span {!! bitext('heritage_cta') !!}>{{ bival('heritage_cta') }}</span>
-                    <span class="heritage__cta-arrow">→</span>
-                </a>
+    {{-- ========== HERITAGE ==========
+         Kurdistan's architectural heritage (/kurdistan-heritage), as seven
+         doors in order of age: tall photographs standing side by side, the
+         one under the pointer opening wide. Each leads to its landmark's
+         page; the figures and the button lead to the collection and its map. --}}
+    @php
+        use App\Models\Landmark;
+        // shortcut: the seven are picked here by hand, upgrade to a "featured" switch in the admin if the studio wants to choose
+        $doorSlugs = ['gobekli-tepe', 'erbil-citadel', 'mount-nemrut', 'taq-e-bostan', 'amed-city-walls', 'mudhafaria-minaret', 'ishak-pasha-palace'];
+        $withPhoto = $heritage->filter(fn ($l) => filled($l->image));
+        $doors = $withPhoto->whereIn('slug', $doorSlugs);
+        // any of the seven unpublished or renamed: the oldest of the others stand in
+        $doors = $doors->concat($withPhoto->whereNotIn('slug', $doorSlugs)->sortBy('year_from')->take(7 - $doors->count()))->sortBy('year_from')->values();
+        $open = max(0, (int) $doors->search(fn ($l) => $l->slug === 'erbil-citadel'));
+        // the page's second language: Kurdish, or Arabic on /ar (see rtl_slot)
+        $hl2 = site_lang() === 'ar' ? 'ar' : 'ku';
+        $oldestBuilt = $heritage->whereNotNull('year_from')->where('year_from', '>=', -12000)->min('year_from');
+        $hYears = $oldestBuilt !== null ? number_format(floor(((int) date('Y') - $oldestBuilt) / 1000) * 1000).'+' : null;
+        $hFigures = array_filter([
+            'landmarks_stat_landmarks' => (string) $heritage->count(),
+            'landmarks_stat_unesco' => (string) $heritage->where('unesco', true)->count(),
+            'landmarks_stat_years' => $hYears,
+            'landmarks_stat_parts' => (string) $heritage->pluck('region')->unique()->count(),
+        ]);
+        $hUrl = fn (string $lang) => site_url(Landmark::PATH, $lang);
+    @endphp
+    @if ($doors->count() >= 3)
+        <section class="heritage" id="heritage" aria-labelledby="heritageTitle">
+            <div class="heritage__inner">
+                <header class="heritage__head reveal">
+                    <div>
+                        <p class="section-label section-label--light" {!! bitext('landmarks_label') !!}>{{ bival('landmarks_label') }}</p>
+                        <h2 class="heritage__title" id="heritageTitle" {!! bitext('landmarks_title') !!}>{{ bival('landmarks_title') }}</h2>
+                    </div>
+                    <div class="heritage__lede">
+                        <p class="heritage__desc" {!! bitext('heritage_home_desc') !!}>{{ bival('heritage_home_desc') }}</p>
+                        <a class="heritage__cta" href="{{ $hUrl(site_lang()) }}" data-href-en="{{ $hUrl('en') }}" data-href-ku="{{ $hUrl(site_lang() === 'en' ? 'ku' : site_lang()) }}">
+                            <span {!! bitext('heritage_home_cta') !!}>{{ bival('heritage_home_cta') }}</span>
+                            <span class="heritage__cta-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </header>
+
+                <dl class="heritage__figures reveal">
+                    @foreach ($hFigures as $key => $n)
+                        <div class="heritage__figure">
+                            <dt {!! bitext($key) !!}>{{ bival($key) }}</dt>
+                            <dd data-en="{{ $n }}" data-ku="{{ Landmark::digits($n, $hl2) }}">{{ Landmark::digits($n) }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+
+                <ol class="heritage__doors reveal">
+                    @foreach ($doors as $i => $l)
+                        @php $n = str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT); @endphp
+                        <li class="hg-door{{ $i === $open ? ' is-open' : '' }}">
+                            <a class="hg-door__link" href="{{ $l->url() }}" data-href-en="{{ $l->url('en') }}" data-href-ku="{{ $l->url(site_lang() === 'en' ? 'ku' : site_lang()) }}">
+                                <img class="hg-door__img" src="{{ $l->imageUrl('md') }}" alt="" loading="lazy" decoding="async">
+                                <span class="hg-door__spine" aria-hidden="true">
+                                    <span dir="auto" data-en="{{ $l->tr('name', 'en') }}" data-ku="{{ $l->tr('name', $hl2) }}">{{ $l->tr('name') }}</span>
+                                </span>
+                                <span class="hg-door__card">
+                                    <span class="hg-door__n" data-en="{{ $n }}" data-ku="{{ Landmark::digits($n, $hl2) }}">{{ Landmark::digits($n) }}</span>
+                                    <span class="hg-door__name" dir="auto" data-en="{{ $l->tr('name', 'en') }}" data-ku="{{ $l->tr('name', $hl2) }}">{{ $l->tr('name') }}</span>
+                                    <span class="hg-door__place" dir="auto" data-en="{{ $l->tr('place', 'en') }}" data-ku="{{ $l->tr('place', $hl2) }}">{{ $l->tr('place') }}</span>
+                                    <span class="hg-door__more"><span {!! bitext('landmarks_read') !!}>{{ bival('landmarks_read') }}</span> <span class="heritage__cta-arrow" aria-hidden="true">→</span></span>
+                                </span>
+                                <span class="hg-door__year" dir="auto" data-en="{{ Landmark::yearLabel($l->year_from, 'en') }}" data-ku="{{ Landmark::yearLabel($l->year_from, $hl2) }}">{{ Landmark::yearLabel($l->year_from) }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ol>
             </div>
-            <div class="heritage__visual reveal reveal-delay-2">
-                <img class="citadel-img"
-                     src="{{ asset('heritage-citadel.webp') }}?v={{ filemtime(public_path('heritage-citadel.webp')) }}"
-                     alt="Illustration of the Erbil Citadel crowned by the Kurdish sun"
-                     loading="lazy" decoding="async">
-            </div>
-        </div>
-    </section>
+        </section>
+    @endif
 
     {{-- ========== COST ESTIMATE ==========
          One line and a button to the estimator (/estimate), just before the
