@@ -31,6 +31,9 @@ class UpdatesRelationManager extends RelationManager
 
     protected static ?string $modelLabel = 'progress update';
 
+    /** A client room adds its daily progress private; the project, for the public page. */
+    protected bool $privateByDefault = false;
+
     public function form(Schema $schema): Schema
     {
         $rtl = ['dir' => 'rtl', 'lang' => 'ckb'];
@@ -56,6 +59,7 @@ class UpdatesRelationManager extends RelationManager
                 ->maxFiles(12)
                 ->columnSpanFull(),
             Toggle::make('is_private')->label('Private — only in this project\'s client rooms')
+                ->default($this->privateByDefault)
                 ->helperText('Left off, the update is on the project\'s public page too (if the project is published).')
                 ->live()->columnSpanFull(),
             // the build journal (/journal): this update as a post of its own

@@ -94,6 +94,12 @@ class ClientRoom extends Model
         return $this->hasMany(RoomComment::class)->oldest()->orderBy('id');
     }
 
+    /** Its project's progress updates, so the studio can add them from the room. */
+    public function progress(): HasMany
+    {
+        return $this->hasMany(ProjectUpdate::class, 'project_id', 'project_id')->orderByDesc('date')->orderByDesc('id');
+    }
+
     /** The room's address, in the client's language unless told otherwise. */
     public function url(?string $lang = null): string
     {

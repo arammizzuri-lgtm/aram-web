@@ -7,6 +7,7 @@ use App\Filament\Resources\ClientRooms\Pages\EditClientRoom;
 use App\Filament\Resources\ClientRooms\Pages\ListClientRooms;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
 use App\Filament\Resources\ClientRooms\Schemas\ClientRoomForm;
 use App\Filament\Resources\ClientRooms\Tables\ClientRoomsTable;
 use App\Models\ClientRoom;
@@ -51,6 +52,7 @@ class ClientRoomResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ProgressRelationManager::class,
             DrawingsRelationManager::class,
             CommentsRelationManager::class,
         ];

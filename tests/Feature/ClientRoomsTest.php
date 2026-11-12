@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\ClientRooms\ClientRoomResource;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
 use App\Filament\Resources\ClientRooms\Pages\EditClientRoom;
 use App\Mail\RoomActivity;
 use App\Models\ClientRoom;
@@ -227,6 +228,31 @@ class ClientRoomsTest extends TestCase
         $this->get('/room/'.$room->token.'/drawings/'.$plan->id)->assertOk();
         $this->post('/room/'.$room->token.'/drawings/'.$plan->id, ['decision' => 'approved'])->assertForbidden();
         $this->assertNull($room->fresh()->last_seen_at);
+    }
+
+    public function test_daily_progress_is_added_in_the_room_and_stays_private(): void
+    {
+        $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']));
+        $room = $this->room();
+
+        // the room lists its project's updates, and a new one is private unless switched off
+        Livewire::test(ProgressRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class])
+            ->assertSee(['Foundations poured', 'Kitchen layout agreed'])
+            ->mountTableAction('create')
+            ->assertTableActionDataSet(['is_private' => true])
+            ->setTableActionData(['date' => '2026-11-10', 'title_en' => 'Tiles in the kitchen', 'note_en' => 'The floor is down.'])
+            ->callMountedTableAction()
+            ->assertHasNoTableActionErrors();
+
+        $update = ProjectUpdate::where('title_en', 'Tiles in the kitchen')->sole();
+        $this->assertSame($this->project->id, $update->project_id);
+        $this->assertTrue($update->is_private);
+
+        // the client sees it and can comment under it; the public page never shows it
+        auth()->logout();
+        $this->enter($room);
+        $this->get('/room/'.$room->token)->assertSee('Tiles in the kitchen')->assertSee('/updates/'.$update->id.'/comments', false);
+        $this->get('/projects/ankawa-house')->assertDontSee('Tiles in the kitchen');
     }
 
     public function test_the_admin_makes_a_room_sends_it_on_whatsapp_and_answers_the_client(): void
