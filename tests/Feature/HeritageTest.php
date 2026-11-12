@@ -346,7 +346,7 @@ class HeritageTest extends TestCase
 
         // the heritage page lists the at-risk ones, and only those
         $html = $this->get('/kurdistan-heritage')->assertOk()->assertSee('Lost and at risk')->getContent();
-        $risk = substr($html, strpos($html, 'id="at-risk"'), strpos($html, 'class="hr-collection"') - strpos($html, 'id="at-risk"'));
+        $risk = substr($html, strpos($html, 'id="at-risk"'), strpos($html, 'class="hr-end"') - strpos($html, 'id="at-risk"'));
         $this->assertStringContainsString('Under water', $risk);
         $this->assertStringContainsString('Ilısu Dam', $risk);
         $this->assertStringContainsString('earthobservatory.nasa.gov', $risk);
