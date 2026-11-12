@@ -222,6 +222,7 @@ class SiteText
                 'pp_built'        => ['Render vs. built — photo label', 'Built', 'بنیاتنراو'],
                 'pp_compare_hint' => ['Render vs. built — hint', 'Drag to compare', 'ڕایبکێشە بۆ بەراوردکردن'],
                 'pp_progress'     => ['Progress — heading', 'Construction progress', 'پێشکەوتنی بنیاتنان'],
+                'pp_photos_all'   => ['Opening — the button into every photograph ({n} = how many)', 'Photographs ({n})', 'وێنەکان ({n})'],
                 'pp_updated'      => ['Progress — "updated" note', 'Updated', 'نوێکرایەوە'],
                 'pp_film'         => ['Film & tours — heading', 'Film & 360° tours', 'ڤیدیۆ و گەشتی ٣٦٠°'],
                 'pp_play'         => ['Film — play button', 'Play the film', 'ڤیدیۆکە لێبدە'],

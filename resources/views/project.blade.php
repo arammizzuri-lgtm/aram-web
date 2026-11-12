@@ -33,7 +33,6 @@
         bival('overlay_year') => $project->year,
         bival('overlay_plot') => $project->area,
         bival('overlay_location') => $project->tr('location'),
-        bival('pp_category') => implode(' · ', $categories),
     ], 'filled');
 
     $schema = [
@@ -110,7 +109,7 @@
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @if ($images)
-        <link rel="preload" as="image" href="{{ $images[0] }}" @if ($srcset(0)) imagesrcset="{{ $srcset(0) }}" imagesizes="100vw" @endif>
+        <link rel="preload" as="image" href="{{ $images[0] }}" @if ($srcset(0)) imagesrcset="{{ $srcset(0) }}" imagesizes="(min-width: 1001px) 72vw, 100vw" @endif>
     @endif
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
     <link rel="stylesheet" href="{{ asset('project-paper.css') }}?v={{ filemtime(public_path('project-paper.css')) }}">
@@ -130,71 +129,98 @@
     @include('partials.page-top', ['otherUrl' => $project->pageUrl($other)])
 
     <main>
-        {{-- The cover, whole and clean: nothing written on it but the count
-             of photographs. The project's name stands on a white label that
-             rises over its foot (pj-head). --}}
-        <section class="pp-hero">
-            @if ($images)
-                <img class="pp-hero__img" src="{{ $images[0] }}" @if ($srcset(0)) srcset="{{ $srcset(0) }}" sizes="100vw" @endif
-                     alt="{{ $name }}" fetchpriority="high" decoding="async"
-                     style="object-position: {{ $project->coverPosition() }}">
-            @endif
-            <div class="pp-hero__shade" aria-hidden="true"></div>
-            @if (count($images) > 1)
-                <button class="pp-hero__photos" type="button" data-open="0">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-9 8"/></svg>
-                    <span>{{ count($images) }}</span>
-                </button>
-            @endif
-        </section>
+        {{-- The opening, laid out as a drawing sheet: a ruled frame with its
+             grid references and crop marks, the cover in the drawing's
+             place, and down its side the title strip — the sheet's number,
+             the project's name, its particulars ruled as on the title block
+             of a drawing, and the way into all its photographs. --}}
+        <header class="pj-open">
+            <div class="pj-frame">
+                <span class="pj-grid pj-grid--x" aria-hidden="true">@foreach (['A', 'B', 'C', 'D', 'E', 'F'] as $g)<i>{{ $g }}</i>@endforeach</span>
+                <span class="pj-grid pj-grid--y" aria-hidden="true">@foreach ([1, 2, 3, 4] as $g)<i>{{ $g }}</i>@endforeach</span>
+                <i class="pj-crop pj-crop--ts" aria-hidden="true"></i><i class="pj-crop pj-crop--te" aria-hidden="true"></i>
+                <i class="pj-crop pj-crop--bs" aria-hidden="true"></i><i class="pj-crop pj-crop--be" aria-hidden="true"></i>
 
-        {{-- The name on its label, and under it the facts in a ruled strip —
-             the title block of a drawing. --}}
-        <header class="pj-head">
-            <div class="pj-head__label">
-                <p class="pj-head__kicker">
-                    <span class="pp-num">{{ $project->num }}</span>
-                    @if ($categories)<span class="pj-head__cats"><bdi>{{ implode(' · ', $categories) }}</bdi></span>@endif
-                </p>
-                <h1 class="pj-head__title"><bdi>{{ $name }}</bdi></h1>
-                @php $where = collect([$project->tr('location'), $project->year])->filter(); @endphp
-                @if ($where->isNotEmpty())<p class="pj-head__meta">{!! $where->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</p>@endif
-            </div>
+                <div class="pj-cover">
+                    @if ($images)
+                        <button class="pj-cover__open" type="button" data-open="0" aria-label="{{ $name }} — 1 / {{ count($images) }}">
+                            <img class="pj-cover__img" src="{{ $images[0] }}" @if ($srcset(0)) srcset="{{ $srcset(0) }}" sizes="(min-width: 1001px) 72vw, 100vw" @endif
+                                 alt="{{ $name }}" fetchpriority="high" decoding="async"
+                                 style="object-position: {{ $project->coverPosition() }}">
+                        </button>
+                    @endif
+                </div>
 
-            <dl class="pj-block">
-                <div class="pj-cell">
-                    <dt>{{ bival('pj_status') }}</dt>
-                    <dd>
-                        <span class="pp-status pp-status--{{ $project->statusClass() }}"><span class="pp-status__dot" aria-hidden="true"></span>{{ $project->statusLabel($lang) }}</span>
-                        @if ($updates->isNotEmpty())
-                            <a class="pp-status__updated" href="#progress">{{ bival('pp_updated') }} {{ site_date($updates->first()->date, $lang, true) }}</a>
+                <div class="pj-title">
+                    <div class="pj-title__top">
+                        <p class="pj-title__no"><small>{{ bival('pj_sheet') }}</small><b class="pp-num">{{ $project->num }}</b></p>
+                        @if ($categories)
+                            <p class="pj-title__type"><small>{{ bival('pj_type') }}</small><bdi>{{ implode(' · ', $categories) }}</bdi></p>
                         @endif
-                    </dd>
-                </div>
-                @foreach ($facts as $label => $value)
-                    <div class="pj-cell">
-                        <dt>{{ $label }}</dt>
-                        <dd><bdi>{{ $value }}</bdi></dd>
                     </div>
-                @endforeach
-                {{-- every project credits the architect, linked to his own page --}}
-                <div class="pj-cell">
-                    <dt>{{ bival('arch_credit') }}</dt>
-                    <dd><a class="pp-fact__link" href="{{ site_url(\App\Support\Architect::PATH) }}"><bdi>{{ bival('arch_name') }}</bdi></a></dd>
-                </div>
-                {{-- the partners who worked on it, each opening on /partners — only when there are any --}}
-                @php $madeWith = rescue(fn () => $project->partners()->where('is_published', true)->orderBy('sort_order')->get(), collect(), false); @endphp
-                @if ($madeWith->isNotEmpty())
-                    <div class="pj-cell pj-cell--wide">
-                        <dt>{{ bival('partners_made_with') }}</dt>
-                        <dd>
-                            @foreach ($madeWith as $mw)
-                                <a class="pp-fact__link" href="{{ site_url('/partners') }}#{{ $mw->anchor() }}"><bdi>{{ $mw->name }}</bdi></a>@if (! $loop->last)<span class="pp-fact__sep" aria-hidden="true"> · </span>@endif
-                            @endforeach
-                        </dd>
+
+                    <div class="pj-title__name">
+                        <small>{{ bival('pj_project') }}</small>
+                        <h1 class="pj-title__h"><bdi>{{ $name }}</bdi></h1>
+                        {{-- the key: every photograph small, the cover first — the
+                             eighth tile counts the rest when there are more --}}
+                        @if (count($images) > 1)
+                            @php $smalls = $project->orderedVariantUrls('sm'); $shown = count($smalls) > 8 ? 7 : 8; @endphp
+                            <ol class="pj-key">
+                                @foreach (array_slice($smalls, 0, $shown, true) as $i => $src)
+                                    <li><button type="button" data-open="{{ $i }}" aria-label="{{ $name }} — {{ $i + 1 }} / {{ count($images) }}"><img src="{{ $src }}" alt="" loading="lazy" decoding="async"></button></li>
+                                @endforeach
+                                @if (count($smalls) > $shown)
+                                    <li><button class="pj-key__more" type="button" data-open="{{ $shown }}" aria-label="{{ $name }} — {{ $shown + 1 }} / {{ count($images) }}"><img src="{{ $smalls[$shown] }}" alt="" loading="lazy" decoding="async"><span dir="ltr">+{{ count($smalls) - $shown }}</span></button></li>
+                                @endif
+                            </ol>
+                        @endif
                     </div>
-                @endif
-            </dl>
+
+                    <dl class="pj-block">
+                        <div class="pj-cell">
+                            <dt>{{ bival('pj_status') }}</dt>
+                            <dd>
+                                <span class="pp-status pp-status--{{ $project->statusClass() }}"><span class="pp-status__dot" aria-hidden="true"></span>{{ $project->statusLabel($lang) }}</span>
+                                @if ($updates->isNotEmpty())
+                                    <a class="pp-status__updated" href="#progress">{{ bival('pp_updated') }} {{ site_date($updates->first()->date, $lang, true) }}</a>
+                                @endif
+                            </dd>
+                        </div>
+                        @foreach ($facts as $label => $value)
+                            <div class="pj-cell">
+                                <dt>{{ $label }}</dt>
+                                <dd><bdi>{{ $value }}</bdi></dd>
+                            </div>
+                        @endforeach
+                        {{-- every project credits the architect, linked to his own page --}}
+                        <div class="pj-cell">
+                            <dt>{{ bival('arch_credit') }}</dt>
+                            <dd><a class="pp-fact__link" href="{{ site_url(\App\Support\Architect::PATH) }}"><bdi>{{ bival('arch_name') }}</bdi></a></dd>
+                        </div>
+                        {{-- the partners who worked on it, each opening on /partners — only when there are any --}}
+                        @php $madeWith = rescue(fn () => $project->partners()->where('is_published', true)->orderBy('sort_order')->get(), collect(), false); @endphp
+                        @if ($madeWith->isNotEmpty())
+                            <div class="pj-cell">
+                                <dt>{{ bival('partners_made_with') }}</dt>
+                                <dd>
+                                    @foreach ($madeWith as $mw)
+                                        <a class="pp-fact__link" href="{{ site_url('/partners') }}#{{ $mw->anchor() }}"><bdi>{{ $mw->name }}</bdi></a>@if (! $loop->last)<span class="pp-fact__sep" aria-hidden="true"> · </span>@endif
+                                    @endforeach
+                                </dd>
+                            </div>
+                        @endif
+                    </dl>
+
+                    @if (count($images) > 1)
+                        <button class="pj-title__photos" type="button" data-open="0">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5"/><rect x="13.5" y="3" width="7.5" height="7.5"/><rect x="3" y="13.5" width="7.5" height="7.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5"/></svg>
+                            <span>{{ str_replace('{n}', (string) count($images), bival('pp_photos_all')) }}</span>
+                            <span class="pp-arrow" aria-hidden="true">→</span>
+                        </button>
+                    @endif
+                </div>
+            </div>
         </header>
 
         {{-- The story, set large; beside it the architect's own words, his
@@ -330,7 +356,7 @@
             $ratio = fn (int $i) => \App\Models\Project::ratioOf($refs[$i] ?? null);
             $bt = fn (array $d, string $f) => \App\Models\Landmark::t($d, $f);
 
-            $queue = array_slice(array_keys($images), 1);   // the cover is the page's opening
+            $queue = array_keys($images);   // the cover too, among the others
             $flow = [];
             foreach ($project->sections() as $s) {
                 if ($s['type'] !== 'photos') {

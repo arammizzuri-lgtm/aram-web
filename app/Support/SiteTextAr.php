@@ -200,6 +200,7 @@ class SiteTextAr
             'pp_built'          => 'المُنفَّذ',
             'pp_compare_hint'   => 'اسحب للمقارنة',
             'pp_progress'       => 'مراحل التنفيذ',
+            'pp_photos_all'     => 'الصور ({n})',
             'pp_updated'        => 'آخر تحديث',
             'pp_film'           => 'فيلم وجولات ٣٦٠°',
             'pp_play'           => 'شغّل الفيلم',

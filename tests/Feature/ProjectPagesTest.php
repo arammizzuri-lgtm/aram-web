@@ -168,7 +168,7 @@ class ProjectPagesTest extends TestCase
 
     /* ── The page on white paper: plates, and chapters between them ───── */
 
-    public function test_the_page_is_white_paper_with_the_facts_in_a_title_block_and_the_photographs_as_plates(): void
+    public function test_the_page_opens_as_a_drawing_sheet_and_shows_every_photograph_as_a_plate(): void
     {
         Storage::fake('public');
         // an upright photograph, a level one and a panorama, after the cover
@@ -181,15 +181,20 @@ class ProjectPagesTest extends TestCase
 
         $html = $this->get('/projects/mountain-villa-shaqlawa')->assertOk()
             ->assertSee('<body class="pp pp--paper">', false)->assertSee('project-paper.css')
-            ->assertSee('<h1 class="pj-head__title"><bdi>Mountain Villa — Shaqlawa</bdi></h1>', false)
+            ->assertSee('<h1 class="pj-title__h"><bdi>Mountain Villa — Shaqlawa</bdi></h1>', false)
+            ->assertSee('Photographs (4)')
             ->getContent();
-        // the title block: status first, then the facts, then the architect
+        // the cover on the sheet, opening the viewer at the first photograph; the key holds all four small
+        $this->assertMatchesRegularExpression('#<div class="pj-cover">\s*<button class="pj-cover__open" type="button" data-open="0"#', $html);
+        $this->assertSame(4, preg_match_all('#<ol class="pj-key">.*?</ol>#s', $html, $key) ? substr_count($key[0][0], '<li>') : 0);
+        // the title strip's particulars: status first, then the facts, then the architect
         $this->assertMatchesRegularExpression('#<dl class="pj-block">.*?<dt>Status</dt>.*?Completed.*?<dt>Year</dt>\s*<dd><bdi>2024</bdi></dd>.*?<dt>Architect</dt>#s', $html);
         // the upright one stands beside the level one at one height, each in its own shape; the panorama has a row alone
         $this->assertMatchesRegularExpression('#pj-row--just">\s*<figure class="pp-shot pj-plate"\s+style="--r: 0\.667">.*?data-open="1".*?<figure class="pp-shot pj-plate"\s+style="--r: 1\.5">.*?data-open="2"#s', $html);
         $this->assertMatchesRegularExpression('#pj-row--full">\s*<figure class="pp-shot pj-plate"\s+style="--r: 2\.4">.*?data-open="3"#s', $html);
-        // the cover is the page's opening, not a plate
-        $this->assertSame(3, substr_count($html, 'class="pp-shot pj-plate"'));
+        // the cover is among the plates too, first
+        $this->assertMatchesRegularExpression('#pj-row--full">\s*<figure class="pp-shot pj-plate"\s+style="--r: 1\.6">.*?data-open="0"#s', $html);
+        $this->assertSame(4, substr_count($html, 'class="pp-shot pj-plate"'));
     }
 
     public function test_sections_added_in_the_admin_are_chapters_with_the_photographs_between_them(): void
@@ -215,7 +220,8 @@ class ProjectPagesTest extends TestCase
         $this->assertStringNotContainsString('A kind the page does not know', $html);
         // in the order given: the chapter, one photograph, the statement, the figures, the drawing — then the photographs left over
         $at = fn (string $needle) => strpos($html, $needle);
-        $order = [$at('>The brief</h2>'), $at('data-open="1"'), $at('<p>Shade first.</p>'), $at('<dd><bdi>420 m²</bdi></dd>'), $at('Ground floor plan</figcaption>'), $at('data-open="2"'), $at('data-open="3"')];
+        $plate = fn (int $n) => $at('alt="Mountain Villa — Shaqlawa — '.$n.'"');
+        $order = [$at('>The brief</h2>'), $plate(1), $at('<p>Shade first.</p>'), $at('<dd><bdi>420 m²</bdi></dd>'), $at('Ground floor plan</figcaption>'), $plate(2), $plate(3), $plate(4)];
         $this->assertNotContains(false, $order);
         $sorted = $order;
         sort($sorted);

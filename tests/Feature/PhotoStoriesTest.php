@@ -71,8 +71,8 @@ class PhotoStoriesTest extends TestCase
 
         $html = $this->get('/projects/stone-house')->assertOk()->assertSee('photo-notes.js')->getContent();
         $attr = fn (string $pattern) => preg_match($pattern, $html, $m) ? json_decode(html_entity_decode($m[1]), true) : null;
-        // in the gallery (photograph 1, "a"), and in the viewer for every photograph in order
-        $this->assertEquals([['x' => 30, 'y' => 40, 't' => 'Limestone']], $attr("#<figure class=\"pp-shot[^\"]*\"\s+data-notes='([^']*)'#"));
+        // in the gallery (the cover, "b", is its first plate), and in the viewer for every photograph in order
+        $this->assertEquals([['x' => 50, 'y' => 60, 't' => 'The courtyard']], $attr("#<figure class=\"pp-shot[^\"]*\"\s+data-notes='([^']*)'#"));
         $this->assertEquals([[['x' => 50, 'y' => 60, 't' => 'The courtyard']], [['x' => 30, 'y' => 40, 't' => 'Limestone']], []],
             $attr("#<dialog class=\"pp-lightbox\"[^>]*data-notes='([^']*)'#"));
         $this->assertStringContainsString('<button class="pp-lightbox__notes" type="button" aria-pressed="true" hidden>Notes</button>', $html);
