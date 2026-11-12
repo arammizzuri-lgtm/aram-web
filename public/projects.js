@@ -2,7 +2,7 @@
    ARAM MIZURI ARCHITECTURE — projects.js
    The projects page (/projects), a studio's set of drawings:
    · the legend and the statuses filter at once and the search narrows as
-     it is typed; the address keeps step (?type=…&status=…&q=…&view=sheets),
+     it is typed; the address keeps step (?type=…&status=…&q=…&view=index),
      so any view can be sent;
    · Index or Sheets, remembered for the next visit;
    · in the Index, the project's picture comes up beside the pointer and
@@ -47,7 +47,7 @@
 
     let type = (keys.find(k => k.classList.contains('is-on')) || { dataset: {} }).dataset.type || '';
     let status = (statusKeys.find(k => k.classList.contains('is-on')) || { dataset: {} }).dataset.status || '';
-    let view = page.dataset.view === 'sheets' ? 'sheets' : 'index';
+    let view = page.dataset.view === 'index' ? 'index' : 'sheets';
     let hidePeek = () => {};      // set below, where there is a picture to hide
     let drift = () => {};         // likewise, where the pictures drift
 
@@ -290,7 +290,7 @@
         keep('type', type);
         keep('status', status);
         keep('q', q);
-        keep('view', view === 'sheets' ? 'sheets' : '');
+        keep('view', view === 'index' ? 'index' : '');
         history.replaceState(null, '', url);
         // the other languages keep them too (the bar's and the index's links)
         document.querySelectorAll('a.lsw__item').forEach(other => {
@@ -322,7 +322,6 @@
 
     function show(next, keepAddress) {
         view = next;
-        document.documentElement.classList.remove('px-want-sheets');
         page.dataset.view = view;
         index.hidden = view !== 'index';
         sheets.hidden = view !== 'sheets';
@@ -331,7 +330,6 @@
             v.classList.toggle('is-on', on);
             v.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
-        try { localStorage.setItem('am_projects_view', view); } catch (e) { /* not kept: fine */ }
         if (!keepAddress) remember();
         hidePeek();
         layoutWall();
@@ -513,7 +511,5 @@
         strip.scrollBy({ left: rtl ? a.right - s.right + 24 : a.left - s.left - 24 });
     }
 
-    // the view chosen last time (the head already showed it), unless the address names one
-    if (document.documentElement.classList.contains('px-want-sheets')) show('sheets', true);
-    else layoutWall();
+    layoutWall();
 })();

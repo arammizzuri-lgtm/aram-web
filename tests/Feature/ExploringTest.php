@@ -221,7 +221,7 @@ class ExploringTest extends TestCase
 
         // with a category too, and kept by the views
         $html = $this->get('/projects?type=residential&q=stone')->assertOk()->assertSee('2 projects')->getContent();
-        $this->assertStringContainsString('href="'.url('/projects').'?type=residential&amp;q=stone&amp;view=sheets"', $html);
+        $this->assertStringContainsString('href="'.url('/projects').'?type=residential&amp;q=stone&amp;view=index"', $html);
     }
 
     /* ---- 6. The loader, once a visit -------------------------------------- */

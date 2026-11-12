@@ -31,7 +31,7 @@
     $span = $years->isEmpty() ? '' : ($years->last() === $years->first() ? $years->first() : $years->last().' – '.$years->first());
     $query = fn (array $params) => ($params = array_filter($params)) ? '?'.http_build_query($params) : '';
     // this page with one thing changed, the rest kept: a category picked keeps the status and the search
-    $now = ['type' => $type, 'status' => $status, 'q' => $q, 'view' => $view === 'sheets' ? 'sheets' : ''];
+    $now = ['type' => $type, 'status' => $status, 'q' => $q, 'view' => $view === 'index' ? 'index' : ''];
     $with = fn (array $change, ?string $lang = null) => site_url('/projects', $lang).$query(array_merge($now, $change));
     $catName = $categories->mapWithKeys(fn ($c) => [$c->key => bi($c->name, $c->name_ku, $c->name_ar)]);
     $kinds = fn ($p) => collect($p->categoryKeys())->filter(fn ($k) => $catName->has($k));
@@ -61,17 +61,6 @@
     <meta property="og:image" content="{{ $ogImage }}">
     <meta name="twitter:card" content="summary_large_image">
     <script type="application/ld+json">{!! json_encode($itemList, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
-    {{-- The view this visitor chose last time, settled before the page paints
-         so the other one never flashes up. An address that names a view wins. --}}
-    <script>
-        (function () {
-            try {
-                if (!new URLSearchParams(location.search).get('view') && localStorage.getItem('am_projects_view') === 'sheets') {
-                    document.documentElement.classList.add('px-want-sheets');
-                }
-            } catch (e) { /* storage blocked: the default view */ }
-        })();
-    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -152,13 +141,13 @@
                         <input type="search" id="pxSearch" value="{{ $q }}" placeholder="{{ bival('pj_search') }}" aria-label="{{ bival('pj_search') }}" autocomplete="off" dir="auto">
                     </label>
                     <div class="px-views" role="group" aria-label="{{ bival('pj_view') }}">
-                        <a class="px-view{{ $view === 'index' ? ' is-on' : '' }}" href="{{ $with(['view' => '']) }}" data-view="index" aria-pressed="{{ $view === 'index' ? 'true' : 'false' }}">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.4"/></svg>
-                            <span>{{ bival('pj_index') }}</span>
-                        </a>
-                        <a class="px-view{{ $view === 'sheets' ? ' is-on' : '' }}" href="{{ $with(['view' => 'sheets']) }}" data-view="sheets" aria-pressed="{{ $view === 'sheets' ? 'true' : 'false' }}">
+                        <a class="px-view{{ $view === 'sheets' ? ' is-on' : '' }}" href="{{ $with(['view' => '']) }}" data-view="sheets" aria-pressed="{{ $view === 'sheets' ? 'true' : 'false' }}">
                             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="11" stroke="currentColor" stroke-width="1.4"/><path d="M3.5 19.5h17M13 15.5v4" stroke="currentColor" stroke-width="1.4"/></svg>
                             <span>{{ bival('pj_sheets') }}</span>
+                        </a>
+                        <a class="px-view{{ $view === 'index' ? ' is-on' : '' }}" href="{{ $with(['view' => 'index']) }}" data-view="index" aria-pressed="{{ $view === 'index' ? 'true' : 'false' }}">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.4"/></svg>
+                            <span>{{ bival('pj_index') }}</span>
                         </a>
                     </div>
                 </div>

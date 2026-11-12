@@ -16,8 +16,8 @@ use Illuminate\Support\Str;
  * hatch it is drawn in; beside it, the statuses, each with its dot.
  *
  * Filtered by category (?type=residential), status (?status=completed) and
- * search (?q=stone) from the address, and shown in either view
- * (?view=sheets), so any of them can be linked to — from a service on the
+ * search (?q=stone) from the address, and shown in either view — the
+ * Sheets first, the Index when asked for (?view=index) — so any of them can be linked to — from a service on the
  * homepage, a material on a project page, the page-not-found page — and all
  * work without JavaScript; projects.js answers them at once.
  */
@@ -52,7 +52,7 @@ class ProjectsController extends Controller
             $status = '';
         }
         $q = Str::limit(trim((string) $request->query('q', '')), 80, '');
-        $view = $request->query('view') === 'sheets' ? 'sheets' : 'index';
+        $view = $request->query('view') === 'index' ? 'index' : 'sheets';
 
         // the register runs from the newest year back; undated work last
         $byYear = $projects->groupBy(fn (Project $p) => preg_match('/^\d{4}$/', $p->endYear()) ? $p->endYear() : '')

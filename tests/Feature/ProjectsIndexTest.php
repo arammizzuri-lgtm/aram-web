@@ -83,20 +83,25 @@ class ProjectsIndexTest extends TestCase
         $this->assertMatchesRegularExpression('#id="pxCount"[^>]*>2 projects</span>\s*<span class="px-dim__span">· <bdi>2024</bdi>#', $html);
         // each sheet's title block: number, name, place, year, status
         $this->assertMatchesRegularExpression('#<small>Sheet</small><b>\d+</b>.*?<bdi>Mountain Villa</bdi>.*?<bdi>Shaqlawa</bdi>.*?<bdi>2024</bdi>.*?Completed#s', $html);
-        // the Index is shown first; the Sheets wait
-        $this->assertMatchesRegularExpression('#id="pxSheets"[^>]*hidden#', $html);
-        $this->assertDoesNotMatchRegularExpression('#id="pxIndex"[^>]*hidden#', $html);
-    }
-
-    public function test_the_sheets_can_be_asked_for_in_the_address(): void
-    {
-        $html = $this->get('/projects?view=sheets&type=residential')->assertOk()->getContent();
-
+        // the Sheets are shown first, and offered first; the Index waits
         $this->assertMatchesRegularExpression('#id="pxIndex"[^>]*hidden#', $html);
         $this->assertDoesNotMatchRegularExpression('#id="pxSheets"[^>]*hidden#', $html);
+        $this->assertMatchesRegularExpression('#data-view="sheets" aria-pressed="true">.*?data-view="index" aria-pressed="false">#s', $html);
+        // nothing remembers a last view: every visit opens on the Sheets
+        $this->assertStringNotContainsString('am_projects_view', $html);
+    }
+
+    public function test_the_index_can_be_asked_for_in_the_address(): void
+    {
+        $html = $this->get('/projects?view=index&type=residential')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('#id="pxSheets"[^>]*hidden#', $html);
+        $this->assertDoesNotMatchRegularExpression('#id="pxIndex"[^>]*hidden#', $html);
         // the legend keeps the view, the views keep the category
-        $this->assertStringContainsString('href="'.url('/projects').'?type=commercial&amp;view=sheets"', $html);
-        $this->assertStringContainsString('href="'.url('/projects').'?type=residential" data-view="index"', $html);
+        $this->assertStringContainsString('href="'.url('/projects').'?type=commercial&amp;view=index"', $html);
+        $this->assertStringContainsString('href="'.url('/projects').'?type=residential" data-view="sheets"', $html);
+        // an older link that names the Sheets still opens them
+        $this->assertDoesNotMatchRegularExpression('#id="pxSheets"[^>]*hidden#', $this->get('/projects?view=sheets')->assertOk()->getContent());
     }
 
     public function test_the_wall_takes_each_sheets_size_from_the_admin_and_ends_with_a_blank_sheet(): void
