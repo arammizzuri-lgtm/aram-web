@@ -9,8 +9,10 @@ use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Filament\Resources\JobApplications\JobApplicationResource;
 use App\Filament\Resources\MissingPages\MissingPageResource;
 use App\Filament\Resources\Partners\PartnerResource;
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Filament\Resources\Testimonials\TestimonialResource;
 use App\Models\MissingPage;
+use App\Models\Project;
 use App\Support\SiteText;
 use Filament\Widgets\Widget;
 
@@ -35,6 +37,11 @@ class NeedsAttention extends Widget
             [ClientRoomResource::getNavigationBadge(), 'Client rooms with something new', ClientRoomResource::getUrl()],
             [TestimonialResource::getNavigationBadge(), 'Client quotes to approve', TestimonialResource::getUrl()],
             [PartnerResource::getNavigationBadge(), 'Partner applications', PartnerResource::getUrl()],
+            // content health: each opens the projects list showing just those
+            ...collect(Project::NEEDS)->map(fn (string $label, string $key) => [
+                Project::query()->needing($key)->count(), 'Live projects: '.lcfirst($label),
+                ProjectResource::getUrl('index', ['filters' => ['needs' => ['value' => $key]]]),
+            ])->values()->all(),
             [PhotoRooms::untaggedCount(), 'Photos without a room', PhotoRooms::getUrl()],
             [MissingPage::query()->fromThisSite()->count(), 'Broken links on your own pages', MissingPageResource::getUrl()],
             [count(SiteText::untranslated()), 'Site texts missing Kurdish or Arabic', ManageSiteContent::getUrl(['missing' => 1])],

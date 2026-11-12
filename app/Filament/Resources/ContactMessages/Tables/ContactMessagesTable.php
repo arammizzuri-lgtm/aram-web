@@ -31,22 +31,23 @@ class ContactMessagesTable
                 IconColumn::make('is_read')->label('')
                     ->icon(fn (bool $state) => $state ? null : 'heroicon-s-sparkles')
                     ->color('info')->tooltip(fn (bool $state) => $state ? null : 'Not opened yet'),
-                TextColumn::make('name')->searchable()->sortable()
+                // On a phone: new or not, who, their number and when; a tap opens the rest.
+                TextColumn::make('name')->searchable()->sortable()->wrap()
                     ->description(fn (ContactMessage $r) => $r->phone ?: $r->email),
                 // changed right here, without opening the enquiry
                 SelectColumn::make('status')->options(LeadStatus::class)->selectablePlaceholder(false)
-                    ->sortable()->width('11rem'),
+                    ->sortable()->width('11rem')->visibleFrom('md'),
                 TextColumn::make('project_type')->label('Type')->badge()->color('gray')
-                    ->formatStateUsing(fn (ContactMessage $r) => $r->typeLabel())->placeholder('—'),
-                TextColumn::make('city')->placeholder('—')->toggleable(),
+                    ->formatStateUsing(fn (ContactMessage $r) => $r->typeLabel())->placeholder('—')->visibleFrom('md'),
+                TextColumn::make('city')->placeholder('—')->toggleable()->visibleFrom('md'),
                 TextColumn::make('budget')->formatStateUsing(fn (ContactMessage $r) => $r->budgetLabel())
-                    ->placeholder('—')->toggleable(),
+                    ->placeholder('—')->toggleable()->visibleFrom('md'),
                 TextColumn::make('timeline')->formatStateUsing(fn (ContactMessage $r) => $r->timelineLabel())
                     ->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('project.name')->label('About project')->placeholder('—')
-                    ->limit(28)->toggleable(),
+                    ->limit(28)->toggleable()->visibleFrom('md'),
                 TextColumn::make('source')->label('Came from')->placeholder('—')
-                    ->formatStateUsing(fn (?string $state) => TrafficSource::label($state))->toggleable(),
+                    ->formatStateUsing(fn (?string $state) => TrafficSource::label($state))->toggleable()->visibleFrom('md'),
                 TextColumn::make('message')->limit(50)->wrap()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')->label('Received')->since()->sortable()
                     ->dateTimeTooltip('j M Y, H:i', 'Asia/Baghdad'),
@@ -59,6 +60,7 @@ class ContactMessagesTable
                 SelectFilter::make('timeline')->options(Enquiry::englishOptions(Enquiry::timelines())),
                 TernaryFilter::make('is_read')->label('Opened'),
             ])
+            ->extraAttributes(['class' => 'am-tap-rows'])
             ->recordActions([
                 EditAction::make()->label('Open'),
                 DeleteAction::make(),

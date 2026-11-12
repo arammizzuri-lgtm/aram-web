@@ -76,9 +76,37 @@ class AdminOrganisationTest extends TestCase
 
         $this->assertSame([
             'New enquiries' => 1,
+            'Live projects: missing Kurdish or Arabic' => 1,
+            'Live projects: not on the map' => 1,
             'Photos without a room' => 1,
             'Broken links on your own pages' => 1,
         ], $items());
+    }
+
+    public function test_content_health_finds_what_live_projects_lack_and_opens_them(): void
+    {
+        $this->actingAs($this->admin());
+        $make = fn (string $name, array $a = []) => Project::create($a + [
+            'name' => $name, 'category' => 'residential', 'status' => 'Completed', 'size' => 'default', 'is_published' => true,
+            'imgs' => ['https://example.com/'.$name.'.jpg'], 'name_ku' => 'ناو', 'name_ar' => 'اسم', 'lat' => 36.19, 'lng' => 44.01,
+        ]);
+        $done = $make('Done');                                                        // no English description, so none to translate
+        $noArabicText = $make('Half', ['desc' => 'A house.', 'desc_ku' => 'خانوو']);
+        $noPhotos = $make('Bare', ['imgs' => []]);
+        $pinOnly = $make('Pin', ['map_only' => true, 'imgs' => [], 'name_ku' => null, 'lat' => null]);   // a pin, never a page
+        $hidden = $make('Draft', ['name_ku' => null, 'imgs' => [], 'lat' => null, 'is_published' => false]);
+
+        $this->assertEqualsCanonicalizing([$noArabicText->id], Project::query()->needing('translation')->pluck('id')->all());
+        $this->assertEqualsCanonicalizing([$noPhotos->id], Project::query()->needing('photos')->pluck('id')->all());
+        $this->assertEqualsCanonicalizing([$pinOnly->id], Project::query()->needing('pin')->pluck('id')->all());
+
+        // the dashboard line opens the list showing just those
+        $item = Livewire::test(NeedsAttention::class)->viewData('items')->firstWhere('label', 'Live projects: missing Kurdish or Arabic');
+        $this->assertSame(1, $item['count']);
+        parse_str((string) parse_url($item['url'], PHP_URL_QUERY), $query);
+        Livewire::withQueryParams($query)->test(ListProjects::class)
+            ->assertCanSeeTableRecords([$noArabicText])
+            ->assertCanNotSeeTableRecords([$done, $noPhotos, $pinOnly, $hidden]);
     }
 
     public function test_the_project_and_landmark_forms_save_through_their_tabs(): void

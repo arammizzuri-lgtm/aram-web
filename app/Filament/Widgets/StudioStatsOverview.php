@@ -17,8 +17,8 @@ class StudioStatsOverview extends StatsOverviewWidget
 
     protected static ?int $sort = -2;
 
-    /** Five figures, side by side on a wide screen. */
-    protected int|array|null $columns = ['@xl' => 5, '!@lg' => 5];
+    /** Five figures, side by side on a wide screen; two to a row on a phone. */
+    protected int|array|null $columns = ['default' => 2, '@xl' => 5, '!@lg' => 5];
 
     protected function getStats(): array
     {

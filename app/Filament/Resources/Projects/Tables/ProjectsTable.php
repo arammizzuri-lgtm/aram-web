@@ -60,23 +60,24 @@ class ProjectsTable
                     ->badge()->color('gray')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('num')->label('No.')->sortable()->toggleable(),
+                // On a phone: the photo, the name and its place, and Live; a tap opens the rest.
+                TextColumn::make('num')->label('No.')->sortable()->toggleable()->visibleFrom('md'),
                 TextColumn::make('name')
-                    ->searchable()->sortable()
+                    ->searchable()->sortable()->wrap()
                     ->description(fn (Project $record) => $record->location),
                 TextColumn::make('categories')
                     ->label('Categories')
                     ->badge()
                     ->state(fn (Project $record) => $record->categoryLabels())
-                    ->color('primary'),
+                    ->color('primary')->visibleFrom('md'),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn ($state) => match (Status::meta()[$state]['tone'] ?? null) {
                         'done' => 'success',
                         'build' => 'warning',
                         default => 'gray',
-                    }),
-                TextColumn::make('year')->alignEnd()->toggleable()
+                    })->visibleFrom('md'),
+                TextColumn::make('year')->alignEnd()->toggleable()->visibleFrom('md')
                     ->extraCellAttributes(['style' => 'white-space:nowrap']),
                 ToggleColumn::make('is_published')->label('Live'),
             ])
@@ -99,8 +100,13 @@ class ProjectsTable
                         });
                     }),
                 TernaryFilter::make('is_published')->label('Published'),
+                // the dashboard's "Needs attention" opens the list with this set
+                SelectFilter::make('needs')->label('Needs work')
+                    ->options(Project::NEEDS)
+                    ->query(fn (Builder $query, array $data) => filled($data['value'] ?? null) ? $query->needing($data['value']) : $query),
                 TrashedFilter::make()->label('Trash'),
             ])
+            ->extraAttributes(['class' => 'am-tap-rows'])
             ->recordActions([
                 // Edit stays one click; the rest live in a compact "⋮" menu so
                 // every data column fits on screen without sideways scrolling.

@@ -106,6 +106,10 @@
 .aram-sc-hit__val b { font-size: 0.68rem; color: #666; margin-inline-end: 0.35rem; }
 .aram-sc-hit__gap { color: #f59e0b; font-style: normal; }
 @media (max-width: 760px) { .aram-sc-hit { grid-template-columns: 1fr; } }
+/* Lists on a phone: a tap on the row opens the record, so the buttons at its end give their width back. */
+@media (max-width: 767.98px) {
+    .am-tap-rows td.fi-ta-cell:has(> .fi-ta-actions), .am-tap-rows th.fi-ta-actions-header-cell { display: none; }
+}
 /* the text a search result opened: brought into view and marked for a moment */
 .aram-sc-field { scroll-margin-top: 6rem; }
 .aram-sc-field:target { animation: aram-sc-flash 2.4s ease-out; border-radius: 0.5rem; }

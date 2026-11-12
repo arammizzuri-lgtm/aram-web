@@ -296,6 +296,33 @@ class Project extends Model
             ->orderBy('id');
     }
 
+    /** What a live project can still lack — the list's "Needs work" filter and the dashboard. */
+    public const NEEDS = [
+        'translation' => 'Missing Kurdish or Arabic',
+        'photos' => 'No photographs (so no page)',
+        'pin' => 'Not on the map',
+    ];
+
+    /** Live projects that lack one of NEEDS. */
+    public function scopeNeeding($query, string $what)
+    {
+        $blank = fn ($q, string ...$cols) => $q->where(function ($q) use ($cols) {
+            foreach ($cols as $col) {
+                $q->orWhereNull($col)->orWhere($col, '');
+            }
+        });
+        $query->where('is_published', true);
+
+        return match ($what) {
+            // the name, and the description where the English has one
+            'translation' => $query->where('map_only', false)->where(fn ($q) => $blank($q, 'name_ku', 'name_ar')
+                ->orWhere(fn ($q) => $q->whereNotNull('desc')->where('desc', '!=', '')->where(fn ($q) => $blank($q, 'desc_ku', 'desc_ar')))),
+            'photos' => $query->where('map_only', false)->where(fn ($q) => $q->whereNull('imgs')->orWhereJsonLength('imgs', 0)),
+            'pin' => $query->where(fn ($q) => $q->whereNull('lat')->orWhereNull('lng')),
+            default => $query,
+        };
+    }
+
     /** Send this project to the front of the public grid. */
     public function moveToTop(): void
     {
