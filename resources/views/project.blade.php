@@ -616,19 +616,37 @@
             // With only two projects the previous one is also the next — say it once.
             $pager = array_filter(['prev' => $prev && ! $prev->is($next) ? $prev : null, 'next' => $next]);
         @endphp
+        {{-- The neighbouring sheets of the set: the one before and the one
+             after, each with its number, its name and its cover mounted as
+             on the opening — and between them the way back to every sheet. --}}
         @if ($pager)
-            <nav class="pp-pager" aria-label="{{ bival('nav_projects') }}">
-                @foreach ($pager as $dir => $p)
-                    <a class="pp-pager__item pp-pager__item--{{ $dir }}" href="{{ $p->pageUrl($lang) }}">
-                        <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
-                        <span class="pp-pager__shade" aria-hidden="true"></span>
-                        <span class="pp-pager__dir">
-                            @if ($dir === 'prev')<span class="pp-arrow pp-arrow--back" aria-hidden="true">←</span>@endif
-                            {{ bival($dir === 'prev' ? 'pp_prev' : 'pp_next') }}
-                            @if ($dir === 'next')<span class="pp-arrow" aria-hidden="true">→</span>@endif
-                        </span>
-                        <span class="pp-pager__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
-                    </a>
+            <nav class="pj-nav" aria-label="{{ bival('nav_projects') }}">
+                @foreach (['prev', 'all', 'next'] as $dir)
+                    @if ($dir === 'all')
+                        <a class="pj-nav__all" href="{{ site_url('/projects') }}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5"/><rect x="13.5" y="3" width="7.5" height="7.5"/><rect x="3" y="13.5" width="7.5" height="7.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5"/></svg>
+                            <span>{{ bival('pj_label') }}</span>
+                        </a>
+                    @elseif ($p = $pager[$dir] ?? null)
+                        <a class="pj-nav__item pj-nav__item--{{ $dir }}" href="{{ $p->pageUrl($lang) }}">
+                            <span class="pj-nav__pic">
+                                <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
+                                <i class="pj-crop pj-crop--ts" aria-hidden="true"></i><i class="pj-crop pj-crop--te" aria-hidden="true"></i>
+                                <i class="pj-crop pj-crop--bs" aria-hidden="true"></i><i class="pj-crop pj-crop--be" aria-hidden="true"></i>
+                            </span>
+                            <span class="pj-nav__text">
+                                <span class="pj-nav__dir">
+                                    @if ($dir === 'prev')<span class="pp-arrow pp-arrow--back" aria-hidden="true">←</span>@endif
+                                    {{ bival($dir === 'prev' ? 'pp_prev' : 'pp_next') }}
+                                    @if ($dir === 'next')<span class="pp-arrow" aria-hidden="true">→</span>@endif
+                                </span>
+                                <span class="pj-nav__no"><small>{{ bival('pj_sheet') }}</small><b>{{ $p->num }}</b></span>
+                                <span class="pj-nav__name"><bdi>{{ bi($p->name, $p->name_ku, $p->name_ar) }}</bdi></span>
+                                @php $at = collect([$p->cityLabel(), $p->endYear()])->filter(); @endphp
+                                @if ($at->isNotEmpty())<span class="pj-nav__meta">{!! $at->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</span>@endif
+                            </span>
+                        </a>
+                    @endif
                 @endforeach
             </nav>
         @endif

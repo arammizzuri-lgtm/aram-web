@@ -197,6 +197,24 @@ class ProjectPagesTest extends TestCase
         $this->assertSame(4, substr_count($html, 'class="pp-shot pj-plate"'));
     }
 
+    public function test_the_neighbouring_projects_are_sheets_either_side_of_every_project(): void
+    {
+        $this->project();
+        $this->project(['name' => 'Erbil Tower Residences', 'name_ku' => null]);
+        $this->project(['name' => 'Torre Mizuri — Madrid', 'name_ku' => null]);
+
+        $html = $this->get('/projects/mountain-villa-shaqlawa')->assertOk()->getContent();
+        // the one before, every project, the one after — in that order, each named with its sheet number
+        $this->assertMatchesRegularExpression('#<nav class="pj-nav"[^>]*>.*?pj-nav__item--prev.*?<b>\d+</b>.*?class="pj-nav__all" href="[^"]*/projects">.*?pj-nav__item--next.*?<b>\d+</b>.*?</nav>#s', $html);
+        $this->assertSame(2, substr_count($html, 'class="pj-nav__item '));
+
+        // with only two projects the other one is said once, as the next
+        Project::where('name', 'Torre Mizuri — Madrid')->delete();
+        $html = $this->get('/projects/mountain-villa-shaqlawa')->assertOk()->getContent();
+        $this->assertSame(1, substr_count($html, 'class="pj-nav__item '));
+        $this->assertStringContainsString('pj-nav__item--next', $html);
+    }
+
     public function test_sections_added_in_the_admin_are_chapters_with_the_photographs_between_them(): void
     {
         Storage::fake('public');
