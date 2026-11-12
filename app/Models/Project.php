@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\Embed;
 use App\Support\ProjectImage;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,6 +19,8 @@ use Illuminate\Support\Str;
  */
 class Project extends Model
 {
+    use SoftDeletes;   // deleted goes to the trash first (Portfolio → Projects → Trashed)
+
     /**
      * Tile footprints on the public bento grid, which flows into three rows:
      * default = 1x1, wide = two columns, large = two columns by two rows.
@@ -136,7 +139,7 @@ class Project extends Model
                 }
             }
         });
-        static::deleted(function (Project $p) {
+        static::forceDeleted(function (Project $p) {
             Storage::disk('public')->delete(array_filter([$p->voice_en, $p->voice_ku]));
         });
 
@@ -154,7 +157,7 @@ class Project extends Model
      */
     public static function nextNum(): string
     {
-        $highest = static::query()->pluck('num')
+        $highest = static::withTrashed()->pluck('num')
             ->map(fn ($n) => (int) preg_replace('/\D+/', '', (string) $n))
             ->max() ?? 0;
 
@@ -180,7 +183,7 @@ class Project extends Model
     /** $base, or $base-2, $base-3… — whichever no other project holds yet. */
     public static function uniqueSlug(string $base, $ignoreId = null): string
     {
-        $taken = static::query()
+        $taken = static::withTrashed()
             ->where(fn ($q) => $q->where('slug', $base)->orWhere('slug', 'like', $base.'-%'))
             ->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))
             ->pluck('slug')->all();
@@ -199,7 +202,7 @@ class Project extends Model
      */
     public function hasPage(): bool
     {
-        return $this->is_published && ! $this->map_only && filled($this->slug) && $this->coverImage() !== null;
+        return $this->is_published && ! $this->trashed() && ! $this->map_only && filled($this->slug) && $this->coverImage() !== null;
     }
 
     /**

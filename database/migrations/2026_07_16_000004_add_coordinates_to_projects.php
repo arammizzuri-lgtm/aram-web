@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Project;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -21,7 +21,8 @@ return new class extends Migration
         });
 
         foreach (self::LEGACY_COORDS as $num => [$lat, $lng]) {
-            Project::where('num', $num)
+            // the table, not the model: the model now expects columns added later (deleted_at)
+            DB::table('projects')->where('num', $num)
                 ->whereNull('lat')
                 ->update(['lat' => $lat, 'lng' => $lng]);
         }

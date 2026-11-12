@@ -6,6 +6,8 @@ use App\Filament\Resources\Landmarks\LandmarkResource;
 use App\Models\Landmark;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
 
@@ -21,8 +23,10 @@ class EditLandmark extends EditRecord
                 ->url(fn (Landmark $record) => $record->previewUrl(), shouldOpenInNewTab: true),
             Action::make('open')->label('Open page')->icon(Heroicon::OutlinedArrowTopRightOnSquare)->color('gray')
                 ->url(fn (Landmark $record) => $record->url('en'), shouldOpenInNewTab: true)
-                ->visible(fn (Landmark $record) => $record->is_published),
-            DeleteAction::make(),
+                ->visible(fn (Landmark $record) => $record->is_published && ! $record->trashed()),
+            DeleteAction::make()->label('Move to trash'),
+            RestoreAction::make(),
+            ForceDeleteAction::make()->label('Delete forever'),
         ];
     }
 }

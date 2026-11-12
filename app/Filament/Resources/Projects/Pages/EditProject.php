@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Projects\Pages;
 use App\Filament\Resources\Projects\ProjectResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Resources\Pages\EditRecord;
 
@@ -28,7 +30,9 @@ class EditProject extends EditRecord
                 ->color(fn (): string => $this->record->statusClass() === 'build' ? 'primary' : 'gray')
                 ->url(fn (): string => route('filament.studio-aks-panel.project-board', $this->record), shouldOpenInNewTab: true)
                 ->visible(fn (): bool => $this->record->hasPage()),
-            DeleteAction::make(),
+            DeleteAction::make()->label('Move to trash'),
+            RestoreAction::make(),
+            ForceDeleteAction::make()->label('Delete forever'),
         ];
     }
 

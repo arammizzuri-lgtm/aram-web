@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\PortraitDrawing;
 use App\Support\ReadAloud;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -28,6 +29,8 @@ use RuntimeException;
  */
 class Testimonial extends Model
 {
+    use SoftDeletes;   // deleted goes to the trash first
+
     /** Where the client's photo is kept: private, like a room's drawings. */
     public const PHOTO_DISK = 'local';
 
@@ -80,7 +83,8 @@ class Testimonial extends Model
             }
         });
 
-        static::deleted(function (Testimonial $t) {
+        // its voice, photo and drawing go only when it leaves the trash for good
+        static::forceDeleted(function (Testimonial $t) {
             foreach ([$t->voice, $t->portrait_sketch, $t->reading_ku] as $file) {
                 if ($file) {
                     Storage::disk('public')->delete($file);

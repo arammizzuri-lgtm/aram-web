@@ -13,7 +13,7 @@
         description="Every deploy copies the database before it changes it, and keeps the last {{ \App\Support\DatabaseBackup::KEEP }}. The ERP's database is copied the same way, into erp/storage/app/private/backups.">
         @php($snapshots = $this->getSnapshots())
         @if ($snapshots === [])
-            <p class="bk__muted">None yet — the first one is taken on the next deploy. “Download a copy now” works at any time.</p>
+            <p class="bk__muted">None yet — the first one is taken on the next deploy. “Download the database” works at any time.</p>
         @else
             <table class="bk__table">
                 <thead><tr><th>Taken</th><th>Size</th><th></th></tr></thead>
@@ -35,6 +35,10 @@
                 </tbody>
             </table>
         @endif
+    </x-filament::section>
+
+    <x-filament::section heading="Everything, now and then"
+        description="The database copies above hold the words — projects, enquiries, settings — but not the photographs. “Download everything” is one zip of the database and every photograph and file; keep one on your computer or a drive, away from this server.">
     </x-filament::section>
 
     <x-filament::section heading="Putting a copy back" collapsible collapsed>

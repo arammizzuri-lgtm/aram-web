@@ -101,6 +101,7 @@ class AdminPanelProvider extends PanelProvider
             ->authenticatedRoutes(function () {
                 Route::get('cv/{application}', ApplicationCvController::class)->name('application-cv');
                 Route::get('backups/now', [BackupController::class, 'fresh'])->name('backup-fresh');
+                Route::get('backups/everything', [BackupController::class, 'everything'])->name('backup-everything');
                 Route::get('backups/{name}', [BackupController::class, 'download'])->name('backup-download');
                 Route::get('rooms/drawings/{drawing}', [RoomFileController::class, 'drawing'])->name('room-drawing');
                 Route::get('rooms/receipts/{payment}', [RoomFileController::class, 'receipt'])->name('room-receipt');

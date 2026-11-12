@@ -5,11 +5,14 @@ namespace App\Filament\Resources\Landmarks\Tables;
 use App\Models\Landmark;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Actions\ReplicateAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class LandmarksTable
@@ -34,6 +37,7 @@ class LandmarksTable
             ->filters([
                 SelectFilter::make('region')->label('Part of Kurdistan')->options(Landmark::options(Landmark::REGIONS)),
                 SelectFilter::make('era')->label('Age')->options(Landmark::options(Landmark::ERAS)),
+                TrashedFilter::make()->label('Trash'),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -45,7 +49,9 @@ class LandmarksTable
                         $replica->sort_order = (int) Landmark::max('sort_order') + 1;
                     })
                     ->successRedirectUrl(fn (Landmark $replica) => \App\Filament\Resources\Landmarks\LandmarkResource::getUrl('edit', ['record' => $replica])),
-                DeleteAction::make(),
+                DeleteAction::make()->label('Move to trash'),
+                RestoreAction::make(),
+                ForceDeleteAction::make()->label('Delete forever'),
             ])
             ->emptyStateHeading('No landmarks yet');
     }

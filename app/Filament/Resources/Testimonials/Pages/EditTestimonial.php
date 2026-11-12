@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Testimonials\Pages;
 use App\Filament\Resources\Testimonials\TestimonialResource;
 use App\Models\Testimonial;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use InvalidArgumentException;
@@ -16,7 +18,9 @@ class EditTestimonial extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()->label('Move to trash'),
+            RestoreAction::make(),
+            ForceDeleteAction::make()->label('Delete forever'),
         ];
     }
 

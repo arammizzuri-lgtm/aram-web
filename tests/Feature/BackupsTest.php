@@ -7,8 +7,10 @@ use App\Models\User;
 use App\Support\DatabaseBackup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use PDO;
 use Tests\TestCase;
+use ZipArchive;
 
 /**
  * The copy taken before each deploy migrates, and the admin's downloads.
@@ -102,7 +104,7 @@ class BackupsTest extends TestCase
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
         $this->actingAs($admin);
 
-        $this->get(Backups::getUrl())->assertOk()->assertSee('before a deploy')->assertSee('Download a copy now');
+        $this->get(Backups::getUrl())->assertOk()->assertSee('before a deploy')->assertSee('Download the database')->assertSee('Download everything');
 
         $response = $this->get($fresh)->assertOk()->assertHeader('Cache-Control', 'no-store, private');
         $this->assertStringContainsString('attachment; filename=aram-mizuri-database-', $response->headers->get('Content-Disposition'));
@@ -114,5 +116,32 @@ class BackupsTest extends TestCase
         $this->get(route('filament.studio-aks-panel.backup-download', 'database.sqlite'))->assertNotFound();
         $this->get(route('filament.studio-aks-panel.backup-download', 'database-2026-01-01-120000-deploy.sqlite'))->assertNotFound();
         $this->get('/studio-aks-panel/backups/..%2F..%2F.env')->assertNotFound();
+    }
+
+    public function test_everything_comes_in_one_zip_with_the_photographs(): void
+    {
+        config(['database.connections.sqlite.database' => $this->liveDatabase()]);
+        Storage::fake('public');
+        Storage::fake('local');
+        Storage::disk('public')->put('projects/villa/cover.jpg', 'JPEG');
+        Storage::disk('local')->put('testimonials/face.jpg', 'FACE');
+        Storage::disk('local')->put('backups/database-2026-01-01-120000-deploy.sqlite', 'OLD COPY');
+        $url = route('filament.studio-aks-panel.backup-everything');
+
+        $this->get($url)->assertRedirect();               // a visitor is sent to the login
+
+        $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']));
+        $response = $this->get($url)->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $this->assertStringContainsString('attachment; filename=aram-mizuri-everything-', $response->headers->get('Content-Disposition'));
+
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($response->baseResponse->getFile()->getPathname()));
+        $this->assertSame('JPEG', $zip->getFromName('files/projects/villa/cover.jpg'));
+        $this->assertSame('FACE', $zip->getFromName('private/testimonials/face.jpg'));
+        $this->assertFalse($zip->locateName('private/backups/database-2026-01-01-120000-deploy.sqlite'));
+        $this->assertStringContainsString('storage/app/public', $zip->getFromName('README.txt'));
+        file_put_contents($this->tmp.'/from-zip.sqlite', $zip->getFromName('database.sqlite'));
+        $zip->close();
+        $this->assertSame(['Shilan'], $this->rows($this->tmp.'/from-zip.sqlite'));
     }
 }

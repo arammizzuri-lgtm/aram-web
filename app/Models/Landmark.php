@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\HeritageImage;
 use App\Support\SiteText;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
@@ -24,6 +25,8 @@ use Illuminate\Support\Str;
  */
 class Landmark extends Model
 {
+    use SoftDeletes;   // deleted goes to the trash first
+
     public const PATH = '/kurdistan-heritage';
 
     /** The four parts of Kurdistan: [English, Kurdish, Arabic]. */
@@ -123,7 +126,7 @@ class Landmark extends Model
             if (blank($l->slug)) {
                 $base = Str::slug($l->name_en) ?: 'landmark';
                 $slug = $base;
-                for ($i = 2; static::where('slug', $slug)->where('id', '!=', $l->id ?? 0)->exists(); $i++) {
+                for ($i = 2; static::withTrashed()->where('slug', $slug)->where('id', '!=', $l->id ?? 0)->exists(); $i++) {
                     $slug = $base.'-'.$i;
                 }
                 $l->slug = $slug;

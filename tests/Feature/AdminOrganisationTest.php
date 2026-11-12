@@ -6,6 +6,7 @@ use App\Filament\Pages\ManageSiteContent;
 use App\Filament\Resources\Landmarks\Pages\CreateLandmark;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
+use App\Filament\Resources\Projects\Pages\ListProjects;
 use App\Filament\Widgets\NeedsAttention;
 use App\Models\ContactMessage;
 use App\Models\Landmark;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Support\SiteText;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -137,6 +139,35 @@ class AdminOrganisationTest extends TestCase
 
         $this->assertSame('4.9', (string) SiteSetting::get('google_rating'));
         $this->assertSame('https://maps.app.goo.gl/abc', (string) SiteSetting::get('google_profile_url'));
+    }
+
+    public function test_a_deleted_project_waits_in_the_trash_and_comes_back(): void
+    {
+        $this->actingAs($this->admin());
+        Storage::fake('public');
+        Storage::disk('public')->put('projects/voices/note.m4a', 'voice');
+        $project = Project::create([
+            'name' => 'Lake House', 'category' => 'residential', 'status' => 'Completed', 'size' => 'default', 'is_published' => true,
+            'imgs' => ['https://example.com/a.jpg'], 'voice_en' => 'projects/voices/note.m4a',
+        ]);
+
+        Livewire::test(ListProjects::class)->callTableAction('delete', $project);
+        $this->assertSoftDeleted($project);
+        $this->assertFalse($project->fresh()->hasPage());
+        $this->get('/projects/lake-house')->assertNotFound();
+        Storage::disk('public')->assertExists('projects/voices/note.m4a');
+        $this->assertSame('lake-house-2', Project::uniqueSlug('lake-house'));   // its address waits with it
+
+        // the trash lists it, and its page still opens to bring it back
+        Livewire::test(ListProjects::class)->filterTable('trashed', false)->assertCanSeeTableRecords([$project]);
+        Livewire::test(EditProject::class, ['record' => $project->getRouteKey()])->callAction('restore');
+        $this->assertNotSoftDeleted($project);
+
+        // deleted for good, its voice note goes too
+        $project->delete();
+        Livewire::test(ListProjects::class)->filterTable('trashed', false)->callTableAction('forceDelete', $project);
+        $this->assertModelMissing($project);
+        Storage::disk('public')->assertMissing('projects/voices/note.m4a');
     }
 
     public function test_texts_english_only_on_purpose_are_not_counted_as_missing(): void

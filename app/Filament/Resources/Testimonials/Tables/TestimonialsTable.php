@@ -7,9 +7,14 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class TestimonialsTable
@@ -46,14 +51,19 @@ class TestimonialsTable
             ])
             ->filters([
                 TernaryFilter::make('is_published')->label('Published'),
+                TrashedFilter::make()->label('Trash'),
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()->label('Move to trash'),
+                RestoreAction::make(),
+                ForceDeleteAction::make()->label('Delete forever'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('Move to trash'),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make()->label('Delete forever'),
                 ]),
             ]);
     }

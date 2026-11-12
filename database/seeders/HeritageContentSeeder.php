@@ -39,7 +39,8 @@ class HeritageContentSeeder extends Seeder
     /** Set one landmark's content; returns whether a landmark was found. */
     public function apply(array $data, string $imagesFile): bool
     {
-        $landmark = Landmark::where('slug', $data['slug'])->first();
+        // withTrashed: run from a migration made before the trash (deleted_at) existed
+        $landmark = Landmark::withTrashed()->where('slug', $data['slug'])->first();
         if (! $landmark) {
             return false;
         }

@@ -179,12 +179,18 @@ class ClientVoicesTest extends TestCase
         Storage::disk('public')->assertExists('testimonials/voices/second.m4a');
     }
 
-    public function test_deleting_a_quote_deletes_its_voice_photo_and_drawing(): void
+    public function test_deleting_a_quote_for_good_deletes_its_voice_photo_and_drawing(): void
     {
         $quote = $this->drawn();
         $drawing = $quote->portrait_sketch;
 
+        // in the trash it keeps everything, ready to come back
         $quote->delete();
+        Storage::disk('public')->assertExists([$drawing, 'testimonials/voices/hawre.opus']);
+        $quote->restore();
+        $this->assertFalse($quote->trashed());
+
+        $quote->forceDelete();
 
         Storage::disk('public')->assertMissing([$drawing, 'testimonials/voices/hawre.opus']);
         Storage::disk(Testimonial::PHOTO_DISK)->assertMissing('testimonials/photos/hawre.jpg');

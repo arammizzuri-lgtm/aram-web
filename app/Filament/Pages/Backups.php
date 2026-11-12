@@ -37,8 +37,14 @@ class Backups extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('everything')
+                ->label('Download everything')
+                ->tooltip('The database and every photograph and file, in one zip — keep it somewhere off this server')
+                ->icon(Heroicon::OutlinedArchiveBoxArrowDown)
+                ->color('gray')
+                ->url(route('filament.studio-aks-panel.backup-everything')),
             Action::make('fresh')
-                ->label('Download a copy now')
+                ->label('Download the database')
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->url(route('filament.studio-aks-panel.backup-fresh')),
         ];
