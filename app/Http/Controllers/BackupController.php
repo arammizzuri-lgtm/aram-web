@@ -54,7 +54,7 @@ class BackupController extends Controller
         ]));
         foreach (['files' => 'public', 'private' => 'local'] as $folder => $disk) {
             foreach (Storage::disk($disk)->allFiles() as $file) {
-                if ($disk === 'local' && (str_starts_with($file, 'backups/') || str_starts_with($file, 'backup-'))) {
+                if ($disk === 'local' && (str_starts_with($file, 'backups/') || str_starts_with($file, 'backup-') || str_starts_with($file, 'presentations/tmp/'))) {
                     continue;
                 }
                 $zip->addFile(Storage::disk($disk)->path($file), "{$folder}/{$file}");

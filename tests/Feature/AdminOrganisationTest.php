@@ -50,7 +50,7 @@ class AdminOrganisationTest extends TestCase
 
         $this->actingAs($this->admin())->get('/studio-aks-panel')->assertOk()->assertSeeInOrder([
             'Portfolio', 'Projects', 'Project grid', 'Photos by room', 'Heritage landmarks',
-            'Clients', 'Enquiries', 'Client rooms', 'Review links', 'Client quotes', 'Homepage clients', 'Holiday cards', 'Partners',
+            'Clients', 'Enquiries', 'Client rooms', 'Review links', 'Client quotes', 'Homepage clients', 'Holiday cards', 'Partners', 'Project presentations',
             'Careers', 'Positions', 'Applications',
             'Website settings', 'Site content', 'Cost estimator', 'Read aloud', 'Enquiry alerts',
             'System', 'Backups', 'Broken links',

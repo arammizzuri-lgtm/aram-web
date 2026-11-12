@@ -1,0 +1,576 @@
+// The editor's right-hand panels (page, project, design) and its dialogs
+// (add a page, upload, pick an image, preview, export, branding).
+// Everything here reads and changes the app through `app` (editor.js).
+import { html, useState, useEffect, useRef } from 'htm-preact';
+import { LAYOUTS, TEXT_LABELS, SECTIONS, INFO, AREA_UNITS, FONTS, THEMES, PRESETS, LOW_PPI, PAGE_MM,
+    newPage, slot, uid, clone, resolveTheme, pageSize, mm, isoName, parseRange, fileName, bytes, sourceSize, structure } from '@pm/model';
+import { ROLE_NAMES } from '@pm/layout';
+import { PageView } from '@pm/view';
+import { guessSection, titleFromName } from '@pm/uploads';
+import { exportPdf, download } from '@pm/export';
+
+// ── Small form pieces ──
+const Field = ({ label, hint, children, row }) => html`<label class=${`pm-f${row ? ' pm-f--row' : ''}`}>
+    ${label && html`<span class="pm-f__l">${label}</span>`}${children}${hint && html`<span class="pm-f__h">${hint}</span>`}
+</label>`;
+const Text = ({ value, on, placeholder, area, type, dir = 'auto' }) => (area
+    ? html`<textarea class="pm-in" rows=${area} dir=${dir} placeholder=${placeholder} value=${value || ''} onInput=${(e) => on(e.target.value)}></textarea>`
+    : html`<input class="pm-in" type=${type || 'text'} dir=${type ? null : dir} placeholder=${placeholder} value=${value || ''} onInput=${(e) => on(e.target.value)} />`);
+const Select = ({ value, on, options }) => html`<select class="pm-in" value=${value ?? ''} onChange=${(e) => on(e.target.value)}>
+    ${options.map(([v, l]) => html`<option value=${v} selected=${String(v) === String(value ?? '')}>${l}</option>`)}
+</select>`;
+const Toggle = ({ value, on, label }) => html`<label class="pm-tg"><input type="checkbox" checked=${!!value} onChange=${(e) => on(e.target.checked)} /><span>${label}</span></label>`;
+const Seg = ({ value, on, options }) => html`<div class="pm-seg">${options.map(([v, l, title]) => html`<button type="button" title=${title} class=${String(v) === String(value) ? 'is-on' : ''} onClick=${() => on(v)}>${l}</button>`)}</div>`;
+const Range = ({ value, on, min, max, step = 1, show }) => html`<div class="pm-rg"><input type="range" min=${min} max=${max} step=${step} value=${value} onInput=${(e) => on(+e.target.value)} /><span>${show ? show(value) : value}</span></div>`;
+const Color = ({ value, on }) => html`<span class="pm-col"><input type="color" value=${value} onInput=${(e) => on(e.target.value)} /><input class="pm-in" value=${value} onChange=${(e) => /^#[0-9a-f]{6}$/i.test(e.target.value) && on(e.target.value.toLowerCase())} /></span>`;
+const Btn = ({ on, children, kind = '', title, disabled }) => html`<button type="button" class=${`pm-btn ${kind}`} title=${title} disabled=${disabled} onClick=${on}>${children}</button>`;
+const Group = ({ title, children, open = true }) => html`<details class="pm-g" open=${open}><summary>${title}</summary><div class="pm-g__b">${children}</div></details>`;
+const Dialog = ({ title, onClose, children, wide, foot }) => html`<div class="pm-dlg" onMouseDown=${(e) => e.target === e.currentTarget && onClose()}>
+    <div class=${`pm-dlg__box${wide ? ' pm-dlg__box--wide' : ''}`} role="dialog" aria-label=${title}>
+        <header><h2>${title}</h2><button type="button" class="pm-x" aria-label="Close" onClick=${onClose}>×</button></header>
+        <div class="pm-dlg__body">${children}</div>
+        ${foot && html`<footer>${foot}</footer>`}
+    </div>
+</div>`;
+
+const KEY_NAMES = { title: 'Title', subtitle: 'Subtitle', caption: 'Caption', body: 'Text', notes: 'Notes', project: 'Project name', docTitle: 'Document title',
+    stage: 'Stage', date: 'Date', info: 'Project facts', facts: 'Key facts', logo: 'Logo', where: 'Client & location', issue: 'Issue line',
+    confidential: 'Confidentiality note', contact: 'Contact details', number: 'Section number', toc: 'Contents list', meta: 'Drawing details', north: 'North arrow' };
+export function keyName(key, page) {
+    if (key.startsWith('img:')) return `Image ${+key.slice(4) + 1}`;
+    if (key.startsWith('cap:')) return `Caption ${+key.slice(4) + 1}`;
+    if (key.startsWith('free:')) {
+        const f = page.free.find((x) => `free:${x.id}` === key);
+        return f ? { text: 'Text box', image: 'Image', rect: 'Rectangle', line: 'Line' }[f.t] : 'Element';
+    }
+    return KEY_NAMES[key] || 'Element';
+}
+const TOKENS_HINT = 'Linked fields: {project} {client} {stage} {date} {revision} {section} {page} {pages} {studio} {website}';
+
+// ── The selected element ──
+function ElementBox({ app }) {
+    const { S } = app, page = S.doc.pages[S.page], key = S.key, lay = app.lay(S.page);
+    const fr = lay.frames[key], ov = page.ov[key] || {}, free = key.startsWith('free:') ? page.free.find((f) => `free:${f.id}` === key) : null;
+    if (!fr && !free) return null;
+    const setOv = (patch, tag) => app.commit((d) => { const p = d.pages[S.page]; p.ov[key] = { ...p.ov[key], ...patch }; }, tag && `${page.id}:${key}:${tag}`);
+    const setFree = (patch, tag) => app.commit((d) => Object.assign(d.pages[S.page].free.find((f) => f.id === free.id), patch), tag && `${page.id}:${key}:${tag}`);
+    const kind = fr ? fr.kind : free.t;
+    const isText = kind === 'text' || kind === 'group';
+    const th = S.doc.theme.colors;
+    const alignTo = (ax, ay) => app.commit((d) => {
+        const p = d.pages[S.page], c = lay.content, f = [fr.x, fr.y, fr.w, fr.h];
+        if (ax != null) f[0] = c.x + (c.w - fr.w) * ax;
+        if (ay != null) f[1] = c.y + (c.h - fr.h) * ay;
+        p.ov[key] = { ...p.ov[key], f: [f[0] / lay.w, f[1] / lay.h, f[2] / lay.w, f[3] / lay.h] };
+    });
+    const field = { title: 1, subtitle: 1, caption: 1, body: 1, notes: 1 }[key] ? key : null;
+
+    return html`<section class="pm-el">
+        <header><strong>${keyName(key, page)}</strong>
+            ${free ? html`<${Btn} kind="is-danger is-sm" on=${() => app.removeFree(free.id)}>Delete<//>`
+        : html`<${Btn} kind="is-sm" on=${() => { setOv({ hide: true }); app.select(null); }} title="Take it off this page (it can be put back below)">Hide<//>`}
+        </header>
+        ${field && html`<${Field} label="Words"><${Text} area=${key === 'body' || key === 'notes' ? 6 : 2} value=${page[field]} on=${(v) => app.commit((d) => { d.pages[S.page][field] = v; }, `${page.id}:${field}`)} /><//>`}
+        ${free && free.t === 'text' && html`
+            <${Field} label="Words" hint=${TOKENS_HINT}><${Text} area=${4} value=${free.text} on=${(v) => setFree({ text: v }, 'text')} /><//>
+            <${Field} label="Style"><${Select} value=${free.role || 'body'} on=${(v) => setFree({ role: v })} options=${Object.entries(ROLE_NAMES)} /><//>`}
+        ${free && free.t === 'rect' && html`
+            <${Field} label="Colour"><${Color} value=${free.fill || th.line} on=${(v) => setFree({ fill: v }, 'fill')} /><//>
+            <${Field} label="Opacity"><${Range} min=${5} max=${100} step=${5} value=${Math.round((free.opacity ?? 1) * 100)} on=${(v) => setFree({ opacity: v / 100 }, 'op')} show=${(v) => `${v}%`} /><//>`}
+        ${free && free.t === 'line' && html`
+            <${Field} label="Colour"><${Color} value=${free.color || th.text} on=${(v) => setFree({ color: v }, 'color')} /><//>
+            <${Field} label="Weight"><${Range} min=${0.25} max=${6} step=${0.25} value=${free.lw || 0.75} on=${(v) => setFree({ lw: v }, 'lw')} show=${(v) => `${v} pt`} /><//>`}
+        ${isText && html`
+            <${Field} label="Size"><${Range} min=${50} max=${250} step=${5} value=${Math.round((ov.sz || 1) * 100)} on=${(v) => setOv({ sz: v / 100 }, 'sz')} show=${(v) => `${v}%`} /><//>
+            <${Field} label="Align"><${Seg} value=${ov.align || ''} on=${(v) => setOv({ align: v || undefined })} options=${[['', 'Auto'], ['left', 'Left'], ['center', 'Centre'], ['right', 'Right']]} /><//>
+            <${Field} label="Colour"><div class="pm-sw">
+                ${[['', 'Template'], [th.text, 'Text'], [th.muted, 'Muted'], [th.accent, 'Accent']].map(([c, l]) => html`<button type="button" class=${(ov.color || '') === c ? 'is-on' : ''} title=${l} style=${{ background: c || 'transparent' }} onClick=${() => setOv({ color: c || undefined })}>${c ? '' : '∅'}</button>`)}
+                <input type="color" value=${ov.color || th.text} onInput=${(e) => setOv({ color: e.target.value }, 'color')} title="Another colour" />
+            </div><//>
+            <${Field} label="Font"><${Select} value=${ov.font || ''} on=${(v) => setOv({ font: v || undefined, weight: undefined })} options=${[['', 'Template'], ...Object.keys(FONTS).map((f) => [f, f])]} /><//>
+            ${ov.font && html`<${Field} label="Weight"><${Select} value=${ov.weight || ''} on=${(v) => setOv({ weight: +v || undefined })} options=${[['', 'Template'], ...FONTS[ov.font].weights.map((w) => [w, { 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold' }[w]])]} /><//>`}
+            <${Field} label="Letters"><${Seg} value=${ov.up === undefined ? '' : ov.up ? '1' : '0'} on=${(v) => setOv({ up: v === '' ? undefined : v === '1' })} options=${[['', 'Template'], ['1', 'CAPITALS'], ['0', 'As typed']]} /><//>`}
+        ${kind === 'logo' && html`<${Field} label="Colour"><${Color} value=${ov.color || th.text} on=${(v) => setOv({ color: v }, 'color')} /><//>`}
+        ${fr && html`<${Field} label="Place on the page"><div class="pm-seg pm-seg--icons">
+            ${[['⇤', 0, null, 'Left'], ['↔', 0.5, null, 'Centre'], ['⇥', 1, null, 'Right'], ['⤒', null, 0, 'Top'], ['↕', null, 0.5, 'Middle'], ['⤓', null, 1, 'Bottom']]
+        .map(([icon, ax, ay, title]) => html`<button type="button" title=${`${title} of the page's content area`} onClick=${() => alignTo(ax, ay)}>${icon}</button>`)}
+        </div><//>`}
+        ${free && html`<div class="pm-row"><${Btn} kind="is-sm" on=${() => app.arrange(free.id, 1)}>Bring forward<//><${Btn} kind="is-sm" on=${() => app.arrange(free.id, -1)}>Send back<//></div>`}
+        ${(ov.f || ov.sz || ov.align || ov.color || ov.font || ov.up !== undefined) && !free && html`<${Btn} kind="is-sm" on=${() => app.commit((d) => { delete d.pages[S.page].ov[key]; })}>Back to the layout's place and style<//>`}
+    </section>`;
+}
+
+// ── One image slot ──
+function SlotBox({ app, i, page, lay, captions }) {
+    const { S } = app, s = page.images[i], a = s.asset ? S.assets.get(s.asset) : null, fr = lay.frames[`img:${i}`] || {};
+    const set = (patch, tag) => app.commit((d) => Object.assign(d.pages[S.page].images[i], patch), tag && `${page.id}:img${i}:${tag}`);
+    return html`<div class=${`pm-slot${S.key === `img:${i}` ? ' is-on' : ''}`} onClick=${() => app.select(`img:${i}`)}>
+        <div class="pm-slot__top">
+            <div class="pm-slot__pic">${a ? html`<img src=${app.media.url(a.hash, 'thumb', s.page)} alt="" />` : html`<span>Empty</span>`}</div>
+            <div class="pm-slot__meta">
+                <strong>${a ? a.name : `Image ${i + 1}`}${a && a.kind === 'pdf' ? ` — page ${s.page}` : ''}</strong>
+                ${a && a.kind === 'pdf' && html`<small>PDF drawing — stays vector${fr.k ? `, placed at ${Math.round(fr.k * 100)}% of its sheet` : ''}</small>`}
+                ${a && a.kind === 'image' && fr.ppi && html`<small class=${fr.ppi < LOW_PPI ? 'is-warn' : ''}>
+                    ${fr.ppi < LOW_PPI ? `Prints at ${Math.round(fr.ppi)} PPI — it will look soft. Only a larger original can fix this; a higher DPI setting adds no detail.` : `Prints at ${Math.round(fr.ppi)} PPI`}
+                </small>`}
+                <div class="pm-row">
+                    <${Btn} kind="is-sm" on=${(e) => { e.stopPropagation(); app.openLibrary({ page: S.page, slot: i }); }}>${a ? 'Replace…' : 'Choose…'}<//>
+                    ${a && html`<${Btn} kind="is-sm" on=${(e) => { e.stopPropagation(); set({ asset: null, page: 0 }); }}>Remove<//>`}
+                </div>
+            </div>
+        </div>
+        ${a && html`<div class="pm-row">
+            <${Seg} value=${s.fit} on=${(v) => set({ fit: v })} options=${[['fit', 'Fit', 'The whole image, nothing cut off'], ['fill', 'Fill', 'Fills the frame; the edges that do not fit are cropped']]} />
+            ${s.fit === 'fill' && html`<${Btn} kind=${`is-sm${S.crop && S.key === `img:${i}` ? ' is-on' : ''}`} on=${(e) => { e.stopPropagation(); app.cropMode(`img:${i}`); }}>Adjust crop<//>`}
+        </div>`}
+        ${a && s.fit === 'fill' && html`<${Field} label="Zoom" row><${Range} min=${100} max=${300} step=${5} value=${Math.round((s.zoom || 1) * 100)} on=${(v) => set({ zoom: v / 100 }, 'zoom')} show=${(v) => `${v}%`} /><//>`}
+        ${captions && html`<${Text} placeholder="Caption (optional)" value=${s.caption} on=${(v) => set({ caption: v }, 'cap')} />`}
+    </div>`;
+}
+
+// ── Page tab ──
+export function PageTab({ app }) {
+    const { S } = app, page = S.doc.pages[S.page];
+    if (!page) return html`<p class="pm-empty">Add a page to begin.</p>`;
+    const L = LAYOUTS[page.layout], lay = app.lay(S.page), size = pageSize(S.doc, page);
+    const set = (fn, tag) => app.commit((d) => fn(d.pages[S.page], d), tag && `${page.id}:${tag}`);
+    const opt = (k, v) => set((p) => { if (v === undefined || v === '') delete p.opts[k]; else p.opts[k] = v; });
+    const d = page.drawing;
+    const setD = (k, v, tag) => set((p) => { p.drawing[k] = v; }, tag);
+    const slots = (n) => set((p) => { while (p.images.length < n) p.images.push(slot(L.fit || 'fill')); p.images.length = n; });
+    const hidden = Object.keys(page.ov).filter((k) => page.ov[k].hide);
+    const own = lay.frames['img:0'] && page.layout === 'sheet';
+    const a0 = page.images[0] && page.images[0].asset ? S.assets.get(page.images[0].asset) : null;
+    const src0 = a0 ? sourceSize(a0, page.images[0].page) : null;
+
+    return html`
+        ${S.key && html`<${ElementBox} app=${app} />`}
+        <${Group} title=${L.name}>
+            <${Field} label="Layout"><${Select} value=${page.layout} on=${(v) => app.changeLayout(v)} options=${Object.entries(LAYOUTS).map(([k, x]) => [k, x.name])} /><//>
+            ${L.texts.map((f) => html`<${Field} label=${page.layout === 'drawing' && f === 'title' ? 'Floor / drawing name' : TEXT_LABELS[f]}>
+                <${Text} area=${f === 'body' || f === 'notes' ? 7 : f === 'caption' ? 3 : null} value=${page[f]}
+                    placeholder=${f === 'body' ? 'Write the project overview here.' : f === 'title' && page.layout === 'contents' ? 'Contents' : ''}
+                    on=${(v) => set((p) => { p[f] = v; }, f)} /><//>`)}
+            ${page.layout === 'divider' && html`<div class="pm-chips">${SECTIONS.map((t) => html`<button type="button" onClick=${() => set((p) => { p.title = t; })}>${t}</button>`)}</div>`}
+
+            ${page.layout === 'cover' && html`
+                <${Field} label="Cover style"><${Seg} value=${page.opts.variant || S.doc.theme.cover} on=${(v) => opt('variant', v)} options=${[['type', 'Typography'], ['image', 'Image'], ['logo', 'Logo']]} /><//>
+                <p class="pm-note">The cover shows the project's information — fill it in under <a href="#" onClick=${(e) => { e.preventDefault(); app.tab('project'); }}>Project</a>. Empty fields leave no gap.</p>`}
+            ${page.layout === 'divider' && html`
+                <${Field} label="Style"><${Seg} value=${page.opts.variant || S.doc.theme.divider} on=${(v) => opt('variant', v)} options=${[['line', 'Line'], ['centered', 'Centred'], ['block', 'Block']]} /><//>
+                <${Toggle} label="Section number" value=${page.opts.number !== false} on=${(v) => opt('number', v ? undefined : false)} />`}
+            ${page.layout === 'image-caption' && html`<${Field} label="Words"><${Seg} value=${page.opts.textPos || 'below'} on=${(v) => opt('textPos', v)} options=${[['below', 'Below'], ['side', 'Beside']]} /><//>`}
+            ${page.layout === 'overview' && html`<${Toggle} label="Key facts from the project's information" value=${page.opts.facts !== false} on=${(v) => opt('facts', v ? undefined : false)} />`}
+            ${page.layout === 'drawing' && html`
+                <div class="pm-2"><${Field} label="Drawing no."><${Text} value=${d.number} on=${(v) => setD('number', v, 'dn')} /><//>
+                <${Field} label="Area"><${Text} value=${d.area} placeholder="e.g. 245 m²" on=${(v) => setD('area', v, 'da')} /><//></div>
+                <${Field} label="Scale of the drawing" hint="As drawn on its original sheet, e.g. 1:100. It is printed only for a PDF drawing — full size, or as “1:100 @ A1” when reduced from a standard sheet. It is never guessed.">
+                    <${Text} value=${d.scale} placeholder="1:100" on=${(v) => setD('scale', v, 'ds')} /><//>
+                <${Toggle} label="North arrow" value=${d.north} on=${(v) => setD('north', v)} />
+                ${d.north && html`<${Field} label="North points" row><${Range} min=${-180} max=${180} step=${5} value=${+d.northAngle || 0} on=${(v) => setD('northAngle', v, 'na')} show=${(v) => `${v}°`} /><//>`}`}
+            ${page.layout === 'sheet' && src0 && html`
+                <${Toggle} label="Keep the sheet's own paper size" value=${!!page.size} on=${(v) => set((p) => { if (v) p.size = { w: src0.w, h: src0.h }; else delete p.size; })} />
+                <p class="pm-note">${page.size
+        ? `This page is ${mm(size.w)} × ${mm(size.h)} mm${isoName(mm(size.w), mm(size.h)) ? ` (${isoName(mm(size.w), mm(size.h))})` : ''} in the PDF — the drawing at full size, true to its scale. The other pages keep the presentation's size; a printer set to “fit to page” scales it.`
+        : `The sheet is scaled to fit the presentation's page (${S.doc.size}); it is no longer at its drawn scale.`}</p>`}
+        <//>
+
+        ${L.images > 0 && !(page.layout === 'cover' && (page.opts.variant || S.doc.theme.cover) !== 'image') && html`<${Group} title=${page.layout === 'cover' ? 'Cover image' : page.layout === 'divider' ? 'Background image (optional)' : 'Images'}>
+            ${page.images.map((s, i) => html`<${SlotBox} app=${app} i=${i} page=${page} lay=${lay} captions=${L.captions} />`)}
+            ${page.layout === 'divider' && page.images[0].asset && html`<${Field} label="Darken the image" row><${Range} min=${0} max=${80} step=${5} value=${Math.round((page.opts.scrim ?? 0.45) * 100)} on=${(v) => set((p) => { p.opts.scrim = v / 100; }, 'scrim')} show=${(v) => `${v}%`} /><//>`}
+            ${{ overview: [1, 3], grid: [3, 6], materials: [2, 12] }[page.layout] && html`<${Field} label="Number of images" row>
+                <${Seg} value=${page.images.length} on=${slots} options=${(() => { const [a, b] = { overview: [1, 3], grid: [3, 6], materials: [2, 12] }[page.layout]; return Array.from({ length: b - a + 1 }, (_, n) => [a + n, a + n]); })()} /><//>`}
+        <//>`}
+
+        <${Group} title="Add to this page" open=${page.layout === 'blank'}>
+            <div class="pm-row pm-row--wrap">
+                <${Btn} kind="is-sm" on=${() => app.addFree('text')}>Text box<//><${Btn} kind="is-sm" on=${() => app.openLibrary({ page: S.page, free: true })}>Image<//>
+                <${Btn} kind="is-sm" on=${() => app.addFree('line')}>Line<//><${Btn} kind="is-sm" on=${() => app.addFree('rect')}>Rectangle<//>
+            </div>
+            <p class="pm-note">Drag anything on the page to move it; drag its handles to resize. Arrow keys nudge.</p>
+            ${hidden.length > 0 && html`<div class="pm-chips">${hidden.map((k) => html`<button type="button" onClick=${() => set((p) => { delete p.ov[k].hide; })}>Show ${keyName(k, page).toLowerCase()}</button>`)}</div>`}
+        <//>
+
+        <${Group} title="This page" open=${false}>
+            <${Field} label="Header, footer & page number"><${Seg} value=${page.opts.chrome === undefined ? '' : page.opts.chrome ? '1' : '0'} on=${(v) => opt('chrome', v === '' ? undefined : v === '1')} options=${[['', 'As the layout'], ['1', 'Show'], ['0', 'Hide']]} /><//>
+            ${!page.size && html`<${Field} label="Orientation" hint="A page may be turned on its own; the PDF then mixes the two, each page at its true size.">
+                <${Seg} value=${page.orient || ''} on=${(v) => set((p) => { if (v) p.orient = v; else delete p.orient; })} options=${[['', 'As the presentation'], ['landscape', 'Landscape'], ['portrait', 'Portrait']]} /><//>`}
+            <${Field} label="Background"><div class="pm-row"><${Color} value=${page.opts.bg || lay.bg} on=${(v) => set((p) => { p.opts.bg = v; }, 'bg')} />${page.opts.bg && html`<${Btn} kind="is-sm" on=${() => opt('bg')}>Template's<//>`}</div><//>
+            <div class="pm-row pm-row--wrap">
+                <${Btn} kind="is-sm" on=${() => app.applyToSame()} title="Copies this page's style choices and layout options to every page with the same layout">Apply to all “${L.name}” pages<//>
+                <${Btn} kind="is-sm" on=${() => app.saveLayout()}>Save as a layout…<//>
+            </div>
+        <//>
+
+        ${lay.warnings.length > 0 && html`<div class="pm-warns">${lay.warnings.map((w) => html`<p>${warningText(w)}</p>`)}</div>`}
+    `;
+}
+export function warningText(w) {
+    if (w.type === 'empty') return 'An image place on this page is empty.';
+    if (w.type === 'lowres') return `“${w.name}” prints at ${w.ppi} PPI here — below ${LOW_PPI} it looks soft on paper. Use a larger original or give it less space.`;
+    if (w.type === 'overflow') return 'There is more text than fits — shorten it or give it more room.';
+    return w.text;
+}
+
+// ── Project tab ──
+export function ProjectTab({ app }) {
+    const { S } = app, i = S.doc.info;
+    const set = (k, v) => app.commit((d) => { d.info[k] = v; }, `info:${k}`);
+    return html`
+        <${Group} title="Project information">
+            <p class="pm-note">Filled in once, used wherever it appears: the cover, headers and footers, the key facts. Leave a field empty to leave it out.</p>
+            ${INFO.map(([k, label, ph]) => {
+        if (k === 'plotArea' || k === 'builtArea') {
+            const u = k === 'plotArea' ? 'plotUnit' : 'builtUnit';
+            return html`<${Field} label=${label}><div class="pm-row"><${Text} dir="ltr" value=${i[k]} on=${(v) => set(k, v)} placeholder="e.g. 450" /><${Select} value=${i[u]} on=${(v) => set(u, v)} options=${AREA_UNITS.map((x) => [x, x])} /></div><//>`;
+        }
+        return html`<${Field} label=${label}><${Text} type=${k === 'date' ? 'date' : null} area=${k === 'confidential' ? 2 : null} value=${i[k]} placeholder=${ph} on=${(v) => set(k, v)} /><//>`;
+    })}
+            <${Toggle} label="Website, e-mail and phone on the cover" value=${i.showContact} on=${(v) => set('showContact', v)} />
+        <//>
+        <${Group} title="Collaboration">
+            <${Field} label="Partner's logo beside yours" hint="For projects done together — on the cover and the closing page. Partners are kept under Branding.">
+                <${Select} value=${S.doc.partner || ''} on=${(v) => app.commit((d) => { d.partner = v || null; })} options=${[['', 'None — only your logo'], ...(S.brand.partners || []).map((p) => [p.id, p.name])]} /><//>
+        <//>
+        <${Group} title="Review copy" open=${S.doc.watermark.on}>
+            <${Toggle} label="Watermark across every page" value=${S.doc.watermark.on} on=${(v) => app.commit((d) => { d.watermark.on = v; })} />
+            ${S.doc.watermark.on && html`<${Field} label="Words"><${Text} value=${S.doc.watermark.text} on=${(v) => app.commit((d) => { d.watermark.text = v; }, 'wm')} /><//>`}
+        <//>`;
+}
+
+// ── Design tab ──
+export function DesignTab({ app }) {
+    const { S } = app, t = S.doc.theme;
+    const set = (fn, tag) => app.commit((d) => fn(d.theme, d), tag && `theme:${tag}`);
+    const saved = S.presets.filter((p) => p.type === 'theme');
+    const zone = (name, label) => html`<${Group} title=${label} open=${false}>
+        <${Toggle} label=${`Show the ${name}`} value=${t[name].on} on=${(v) => set((th) => { th[name].on = v; })} />
+        ${t[name].on && html`
+            <${Field} label="Left"><${Text} value=${t[name].l} on=${(v) => set((th) => { th[name].l = v; }, `${name}l`)} /><//>
+            <${Field} label="Centre"><${Text} value=${t[name].c} on=${(v) => set((th) => { th[name].c = v; }, `${name}c`)} /><//>
+            <${Field} label="Right" hint=${TOKENS_HINT}><${Text} value=${t[name].r} on=${(v) => set((th) => { th[name].r = v; }, `${name}r`)} /><//>
+            <${Toggle} label="A thin line beside it" value=${t[name].line} on=${(v) => set((th) => { th[name].line = v; })} />`}
+    <//>`;
+    const font = (k, label) => html`<${Group} title=${label} open=${false}>
+        <${Field} label="Family"><${Select} value=${t.fonts[k].f} on=${(v) => set((th) => { th.fonts[k].f = v; th.fonts[k].w = FONTS[v].weights.includes(th.fonts[k].w) ? th.fonts[k].w : FONTS[v].weights[0]; })} options=${Object.keys(FONTS).map((f) => [f, f])} /><//>
+        <${Field} label="Weight"><${Select} value=${t.fonts[k].w} on=${(v) => set((th) => { th.fonts[k].w = +v; })} options=${FONTS[t.fonts[k].f].weights.map((w) => [w, { 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold' }[w]])} /><//>
+        <${Toggle} label="CAPITALS" value=${t.fonts[k].up} on=${(v) => set((th) => { th.fonts[k].up = v; })} />
+        <${Field} label="Letter-spacing" row><${Range} min=${0} max=${30} value=${Math.round((t.fonts[k].ls || 0) * 100)} on=${(v) => set((th) => { th.fonts[k].ls = v / 100; }, `ls${k}`)} show=${(v) => `${v}%`} /><//>
+    <//>`;
+
+    return html`
+        <${Group} title="Template">
+            <div class="pm-themes">
+                ${Object.entries(THEMES).map(([id, th]) => html`<button type="button" class=${t.name === th.name ? 'is-on' : ''} onClick=${() => app.applyTheme(id)}>
+                    <i style=${{ background: th.colors.bg, color: th.colors.text, borderColor: th.colors.line }}><b style=${{ background: th.colors.accent }}></b>Aa</i>${th.name}</button>`)}
+                ${saved.map((p) => html`<button type="button" class=${t.name === p.name ? 'is-on' : ''} onClick=${() => app.applyTheme(`saved:${p.id}`)}>
+                    <i style=${{ background: p.data.colors.bg, color: p.data.colors.text, borderColor: p.data.colors.line }}><b style=${{ background: p.data.colors.accent }}></b>Aa</i>${p.name}
+                    <span class="pm-themes__x" title="Delete this template" onClick=${(e) => { e.stopPropagation(); app.deletePreset(p); }}>×</span></button>`)}
+            </div>
+            <p class="pm-note">Changing template restyles every page and keeps all the content.</p>
+            <${Btn} kind="is-sm" on=${() => app.saveTheme()}>Save this design as a template…<//>
+        <//>
+        <${Group} title="Page">
+            <div class="pm-2"><${Field} label="Size"><${Seg} value=${S.doc.size} on=${(v) => app.commit((d) => { d.size = v; })} options=${Object.keys(PAGE_MM).map((k) => [k, k])} /><//>
+            <${Field} label="Orientation"><${Seg} value=${S.doc.orient} on=${(v) => app.commit((d) => { d.orient = v; })} options=${[['landscape', 'Landscape'], ['portrait', 'Portrait']]} /><//></div>
+            <${Field} label="Margins (mm)"><div class="pm-4">${[['t', 'Top'], ['r', 'Right'], ['b', 'Bottom'], ['l', 'Left']].map(([k, l]) => html`<label><input class="pm-in" type="number" min="0" max="80" value=${t.margins[k]} title=${l}
+                onInput=${(e) => set((th) => { th.margins[k] = Math.max(0, Math.min(80, +e.target.value || 0)); }, `m${k}`)} /><span>${l}</span></label>`)}</div><//>
+        <//>
+        <${Group} title="Colours" open=${false}>
+            ${[['bg', 'Page'], ['text', 'Text'], ['muted', 'Quiet text'], ['accent', 'Accent'], ['line', 'Lines']].map(([k, l]) => html`<${Field} label=${l} row><${Color} value=${t.colors[k]} on=${(v) => set((th) => { th.colors[k] = v; }, `c${k}`)} /><//>`)}
+        <//>
+        ${font('title', 'Headings')}${font('body', 'Text')}${font('label', 'Labels')}
+        <${Group} title="Type size" open=${false}>
+            <${Field} label="All text" row><${Range} min=${75} max=${140} step=${5} value=${Math.round((t.scale || 1) * 100)} on=${(v) => set((th) => { th.scale = v / 100; }, 'scale')} show=${(v) => `${v}%`} /><//>
+        <//>
+        ${zone('header', 'Header')}${zone('footer', 'Footer')}
+        <${Group} title="Page numbers & logo" open=${false}>
+            <p class="pm-note">The number is printed wherever <code>{page}</code> stands in the header or footer.</p>
+            <${Toggle} label="No number on the cover" value=${t.numbers.skipCover} on=${(v) => set((th) => { th.numbers.skipCover = v; })} />
+            <${Toggle} label="No number on section dividers" value=${t.numbers.skipDividers} on=${(v) => set((th) => { th.numbers.skipDividers = v; })} />
+            <${Field} label="Your logo on every content page"><${Select} value=${t.logo.at} on=${(v) => set((th) => { th.logo.at = v; })}
+                options=${[['none', 'Not shown'], ['header-left', 'Header, left'], ['header-right', 'Header, right'], ['footer-left', 'Footer, left'], ['footer-center', 'Footer, centre'], ['footer-right', 'Footer, right']]} /><//>
+            ${t.logo.at !== 'none' && html`<${Field} label="Logo size" row><${Range} min=${60} max=${220} step=${10} value=${Math.round((t.logo.size || 1) * 100)} on=${(v) => set((th) => { th.logo.size = v / 100; }, 'logosz')} show=${(v) => `${v}%`} /><//>`}
+        <//>
+        <${Group} title="Covers & dividers" open=${false}>
+            <${Field} label="Cover style"><${Seg} value=${t.cover} on=${(v) => set((th) => { th.cover = v; })} options=${[['type', 'Typography'], ['image', 'Image'], ['logo', 'Logo']]} /><//>
+            <${Field} label="Divider style"><${Seg} value=${t.divider} on=${(v) => set((th) => { th.divider = v; })} options=${[['line', 'Line'], ['centered', 'Centred'], ['block', 'Block']]} /><//>
+            <p class="pm-note">A page set to its own style keeps it.</p>
+        <//>`;
+}
+
+// ── Add a page ──
+export function AddPageDialog({ app, onClose }) {
+    const groups = ['Structure', 'Content', 'Images', 'Drawings'];
+    const saved = app.S.presets.filter((p) => p.type === 'layout');
+    const add = (page) => { app.addPage(page); onClose(); };
+    return html`<${Dialog} title="Add a page" onClose=${onClose} wide>
+        ${groups.map((g) => html`<h3 class="pm-h">${g}</h3><div class="pm-tiles">
+            ${Object.entries(LAYOUTS).filter(([, L]) => L.group === g).map(([id, L]) => html`<button type="button" onClick=${() => add(newPage(id, id === 'cover' ? { opts: { variant: app.S.doc.theme.cover } } : {}))}>
+                <strong>${L.name}</strong><span>${L.hint}</span></button>`)}
+        </div>`)}
+        <h3 class="pm-h">Section dividers</h3>
+        <div class="pm-chips">${SECTIONS.map((t) => html`<button type="button" onClick=${() => add(newPage('divider', { title: t }))}>${t}</button>`)}</div>
+        ${saved.length > 0 && html`<h3 class="pm-h">Your layouts</h3><div class="pm-tiles">
+            ${saved.map((p) => html`<button type="button" onClick=${() => add({ ...newPage(p.data.layout), ...clone(p.data), id: uid() })}>
+                <strong>${p.name}</strong><span>${(LAYOUTS[p.data.layout] || LAYOUTS.blank).name}</span>
+                <i class="pm-tiles__x" title="Delete this layout" onClick=${(e) => { e.stopPropagation(); app.deletePreset(p); }}>×</i></button>`)}
+        </div>`}
+    <//>`;
+}
+
+// ── Upload, and turn uploads into pages ──
+const DRAWING_SECTIONS = ['Site Plan', 'Floor Plans', 'Elevations', 'Sections'];
+export function ImportDialog({ app, files, target, onClose }) {
+    const [rows, setRows] = useState([]);
+    const [renderAs, setRenderAs] = useState('image-full');
+    const [busy, setBusy] = useState(false);
+    const live = useRef([]);
+    const input = useRef();
+    const patch = (id, p) => { live.current = live.current.map((r) => (r.id === id ? { ...r, ...p } : r)); setRows(live.current); };
+
+    async function take(list) {
+        const added = [...list].map((file) => ({ id: uid(), file, name: file.name, kind: /\.pdf$/i.test(file.name) || file.type === 'application/pdf' ? 'pdf' : 'image',
+            status: 'Waiting', progress: 0, section: guessSection(file.name, /\.pdf$/i.test(file.name) ? 'pdf' : 'image'), thumbs: {}, picked: [], mode: 'sheet' }));
+        live.current = [...live.current, ...added];
+        setRows(live.current);
+        for (const row of added) {
+            try {
+                let pdf = null;
+                if (row.kind === 'pdf') {   // read it first: a PDF that cannot be used should not be uploaded at all
+                    patch(row.id, { status: 'Reading the PDF' });
+                    pdf = await app.uploader.openPdf(row.file);
+                    await app.uploader.checkPdf(row.file);
+                    patch(row.id, { pdf, picked: pdf.pages.map((_, i) => i + 1) });
+                    app.uploader.pdfThumbs(pdf, (n, url) => patch(row.id, { thumbs: { ...live.current.find((r) => r.id === row.id).thumbs, [n]: url } }));
+                }
+                patch(row.id, { status: 'Uploading' });
+                let asset = await app.uploader.upload(row.file, app.S.id, (p) => patch(row.id, { progress: p }));
+                patch(row.id, { status: 'Making the preview' });
+                // a PDF records its pages and shows its first one at once, so it can be found in the library later
+                asset = row.kind === 'image' ? await app.uploader.imagePreviews(row.file, asset) : await app.uploader.pdfPreviews(pdf, asset, [1]);
+                app.addAsset(asset);
+                patch(row.id, { status: 'Ready', asset, progress: 1 });
+            } catch (e) {
+                patch(row.id, { status: 'Failed', error: e.message });
+            }
+        }
+    }
+    useEffect(() => { if (files && files.length) take(files); }, []);
+
+    const ready = rows.filter((r) => r.asset);
+    const working = rows.some((r) => !r.asset && !r.error);
+
+    /** Previews for the PDF pages that were picked, then the assets as they now are. */
+    async function finishPdfs() {
+        for (const r of live.current.filter((x) => x.asset && x.kind === 'pdf' && x.picked.length)) {
+            patch(r.id, { status: 'Preparing the pages' });
+            const asset = await app.uploader.pdfPreviews(r.pdf, r.asset, r.picked, (p) => patch(r.id, { progress: p }));
+            app.addAsset(asset);
+            patch(r.id, { asset, status: 'Ready' });
+        }
+        return live.current.filter((x) => x.asset);
+    }
+    async function finish(build) {
+        setBusy(true);
+        try {
+            const done = await finishPdfs();
+            if (target) {
+                const r = done[0];
+                if (r) app.assign(target, r.asset, r.kind === 'pdf' ? r.picked[0] || 1 : 0);
+            } else if (build) {
+                app.buildPages(done.map((r) => ({ asset: r.asset, section: r.section, pages: r.kind === 'pdf' ? r.picked : null, mode: r.mode, title: titleFromName(r.name) })), renderAs);
+            }
+            onClose();
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return html`<${Dialog} title=${target ? 'Upload an image or a PDF page' : 'Upload drawings and renders'} onClose=${() => !busy && onClose()} wide
+        foot=${html`
+            ${!target && ready.length > 0 && html`<label class="pm-inline">Renders become <${Select} value=${renderAs} on=${setRenderAs} options=${[['image-full', 'full-page images'], ['image-fit', 'images within the margins'], ['image-caption', 'images with a caption']]} /></label>`}
+            <span class="pm-sp"></span>
+            <${Btn} on=${onClose} disabled=${busy}>${ready.length ? 'Keep in the library only' : 'Close'}<//>
+            ${target ? html`<${Btn} kind="is-primary" disabled=${busy || working || !ready.length} on=${() => finish(false)}>Use it<//>`
+        : html`<${Btn} kind="is-primary" disabled=${busy || working || !ready.length} on=${() => finish(true)}>${busy ? 'Preparing…' : `Create pages (${ready.reduce((n, r) => n + (r.kind === 'pdf' ? r.picked.length : 1), 0)})`}<//>`}`}>
+        <div class="pm-drop" onDragOver=${(e) => e.preventDefault()} onDrop=${(e) => { e.preventDefault(); take(e.dataTransfer.files); }} onClick=${() => input.current.click()}>
+            <strong>Drop files here, or click to choose</strong>
+            <span>JPG and PNG images, and PDF drawings — several at once. Originals are stored untouched; up to ${Math.round(app.boot.maxBytes / 1048576)} MB each.</span>
+            <input ref=${input} type="file" multiple=${!target} accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" hidden onChange=${(e) => { take(e.target.files); e.target.value = ''; }} />
+        </div>
+        ${rows.map((r) => html`<div class=${`pm-up${r.error ? ' is-error' : ''}`}>
+            <div class="pm-up__head">
+                <div class="pm-up__pic">${r.asset && r.kind === 'image' ? html`<img src=${app.media.url(r.asset.hash, 'thumb')} alt="" />` : r.thumbs[1] ? html`<img src=${r.thumbs[1]} alt="" />` : html`<span>${r.kind === 'pdf' ? 'PDF' : '…'}</span>`}</div>
+                <div class="pm-up__info">
+                    <strong>${r.name}</strong>
+                    <small>${r.error || `${r.status}${r.asset ? ` · ${bytes(r.asset.size)}${r.kind === 'image' ? ` · ${r.asset.meta.w} × ${r.asset.meta.h} px` : ` · ${r.pdf.pages.length} page${r.pdf.pages.length > 1 ? 's' : ''}, vector kept`}` : ''}`}</small>
+                    ${!r.asset && !r.error && html`<progress max="1" value=${r.progress}></progress>`}
+                </div>
+                ${!target && r.asset && html`<label class="pm-up__sec">Section <${Select} value=${r.section} on=${(v) => patch(r.id, { section: v })} options=${[...SECTIONS.map((s) => [s, s]), ['', 'No section']]} /></label>`}
+            </div>
+            ${r.kind === 'pdf' && r.pdf && html`<div class="pm-up__pdf">
+                ${!target && html`<${Seg} value=${r.mode} on=${(v) => patch(r.id, { mode: v })} options=${[
+        ['sheet', 'Full drawing sheets', 'Each page whole, at the sheet\'s own paper size'],
+        ['sheet-fit', 'Sheets scaled to the page', 'Each page whole, scaled onto the presentation\'s page size'],
+        ['layout', 'Inside a page layout', 'Within the margins, with a title, details and notes']]} />`}
+                ${r.pdf.pages.length > 1 && html`<div class="pm-pages">
+                    ${r.pdf.pages.map((p, i) => { const n = i + 1, on = r.picked.includes(n); return html`<button type="button" class=${on ? 'is-on' : ''}
+                        onClick=${() => patch(r.id, { picked: target ? [n] : on ? r.picked.filter((x) => x !== n) : [...r.picked, n].sort((a, b) => a - b) })}>
+                        ${r.thumbs[n] ? html`<img src=${r.thumbs[n]} alt="" />` : html`<i></i>`}<span>${n} · ${mm(p.w)}×${mm(p.h)} mm</span></button>`; })}
+                </div>`}
+            </div>`}
+        </div>`)}
+    <//>`;
+}
+
+// ── Pick an image already uploaded ──
+export function LibraryDialog({ app, target, onClose }) {
+    const [busy, setBusy] = useState('');
+    const assets = [...app.S.assets.values()].filter((a) => !a.brand);
+    const used = JSON.stringify(app.S.doc.pages);
+    const remove = (e, a) => { e.stopPropagation(); if (confirm(`Remove “${a.name}” from this presentation? The stored file is deleted.`)) app.removeAsset(a); };
+    const x = (a) => !used.includes(a.hash) && html`<b class="pm-lib__x" title="Not used on any page — remove the file" onClick=${(e) => remove(e, a)}>×</b>`;
+    async function pickPdf(a, n) {
+        try {
+            if (!(a.meta.previews || []).includes(n)) {
+                setBusy(`Preparing page ${n}…`);
+                const data = await (await fetch(app.media.url(a.hash, 'original'))).arrayBuffer();
+                a = await app.uploader.pdfPreviews(await app.uploader.openPdf(data), a, [n]);
+                app.addAsset(a);
+            }
+            app.assign(target, a, n);
+            onClose();
+        } catch (e) { alert(e.message); } finally { setBusy(''); }
+    }
+    return html`<${Dialog} title="Choose an image or a drawing" onClose=${onClose} wide
+        foot=${html`<span class="pm-sp">${busy}</span><${Btn} on=${onClose}>Cancel<//><${Btn} kind="is-primary" on=${() => { onClose(); app.openImport(null, target); }}>Upload a new file…<//>`}>
+        ${!assets.length && html`<p class="pm-empty">Nothing has been uploaded for this presentation yet.</p>`}
+        <div class="pm-lib">
+            ${assets.map((a) => (a.kind === 'image'
+        ? html`<button type="button" onClick=${() => { app.assign(target, a, 0); onClose(); }}><img src=${app.media.url(a.hash, 'thumb')} alt="" loading="lazy" /><span>${a.name}</span><small>${a.meta.w} × ${a.meta.h} px</small>${x(a)}</button>`
+        : (a.meta.pages || []).map((p, i) => html`<button type="button" onClick=${() => pickPdf(a, i + 1)}>
+                ${(a.meta.previews || []).includes(i + 1) ? html`<img src=${app.media.url(a.hash, 'thumb', i + 1)} alt="" loading="lazy" />` : html`<i>PDF</i>`}
+                <span>${a.name}</span><small>page ${i + 1} · ${mm(p.w)}×${mm(p.h)} mm · vector</small>${i === 0 && x(a)}</button>`)))}
+        </div>
+    <//>`;
+}
+
+// ── The whole document, page after page ──
+export function PreviewDialog({ app, onClose }) {
+    const box = useRef();
+    const [w, setW] = useState(900);
+    useEffect(() => { setW(Math.min(1300, box.current.clientWidth - 80)); }, []);
+    return html`<div class="pm-preview" ref=${box}>
+        <header><strong>${app.S.name}</strong><span>${app.S.doc.pages.length} pages — as they will be in the PDF</span><span class="pm-sp"></span>
+            <${Btn} kind="is-primary" on=${() => { onClose(); app.dialog({ type: 'export' }); }}>Export PDF…<//><${Btn} on=${onClose}>Back to editing<//></header>
+        <div class="pm-preview__pages">${app.S.doc.pages.map((p, i) => { const lay = app.lay(i, false); return html`<figure><${PageView} lay=${lay} scale=${Math.min(w / lay.w, (window.innerHeight - 140) / lay.h)} media=${app.media} /><figcaption>${i + 1}</figcaption></figure>`; })}</div>
+    </div>`;
+}
+
+// ── Export ──
+export function ExportDialog({ app, onClose }) {
+    const { S } = app, n = S.doc.pages.length;
+    const [preset, setPreset] = useState('balanced');
+    const [which, setWhich] = useState(S.picks.size > 1 ? 'range' : 'all');
+    const [range, setRange] = useState(S.picks.size > 1 ? app.picksRange() : `1-${n}`);
+    const [name, setName] = useState(fileName(S.doc, S.name));
+    const [state, setState] = useState(null);   // { done, total, label } | { error } | { size }
+    const indices = which === 'all' ? S.doc.pages.map((_, i) => i) : which === 'page' ? [S.page] : parseRange(range, n);
+    const warns = (indices || []).flatMap((i) => app.lay(i, false).warnings.map((w) => ({ ...w, page: i + 1 })));
+    const lowres = warns.filter((w) => w.type === 'lowres'), empty = warns.filter((w) => w.type === 'empty'), other = warns.filter((w) => w.type !== 'lowres' && w.type !== 'empty');
+    const mixed = new Set((indices || []).map((i) => { const s = pageSize(S.doc, S.doc.pages[i]); return `${mm(s.w)}×${mm(s.h)}`; }));
+    const running = state && state.total && state.done < state.total;
+
+    async function run() {
+        setState({ done: 0, total: 1, label: 'Starting' });
+        try {
+            await app.saveNow();
+            const { bytes: data, pages } = await exportPdf({ doc: S.doc, indices, env: app.env(false), media: app.media, preset, title: name, onProgress: setState });
+            download(data, name);
+            setState({ size: data.length, pages });
+        } catch (e) {
+            console.error(e);
+            setState({ error: e.message || 'The PDF could not be made.' });
+        }
+    }
+
+    return html`<${Dialog} title="Export PDF" onClose=${() => !running && onClose()}
+        foot=${html`<span class="pm-sp"></span><${Btn} on=${onClose} disabled=${running}>Close<//><${Btn} kind="is-primary" disabled=${running || !indices} on=${run}>${running ? 'Working…' : 'Export PDF'}<//>`}>
+        <${Field} label="Quality"><div class="pm-presets">${Object.entries(PRESETS).map(([id, p]) => html`<label class=${preset === id ? 'is-on' : ''}>
+            <input type="radio" name="preset" checked=${preset === id} onChange=${() => setPreset(id)} /><strong>${p.name}</strong><span>${p.note}</span></label>`)}</div><//>
+        <${Field} label="Pages"><${Seg} value=${which} on=${setWhich} options=${[['all', `All ${n}`], ['page', `This page (${S.page + 1})`], ['range', 'Choose…']]} /><//>
+        ${which === 'range' && html`<${Field} hint=${indices ? `${indices.length} page${indices.length > 1 ? 's' : ''}` : `Write page numbers between 1 and ${n}, like 1-4, 7`}><${Text} dir="ltr" value=${range} on=${setRange} placeholder="1-4, 7" /><//>`}
+        <${Field} label="File name"><${Text} value=${name} on=${setName} /><//>
+        ${mixed.size > 1 && html`<p class="pm-note">This PDF mixes page sizes (${[...mixed].join(', ')} mm): each page is exactly its own size. When printing, choose “fit to page” or print the larger sheets separately.</p>`}
+        ${(lowres.length > 0 || empty.length > 0 || other.length > 0) && html`<div class="pm-warns">
+            ${lowres.length > 0 && html`<p><strong>${lowres.length} image${lowres.length > 1 ? 's are' : ' is'} too small for the space ${lowres.length > 1 ? 'they fill' : 'it fills'}</strong> and will look soft on paper: ${lowres.map((w) => `page ${w.page} (${w.ppi} PPI)`).join(', ')}. No export setting can add the missing detail — a larger original can.</p>`}
+            ${empty.length > 0 && html`<p>Empty image places are left blank: page${empty.length > 1 ? 's' : ''} ${[...new Set(empty.map((w) => w.page))].join(', ')}.</p>`}
+            ${other.map((w) => html`<p>Page ${w.page}: ${warningText(w)}</p>`)}
+        </div>`}
+        ${state && state.total && html`<div class="pm-progress"><progress max=${state.total} value=${state.done}></progress><span>${state.label}</span></div>`}
+        ${state && state.error && html`<p class="pm-error">${state.error}</p>`}
+        ${state && state.size && html`<p class="pm-ok">Done — ${state.pages} pages, ${bytes(state.size)}. It is in your downloads.</p>`}
+    <//>`;
+}
+
+// ── Branding ──
+export function BrandPanel({ app }) {
+    const { S } = app, b = S.brand;
+    const set = (fn) => app.setBrand(fn);
+    const input = useRef(), slotRef = useRef(null);
+    const [busy, setBusy] = useState('');
+    async function pick(e) {
+        const file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        if (/\.pdf$/i.test(file.name)) return alert('A logo must be a PNG or JPG image.');
+        setBusy('Uploading…');
+        try {
+            const asset = await app.uploader.imagePreviews(file, await app.uploader.upload(file, null));
+            app.addAsset(asset);
+            await app.media.prepare([asset.hash]);
+            const where = slotRef.current;
+            set((x) => { if (where === 'studio') x.logo = asset.hash; else x.partners.find((p) => p.id === where).logo = asset.hash; });
+        } catch (err) { alert(err.message); } finally { setBusy(''); }
+    }
+    const choose = (where) => { slotRef.current = where; input.current.click(); };
+    const logo = (hash) => (hash ? html`<img src=${app.media.logoUrl(hash, '#141414') || ''} alt="" />` : html`<span>No logo</span>`);
+
+    return html`<div class="pm-brand">
+        <input ref=${input} type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" hidden onChange=${pick} />
+        <${Group} title="Your studio">
+            <${Field} label="Studio name"><${Text} value=${b.studio} on=${(v) => set((x) => { x.studio = v; })} /><//>
+            <${Field} label="Logo" hint="A dark logo on a white or clear ground works best: it is recoloured to suit light and dark pages.">
+                <div class="pm-logo">${logo(b.logo)}<${Btn} kind="is-sm" on=${() => choose('studio')}>${busy || 'Replace…'}<//></div><//>
+            <${Toggle} label="One colour — recolour it to suit each page" value=${b.logoMono !== false} on=${(v) => set((x) => { x.logoMono = v; })} />
+            <${Field} label="Address"><${Text} area=${2} value=${b.address} on=${(v) => set((x) => { x.address = v; })} /><//>
+            <div class="pm-2"><${Field} label="Phone"><${Text} dir="ltr" value=${b.phone} on=${(v) => set((x) => { x.phone = v; })} /><//>
+            <${Field} label="E-mail"><${Text} dir="ltr" value=${b.email} on=${(v) => set((x) => { x.email = v; })} /><//></div>
+            <${Field} label="Website"><${Text} dir="ltr" value=${b.website} on=${(v) => set((x) => { x.website = v; })} /><//>
+        <//>
+        <${Group} title="Partners' logos">
+            <p class="pm-note">For projects done together. A partner's logo appears beside yours only in the presentations where you choose it (Project → Collaboration).</p>
+            ${(b.partners || []).map((p) => html`<div class="pm-partner">
+                <div class="pm-logo">${logo(p.logo)}<${Btn} kind="is-sm" on=${() => choose(p.id)}>Replace…<//></div>
+                <${Text} value=${p.name} on=${(v) => set((x) => { x.partners.find((y) => y.id === p.id).name = v; })} />
+                <${Toggle} label="One colour" value=${p.mono !== false} on=${(v) => set((x) => { x.partners.find((y) => y.id === p.id).mono = v; })} />
+                <${Btn} kind="is-sm is-danger" on=${() => confirm(`Remove ${p.name}?`) && set((x) => { x.partners = x.partners.filter((y) => y.id !== p.id); })}>Remove<//>
+            </div>`)}
+            <${Btn} kind="is-sm" on=${() => set((x) => { x.partners = [...(x.partners || []), { id: uid(), name: 'New partner', logo: null, mono: true }]; })}>Add a partner<//>
+        <//>
+        <${Group} title="New presentations start with">
+            <${Field} label="Template"><${Select} value=${(b.defaults || {}).theme} on=${(v) => set((x) => { x.defaults = { ...x.defaults, theme: v }; })}
+                options=${[...Object.entries(THEMES).map(([id, t]) => [id, t.name]), ...S.presets.filter((p) => p.type === 'theme').map((p) => [`saved:${p.id}`, `${p.name} (yours)`])]} /><//>
+            <div class="pm-2"><${Field} label="Page size"><${Seg} value=${(b.defaults || {}).size} on=${(v) => set((x) => { x.defaults = { ...x.defaults, size: v }; })} options=${[['A3', 'A3'], ['A4', 'A4']]} /><//>
+            <${Field} label="Orientation"><${Seg} value=${(b.defaults || {}).orient} on=${(v) => set((x) => { x.defaults = { ...x.defaults, orient: v }; })} options=${[['landscape', 'Landscape'], ['portrait', 'Portrait']]} /><//></div>
+        <//>
+        <${Group} title="Your saved templates and layouts">
+            ${!S.presets.length && html`<p class="pm-note">None yet. In a presentation, use Design → “Save this design as a template”, or Page → “Save as a layout”.</p>`}
+            ${S.presets.map((p) => html`<div class="pm-preset"><span>${p.name}</span><small>${p.type === 'theme' ? 'Template' : `Layout — ${(LAYOUTS[p.data.layout] || LAYOUTS.blank).name}`}</small>
+                <${Btn} kind="is-sm is-danger" on=${() => app.deletePreset(p)}>Delete<//></div>`)}
+        <//>
+    </div>`;
+}

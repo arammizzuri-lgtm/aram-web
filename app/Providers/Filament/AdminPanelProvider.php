@@ -8,6 +8,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\RoomFileController;
 use App\Http\Controllers\TestimonialPhotoController;
+use App\Http\Controllers\PresentationController;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use Filament\Enums\ThemeMode;
@@ -65,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
             ->spaUrlExceptions(fn (): array => [
                 url('studio-aks-panel/backups/*'),
                 url('studio-aks-panel/cv/*'),
+                url('studio-aks-panel/presentations/*'),   // the editor is a page of its own
             ])
             // The sidebar in the order the studio's work runs: the portfolio, the
             // people it is for, hiring, how the website reads, and the plumbing.
@@ -115,6 +117,20 @@ class AdminPanelProvider extends PanelProvider
                 Route::get('rooms/receipts/{payment}', [RoomFileController::class, 'receipt'])->name('room-receipt');
                 Route::get('testimonials/{testimonial}/photo', TestimonialPhotoController::class)->name('testimonial-photo');
                 Route::get('projects/{project}/board', [BoardController::class, 'poster'])->name('project-board');
+
+                // Project presentations: the editor, its saves and uploads, and the private files.
+                Route::controller(PresentationController::class)->prefix('presentations')->name('presentation-')->group(function () {
+                    Route::get('brand', 'brand')->name('brand');
+                    Route::put('brand', 'saveBrand')->name('brand-save');
+                    Route::post('presets', 'storePreset')->name('presets');
+                    Route::delete('presets/{preset}', 'destroyPreset')->name('preset');
+                    Route::post('assets/chunk', 'chunk')->name('chunk');
+                    Route::post('assets/{asset}/previews', 'previews')->name('previews');
+                    Route::delete('assets/{asset}', 'destroyAsset')->name('asset');
+                    Route::get('files/{hash}/{variant}', 'file')->name('file');
+                    Route::get('{presentation}/editor', 'editor')->name('editor');
+                    Route::put('{presentation}', 'save')->name('save');
+                });
             });
     }
 }
