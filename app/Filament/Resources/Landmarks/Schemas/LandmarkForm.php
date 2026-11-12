@@ -16,6 +16,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -37,93 +39,103 @@ class LandmarkForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('The landmark')->columns(3)->columnSpanFull()->schema([
-                TextInput::make('name_en')->label('Name (English)')->required()->maxLength(160),
-                TextInput::make('name_ku')->label('Name (Kurdish)')->maxLength(160)->extraInputAttributes(self::KU),
-                TextInput::make('name_ar')->label('Name (Arabic)')->maxLength(160)->extraInputAttributes(self::AR),
-                TextInput::make('place_en')->label('Place (English)')->maxLength(160)->placeholder('Near Riha (Şanlıurfa)'),
-                TextInput::make('place_ku')->label('Place (Kurdish)')->maxLength(160)->extraInputAttributes(self::KU),
-                TextInput::make('place_ar')->label('Place (Arabic)')->maxLength(160)->extraInputAttributes(self::AR),
-                TextInput::make('period_en')->label('Period (English)')->maxLength(160)->placeholder('c. 9600–8200 BC'),
-                TextInput::make('period_ku')->label('Period (Kurdish)')->maxLength(160)->extraInputAttributes(self::KU),
-                TextInput::make('period_ar')->label('Period (Arabic)')->maxLength(160)->extraInputAttributes(self::AR),
-                Select::make('region')->label('Part of Kurdistan')->options(Landmark::options(Landmark::REGIONS))->required()->native(false),
-                Select::make('era')->label('Age')->options(Landmark::options(Landmark::ERAS))->required()->native(false),
-                Grid::make(2)->schema([
-                    TextInput::make('year_from')->label('From (year)')->numeric()->placeholder('-9600')
-                        ->helperText('Negative for BC. Places it on the collection\'s timeline.'),
-                    TextInput::make('year_to')->label('To (year)')->numeric()->placeholder('-8200')
-                        ->helperText('Empty = still lived in or in use.'),
+            // Five tabs instead of one long page; the tab stays in the address,
+            // and a field left wrong in another tab opens that tab.
+            Tabs::make('Landmark')->persistTabInQueryString()->columnSpanFull()->tabs([
+                Tab::make('Landmark')->icon(Heroicon::OutlinedBuildingLibrary)->schema([
+                    Section::make('The landmark')->columns(3)->columnSpanFull()->schema([
+                        TextInput::make('name_en')->label('Name (English)')->required()->maxLength(160),
+                        TextInput::make('name_ku')->label('Name (Kurdish)')->maxLength(160)->extraInputAttributes(self::KU),
+                        TextInput::make('name_ar')->label('Name (Arabic)')->maxLength(160)->extraInputAttributes(self::AR),
+                        TextInput::make('place_en')->label('Place (English)')->maxLength(160)->placeholder('Near Riha (Şanlıurfa)'),
+                        TextInput::make('place_ku')->label('Place (Kurdish)')->maxLength(160)->extraInputAttributes(self::KU),
+                        TextInput::make('place_ar')->label('Place (Arabic)')->maxLength(160)->extraInputAttributes(self::AR),
+                        TextInput::make('period_en')->label('Period (English)')->maxLength(160)->placeholder('c. 9600–8200 BC'),
+                        TextInput::make('period_ku')->label('Period (Kurdish)')->maxLength(160)->extraInputAttributes(self::KU),
+                        TextInput::make('period_ar')->label('Period (Arabic)')->maxLength(160)->extraInputAttributes(self::AR),
+                        Select::make('region')->label('Part of Kurdistan')->options(Landmark::options(Landmark::REGIONS))->required()->native(false),
+                        Select::make('era')->label('Age')->options(Landmark::options(Landmark::ERAS))->required()->native(false),
+                        Grid::make(2)->schema([
+                            TextInput::make('year_from')->label('From (year)')->numeric()->placeholder('-9600')
+                                ->helperText('Negative for BC. Places it on the collection\'s timeline.'),
+                            TextInput::make('year_to')->label('To (year)')->numeric()->placeholder('-8200')
+                                ->helperText('Empty = still lived in or in use.'),
+                        ]),
+                        // what it is built of: the map's "By material" filter and the tags on its page
+                        Select::make('materials')->label('Built of')->multiple()->native(false)->columnSpanFull()
+                            ->options(collect(Landmark::MATERIALS)->mapWithKeys(fn ($colour, $key) => [$key => Landmark::materialName($key, 'en')])->all())
+                            ->helperText('The main material first, then any others. Shown as tags on the page, and the heritage map can be filtered by it. The names and the line about each material are in Site content → Kurdistan heritage.'),
+                    ]),
+
+                    Section::make('Publishing')->columns(3)->columnSpanFull()->schema([
+                        TextInput::make('slug')->label('Web address')->prefix('/kurdistan-heritage/')->maxLength(120)
+                            ->rules(['nullable', 'alpha_dash'])->unique(ignoreRecord: true)
+                            ->helperText('Made from the English name when left empty.'),
+                        TextInput::make('sort_order')->label('Order in the list')->numeric()->default(fn () => (int) Landmark::max('sort_order') + 1),
+                        Toggle::make('is_published')->label('Shown on the website')->default(true)->inline(false)
+                            ->helperText('Unpublished, the page is reachable only through Preview.'),
+                    ]),
                 ]),
-                // what it is built of: the map's "By material" filter and the tags on its page
-                Select::make('materials')->label('Built of')->multiple()->native(false)->columnSpanFull()
-                    ->options(collect(Landmark::MATERIALS)->mapWithKeys(fn ($colour, $key) => [$key => Landmark::materialName($key, 'en')])->all())
-                    ->helperText('The main material first, then any others. Shown as tags on the page, and the heritage map can be filtered by it. The names and the line about each material are in Site content → Kurdistan heritage.'),
-            ]),
-
-            Section::make('How the page opens')->columns(3)->columnSpanFull()
-                ->description('The one line is what the map and the cards say; the introduction is the first thing read on the page.')
-                ->schema([
-                    Select::make('hero_style')->label('Opening')->options(Landmark::HERO_STYLES)->default('editorial')->required()->native(false)->columnSpanFull(),
-                    Textarea::make('summary_en')->label('One line (English)')->rows(3),
-                    Textarea::make('summary_ku')->label('One line (Kurdish)')->rows(3)->extraInputAttributes(self::KU),
-                    Textarea::make('summary_ar')->label('One line (Arabic)')->rows(3)->extraInputAttributes(self::AR),
-                    Textarea::make('intro_en')->label('Introduction (English)')->rows(5)->helperText('Two or three sentences that make the visitor curious.'),
-                    Textarea::make('intro_ku')->label('Introduction (Kurdish)')->rows(5)->extraInputAttributes(self::KU),
-                    Textarea::make('intro_ar')->label('Introduction (Arabic)')->rows(5)->extraInputAttributes(self::AR),
-                    FileUpload::make('image')->label('Cover photograph')->image()
-                        ->disk('public')->directory('heritage')->visibility('public')->imagePreviewHeight('160')->maxSize(20480)
-                        ->helperText('Landscape. The opening of the page, the card and the map pop-up. Your own photograph, or one you may use — then write its credit.'),
-                    TextInput::make('image_credit')->label('Photo credit')->maxLength(200)->placeholder('Name, CC BY-SA 4.0, via Wikimedia Commons'),
-                    TextInput::make('image_source')->label('Photo source link')->url()->maxLength(300)->placeholder('https://commons.wikimedia.org/wiki/File:…'),
+                Tab::make('Opening')->icon(Heroicon::OutlinedPhoto)->schema([
+                    Section::make('How the page opens')->columns(3)->columnSpanFull()
+                        ->description('The one line is what the map and the cards say; the introduction is the first thing read on the page.')
+                        ->schema([
+                            Select::make('hero_style')->label('Opening')->options(Landmark::HERO_STYLES)->default('editorial')->required()->native(false)->columnSpanFull(),
+                            Textarea::make('summary_en')->label('One line (English)')->rows(3),
+                            Textarea::make('summary_ku')->label('One line (Kurdish)')->rows(3)->extraInputAttributes(self::KU),
+                            Textarea::make('summary_ar')->label('One line (Arabic)')->rows(3)->extraInputAttributes(self::AR),
+                            Textarea::make('intro_en')->label('Introduction (English)')->rows(5)->helperText('Two or three sentences that make the visitor curious.'),
+                            Textarea::make('intro_ku')->label('Introduction (Kurdish)')->rows(5)->extraInputAttributes(self::KU),
+                            Textarea::make('intro_ar')->label('Introduction (Arabic)')->rows(5)->extraInputAttributes(self::AR),
+                            FileUpload::make('image')->label('Cover photograph')->image()
+                                ->disk('public')->directory('heritage')->visibility('public')->imagePreviewHeight('160')->maxSize(20480)
+                                ->helperText('Landscape. The opening of the page, the card and the map pop-up. Your own photograph, or one you may use — then write its credit.'),
+                            TextInput::make('image_credit')->label('Photo credit')->maxLength(200)->placeholder('Name, CC BY-SA 4.0, via Wikimedia Commons'),
+                            TextInput::make('image_source')->label('Photo source link')->url()->maxLength(300)->placeholder('https://commons.wikimedia.org/wiki/File:…'),
+                        ]),
                 ]),
-
-            Section::make('The page')->columnSpanFull()
-                ->description('Sections, in the order they are read. Add the kinds this landmark\'s story needs, drag to reorder, duplicate or remove. Text: a blank line between paragraphs, "- " for a list, "> " for a quotation, "## " for a small heading, **bold**, *italic*.')
-                ->schema([
-                    Builder::make('sections')->label('')
-                        ->blocks(self::blocks())
-                        ->collapsible()->collapsed(fn (?array $state) => filled($state))
-                        ->cloneable()->reorderableWithButtons()->blockNumbers(false)
-                        ->blockPickerColumns(2)->blockPickerWidth('2xl')
-                        ->addActionLabel('Add a section')
-                        ->columnSpanFull(),
+                Tab::make('The page')->icon(Heroicon::OutlinedDocumentText)->schema([
+                    Section::make('The page')->columnSpanFull()
+                        ->description('Sections, in the order they are read. Add the kinds this landmark\'s story needs, drag to reorder, duplicate or remove. Text: a blank line between paragraphs, "- " for a list, "> " for a quotation, "## " for a small heading, **bold**, *italic*.')
+                        ->schema([
+                            Builder::make('sections')->label('')
+                                ->blocks(self::blocks())
+                                ->collapsible()->collapsed(fn (?array $state) => filled($state))
+                                ->cloneable()->reorderableWithButtons()->blockNumbers(false)
+                                ->blockPickerColumns(2)->blockPickerWidth('2xl')
+                                ->addActionLabel('Add a section')
+                                ->columnSpanFull(),
+                        ]),
                 ]),
+                Tab::make('State & UNESCO')->icon(Heroicon::OutlinedShieldExclamation)->schema([
+                    Section::make('Its state today')->columns(3)->columnSpanFull()
+                        ->description('Shown on its page. At risk, damaged, partly lost and under water also list it under "Lost and at risk" on the heritage page. Plain facts, causes named as the source names them.')
+                        ->schema([
+                            Select::make('condition')->label('State')->options(Landmark::options(Landmark::CONDITIONS))->native(false),
+                            TextInput::make('condition_url')->label('Source link')->url()->maxLength(300)->columnSpan(2)->placeholder('https://…'),
+                            Textarea::make('condition_en')->label('What happened (English)')->rows(3),
+                            Textarea::make('condition_ku')->label('What happened (Kurdish)')->rows(3)->extraInputAttributes(self::KU),
+                            Textarea::make('condition_ar')->label('What happened (Arabic)')->rows(3)->extraInputAttributes(self::AR),
+                        ]),
 
-            Section::make('UNESCO')->columns(4)->columnSpanFull()->schema([
-                Toggle::make('unesco')->label('World Heritage Site')->inline(false)->live(),
-                TextInput::make('unesco_year')->label('Inscribed in')->numeric()->placeholder('2018')->visible(fn (Get $get) => $get('unesco')),
-                TextInput::make('unesco_ref')->label('Reference no.')->numeric()->placeholder('1572')->helperText('whc.unesco.org/en/list/<no.>')->visible(fn (Get $get) => $get('unesco')),
-                TextInput::make('unesco_criteria')->label('Criteria')->maxLength(40)->placeholder('(i)(ii)(iv)')->visible(fn (Get $get) => $get('unesco')),
-                TextInput::make('unesco_name')->label('Official name of the property')->maxLength(200)->placeholder('Cultural Landscape of Hawraman/Uramanat')
-                    ->helperText('When it differs from the landmark\'s name.')->columnSpanFull()->visible(fn (Get $get) => $get('unesco')),
-            ]),
-
-            Section::make('Its state today')->columns(3)->columnSpanFull()
-                ->description('Shown on its page. At risk, damaged, partly lost and under water also list it under "Lost and at risk" on the heritage page. Plain facts, causes named as the source names them.')
-                ->schema([
-                    Select::make('condition')->label('State')->options(Landmark::options(Landmark::CONDITIONS))->native(false),
-                    TextInput::make('condition_url')->label('Source link')->url()->maxLength(300)->columnSpan(2)->placeholder('https://…'),
-                    Textarea::make('condition_en')->label('What happened (English)')->rows(3),
-                    Textarea::make('condition_ku')->label('What happened (Kurdish)')->rows(3)->extraInputAttributes(self::KU),
-                    Textarea::make('condition_ar')->label('What happened (Arabic)')->rows(3)->extraInputAttributes(self::AR),
+                    Section::make('UNESCO')->columns(4)->columnSpanFull()->schema([
+                        Toggle::make('unesco')->label('World Heritage Site')->inline(false)->live(),
+                        TextInput::make('unesco_year')->label('Inscribed in')->numeric()->placeholder('2018')->visible(fn (Get $get) => $get('unesco')),
+                        TextInput::make('unesco_ref')->label('Reference no.')->numeric()->placeholder('1572')->helperText('whc.unesco.org/en/list/<no.>')->visible(fn (Get $get) => $get('unesco')),
+                        TextInput::make('unesco_criteria')->label('Criteria')->maxLength(40)->placeholder('(i)(ii)(iv)')->visible(fn (Get $get) => $get('unesco')),
+                        TextInput::make('unesco_name')->label('Official name of the property')->maxLength(200)->placeholder('Cultural Landscape of Hawraman/Uramanat')
+                            ->helperText('When it differs from the landmark\'s name.')->columnSpanFull()->visible(fn (Get $get) => $get('unesco')),
+                    ]),
                 ]),
-
-            Section::make('Where')->columnSpanFull()->schema([
-                Hidden::make('lat'),
-                Hidden::make('lng'),
-                MapPicker::make('map_picker')->label('Pin on the map')
-                    ->helperText('Drag the pin to the exact spot (or search a place name).')
-                    ->columnSpanFull(),
-            ]),
-
-            Section::make('Publishing')->columns(3)->columnSpanFull()->schema([
-                TextInput::make('slug')->label('Web address')->prefix('/kurdistan-heritage/')->maxLength(120)
-                    ->rules(['nullable', 'alpha_dash'])->unique(ignoreRecord: true)
-                    ->helperText('Made from the English name when left empty.'),
-                TextInput::make('sort_order')->label('Order in the list')->numeric()->default(fn () => (int) Landmark::max('sort_order') + 1),
-                Toggle::make('is_published')->label('Shown on the website')->default(true)->inline(false)
-                    ->helperText('Unpublished, the page is reachable only through Preview.'),
+                Tab::make('Map')->icon(Heroicon::OutlinedMapPin)->schema([
+                    Section::make('Where')->columnSpanFull()->schema([
+                        Hidden::make('lat'),
+                        Hidden::make('lng'),
+                        MapPicker::make('map_picker')->label('Pin on the map')
+                            ->helperText('The exact pin on the heritage map.')
+                            ->columnSpanFull(),
+                    ]),
+                ]),
             ]),
         ]);
     }

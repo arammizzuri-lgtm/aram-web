@@ -19,7 +19,6 @@
         class="amp-wrap"
         wire:ignore
         x-data="mapPicker(@js($config))"
-        x-init="init()"
     >
         <div class="amp-search">
             <input

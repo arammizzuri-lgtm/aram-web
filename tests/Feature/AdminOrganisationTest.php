@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Landmarks\Pages\CreateLandmark;
+use App\Filament\Resources\Projects\Pages\CreateProject;
+use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Widgets\NeedsAttention;
 use App\Models\ContactMessage;
+use App\Models\Landmark;
 use App\Models\MissingPage;
 use App\Models\Project;
 use App\Models\User;
@@ -64,6 +68,29 @@ class AdminOrganisationTest extends TestCase
             'Photos without a room' => 1,
             'Broken links on your own pages' => 1,
         ], $items());
+    }
+
+    public function test_the_project_and_landmark_forms_save_through_their_tabs(): void
+    {
+        $this->actingAs($this->admin());
+
+        // a new project: the cover and the notes wait until there are saved photographs
+        Livewire::test(CreateProject::class)
+            ->assertSee(['Details', 'Story', 'Photographs', 'More on the page'])
+            ->assertDontSee('Card cover & focal point')
+            ->assertDontSee('Notes on the photographs')
+            ->fillForm(['name' => 'Twin House', 'categories' => ['residential'], 'status' => 'Completed', 'size' => 'default', 'desc' => 'Two houses, one garden.'])
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $project = Project::query()->where('name', 'Twin House')->firstOrFail();
+        $this->assertSame('Two houses, one garden.', $project->desc);
+        Livewire::test(EditProject::class, ['record' => $project->getRouteKey()])->assertSee('Card cover & focal point');
+
+        Livewire::test(CreateLandmark::class)
+            ->fillForm(['name_en' => 'Amedi Gate', 'region' => 'bashur', 'era' => 'mesopotamia', 'hero_style' => 'split', 'condition' => null, 'is_published' => true])
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $this->assertSame('split', Landmark::query()->where('name_en', 'Amedi Gate')->value('hero_style'));
     }
 
     public function test_texts_english_only_on_purpose_are_not_counted_as_missing(): void

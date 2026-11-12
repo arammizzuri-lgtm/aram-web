@@ -16,7 +16,7 @@
     @if (empty($images))
         <div class="cvp-empty">Upload images and save first — then choose the cover and its focal point here.</div>
     @else
-        <div class="cvp-wrap" wire:ignore x-data="coverPicker(@js($config))" x-init="init()">
+        <div class="cvp-wrap" wire:ignore x-data="coverPicker(@js($config))">
             <div class="cvp-col">
                 <div class="cvp-label">1 · Pick the cover image</div>
                 <div class="cvp-grid">

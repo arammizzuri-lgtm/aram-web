@@ -21,7 +21,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class ProjectForm
 {
@@ -36,9 +39,25 @@ class ProjectForm
 
     public static function configure(Schema $schema): Schema
     {
+        // Four tabs instead of one long page; the tab stays in the address, so
+        // a reload keeps you where you were. A field left wrong in another tab
+        // opens that tab.
         return $schema->components([
-            Section::make('Project details')
-                ->columns(2)
+            Tabs::make('Project')->persistTabInQueryString()->columnSpanFull()->tabs([
+                Tab::make('Details')->icon(Heroicon::OutlinedInformationCircle)->schema(self::details()),
+                Tab::make('Story')->icon(Heroicon::OutlinedDocumentText)->schema(self::story()),
+                Tab::make('Photographs')->icon(Heroicon::OutlinedPhoto)->schema(self::photographs()),
+                Tab::make('More on the page')->icon(Heroicon::OutlinedSquaresPlus)->schema(self::more()),
+            ]),
+        ]);
+    }
+
+    /** Its name and address, where it shows on the site, and where and when it was built. */
+    private static function details(): array
+    {
+        return [
+            Section::make('Name')
+                ->columns(3)
                 ->schema([
                     TextInput::make('name')
                         ->label('Name (English)')
@@ -50,7 +69,7 @@ class ProjectForm
                     TextInput::make('name_ar')
                         ->label('Name (Arabic)')
                         ->maxLength(160)
-                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
                     TextInput::make('slug')
                         ->label('Page address')
                         ->prefix(fn (): string => url('/projects').'/')
@@ -60,20 +79,11 @@ class ProjectForm
                         ->helperText('The project’s own page, in English; the Kurdish page is the same address under /ku. '
                             .'Filled in from the name when the project is first saved. Changing it breaks links that have already been shared.')
                         ->columnSpanFull(),
-                    TextInput::make('num')
-                        ->label('Display number')->maxLength(10)
-                        // Pre-filled with the next number in upload order, so the
-                        // sequence keeps itself. Clearing it hands the job back to
-                        // the model; typing your own number overrides both.
-                        ->default(fn (): string => Project::nextNum())
-                        ->placeholder(fn (): string => Project::nextNum())
-                        ->helperText('Set automatically in the order projects are added. Change it only to force a specific number.'),
-                    Toggle::make('is_published')
-                        ->label('Published (visible on site)')->default(true),
-                    Toggle::make('map_only')
-                        ->label('Map-only (pin + statistics, no gallery card)')
-                        ->helperText('For projects with no photos: shows a pin on the map and counts in the statistics, but never appears in Selected Works and needs no images. The pin card shows title, type, year, plot area and location.')
-                        ->default(false),
+                ]),
+
+            Section::make('On the site')
+                ->columns(3)
+                ->schema([
                     Select::make('categories')
                         ->label('Categories')
                         ->multiple()
@@ -93,34 +103,36 @@ class ProjectForm
                             'wide' => 'Wide — 1 × 2',
                         ])->default('default')->required()->native(false)
                         ->helperText('Its tile on the homepage grid and on the projects page wall. Keep most projects Default, a few Large, and fewer still Wide.'),
+                    TextInput::make('num')
+                        ->label('Display number')->maxLength(10)
+                        // Pre-filled with the next number in upload order, so the
+                        // sequence keeps itself. Clearing it hands the job back to
+                        // the model; typing your own number overrides both.
+                        ->default(fn (): string => Project::nextNum())
+                        ->placeholder(fn (): string => Project::nextNum())
+                        ->helperText('Set automatically in the order projects are added. Change it only to force a specific number.'),
+                    Toggle::make('is_published')
+                        ->label('Published (visible on site)')->default(true),
+                    Toggle::make('map_only')
+                        ->label('Map-only (pin + statistics, no gallery card)')
+                        ->helperText('For projects with no photos: shows a pin on the map and counts in the statistics, but never appears in Selected Works and needs no images. The pin card shows title, type, year, plot area and location.')
+                        ->default(false),
+                ]),
+
+            Section::make('What, where and when')
+                ->columns(3)
+                ->schema([
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
                     // Arabic pages (/ar): blank shows the English
                     TextInput::make('typology_ar')->label('Typology (Arabic)')->maxLength(120)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
-                    TextInput::make('location_ar')->label('Location (Arabic)')->maxLength(191)
-                        ->helperText('The whole place in one line, e.g. «فيوتشر سيتي، أربيل، كوردستان». Left blank, the English location is shown.')
-                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
-                    TextInput::make('neighbourhood')
-                        ->label('Neighbourhood / area')
-                        ->maxLength(120)->placeholder('Kawrgusk')
-                        ->helperText('Shown on the map when the project is opened.'),
+                    TextInput::make('year')->maxLength(40)->placeholder('2022 – 2024'),
                     TextInput::make('city')
                         ->maxLength(120)->placeholder('Erbil')
                         ->helperText('Counts toward the “Cities” statistic.'),
                     TextInput::make('country')
                         ->maxLength(120)->placeholder('Kurdistan Region')
-                        ->helperText('Counts toward the “Countries” statistic.')
-                        ->columnSpanFull(),
-                    // The map picker below writes to these; kept as hidden fields
-                    // so they still persist to the lat/lng columns and drive the
-                    // public site map.
-                    Hidden::make('lat'),
-                    Hidden::make('lng'),
-                    MapPicker::make('map_picker')
-                        ->label('Map pin position')
-                        ->helperText('Click the map where the project sits to drop a pin — drag it to fine-tune, or search a place name. This is the exact pin shown on the public map. Leave empty for no pin.')
-                        ->columnSpanFull(),
-                    TextInput::make('year')->maxLength(40)->placeholder('2022 – 2024'),
+                        ->helperText('Counts toward the “Countries” statistic.'),
                     TextInput::make('area')
                         ->label('Plot area')
                         ->maxLength(40)
@@ -130,22 +142,45 @@ class ProjectForm
                         // show the bare number while editing; store it with the unit
                         ->formatStateUsing(fn (?string $state): ?string => self::stripAreaUnit($state))
                         ->dehydrateStateUsing(fn (?string $state): ?string => self::formatArea($state)),
+                    TextInput::make('neighbourhood')
+                        ->label('Neighbourhood / area')
+                        ->maxLength(120)->placeholder('Kawrgusk')
+                        ->helperText('Shown on the map when the project is opened.'),
+                    TextInput::make('location_ar')->label('Location (Arabic)')->maxLength(191)
+                        ->helperText('The whole place in one line, e.g. «فيوتشر سيتي، أربيل، كوردستان». Left blank, the English location is shown.')
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])
+                        ->columnSpan(2),
+                    // The map picker below writes to these; kept as hidden fields
+                    // so they still persist to the lat/lng columns and drive the
+                    // public site map.
+                    Hidden::make('lat'),
+                    Hidden::make('lng'),
+                    MapPicker::make('map_picker')
+                        ->label('Map pin position')
+                        ->helperText('This is the exact pin shown on the public map. Leave empty for no pin.')
+                        ->columnSpanFull(),
                 ]),
+        ];
+    }
 
-            Section::make('Story')
-                ->columns(2)
+    /** The words: what it is, the architect's own, and what it is made of. */
+    private static function story(): array
+    {
+        return [
+            Section::make()
+                ->columns(3)
                 ->schema([
-                    Textarea::make('desc')->label('Description (English)')->rows(5),
-                    Textarea::make('desc_ku')->label('Description (Kurdish)')->rows(5)
+                    Textarea::make('desc')->label('Description (English)')->rows(7),
+                    Textarea::make('desc_ku')->label('Description (Kurdish)')->rows(7)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
-                    Textarea::make('desc_ar')->label('Description (Arabic)')->rows(5)
-                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
+                    Textarea::make('desc_ar')->label('Description (Arabic)')->rows(7)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
                     Textarea::make('narrative')->label('Architect’s narrative (English)')->rows(4)
                         ->helperText('Shown as a quote on the project’s page. Each language shows only its own — leave one empty to show none there.'),
                     Textarea::make('narrative_ku')->label('Architect’s narrative (Kurdish)')->rows(4)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
                     Textarea::make('narrative_ar')->label('Architect’s narrative (Arabic)')->rows(4)
-                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])->columnSpanFull(),
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
                     // Written the same way on every project, a material on a project's
                     // page opens the others built with it — so the ones already used
                     // are offered as they are typed.
@@ -154,9 +189,18 @@ class ProjectForm
                         ->helperText('Pick a material already used on another project where it is the same one: the project’s page then links to every project built with it.')
                         ->columnSpanFull(),
                 ]),
+        ];
+    }
 
+    /** The photographs, the cover among them, the notes on them, and render against built. */
+    private static function photographs(): array
+    {
+        return [
             Section::make('Images')
-                ->description('Upload photos and/or paste image URLs — both work. Choose the card cover and its focal point below.')
+                // the cover and the notes are chosen on photographs already saved
+                ->description(fn (string $operation): string => $operation === 'create'
+                    ? 'Upload photos and/or paste image URLs — both work. Once the project is saved, choose its cover and put notes on the photographs here.'
+                    : 'Upload photos and/or paste image URLs — both work. Choose the card cover and its focal point below.')
                 ->schema([
                     FileUpload::make('uploads')
                         ->label('Upload images')
@@ -188,10 +232,38 @@ class ProjectForm
                     Hidden::make('cover_y')->default(50),
                     CoverPicker::make('cover_picker')
                         ->label('Card cover & focal point')
+                        ->hiddenOn('create')
                         ->columnSpanFull(),
                 ]),
 
-            Section::make('More on the page')
+            Section::make('Notes on the photographs')
+                ->description('Point out what a visitor would ask about — a material, a detail, why a window is where it is. Each note shows on the project page as a numbered point with its words, the way a drawing’s callouts do. Save the photographs first.')
+                ->collapsible()
+                ->hiddenOn('create')
+                ->schema([
+                    CalloutPicker::make('callouts')->hiddenLabel()->columnSpanFull(),
+                ]),
+
+            Section::make('Render vs. built')
+                ->description('A render and a photograph of the finished building from the same angle. The project page lays one over the other with a slider between them. Shown only when both are set.')
+                ->columns(2)
+                ->collapsible()
+                ->schema([
+                    FileUpload::make('compare_before')->label('Render')
+                        ->image()->directory('projects/compare')->disk('public')->visibility('public')
+                        ->imagePreviewHeight('160')->openable(),
+                    FileUpload::make('compare_after')->label('Built (photograph)')
+                        ->image()->directory('projects/compare')->disk('public')->visibility('public')
+                        ->imagePreviewHeight('160')->openable(),
+                ]),
+        ];
+    }
+
+    /** Below the story: sections, the architect's voice, films and tours. */
+    private static function more(): array
+    {
+        return [
+            Section::make('Sections')
                 ->description('Anything more to tell, below the story: chapters of text, a statement, figures, a drawing. '
                     .'They are shown in this order, each numbered as a chapter. To put photographs between them, add "Photographs" '
                     .'and say how many: the gallery continues from where it stopped. Photographs not placed this way follow the last section. '
@@ -204,13 +276,6 @@ class ProjectForm
                         ->cloneable()->reorderableWithButtons()->blockNumbers(false)
                         ->addActionLabel('Add a section')
                         ->columnSpanFull(),
-                ]),
-
-            Section::make('Notes on the photographs')
-                ->description('Point out what a visitor would ask about — a material, a detail, why a window is where it is. Each note shows on the project page as a numbered point with its words, the way a drawing’s callouts do. Save the photographs first.')
-                ->collapsible()
-                ->schema([
-                    CalloutPicker::make('callouts')->hiddenLabel()->columnSpanFull(),
                 ]),
 
             Section::make('The architect’s voice')
@@ -227,19 +292,6 @@ class ProjectForm
                         ->acceptedFileTypes(self::AUDIO_TYPES)->mimeTypeMap(['opus' => 'audio/ogg', 'm4a' => 'audio/mp4'])
                         ->maxSize(15360)
                         ->helperText('WhatsApp’s own .opus files play on Android, computers and iPhones with iOS 18.4 or newer; an .m4a or .mp3 plays everywhere.'),
-                ]),
-
-            Section::make('Render vs. built')
-                ->description('A render and a photograph of the finished building from the same angle. The project page lays one over the other with a slider between them. Shown only when both are set.')
-                ->columns(2)
-                ->collapsible()
-                ->schema([
-                    FileUpload::make('compare_before')->label('Render')
-                        ->image()->directory('projects/compare')->disk('public')->visibility('public')
-                        ->imagePreviewHeight('160')->openable(),
-                    FileUpload::make('compare_after')->label('Built (photograph)')
-                        ->image()->directory('projects/compare')->disk('public')->visibility('public')
-                        ->imagePreviewHeight('160')->openable(),
                 ]),
 
             Section::make('Film & 360° tours')
@@ -267,7 +319,7 @@ class ProjectForm
                             ? ucfirst(Embed::parse($state['url'])['provider']).($state['caption_en'] ? ' — '.$state['caption_en'] : '')
                             : null),
                 ]),
-        ]);
+        ];
     }
 
     /** A text written three times: English, Kurdish, Arabic (English stands in where one is left empty). */
