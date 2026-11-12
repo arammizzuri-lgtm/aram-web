@@ -25,7 +25,7 @@
     $ogImage = $project->socialImageUrl();
     $ogIsCard = str_contains((string) $ogImage, '/projects/og/');
 
-    $tiles = carto_tiles('dark_all');
+    $tiles = carto_tiles('light_all');   // the page is white paper: a light map
     $hasMap = $project->lat && $project->lng && $tiles;
 
     $facts = array_filter([
@@ -113,6 +113,7 @@
         <link rel="preload" as="image" href="{{ $images[0] }}" @if ($srcset(0)) imagesrcset="{{ $srcset(0) }}" imagesizes="100vw" @endif>
     @endif
     <link rel="stylesheet" href="{{ asset('project.css') }}?v={{ filemtime(public_path('project.css')) }}">
+    <link rel="stylesheet" href="{{ asset('project-paper.css') }}?v={{ filemtime(public_path('project-paper.css')) }}">
     <link rel="stylesheet" href="{{ asset('engage.css') }}?v={{ filemtime(public_path('engage.css')) }}">
     <link rel="stylesheet" href="{{ asset('cards.css') }}?v={{ filemtime(public_path('cards.css')) }}">
     @php $quotesHaveVoices = $quotes->contains(fn ($q) => $q->showsVoiceBlock()) || $voice; @endphp
@@ -124,11 +125,14 @@
         <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
     @endif
 </head>
-<body class="pp">
+<body class="pp pp--paper">
 
     @include('partials.page-top', ['otherUrl' => $project->pageUrl($other)])
 
     <main>
+        {{-- The cover, whole and clean: nothing written on it but the count
+             of photographs. The project's name stands on a white label that
+             rises over its foot (pj-head). --}}
         <section class="pp-hero">
             @if ($images)
                 <img class="pp-hero__img" src="{{ $images[0] }}" @if ($srcset(0)) srcset="{{ $srcset(0) }}" sizes="100vw" @endif
@@ -136,15 +140,6 @@
                      style="object-position: {{ $project->coverPosition() }}">
             @endif
             <div class="pp-hero__shade" aria-hidden="true"></div>
-            <div class="pp-hero__text">
-                <p class="pp-hero__kicker">
-                    <span class="pp-num">{{ $project->num }}</span>
-                    @if ($categories)<span class="pp-hero__cats"><bdi>{{ implode(' · ', $categories) }}</bdi></span>@endif
-                </p>
-                <h1 class="pp-hero__title"><bdi>{{ $name }}</bdi></h1>
-                @php $where = collect([$project->tr('location'), $project->year])->filter(); @endphp
-                @if ($where->isNotEmpty())<p class="pp-hero__meta">{!! $where->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</p>@endif
-            </div>
             @if (count($images) > 1)
                 <button class="pp-hero__photos" type="button" data-open="0">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-9 8"/></svg>
@@ -153,57 +148,62 @@
             @endif
         </section>
 
-        <section class="pp-body">
-            <div class="pp-story">
-                <p class="pp-status pp-status--{{ $project->statusClass() }}">
-                    <span class="pp-status__dot" aria-hidden="true"></span>{{ $project->statusLabel($lang) }}
-                    @if ($updates->isNotEmpty())
-                        <a class="pp-status__updated" href="#progress">· {{ bival('pp_updated') }} {{ site_date($updates->first()->date, $lang, true) }}</a>
-                    @endif
+        {{-- The name on its label, and under it the facts in a ruled strip —
+             the title block of a drawing. --}}
+        <header class="pj-head">
+            <div class="pj-head__label">
+                <p class="pj-head__kicker">
+                    <span class="pp-num">{{ $project->num }}</span>
+                    @if ($categories)<span class="pj-head__cats"><bdi>{{ implode(' · ', $categories) }}</bdi></span>@endif
                 </p>
-                @if (filled($desc))
-                    <p class="pp-desc" dir="auto">{{ $desc }}</p>
-                @endif
-                @if (filled($narrative))
-                    <blockquote class="pp-quote" dir="auto">{{ $narrative }}</blockquote>
-                @endif
-                {{-- The architect's own voice note on the project — the player the
-                     client quotes use (voices.js), shown once the browser can play it --}}
-                @if ($voice)
-                    <div class="pp-voice">
-                        <p class="pp-label">{{ bival('pp_voice_title') }}</p>
-                        <div class="cv cv--architect" data-cv>
-                            <div class="cv__player" hidden data-src="{{ $voice['url'] }}" data-type="{{ $voice['type'] }}" data-seed="{{ $project->id }}">
-                                <button type="button" class="cv__play" aria-label="{{ bival('pp_voice_play') }}"
-                                        data-play-en="{{ \App\Support\SiteText::en('pp_voice_play') }}" data-play-ku="{{ \App\Support\SiteText::second('pp_voice_play') }}"
-                                        data-pause-en="Pause" data-pause-ku="وەستاندن">
-                                    <svg class="cv__icon cv__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-                                    <svg class="cv__icon cv__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
-                                </button>
-                                <div class="cv__wave" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-                                     aria-label="{{ bival('pp_voice_title') }}" data-label-en="{{ \App\Support\SiteText::en('pp_voice_title') }}" data-label-ku="{{ \App\Support\SiteText::second('pp_voice_title') }}"></div>
-                                <span class="cv__time" aria-hidden="true"></span>
-                            </div>
-                        </div>
-                        <p class="pp-voice__by">{{ bival('pp_voice_by') }}@if ($voice['lang'] !== $lang) <span class="pp-voice__lang">· {{ bival('pp_voice_in_'.$voice['lang']) }}</span>@endif</p>
+                <h1 class="pj-head__title"><bdi>{{ $name }}</bdi></h1>
+                @php $where = collect([$project->tr('location'), $project->year])->filter(); @endphp
+                @if ($where->isNotEmpty())<p class="pj-head__meta">{!! $where->map(fn ($part) => '<bdi>'.e($part).'</bdi>')->implode(' · ') !!}</p>@endif
+            </div>
+
+            <dl class="pj-block">
+                <div class="pj-cell">
+                    <dt>{{ bival('pj_status') }}</dt>
+                    <dd>
+                        <span class="pp-status pp-status--{{ $project->statusClass() }}"><span class="pp-status__dot" aria-hidden="true"></span>{{ $project->statusLabel($lang) }}</span>
+                        @if ($updates->isNotEmpty())
+                            <a class="pp-status__updated" href="#progress">{{ bival('pp_updated') }} {{ site_date($updates->first()->date, $lang, true) }}</a>
+                        @endif
+                    </dd>
+                </div>
+                @foreach ($facts as $label => $value)
+                    <div class="pj-cell">
+                        <dt>{{ $label }}</dt>
+                        <dd><bdi>{{ $value }}</bdi></dd>
+                    </div>
+                @endforeach
+                {{-- every project credits the architect, linked to his own page --}}
+                <div class="pj-cell">
+                    <dt>{{ bival('arch_credit') }}</dt>
+                    <dd><a class="pp-fact__link" href="{{ site_url(\App\Support\Architect::PATH) }}"><bdi>{{ bival('arch_name') }}</bdi></a></dd>
+                </div>
+                {{-- the partners who worked on it, each opening on /partners — only when there are any --}}
+                @php $madeWith = rescue(fn () => $project->partners()->where('is_published', true)->orderBy('sort_order')->get(), collect(), false); @endphp
+                @if ($madeWith->isNotEmpty())
+                    <div class="pj-cell pj-cell--wide">
+                        <dt>{{ bival('partners_made_with') }}</dt>
+                        <dd>
+                            @foreach ($madeWith as $mw)
+                                <a class="pp-fact__link" href="{{ site_url('/partners') }}#{{ $mw->anchor() }}"><bdi>{{ $mw->name }}</bdi></a>@if (! $loop->last)<span class="pp-fact__sep" aria-hidden="true"> · </span>@endif
+                            @endforeach
+                        </dd>
                     </div>
                 @endif
-                @if ($materials->isNotEmpty())
-                    {{-- a material other projects share opens them all (ProjectPageController) --}}
-                    <h2 class="pp-label">{{ bival('pp_materials') }}</h2>
-                    <ul class="pp-chips">
-                        @foreach ($materials as $material)
-                            <li>
-                                @if ($material['href'])
-                                    <a class="pp-chip-link" href="{{ $material['href'] }}" title="{{ str_replace('{n}', (string) $material['count'], bival('pp_material_more')) }}">
-                                        <bdi>{{ $material['name'] }}</bdi><sup>{{ $material['count'] }}</sup><span class="pp-chip-link__arrow" aria-hidden="true">↗&#xFE0E;</span>
-                                    </a>
-                                @else
-                                    <bdi>{{ $material['name'] }}</bdi>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
+            </dl>
+        </header>
+
+        {{-- The story, set large; beside it the architect's own words, his
+             voice, and what it is built of. --}}
+        @php $hasSide = filled($narrative) || $voice || $materials->isNotEmpty(); @endphp
+        <section class="pj-story{{ $hasSide ? '' : ' pj-story--solo' }}">
+            <div class="pj-story__main">
+                @if (filled($desc))
+                    <p class="pp-desc" dir="auto">{{ $desc }}</p>
                 @endif
                 {{-- Keep it (the heart — saved.js), or pass it on: on WhatsApp,
                      which asks whom to send it to, or anywhere else (engage.js). --}}
@@ -248,31 +248,53 @@
                 </div>
             </div>
 
-            <dl class="pp-facts">
-                @foreach ($facts as $label => $value)
-                    <div class="pp-fact">
-                        <dt>{{ $label }}</dt>
-                        <dd><bdi>{{ $value }}</bdi></dd>
-                    </div>
-                @endforeach
-                {{-- every project credits the architect, linked to his own page --}}
-                <div class="pp-fact">
-                    <dt>{{ bival('arch_credit') }}</dt>
-                    <dd><a class="pp-fact__link" href="{{ site_url(\App\Support\Architect::PATH) }}"><bdi>{{ bival('arch_name') }}</bdi></a></dd>
-                </div>
-                {{-- the partners who worked on it, each opening on /partners — only when there are any --}}
-                @php $madeWith = rescue(fn () => $project->partners()->where('is_published', true)->orderBy('sort_order')->get(), collect(), false); @endphp
-                @if ($madeWith->isNotEmpty())
-                    <div class="pp-fact pp-fact--wide">
-                        <dt>{{ bival('partners_made_with') }}</dt>
-                        <dd>
-                            @foreach ($madeWith as $mw)
-                                <a class="pp-fact__link" href="{{ site_url('/partners') }}#{{ $mw->anchor() }}"><bdi>{{ $mw->name }}</bdi></a>@if (! $loop->last)<span class="pp-fact__sep" aria-hidden="true"> · </span>@endif
-                            @endforeach
-                        </dd>
-                    </div>
-                @endif
-            </dl>
+            @if ($hasSide)
+                <aside class="pj-story__side">
+                    @if (filled($narrative))
+                        <blockquote class="pp-quote" dir="auto">{{ $narrative }}</blockquote>
+                    @endif
+                    {{-- The architect's own voice note on the project — the player the
+                         client quotes use (voices.js), shown once the browser can play it --}}
+                    @if ($voice)
+                        <div class="pp-voice">
+                            <p class="pp-label">{{ bival('pp_voice_title') }}</p>
+                            <div class="cv cv--architect" data-cv>
+                                <div class="cv__player" hidden data-src="{{ $voice['url'] }}" data-type="{{ $voice['type'] }}" data-seed="{{ $project->id }}">
+                                    <button type="button" class="cv__play" aria-label="{{ bival('pp_voice_play') }}"
+                                            data-play-en="{{ \App\Support\SiteText::en('pp_voice_play') }}" data-play-ku="{{ \App\Support\SiteText::second('pp_voice_play') }}"
+                                            data-pause-en="Pause" data-pause-ku="وەستاندن">
+                                        <svg class="cv__icon cv__icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                                        <svg class="cv__icon cv__icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+                                    </button>
+                                    <div class="cv__wave" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                                         aria-label="{{ bival('pp_voice_title') }}" data-label-en="{{ \App\Support\SiteText::en('pp_voice_title') }}" data-label-ku="{{ \App\Support\SiteText::second('pp_voice_title') }}"></div>
+                                    <span class="cv__time" aria-hidden="true"></span>
+                                </div>
+                            </div>
+                            <p class="pp-voice__by">{{ bival('pp_voice_by') }}@if ($voice['lang'] !== $lang) <span class="pp-voice__lang">· {{ bival('pp_voice_in_'.$voice['lang']) }}</span>@endif</p>
+                        </div>
+                    @endif
+                    @if ($materials->isNotEmpty())
+                        {{-- a material other projects share opens them all (ProjectPageController) --}}
+                        <div class="pj-materials">
+                            <h2 class="pp-label">{{ bival('pp_materials') }}</h2>
+                            <ul class="pp-chips">
+                                @foreach ($materials as $material)
+                                    <li>
+                                        @if ($material['href'])
+                                            <a class="pp-chip-link" href="{{ $material['href'] }}" title="{{ str_replace('{n}', (string) $material['count'], bival('pp_material_more')) }}">
+                                                <bdi>{{ $material['name'] }}</bdi><sup>{{ $material['count'] }}</sup><span class="pp-chip-link__arrow" aria-hidden="true">↗&#xFE0E;</span>
+                                            </a>
+                                        @else
+                                            <bdi>{{ $material['name'] }}</bdi>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </aside>
+            @endif
         </section>
 
         {{-- Render over photograph, with a slider between them. The range input
@@ -298,24 +320,143 @@
             </section>
         @endif
 
-        @if (count($images) > 1)
-            @php $rest = count($images) - 1; @endphp
-            <section class="pp-gallery" aria-label="{{ $name }}">
-                @foreach (array_slice($images, 1, null, true) as $i => $src)
-                    @php
-                        // rhythm of one wide, then a pair; a photo that would
-                        // be left alone at the end of a pair takes the width
-                        $k = $loop->index;
-                        $wide = $k % 3 === 0 || ($k === $rest - 1 && $k % 3 === 1);
-                    @endphp
-                    <figure class="pp-shot{{ $wide ? ' pp-shot--wide' : '' }}" @if (! empty($notes[$i])) data-notes='@json($notes[$i])' @endif>
-                        <button class="pp-shot__open" type="button" data-open="{{ $i }}" aria-label="{{ $name }} — {{ $i + 1 }} / {{ count($images) }}">
-                            <img src="{{ $thumbs[$i] ?? $src }}" @if ($srcset($i)) srcset="{{ $srcset($i) }}" sizes="{{ $wide ? '(min-width: 1400px) 1320px, 100vw' : '(min-width: 1400px) 660px, (min-width: 760px) 50vw, 100vw' }}" @endif
-                                 alt="{{ $name }} — {{ $i + 1 }}" loading="lazy" decoding="async">
-                        </button>
-                    </figure>
+        {{-- The photographs as the plates of a book — each whole, in its own
+             shape, never cropped — and between them whatever more the admin
+             has given the page (Project::BLOCKS): chapters of text, a
+             statement, figures, a drawing. A "photos" section says how many
+             plates fall at that point; those not placed follow the last one. --}}
+        @php
+            $refs = $project->orderedImages();
+            $ratio = fn (int $i) => \App\Models\Project::ratioOf($refs[$i] ?? null);
+            $bt = fn (array $d, string $f) => \App\Models\Landmark::t($d, $f);
+
+            $queue = array_slice(array_keys($images), 1);   // the cover is the page's opening
+            $flow = [];
+            foreach ($project->sections() as $s) {
+                if ($s['type'] !== 'photos') {
+                    $flow[] = ['block', $s];
+                } elseif ($take = array_splice($queue, 0, (int) ($s['data']['count'] ?? 0) ?: count($queue))) {
+                    $flow[] = ['plates', $take];
+                }
+            }
+            if ($queue) {
+                $flow[] = ['plates', $queue];
+            }
+
+            // Rows of one or two. Level pictures take turns: one across the
+            // page, a large one with a small one beside it, one set to the
+            // side, a small one with a large — the rhythm carries on from
+            // one group of plates to the next. An upright picture stands
+            // beside its neighbour at one height; a panorama has a row alone.
+            $beat = 0;
+            $rowsOf = function (array $ids) use (&$beat, $ratio): array {
+                $rows = [];
+                while ($ids) {
+                    $a = array_shift($ids);
+                    $next = $ids[0] ?? null;
+                    if ($ratio($a) >= 2.1) {
+                        $rows[] = ['full', [$a]];
+                    } elseif ($ratio($a) < 0.95 && $next !== null) {
+                        $rows[] = ['just', [$a, array_shift($ids)]];
+                    } else {
+                        $kind = ['full', 'duo', 'inset', 'duo-rev'][$beat++ % 4];
+                        if (in_array($kind, ['duo', 'duo-rev'], true) && $next !== null && $ratio($next) < 2.1) {
+                            $rows[] = [$ratio($next) < 0.95 ? 'just' : $kind, [$a, array_shift($ids)]];
+                        } else {
+                            // alone: across the page, or to the side; one too tall for that stands in the middle
+                            $rows[] = [$ratio($a) < 1.3 ? 'solo' : ($kind === 'full' ? 'full' : 'inset'), [$a]];
+                        }
+                    }
+                }
+
+                return $rows;
+            };
+            $chapter = 0;
+        @endphp
+        @if ($flow)
+            <div class="pj-flow">
+                @foreach ($flow as [$what, $item])
+                    @if ($what === 'plates')
+                        <section class="pj-plates" aria-label="{{ $name }}">
+                            @foreach ($rowsOf($item) as [$kind, $ids])
+                                <div class="pj-row pj-row--{{ $kind }}">
+                                    @foreach ($ids as $i)
+                                        @php $one = count($ids) === 1; @endphp
+                                        <figure class="pp-shot pj-plate" @if (! empty($notes[$i])) data-notes='@json($notes[$i])' @endif style="--r: {{ $ratio($i) }}">
+                                            <button class="pp-shot__open" type="button" data-open="{{ $i }}" aria-label="{{ $name }} — {{ $i + 1 }} / {{ count($images) }}">
+                                                <img src="{{ $thumbs[$i] ?? $images[$i] }}" @if ($srcset($i)) srcset="{{ $srcset($i) }}" sizes="{{ $one ? '(min-width: 1400px) 1320px, 100vw' : '(min-width: 1400px) 800px, (min-width: 760px) 60vw, 100vw' }}" @endif
+                                                     alt="{{ $name }} — {{ $i + 1 }}" loading="lazy" decoding="async">
+                                            </button>
+                                            <span class="pj-plate__n" aria-hidden="true">{{ sprintf('%02d', $i + 1) }}</span>
+                                        </figure>
+                                    @endforeach
+                                </div>
+                            @endforeach
+                        </section>
+                    @else
+                        @php $d = $item['data']; @endphp
+                        @switch($item['type'])
+                            @case('text')
+                                @php $heading = $bt($d, 'heading'); $body = \App\Models\Landmark::rich($bt($d, 'body')); @endphp
+                                @if ($body !== '' || filled($heading))
+                                    <section class="pj-chapter">
+                                        <div class="pj-chapter__side">
+                                            <span class="pj-chapter__n" aria-hidden="true">{{ sprintf('%02d', ++$chapter) }}</span>
+                                            @if (filled($heading))<h2 class="pj-chapter__title"{{ text_dir($heading) }}>{{ $heading }}</h2>@endif
+                                        </div>
+                                        <div class="pj-prose"{{ text_dir(strip_tags($body)) }}>{!! $body !!}</div>
+                                    </section>
+                                @endif
+                                @break
+                            @case('quote')
+                                @if (filled($bt($d, 'text')))
+                                    <section class="pj-statement">
+                                        <blockquote{{ text_dir($bt($d, 'text')) }}>
+                                            <p>{{ $bt($d, 'text') }}</p>
+                                            @if (filled($bt($d, 'by')))<footer>{{ $bt($d, 'by') }}</footer>@endif
+                                        </blockquote>
+                                    </section>
+                                @endif
+                                @break
+                            @case('figures')
+                                @php $items = array_filter((array) ($d['items'] ?? []), fn ($f) => filled($f['value'] ?? null)); @endphp
+                                @if ($items)
+                                    <section class="pj-chapter">
+                                        <div class="pj-chapter__side">
+                                            <span class="pj-chapter__n" aria-hidden="true">{{ sprintf('%02d', ++$chapter) }}</span>
+                                            @if (filled($bt($d, 'heading')))<h2 class="pj-chapter__title"{{ text_dir($bt($d, 'heading')) }}>{{ $bt($d, 'heading') }}</h2>@endif
+                                        </div>
+                                        <dl class="pj-figures">
+                                            @foreach ($items as $f)
+                                                <div class="pj-figure">
+                                                    <dt>{{ $bt((array) $f, 'label') }}</dt>
+                                                    <dd><bdi>{{ $f['value'] }}</bdi></dd>
+                                                </div>
+                                            @endforeach
+                                        </dl>
+                                    </section>
+                                @endif
+                                @break
+                            @case('image')
+                                @if (filled($d['image'] ?? null))
+                                    @php $big = \App\Models\Project::variantUrlOf($d['image'], 'lg'); $caption = $bt($d, 'caption'); @endphp
+                                    <section class="pj-drawing">
+                                        <figure class="pj-sheet{{ ($d['sheet'] ?? true) ? '' : ' pj-sheet--bare' }}" data-images='@json([$big])'>
+                                            <button class="pj-sheet__open" type="button" data-open="0" aria-label="{{ $caption ?: $name }}">
+                                                <img src="{{ \App\Models\Project::variantUrlOf($d['image'], 'thumb') }}" srcset="{{ \App\Models\Project::variantUrlOf($d['image'], 'thumb') }} 1200w, {{ $big }} 2560w" sizes="(min-width: 1400px) 1320px, 100vw"
+                                                     alt="{{ $caption ?: $name }}" loading="lazy" decoding="async" style="aspect-ratio: {{ \App\Models\Project::ratioOf($d['image']) }}">
+                                            </button>
+                                            @if (filled($caption))
+                                                <figcaption{{ text_dir($caption) }}><span class="pj-chapter__n" aria-hidden="true">{{ sprintf('%02d', ++$chapter) }}</span>{{ $caption }}</figcaption>
+                                            @endif
+                                        </figure>
+                                    </section>
+                                @endif
+                                @break
+                        @endswitch
+                    @endif
                 @endforeach
-            </section>
+            </div>
         @endif
 
         {{-- Film and 360° tours. Each shows a poster and a button; the player

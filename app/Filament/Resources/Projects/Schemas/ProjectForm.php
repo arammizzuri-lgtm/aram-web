@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\Status;
 use App\Support\Embed;
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -17,6 +19,7 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -188,6 +191,21 @@ class ProjectForm
                         ->columnSpanFull(),
                 ]),
 
+            Section::make('More on the page')
+                ->description('Anything more to tell, below the story: chapters of text, a statement, figures, a drawing. '
+                    .'They are shown in this order, each numbered as a chapter. To put photographs between them, add "Photographs" '
+                    .'and say how many: the gallery continues from where it stopped. Photographs not placed this way follow the last section. '
+                    .'Text: a blank line between paragraphs, "- " for a list, "## " for a small heading, **bold**, *italic*.')
+                ->collapsible()
+                ->schema([
+                    Builder::make('sections')->label('')
+                        ->blocks(self::blocks())
+                        ->collapsible()->collapsed(fn (?array $state) => filled($state))
+                        ->cloneable()->reorderableWithButtons()->blockNumbers(false)
+                        ->addActionLabel('Add a section')
+                        ->columnSpanFull(),
+                ]),
+
             Section::make('Notes on the photographs')
                 ->description('Point out what a visitor would ask about — a material, a detail, why a window is where it is. Each note shows on the project page as a numbered point with its words, the way a drawing’s callouts do. Save the photographs first.')
                 ->collapsible()
@@ -250,6 +268,61 @@ class ProjectForm
                             : null),
                 ]),
         ]);
+    }
+
+    /** A text written three times: English, Kurdish, Arabic (English stands in where one is left empty). */
+    private static function tri(string $field, string $label, bool $area = false, int $rows = 3): Grid
+    {
+        $make = fn (string $lang, string $name, array $attrs) => ($area
+            ? Textarea::make($field.'_'.$lang)->rows($rows)
+            : TextInput::make($field.'_'.$lang)->maxLength(400))
+            ->label($label.' ('.$name.')')->extraInputAttributes($attrs);
+
+        return Grid::make(3)->schema([
+            $make('en', 'English', []),
+            $make('ku', 'Kurdish', ['dir' => 'rtl', 'lang' => 'ckb']),
+            $make('ar', 'Arabic', ['dir' => 'rtl', 'lang' => 'ar']),
+        ]);
+    }
+
+    /** The kinds of section a project's page can be given (Project::BLOCKS). */
+    private static function blocks(): array
+    {
+        return [
+            Block::make('text')->label(fn (?array $state) => filled($state['heading_en'] ?? null) ? 'Text · '.$state['heading_en'] : 'Text')
+                ->schema([
+                    self::tri('heading', 'Heading'),
+                    self::tri('body', 'Text', true, 8),
+                ]),
+            Block::make('quote')->label('Statement')
+                ->schema([
+                    self::tri('text', 'One strong line', true, 3),
+                    self::tri('by', 'Who said it (optional)'),
+                ]),
+            Block::make('figures')->label('Figures')
+                ->schema([
+                    self::tri('heading', 'Heading (optional)'),
+                    Repeater::make('items')->label('Figures')->schema([
+                        TextInput::make('value')->label('Figure')->required()->maxLength(40)->placeholder('1,200 m²'),
+                        self::tri('label', 'What it counts'),
+                    ])->addActionLabel('Add a figure')->reorderable()->defaultItems(1)->maxItems(6)
+                        ->itemLabel(fn (array $state): ?string => $state['value'] ?? null),
+                ]),
+            Block::make('photos')->label(fn (?array $state) => 'Photographs · '.(filled($state['count'] ?? null) ? 'the next '.$state['count'] : 'all the rest'))
+                ->schema([
+                    TextInput::make('count')->label('How many photographs here')->numeric()->minValue(1)->maxValue(40)
+                        ->helperText('The next photographs of the gallery, in its order. Left empty: all that remain.'),
+                ]),
+            Block::make('image')->label(fn (?array $state) => filled($state['caption_en'] ?? null) ? 'Drawing · '.$state['caption_en'] : 'Drawing or diagram')
+                ->schema([
+                    FileUpload::make('image')->label('A plan, section, diagram or sketch')->image()->required()
+                        ->directory('projects/sections')->disk('public')->visibility('public')
+                        ->imagePreviewHeight('160')->openable()->maxSize(20480),
+                    self::tri('caption', 'Caption'),
+                    Toggle::make('sheet')->label('On a drawing sheet')->default(true)
+                        ->helperText('Shown whole on a pale sheet with a thin frame — for line drawings on white. Off: edge to edge, as a photograph.'),
+                ]),
+        ];
     }
 
     /** Drop a trailing m² / m2 / m^2 unit so the field edits the bare number. */

@@ -24,6 +24,13 @@ class Project extends Model
      */
     public const SIZES = ['default', 'wide', 'large'];
 
+    /**
+     * What more a project's page can be built from, below its story: chapters
+     * of text, a statement, figures, a drawing or diagram — and "photos",
+     * which says how many of the project's photographs fall at that point.
+     */
+    public const BLOCKS = ['text', 'quote', 'figures', 'photos', 'image'];
+
     protected $fillable = [
         'num', 'name', 'slug', 'name_ku', 'name_ar', 'typology_ar', 'location_ar', 'desc_ar', 'narrative_ar', 'category', 'categories', 'status', 'size', 'area', 'typology',
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
@@ -31,7 +38,7 @@ class Project extends Model
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
         'compare_before', 'compare_after', 'media',
         'sort_order', 'is_published', 'map_only',
-        'callouts', 'photo_rooms', 'voice_en', 'voice_ku',
+        'callouts', 'photo_rooms', 'voice_en', 'voice_ku', 'sections',
     ];
 
     /** Focal point defaults to the centre of the cover image. */
@@ -48,6 +55,7 @@ class Project extends Model
         'media' => 'array',
         'callouts' => 'array',
         'photo_rooms' => 'array',
+        'sections' => 'array',
         'is_published' => 'boolean',
         'map_only' => 'boolean',
         'sort_order' => 'integer',
@@ -382,7 +390,7 @@ class Project extends Model
     /** Build any missing derivatives for this project's uploaded images. */
     public function generateThumbnails(): void
     {
-        self::buildVariants([...(array) $this->imgs, $this->compare_before, $this->compare_after]);
+        self::buildVariants([...(array) $this->imgs, $this->compare_before, $this->compare_after, ...array_column(array_column($this->sections(), 'data'), 'image')]);
 
         // After the variants, so the card can be cut from the fresh large derivative.
         $this->generateSocialImage();
@@ -438,6 +446,41 @@ class Project extends Model
         }
 
         return self::resolveImage($img);
+    }
+
+    /**
+     * A picture's width over its height, so the page can lay it out uncropped
+     * before it has loaded. Read from the file's header; a picture linked
+     * from elsewhere, whose size is not known here, is taken as 3:2.
+     */
+    public static function ratioOf(?string $img): float
+    {
+        $disk = Storage::disk('public');
+        foreach ([self::variantRel($img, 'thumb'), self::isUpload($img) ? $img : null] as $rel) {
+            if ($rel && $disk->exists($rel) && ($size = @getimagesize($disk->path($rel))) && $size[1] > 0) {
+                return round($size[0] / $size[1], 3);
+            }
+        }
+
+        return 1.5;
+    }
+
+    /**
+     * The page's extra sections in order, each ['type' => …, 'data' => […]],
+     * only the kinds the page knows (BLOCKS).
+     *
+     * @return array<int, array{type: string, data: array}>
+     */
+    public function sections(): array
+    {
+        $out = [];
+        foreach ((array) $this->sections as $block) {
+            if (in_array($block['type'] ?? null, self::BLOCKS, true)) {
+                $out[] = ['type' => $block['type'], 'data' => (array) ($block['data'] ?? [])];
+            }
+        }
+
+        return $out;
     }
 
     /** Grid/preview URL for one image — the small thumbnail when we have one. */

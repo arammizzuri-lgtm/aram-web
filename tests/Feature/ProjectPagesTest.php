@@ -166,6 +166,74 @@ class ProjectPagesTest extends TestCase
             ->assertSee('Project page');
     }
 
+    /* ── The page on white paper: plates, and chapters between them ───── */
+
+    public function test_the_page_is_white_paper_with_the_facts_in_a_title_block_and_the_photographs_as_plates(): void
+    {
+        Storage::fake('public');
+        // an upright photograph, a level one and a panorama, after the cover
+        foreach (['cover' => [1600, 1000], 'tall' => [800, 1200], 'level' => [1500, 1000], 'pano' => [2400, 1000]] as $name => [$w, $h]) {
+            $this->jpeg("projects/$name.jpg", $w, $h);
+        }
+        $this->project(['imgs' => ['projects/cover.jpg', 'projects/tall.jpg', 'projects/level.jpg', 'projects/pano.jpg'], 'year' => '2024']);
+        $this->assertSame(0.667, Project::ratioOf('projects/tall.jpg'));
+        $this->assertSame(1.5, Project::ratioOf('https://example.com/elsewhere.jpg'));
+
+        $html = $this->get('/projects/mountain-villa-shaqlawa')->assertOk()
+            ->assertSee('<body class="pp pp--paper">', false)->assertSee('project-paper.css')
+            ->assertSee('<h1 class="pj-head__title"><bdi>Mountain Villa — Shaqlawa</bdi></h1>', false)
+            ->getContent();
+        // the title block: status first, then the facts, then the architect
+        $this->assertMatchesRegularExpression('#<dl class="pj-block">.*?<dt>Status</dt>.*?Completed.*?<dt>Year</dt>\s*<dd><bdi>2024</bdi></dd>.*?<dt>Architect</dt>#s', $html);
+        // the upright one stands beside the level one at one height, each in its own shape; the panorama has a row alone
+        $this->assertMatchesRegularExpression('#pj-row--just">\s*<figure class="pp-shot pj-plate"\s+style="--r: 0\.667">.*?data-open="1".*?<figure class="pp-shot pj-plate"\s+style="--r: 1\.5">.*?data-open="2"#s', $html);
+        $this->assertMatchesRegularExpression('#pj-row--full">\s*<figure class="pp-shot pj-plate"\s+style="--r: 2\.4">.*?data-open="3"#s', $html);
+        // the cover is the page's opening, not a plate
+        $this->assertSame(3, substr_count($html, 'class="pp-shot pj-plate"'));
+    }
+
+    public function test_sections_added_in_the_admin_are_chapters_with_the_photographs_between_them(): void
+    {
+        Storage::fake('public');
+        $this->jpeg('projects/sections/plan.jpg', 1400, 1000);
+        $this->project([
+            'imgs' => ['https://example.com/0.jpg', 'https://example.com/1.jpg', 'https://example.com/2.jpg', 'https://example.com/3.jpg'],
+            'sections' => [
+                ['type' => 'text', 'data' => ['heading_en' => 'The brief', 'heading_ku' => 'داواکاری', 'body_en' => "A house for **three** generations.\n\n- stone\n- shade", 'body_ku' => 'خانوویەک بۆ سێ نەوە.']],
+                ['type' => 'photos', 'data' => ['count' => 1]],
+                ['type' => 'quote', 'data' => ['text_en' => 'Shade first.', 'by_en' => 'The architect']],
+                ['type' => 'figures', 'data' => ['heading_en' => 'In numbers', 'items' => [['value' => '420 m²', 'label_en' => 'Built area'], ['value' => '', 'label_en' => 'Left empty']]]],
+                ['type' => 'image', 'data' => ['image' => 'projects/sections/plan.jpg', 'caption_en' => 'Ground floor plan', 'sheet' => true]],
+                ['type' => 'marquee', 'data' => ['text_en' => 'A kind the page does not know']],
+            ],
+        ]);
+
+        $html = $this->get('/projects/mountain-villa-shaqlawa')->assertOk()->getContent();
+        $this->assertStringContainsString('<strong>three</strong>', $html);
+        $this->assertStringContainsString('<li>shade</li>', $html);
+        $this->assertStringNotContainsString('Left empty', $html);
+        $this->assertStringNotContainsString('A kind the page does not know', $html);
+        // in the order given: the chapter, one photograph, the statement, the figures, the drawing — then the photographs left over
+        $at = fn (string $needle) => strpos($html, $needle);
+        $order = [$at('>The brief</h2>'), $at('data-open="1"'), $at('<p>Shade first.</p>'), $at('<dd><bdi>420 m²</bdi></dd>'), $at('Ground floor plan</figcaption>'), $at('data-open="2"'), $at('data-open="3"')];
+        $this->assertNotContains(false, $order);
+        $sorted = $order;
+        sort($sorted);
+        $this->assertSame($sorted, $order);
+        // chapters are numbered as they come; the drawing opens in the viewer as a set of its own
+        $this->assertMatchesRegularExpression('#class="pj-chapter__n" aria-hidden="true">01</span>\s*<h2 class="pj-chapter__title">The brief#', $html);
+        $this->assertMatchesRegularExpression('#class="pj-chapter__n" aria-hidden="true">02</span>\s*<h2 class="pj-chapter__title">In numbers#', $html);
+        $this->assertStringContainsString('<figure class="pj-sheet" data-images=', $html);
+
+        // in Kurdish, the Kurdish words — the English where none were written
+        $this->get('/ku/projects/mountain-villa-shaqlawa')->assertOk()->assertSee('داواکاری')->assertSee('خانوویەک بۆ سێ نەوە.')->assertSee('Shade first.');
+
+        // and the admin builds them in the project's form
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $this->actingAs($admin)->get(ProjectResource::getUrl('edit', ['record' => Project::first()]))->assertOk()
+            ->assertSee('More on the page')->assertSee('Add a section')->assertSee('Text · The brief');
+    }
+
     public function test_robots_txt_points_at_the_sitemap(): void
     {
         $this->get('/robots.txt')->assertOk()
