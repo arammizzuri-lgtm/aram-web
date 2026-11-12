@@ -11,6 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Pages\Concerns\HasUnsavedDataChangesAlert;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -27,6 +28,8 @@ use UnitEnum;
  */
 class ReadAloudSettings extends Page
 {
+    use HasUnsavedDataChangesAlert;   // leaving with changes not saved asks first
+
     protected string $view = 'filament.pages.read-aloud';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSpeakerWave;
@@ -99,6 +102,7 @@ class ReadAloudSettings extends Page
         SiteSetting::flushCache();
 
         $this->form->fill(array_merge($state, ['api_key' => '']));
+        $this->rememberData();   // saved: nothing left to warn about
         Notification::make()->success()->title('Read-aloud settings saved')
             ->body(ReadAloud::kurdishReady() ? 'Use “Read the Kurdish quotes now” for quotes saved before, or after changing the voice.' : null)
             ->send();

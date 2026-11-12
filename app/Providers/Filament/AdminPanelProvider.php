@@ -58,6 +58,8 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::hex('#C9A000'), // gold (dim)
             ])
             ->sidebarCollapsibleOnDesktop()
+            // leaving a form with changes not saved asks first
+            ->unsavedChangesAlerts()
             // The sidebar in the order the studio's work runs: the portfolio, the
             // people it is for, hiring, how the website reads, and the plumbing.
             ->navigationGroups([

@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Pages\Concerns\HasUnsavedDataChangesAlert;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -29,6 +30,8 @@ use UnitEnum;
  */
 class EnquiryAlerts extends Page
 {
+    use HasUnsavedDataChangesAlert;   // leaving with changes not saved asks first
+
     protected string $view = 'filament.pages.enquiry-alerts';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBellAlert;
@@ -112,6 +115,7 @@ class EnquiryAlerts extends Page
         SiteSetting::flushCache();
 
         $this->form->fill(array_merge($state, ['password' => '']));
+        $this->rememberData();   // saved: nothing left to warn about
         Notification::make()->success()->title('Alert settings saved')->send();
     }
 

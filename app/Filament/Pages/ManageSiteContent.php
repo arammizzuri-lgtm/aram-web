@@ -9,6 +9,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Pages\Concerns\HasUnsavedDataChangesAlert;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -34,6 +35,8 @@ use UnitEnum;
  */
 class ManageSiteContent extends Page
 {
+    use HasUnsavedDataChangesAlert;   // leaving with changes not saved asks first
+
     protected string $view = 'filament.pages.manage-site-content';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
@@ -343,6 +346,7 @@ class ManageSiteContent extends Page
 
         SiteSetting::flushCache();
 
+        $this->rememberData();   // saved: nothing left to warn about
         Notification::make()->success()->title('Site content updated')->send();
     }
 

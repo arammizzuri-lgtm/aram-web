@@ -2,12 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\CostEstimator;
+use App\Filament\Pages\EnquiryAlerts;
 use App\Filament\Pages\ManageSiteContent;
+use App\Filament\Pages\ReadAloudSettings;
+use App\Filament\Resources\Categories\Pages\EditCategory;
+use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Landmarks\Pages\CreateLandmark;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use App\Filament\Widgets\NeedsAttention;
+use App\Models\Category;
+use App\Models\Client;
 use App\Models\ContactMessage;
 use App\Models\Landmark;
 use App\Models\MissingPage;
@@ -168,6 +175,29 @@ class AdminOrganisationTest extends TestCase
         Livewire::test(ListProjects::class)->filterTable('trashed', false)->callTableAction('forceDelete', $project);
         $this->assertModelMissing($project);
         Storage::disk('public')->assertMissing('projects/voices/note.m4a');
+    }
+
+    public function test_leaving_unsaved_changes_asks_first_and_records_open_on_the_site(): void
+    {
+        $this->actingAs($this->admin());
+
+        // every form remembers what was saved, so leaving with changes asks first
+        $this->assertTrue(Filament::getPanel('studio-aks-panel')->hasUnsavedChangesAlerts());
+        foreach ([ManageSiteContent::class, CostEstimator::class, ReadAloudSettings::class, EnquiryAlerts::class] as $page) {
+            $this->assertNotEmpty(Livewire::test($page)->get('savedDataHash'), $page);
+        }
+        $this->get(ManageSiteContent::getUrl())->assertSee('setUpUnsavedDataChangesAlert', false);
+
+        // a published client opens its band on the homepage; a hidden one has nothing to open
+        $client = Client::create(['name' => 'Rotana', 'is_published' => true]);
+        Livewire::test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionVisible('viewOnSite')->assertActionHasUrl('viewOnSite', url('/').'#clients');
+        $client->update(['is_published' => false]);
+        Livewire::test(EditClient::class, ['record' => $client->getRouteKey()])->assertActionHidden('viewOnSite');
+
+        $category = Category::query()->firstOrFail();
+        Livewire::test(EditCategory::class, ['record' => $category->getRouteKey()])
+            ->assertActionHasUrl('viewOnSite', url('/projects').'?type='.$category->key);
     }
 
     public function test_texts_english_only_on_purpose_are_not_counted_as_missing(): void

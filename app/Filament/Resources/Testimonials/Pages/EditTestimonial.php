@@ -4,11 +4,13 @@ namespace App\Filament\Resources\Testimonials\Pages;
 
 use App\Filament\Resources\Testimonials\TestimonialResource;
 use App\Models\Testimonial;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Icons\Heroicon;
 use InvalidArgumentException;
 
 class EditTestimonial extends EditRecord
@@ -18,6 +20,11 @@ class EditTestimonial extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            // its project's page when it has one, else the quotes on the homepage
+            Action::make('viewOnSite')->label('View on site')
+                ->icon(Heroicon::OutlinedArrowTopRightOnSquare)->color('gray')
+                ->url(fn (): string => $this->record->project?->hasPage() ? $this->record->project->pageUrl() : site_url('/', 'en').'#quotes', shouldOpenInNewTab: true)
+                ->visible(fn (): bool => (bool) $this->record->is_published),
             DeleteAction::make()->label('Move to trash'),
             RestoreAction::make(),
             ForceDeleteAction::make()->label('Delete forever'),
