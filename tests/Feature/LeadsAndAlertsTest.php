@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\EnquiryAlerts;
 use App\Filament\Resources\MissingPages\MissingPageResource;
 use App\Mail\NewEnquiry;
 use App\Mail\SiteError;
@@ -14,6 +15,7 @@ use App\Models\User;
 use App\Support\StudioMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -118,5 +120,24 @@ class LeadsAndAlertsTest extends TestCase
         Project::create(['name' => 'Stone House', 'slug' => 'stone-house', 'category' => 'residential', 'status' => 'Completed', 'size' => 'default', 'imgs' => ['https://example.com/a.jpg'], 'is_published' => true]);
         $this->get('/projects')->assertOk();
         $this->assertSame(0, MissingPage::count());
+    }
+
+    public function test_the_alert_mailbox_refuses_an_address_for_a_server_and_asks_for_the_rest(): void
+    {
+        $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']));
+
+        // an e-mail address where the server's name goes, and nothing else — as it was set
+        Livewire::test(EnquiryAlerts::class)
+            ->fillForm(['host' => 'arammizuri@arammizuri.com', 'username' => '', 'password' => ''])
+            ->call('save')
+            ->assertHasFormErrors(['host' => 'regex', 'username' => 'required_with', 'password' => 'required']);
+        $this->assertSame('', (string) setting(StudioMail::HOST));
+
+        Livewire::test(EnquiryAlerts::class)
+            ->fillForm(['host' => 'Mail.ArammIzuri.com ', 'port' => '465', 'username' => 'website@arammizuri.com', 'password' => 'secret'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame('mail.arammizuri.com', setting(StudioMail::HOST));
+        $this->assertTrue(StudioMail::hasMailbox());
     }
 }

@@ -13,6 +13,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\HasUnsavedDataChangesAlert;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Mail\Mailable;
@@ -83,15 +84,26 @@ class EnquiryAlerts extends Page
                 ->description('Create a mailbox for the website in cPanel → Email Accounts (for example website@yourdomain), then copy its details from "Connect Devices" → "Mail Client Manual Settings" → Outgoing Server. Until this is filled in, the server\'s default mail settings are used.')
                 ->columns(2)
                 ->schema([
-                    TextInput::make('host')->label('Outgoing server (SMTP)')->placeholder('mail.yourdomain.com'),
+                    // the server's name — an e-mail address here was the common mistake
+                    TextInput::make('host')->label('Outgoing server (SMTP)')->placeholder('mail.yourdomain.com')
+                        ->helperText('A server name, like mail.arammizuri.com — not an e-mail address.')
+                        ->rule('regex:/^\s*[A-Za-z0-9.-]+\.[A-Za-z]{2,}\s*$/')
+                        ->validationMessages(['regex' => 'This is the server\'s name, like mail.arammizuri.com — not an e-mail address. The address goes in Username.'])
+                        ->dehydrateStateUsing(fn ($state) => strtolower(trim((string) $state))),
                     Select::make('port')->label('Port')
                         ->options(['465' => '465 — SSL/TLS (recommended)', '587' => '587 — STARTTLS'])
                         ->native(false)->default('465')->selectablePlaceholder(false),
-                    TextInput::make('username')->label('Username (the full mailbox address)')->email(),
+                    // with a server set, the mailbox and its password are needed too, or nothing is sent
+                    TextInput::make('username')->label('Username (the full mailbox address)')->email()
+                        ->placeholder('website@arammizuri.com')
+                        ->requiredWith('host')
+                        ->validationMessages(['required_with' => 'The mailbox address is needed with the server — without it, nothing is sent.']),
                     TextInput::make('password')->label('Password')
                         ->password()->revealable()
                         ->placeholder($hasPassword ? '•••••••• saved — leave empty to keep' : '')
-                        ->helperText('Stored encrypted.'),
+                        ->helperText('The mailbox\'s own password. Stored encrypted.')
+                        ->required(fn (Get $get) => filled($get('host')) && ! $hasPassword)
+                        ->validationMessages(['required' => 'The mailbox\'s password is needed the first time.']),
                     TextInput::make('from')->label('Send as (optional)')->email()
                         ->placeholder('the mailbox address')
                         ->columnSpanFull(),
