@@ -30,7 +30,7 @@ class ClientRoomResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'client_name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Clients';
 
     protected static ?int $navigationSort = 2;
 

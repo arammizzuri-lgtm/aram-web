@@ -19,7 +19,7 @@ use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
 /**
- * Manage → Cost estimator: the rates behind "What will your house cost?"
+ * Website settings → Cost estimator: the rates behind "What will your house cost?"
  * (/estimate). Every figure the visitor sees comes from here, through
  * App\Support\CostEstimate. Amounts in US dollars.
  */
@@ -29,9 +29,9 @@ class CostEstimator extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Website settings';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Cost estimator';
 

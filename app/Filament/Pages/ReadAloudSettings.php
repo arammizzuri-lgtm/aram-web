@@ -31,9 +31,9 @@ class ReadAloudSettings extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSpeakerWave;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Website settings';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Read aloud';
 

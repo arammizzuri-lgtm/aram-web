@@ -122,7 +122,7 @@ class TestimonialForm
             return 'Not needed — their own voice note plays instead.';
         }
         if (! ReadAloud::enabled()) {
-            return 'Switched off in Manage → Read aloud.';
+            return 'Switched off in Website settings → Read aloud.';
         }
         $english = filled($record->quote_en) ? 'English: read by the visitor’s phone or computer.' : '';
         if (blank($record->quote_ku)) {
@@ -135,6 +135,6 @@ class TestimonialForm
 
         return trim($english.' Kurdish: '.(ReadAloud::kurdishReady()
             ? 'not read yet — “Read the Kurdish now” shows why, if it cannot be.'
-            : 'not read — add a kurdishtts.com key in Manage → Read aloud.'));
+            : 'not read — add a kurdishtts.com key in Website settings → Read aloud.'));
     }
 }

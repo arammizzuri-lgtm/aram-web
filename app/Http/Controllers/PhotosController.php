@@ -8,7 +8,7 @@ use Illuminate\View\View;
 
 /**
  * Room by room — /photos, and /ku/photos: every photograph whose room the
- * studio has said (Manage → Photos by room), the same room from every
+ * studio has said (Portfolio → Photos by room), the same room from every
  * project side by side — all the kitchens, all the guest rooms. A room in
  * the address (?room=kitchen) shows that one alone; the page works without
  * JavaScript, and photos.js opens a photograph large.

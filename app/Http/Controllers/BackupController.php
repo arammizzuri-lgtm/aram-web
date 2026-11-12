@@ -6,7 +6,7 @@ use App\Support\DatabaseBackup;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * Database downloads for Manage → Backups. Registered inside the panel's
+ * Database downloads for System → Backups. Registered inside the panel's
  * authenticated routes (AdminPanelProvider), so only a signed-in studio
  * account reaches them.
  */

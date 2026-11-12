@@ -8,7 +8,7 @@ use Illuminate\View\View;
 
 /**
  * The holiday card — /card, and /ku/card: between an occasion's dates
- * (Manage → Holiday cards), a greeting card made with one of the studio's
+ * (Clients → Holiday cards), a greeting card made with one of the studio's
  * projects and the visitor's own name, drawn in the browser (greeting.js)
  * and sent on WhatsApp. The name never leaves the visitor's phone.
  *

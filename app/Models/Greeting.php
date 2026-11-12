@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * A holiday card: Newroz, Eid, the New Year (Manage → Holiday cards).
+ * A holiday card: Newroz, Eid, the New Year (Clients → Holiday cards).
  * Between its dates the homepage offers it, and /card makes it — one of the
  * studio's projects, the greeting, and the visitor's own name, to send on
  * WhatsApp. A yearly one comes back on the same dates every year.

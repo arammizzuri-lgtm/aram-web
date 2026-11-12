@@ -7,7 +7,7 @@ use Throwable;
 
 /**
  * Copies of the SQLite database, taken before every deploy migrates it and on
- * demand from the admin (Manage → Backups).
+ * demand from the admin (System → Backups).
  *
  * The live database is the only copy of every enquiry, client room and setting,
  * and this host has no shell: a migration that fails halfway cannot be repaired

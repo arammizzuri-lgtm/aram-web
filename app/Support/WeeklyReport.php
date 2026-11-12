@@ -31,7 +31,7 @@ class WeeklyReport
 
     public const TZ = 'Asia/Baghdad';
 
-    /** On unless switched off in the admin (Manage → Enquiry alerts). */
+    /** On unless switched off in the admin (Website settings → Enquiry alerts). */
     public static function enabled(): bool
     {
         return setting(self::ENABLED, '1') !== '0';

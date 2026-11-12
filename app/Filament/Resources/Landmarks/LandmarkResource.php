@@ -28,9 +28,9 @@ class LandmarkResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name_en';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Portfolio';
 
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Heritage landmarks';
 

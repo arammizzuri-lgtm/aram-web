@@ -23,11 +23,13 @@ class StatusResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Portfolio';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 2;
 
-    protected static ?string $navigationLabel = 'Project Statuses';
+    protected static ?string $navigationLabel = 'Statuses';
+
+    protected static ?string $navigationParentItem = 'Projects';
 
     protected static ?string $pluralModelLabel = 'Project Statuses';
 

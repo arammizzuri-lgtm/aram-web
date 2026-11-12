@@ -10,7 +10,7 @@ use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
 /**
- * Manage → Backups: download the database as it is now, or as it was before
+ * System → Backups: download the database as it is now, or as it was before
  * any of the last deploys migrated it (those copies are taken by .cpanel.yml
  * through `php artisan backup:db`).
  */
@@ -20,9 +20,9 @@ class Backups extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCircleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $title = 'Backups';
 

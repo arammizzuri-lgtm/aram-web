@@ -310,7 +310,7 @@ if (! function_exists('bitext')) {
 
 if (! function_exists('google_profile')) {
     /**
-     * The studio's Google Business Profile, as set in the admin (Manage →
+     * The studio's Google Business Profile, as set in the admin (Website settings →
      * Site content → Google): its link, the "write a review" link, and the
      * rating and number of reviews copied from it. Null until the link is
      * set; rating and count are null until they are.

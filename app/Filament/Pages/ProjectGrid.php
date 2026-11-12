@@ -27,11 +27,11 @@ class ProjectGrid extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Portfolio';
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $navigationLabel = 'Project Grid';
+    protected static ?string $navigationLabel = 'Project grid';
 
     protected static ?string $title = 'Project Grid';
 

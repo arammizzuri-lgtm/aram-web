@@ -15,6 +15,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -57,6 +58,15 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::hex('#C9A000'), // gold (dim)
             ])
             ->sidebarCollapsibleOnDesktop()
+            // The sidebar in the order the studio's work runs: the portfolio, the
+            // people it is for, hiring, how the website reads, and the plumbing.
+            ->navigationGroups([
+                NavigationGroup::make('Portfolio'),
+                NavigationGroup::make('Clients'),
+                NavigationGroup::make('Careers'),
+                NavigationGroup::make('Website settings'),
+                NavigationGroup::make('System')->collapsed(),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -87,7 +97,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             // Private files, behind the panel login: an applicant's CV, a client
             // room's drawings and receipts, and the database copies on
-            // Manage → Backups.
+            // System → Backups.
             ->authenticatedRoutes(function () {
                 Route::get('cv/{application}', ApplicationCvController::class)->name('application-cv');
                 Route::get('backups/now', [BackupController::class, 'fresh'])->name('backup-fresh');

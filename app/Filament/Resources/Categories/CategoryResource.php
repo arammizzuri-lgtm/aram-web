@@ -23,11 +23,13 @@ class CategoryResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Portfolio';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Project Categories';
+    protected static ?string $navigationLabel = 'Categories';
+
+    protected static ?string $navigationParentItem = 'Projects';
 
     protected static ?string $pluralModelLabel = 'Project Categories';
 

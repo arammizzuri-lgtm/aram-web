@@ -116,7 +116,7 @@
         </div>
     </td></tr>
     <tr><td style="padding:16px 28px;background:#faf8f3;color:#999;font-size:12px;">
-        Sent every Sunday morning by your website. To stop it: admin → Manage → Enquiry alerts → Weekly report.
+        Sent every Sunday morning by your website. To stop it: admin → Website settings → Enquiry alerts → Weekly report.
     </td></tr>
 </table>
 </body>

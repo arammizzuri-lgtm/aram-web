@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * The rooms a photograph can show (Manage → Photos by room), in the order
+ * The rooms a photograph can show (Portfolio → Photos by room), in the order
  * they are offered: from the street in, then out to the garden. Their names
  * are in Site Content (room_{key}), so the studio can call them what it
  * likes; the keys are what the photographs and the addresses keep.

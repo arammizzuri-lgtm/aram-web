@@ -225,7 +225,7 @@
             ['v' => $sbAreaNum,                       's' => $sbAreaSuf, 'en' => \App\Support\SiteText::en('stat_area'),      'ku' => \App\Support\SiteText::second('stat_area')],
         ];
     @endphp
-    {{-- Between a holiday card's dates (Manage → Holiday cards): a band
+    {{-- Between a holiday card's dates (Clients → Holiday cards): a band
          offering it — Newroz, Eid, the New Year — to send with one's name. --}}
     @if ($greeting ?? null)
         <section class="gc-band" aria-label="{{ $greeting->title(site_lang()) }}">
@@ -467,7 +467,7 @@
                     <span class="pg__search-icon" aria-hidden="true">↗&#xFE0E;</span>
                 </div>
                 {{-- Filter row is generated from the database-managed categories
-                     (Manage → Project Categories), so add / remove / reorder there
+                     (Portfolio → Projects → Categories), so add / remove / reorder there
                      is reflected here. "All" stays put. --}}
                 <div class="pg__filter" role="group" aria-label="Filter by typology">
                     <button class="pgf-btn active" data-filter="all" {!! bitext('filter_all') !!}>{{ bival('filter_all') }}</button>

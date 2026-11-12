@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,6 +26,12 @@ class MissingPage extends Model
     public function url(): string
     {
         return url($this->path);
+    }
+
+    /** Only the addresses a link on this site's own pages leads to. */
+    public function scopeFromThisSite(Builder $q): void
+    {
+        $q->where('referrer', 'like', rtrim(url('/'), '/').'%');
     }
 
     /** Whether the visitor arrived from one of this site's own pages — a link the studio can fix. */

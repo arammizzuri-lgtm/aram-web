@@ -29,9 +29,9 @@ class MissingPageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLinkSlash;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 90;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Broken links';
 
@@ -63,7 +63,7 @@ class MissingPageResource extends Resource
             ])
             ->filters([
                 Filter::make('ours')->label('From this site only')
-                    ->query(fn (Builder $q) => $q->where('referrer', 'like', rtrim(url('/'), '/').'%')),
+                    ->query(fn (Builder $q) => $q->fromThisSite()),
             ])
             ->recordActions([
                 Action::make('open')->label('Open')->icon(Heroicon::OutlinedArrowTopRightOnSquare)

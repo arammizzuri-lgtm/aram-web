@@ -33,7 +33,7 @@ class EnquiryAlerts extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBellAlert;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Website settings';
 
     protected static ?int $navigationSort = 4;
 

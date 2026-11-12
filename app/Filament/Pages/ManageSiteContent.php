@@ -38,11 +38,11 @@ class ManageSiteContent extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsHorizontal;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Website settings';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Site Content';
+    protected static ?string $navigationLabel = 'Site content';
 
     protected static ?string $title = 'Site Content';
 

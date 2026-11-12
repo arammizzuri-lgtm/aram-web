@@ -150,7 +150,7 @@ class ReadAloud
     {
         $key = self::apiKey();
         if (! $key) {
-            throw new RuntimeException('No kurdishtts.com API key is saved (Manage → Read aloud).');
+            throw new RuntimeException('No kurdishtts.com API key is saved (Website settings → Read aloud).');
         }
 
         try {
@@ -170,7 +170,7 @@ class ReadAloud
 
         if (! $response->successful()) {
             $why = match ($response->status()) {
-                401 => 'the API key was not accepted — check it in Manage → Read aloud',
+                401 => 'the API key was not accepted — check it in Website settings → Read aloud',
                 403 => 'the plan does not allow it (characters used up, the plan has ended, or this voice is not in it)',
                 400, 422 => 'the request was refused',
                 default => 'the service answered with an error',

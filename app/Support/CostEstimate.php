@@ -7,7 +7,7 @@ use App\Models\SiteSetting;
 /**
  * The cost estimator (/estimate): what a house might cost to build, and the
  * studio's design fee for it, as a range — from the rates set in the admin
- * (Manage → Cost estimator).
+ * (Website settings → Cost estimator).
  *
  * The one place the sums are done. The page asks the server for every
  * result (EstimateController), and an estimate sent with an enquiry is

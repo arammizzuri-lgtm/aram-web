@@ -23,7 +23,7 @@ class PhotoRooms extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Portfolio';
 
     protected static ?int $navigationSort = 3;
 
@@ -55,15 +55,26 @@ class PhotoRooms extends Page
         $p->forceFill(['photo_rooms' => $rooms ?: null])->saveQuietly();
     }
 
+    /** Every photograph of a project with a gallery, by project. */
+    private static function projects()
+    {
+        return Project::query()->orderBy('sort_order')->orderBy('id')->get()
+            ->filter(fn (Project $p) => ! $p->map_only && ! empty($p->imgs));
+    }
+
+    /** How many photographs no room has been said for yet (the dashboard asks). */
+    public static function untaggedCount(): int
+    {
+        return static::projects()->sum(fn (Project $p) => collect($p->orderedImages())->reject(fn ($img) => $p->roomOf($img))->count());
+    }
+
     protected function getViewData(): array
     {
         $photos = [];
         $total = 0;
         $tagged = 0;
 
-        $projects = Project::query()->orderBy('sort_order')->orderBy('id')->get()
-            ->filter(fn (Project $p) => ! $p->map_only && ! empty($p->imgs));
-        foreach ($projects as $p) {
+        foreach (static::projects() as $p) {
             foreach ($p->orderedImages() as $img) {
                 $room = $p->roomOf($img);
                 $total++;

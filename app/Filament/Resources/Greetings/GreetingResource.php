@@ -24,7 +24,7 @@ class GreetingResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Manage';
+    protected static string|UnitEnum|null $navigationGroup = 'Clients';
 
     protected static ?int $navigationSort = 6;
 

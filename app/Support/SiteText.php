@@ -256,7 +256,7 @@ class SiteText
                 'story_hint'         => ['Status picture — how to post it', 'Share it and choose “My status” on WhatsApp — or save the picture and post it anywhere.', 'هاوبەشی بکە و لە واتسئاپ «ستاتسی من» هەڵبژێرە — یان وێنەکە پاشەکەوت بکە و لە هەر شوێنێک بڵاوی بکەرەوە.', 'area'],
             ],
 
-            // The rooms a photograph can show (Manage → Photos by room), and the
+            // The rooms a photograph can show (Portfolio → Photos by room), and the
             // page that shows each room from every project (/photos).
             'Rooms' => [
                 'room_facade'   => ['Room — façade', 'Façade & exterior', 'ڕووکار و دەرەوە'],
@@ -311,7 +311,7 @@ class SiteText
             ],
 
             // The holiday cards (/card) — the occasions themselves, their
-            // greetings and dates, are under Manage → Holiday cards.
+            // greetings and dates, are under Clients → Holiday cards.
             'Holiday cards' => [
                 'card_label'     => ['Page label', 'Holiday card', 'کارتی پیرۆزبایی'],
                 'card_lead'      => ['Introduction', 'Make the card with your name and send it to your family and friends on WhatsApp.', 'کارتەکە بە ناوی خۆت دروست بکە و لە واتسئاپ بۆ خێزان و هاوڕێکانتی بنێرە.', 'area'],
@@ -331,7 +331,7 @@ class SiteText
             ],
 
             // The cost estimator (/estimate) and its band on the homepage. The
-            // rates themselves are under Manage → Cost estimator.
+            // rates themselves are under Website settings → Cost estimator.
             'Cost estimate' => [
                 'est_nav'          => ['Top bar / footer link', 'Cost estimate', 'خەمڵاندنی تێچوون'],
                 'est_label'        => ['Page label', 'Cost estimate', 'خەمڵاندنی تێچوون'],
@@ -584,7 +584,7 @@ class SiteText
             ],
 
             // Kurdistan's architectural heritage (/kurdistan-heritage). The
-            // landmarks themselves are under Manage → Heritage landmarks.
+            // landmarks themselves are under Portfolio → Heritage landmarks.
             'Kurdistan heritage' => [
                 'landmarks_nav'       => ['Footer link', "Kurdistan's architectural heritage", 'میراتی تەلارسازیی کوردستان'],
                 'landmarks_label'     => ['Page label', 'Architectural heritage of Kurdistan', 'میراتی تەلارسازیی کوردستان'],
@@ -675,7 +675,7 @@ class SiteText
             ],
 
             // A client's private review page (/review/…), opened from a review
-            // link made under Manage → Review links. {name} and {project} are
+            // link made under Clients → Review links. {name} and {project} are
             // filled in for each client.
             'Client review page' => [
                 'review_label'      => ['Small label', 'Aram Mizuri Architecture', 'ستۆدیۆی تەلارسازیی ئارام مزووری'],
@@ -710,7 +710,7 @@ class SiteText
             ],
 
             // The partners and suppliers page (/partners). The partners
-            // themselves are under Manage → Partners.
+            // themselves are under Clients → Partners.
             'Partners' => [
                 'partners_nav'   => ['Footer link', 'Partners', 'هاوبەشەکان'],
                 'partners_label' => ['Page label', 'Partners & suppliers', 'هاوبەش و دابینکەران'],
@@ -840,6 +840,34 @@ class SiteText
         }
 
         return $map;
+    }
+
+    /**
+     * The texts with English but no Kurdish, or no Arabic of their own (an
+     * Arabic page then shows the English): [key => ['ku', 'ar'] missing].
+     *
+     * @return array<string, list<string>>
+     */
+    public static function untranslated(): array
+    {
+        $ar = SiteTextAr::all();
+        $out = [];
+        foreach (static::map() as $key => $def) {
+            // nothing to translate, or English only on purpose (read by search
+            // engines): no Kurdish and an Arabic left empty by design
+            if (static::en($key) === '' || (($def['ku'] ?? '') === '' && ($ar[$key] ?? null) === '')) {
+                continue;
+            }
+            $missing = array_keys(array_filter([
+                'ku' => static::ku($key) === '',
+                'ar' => (string) SiteSetting::get("{$key}_ar") === '' && ($ar[$key] ?? '') === '',
+            ]));
+            if ($missing) {
+                $out[$key] = $missing;
+            }
+        }
+
+        return $out;
     }
 
     /** English value: {key}_en → legacy {key} → default. */

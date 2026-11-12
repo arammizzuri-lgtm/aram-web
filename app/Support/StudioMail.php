@@ -14,7 +14,7 @@ use Throwable;
 /**
  * Sends the studio its own e-mail — the new-enquiry alerts.
  *
- * Where they go and which mailbox sends them are set in the admin (Manage →
+ * Where they go and which mailbox sends them are set in the admin (Website settings →
  * Enquiry alerts), not in .env: the host has no shell, and the deploy caches
  * the configuration, so a .env edit would only take effect on the next
  * deploy. With no mailbox set, the server's own mail settings are used.

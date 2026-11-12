@@ -67,6 +67,19 @@
 .aram-msg__meta { color: #888; font-size: 0.78rem; }
 .aram-msg__empty { color: #888; font-size: 0.86rem; padding: 0.9rem 0 0.3rem; }
 
+/* ───────── Needs attention: what is waiting, each a click away ───────── */
+.aram-todo__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.6rem; margin-top: 0.7rem; }
+.aram-todo__item {
+    display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.07); background: rgba(255, 255, 255, 0.02); text-decoration: none;
+    transition: border-color .15s, background .15s;
+}
+.aram-todo__item:hover { border-color: rgba(245, 197, 24, 0.5); background: rgba(245, 197, 24, 0.05); }
+.aram-todo__num { font-size: 1.45rem; font-weight: 600; line-height: 1; color: #f5c518; font-variant-numeric: tabular-nums; }
+.aram-todo__label { flex: 1; min-width: 0; font-size: 0.84rem; line-height: 1.3; color: #d8d8d8; }
+.aram-todo__go { color: #666; transition: color .15s, transform .15s; }
+.aram-todo__item:hover .aram-todo__go { color: #f5c518; transform: translateX(2px); }
+
 /* ───────── Insight tables (most viewed projects, traffic sources) ───────── */
 .aram-card__note { font-size: 0.75rem; color: #777; }
 .aram-card__foot { margin-top: 0.9rem; font-size: 0.74rem; line-height: 1.5; color: #777; }

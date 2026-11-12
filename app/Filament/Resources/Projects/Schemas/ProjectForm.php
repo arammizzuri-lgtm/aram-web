@@ -81,10 +81,10 @@ class ProjectForm
                         ->required()->native(false)
                         ->helperText('Pick every category that fits — e.g. Residential and Exterior. '
                             .'The first one is the project’s main label on the card. '
-                            .'Manage the list under Manage → Project Categories.'),
+                            .'Manage the list under Portfolio → Projects → Categories.'),
                     Select::make('status')
                         ->options(fn () => Status::options())->required()->native(false)
-                        ->helperText('Manage the list under Manage → Project Statuses.'),
+                        ->helperText('Manage the list under Portfolio → Projects → Statuses.'),
                     Select::make('size')
                         ->label('Card size on grid')
                         ->options([
