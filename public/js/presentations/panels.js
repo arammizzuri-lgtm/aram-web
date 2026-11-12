@@ -1,13 +1,13 @@
 // The editor's right-hand panels (page, project, design) and its dialogs
 // (add a page, upload, pick an image, preview, export, branding).
 // Everything here reads and changes the app through `app` (editor.js).
-import { html, useState, useEffect, useRef } from 'htm-preact';
-import { LAYOUTS, TEXT_LABELS, SECTIONS, INFO, AREA_UNITS, FONTS, THEMES, PRESETS, LOW_PPI, PAGE_MM,
-    newPage, slot, uid, clone, resolveTheme, pageSize, mm, isoName, parseRange, fileName, bytes, sourceSize, structure } from '@pm/model';
-import { ROLE_NAMES } from '@pm/layout';
+import { html, useState, useEffect, useRef, useMemo } from 'htm-preact';
+import { LAYOUTS, TEXT_LABELS, SECTIONS, INFO, AREA_UNITS, FONTS, THEMES, PRESETS, LOW_PPI, PAGE_MM, COVER_STYLES, DIVIDER_STYLES, LANGS,
+    newPage, slot, uid, clone, resolveTheme, pageSize, mm, isoName, parseRange, fileName, bytes, sourceSize, structure, relayout, sectionName, nextRevision, fmtDate } from '@pm/model';
+import { ROLE_NAMES, layoutPage } from '@pm/layout';
 import { PageView } from '@pm/view';
 import { guessSection, titleFromName } from '@pm/uploads';
-import { exportPdf, download } from '@pm/export';
+import { exportPdf, exportImages, download, downloadBlob, JPG_SIZES } from '@pm/export';
 
 // ── Small form pieces ──
 const Field = ({ label, hint, children, row }) => html`<label class=${`pm-f${row ? ' pm-f--row' : ''}`}>
@@ -33,9 +33,57 @@ const Dialog = ({ title, onClose, children, wide, foot }) => html`<div class="pm
     </div>
 </div>`;
 
+// ── Designs shown as they will look ──
+// The real layout engine draws a sample page in this presentation's template, with its project's
+// details and, where pictures go, this presentation's own pictures. Only the picture is sampled:
+// a page that is added is added empty.
+const SAMPLE_TITLE = { drawing: 'Ground Floor Plan', 'two-up': 'Exterior Views', grid: 'Exterior Views', materials: 'Materials & Finishes', 'image-caption': 'Title' };
+function pictures(S) {
+    const logos = new Set([S.brand.logo, ...(S.brand.partners || []).map((p) => p.logo)]);
+    const ready = [...S.assets.values()].filter((a) => !logos.has(a.hash) && (a.meta.previews || []).length);
+    return {
+        renders: ready.filter((a) => a.kind === 'image').map((a) => ({ asset: a.hash, page: 0 })),
+        drawings: ready.filter((a) => a.kind === 'pdf').map((a) => ({ asset: a.hash, page: a.meta.previews.find((n) => n > 0) || 1 })),
+    };
+}
+function sampled(page, pics, doc) {
+    const p = clone(page), L = LAYOUTS[p.layout] || LAYOUTS.blank;
+    const drawing = p.layout === 'drawing' || p.layout === 'sheet';
+    const all = drawing && pics.drawings.length ? pics.drawings : pics.renders;
+    // the page's own pictures are not offered again for its empty places, unless there are no others
+    const used = new Set(p.images.map((s) => s.asset).filter(Boolean));
+    const others = all.filter((x) => !used.has(x.asset));
+    const pool = others.length ? others : all;
+    let n = 0;
+    if (p.layout !== 'divider') p.images.forEach((s) => { if (!s.asset && pool.length) Object.assign(s, pool[n++ % pool.length], drawing ? { fit: 'fit' } : {}); });
+    if (L.texts.includes('title') && !p.title) p.title = p.layout === 'divider' ? sectionName('Floor Plans', doc.lang) : p.layout === 'overview' ? 'Project Overview' : SAMPLE_TITLE[p.layout] || '';
+    if (L.texts.includes('body') && !p.body) p.body = 'A few words about the project — the brief, the site and the idea behind the design.';
+    if (L.texts.includes('caption') && !p.caption) p.caption = 'A caption under the picture';
+    if (L.captions) p.images.forEach((s) => { s.caption = s.caption || 'Caption'; });
+    return p;
+}
+/** A page drawn small as it would be at `at` (inserted there, or in place of the page there). */
+export function DesignThumb({ app, page, at, replace = false, w = 180 }) {
+    const { S } = app;
+    const lay = useMemo(() => {
+        const pages = S.doc.pages.slice();
+        pages.splice(at, replace ? 1 : 0, sampled(page, pictures(S), S.doc));
+        return layoutPage({ ...S.doc, pages }, Math.min(at, pages.length - 1), app.env(true));
+    }, [S.doc, page, at, replace, S.assets.size]);
+    const width = lay.w >= lay.h ? w : w * 0.7;
+    return html`<div class="pm-design__p"><${PageView} lay=${lay} scale=${width / lay.w} media=${app.media} small=${true} /></div>`;
+}
+/** A choice between styles, each shown as `page` would look in it (drawn in place of the current page). */
+function StylePick({ app, options, value, page, on }) {
+    const pages = useMemo(() => options.map(([v]) => ({ ...page, opts: { ...page.opts, variant: v } })), [page]);
+    return html`<div class="pm-styles">${options.map(([v, label, hint], i) => html`<button type="button" title=${hint} class=${v === value ? 'is-on' : ''} onClick=${() => on(v)}>
+        <${DesignThumb} app=${app} page=${pages[i]} at=${app.S.page} replace=${true} w=${84} /><span>${label}</span></button>`)}</div>`;
+}
+const SAMPLE = { cover: newPage('cover'), divider: newPage('divider') };
+
 const KEY_NAMES = { title: 'Title', subtitle: 'Subtitle', caption: 'Caption', body: 'Text', notes: 'Notes', project: 'Project name', docTitle: 'Document title',
     stage: 'Stage', date: 'Date', info: 'Project facts', facts: 'Key facts', logo: 'Logo', where: 'Client & location', issue: 'Issue line',
-    confidential: 'Confidentiality note', contact: 'Contact details', number: 'Section number', toc: 'Contents list', meta: 'Drawing details', north: 'North arrow' };
+    confidential: 'Confidentiality note', contact: 'Contact details', number: 'Section number', toc: 'Contents list', meta: 'Drawing details', north: 'North arrow', list: 'The list' };
 export function keyName(key, page) {
     if (key.startsWith('img:')) return `Image ${+key.slice(4) + 1}`;
     if (key.startsWith('cap:')) return `Caption ${+key.slice(4) + 1}`;
@@ -146,18 +194,18 @@ export function PageTab({ app }) {
     return html`
         ${S.key && html`<${ElementBox} app=${app} />`}
         <${Group} title=${L.name}>
-            <${Field} label="Layout"><${Select} value=${page.layout} on=${(v) => app.changeLayout(v)} options=${Object.entries(LAYOUTS).map(([k, x]) => [k, x.name])} /><//>
+            <${Field} label="Layout"><${Btn} kind="is-wide" on=${() => app.dialog({ type: 'layout' })} title="See this page in each layout">${L.name} — change…<//><//>
             ${L.texts.map((f) => html`<${Field} label=${page.layout === 'drawing' && f === 'title' ? 'Floor / drawing name' : TEXT_LABELS[f]}>
                 <${Text} area=${f === 'body' || f === 'notes' ? 7 : f === 'caption' ? 3 : null} value=${page[f]}
                     placeholder=${f === 'body' ? 'Write the project overview here.' : f === 'title' && page.layout === 'contents' ? 'Contents' : ''}
                     on=${(v) => set((p) => { p[f] = v; }, f)} /><//>`)}
-            ${page.layout === 'divider' && html`<div class="pm-chips">${SECTIONS.map((t) => html`<button type="button" onClick=${() => set((p) => { p.title = t; })}>${t}</button>`)}</div>`}
+            ${page.layout === 'divider' && html`<div class="pm-chips">${SECTIONS.map((t) => sectionName(t, S.doc.lang)).map((t) => html`<button type="button" onClick=${() => set((p) => { p.title = t; })}>${t}</button>`)}</div>`}
 
             ${page.layout === 'cover' && html`
-                <${Field} label="Cover style"><${Seg} value=${page.opts.variant || S.doc.theme.cover} on=${(v) => opt('variant', v)} options=${[['type', 'Typography'], ['image', 'Image'], ['logo', 'Logo']]} /><//>
+                <${Field} label="Cover style"><${StylePick} app=${app} options=${COVER_STYLES} value=${page.opts.variant || S.doc.theme.cover} page=${page} on=${(v) => opt('variant', v)} /><//>
                 <p class="pm-note">The cover shows the project's information — fill it in under <a href="#" onClick=${(e) => { e.preventDefault(); app.tab('project'); }}>Project</a>. Empty fields leave no gap.</p>`}
             ${page.layout === 'divider' && html`
-                <${Field} label="Style"><${Seg} value=${page.opts.variant || S.doc.theme.divider} on=${(v) => opt('variant', v)} options=${[['line', 'Line'], ['centered', 'Centred'], ['block', 'Block']]} /><//>
+                <${Field} label="Style"><${StylePick} app=${app} options=${DIVIDER_STYLES} value=${page.opts.variant || S.doc.theme.divider} page=${page} on=${(v) => opt('variant', v)} /><//>
                 <${Toggle} label="Section number" value=${page.opts.number !== false} on=${(v) => opt('number', v ? undefined : false)} />`}
             ${page.layout === 'image-caption' && html`<${Field} label="Words"><${Seg} value=${page.opts.textPos || 'below'} on=${(v) => opt('textPos', v)} options=${[['below', 'Below'], ['side', 'Beside']]} /><//>`}
             ${page.layout === 'overview' && html`<${Toggle} label="Key facts from the project's information" value=${page.opts.facts !== false} on=${(v) => opt('facts', v ? undefined : false)} />`}
@@ -168,6 +216,11 @@ export function PageTab({ app }) {
                     <${Text} value=${d.scale} placeholder="1:100" on=${(v) => setD('scale', v, 'ds')} /><//>
                 <${Toggle} label="North arrow" value=${d.north} on=${(v) => setD('north', v)} />
                 ${d.north && html`<${Field} label="North points" row><${Range} min=${-180} max=${180} step=${5} value=${+d.northAngle || 0} on=${(v) => setD('northAngle', v, 'na')} show=${(v) => `${v}°`} /><//>`}`}
+            ${page.layout === 'sheet' && html`
+                <p class="pm-note">For the drawing index — nothing is printed on the sheet itself.</p>
+                <${Field} label="Drawing name"><${Text} value=${page.title} placeholder=${a0 ? titleFromName(a0.name) : ''} on=${(v) => set((p) => { p.title = v; }, 'title')} /><//>
+                <div class="pm-2"><${Field} label="Drawing no."><${Text} value=${d.number} on=${(v) => setD('number', v, 'dn')} /><//>
+                <${Field} label="Scale"><${Text} value=${d.scale} placeholder="1:100" on=${(v) => setD('scale', v, 'ds')} /><//></div>`}
             ${page.layout === 'sheet' && src0 && html`
                 <${Toggle} label="Keep the sheet's own paper size" value=${!!page.size} on=${(v) => set((p) => { if (v) p.size = { w: src0.w, h: src0.h }; else delete p.size; })} />
                 <p class="pm-note">${page.size
@@ -228,6 +281,11 @@ export function ProjectTab({ app }) {
     })}
             <${Toggle} label="Website, e-mail and phone on the cover" value=${i.showContact} on=${(v) => set('showContact', v)} />
         <//>
+        <${Group} title="Language of the pages">
+            <${Select} value=${S.doc.lang} on=${(v) => app.commit((d) => { d.lang = v; })} options=${LANGS} />
+            <p class="pm-note">The words the pages print themselves — “Client”, “Scale”, “Contents”, the dates — in this language. What you write is printed as you write it, so write the project’s details in it too. The layouts stay as they are, left to right.</p>
+        <//>
+        <${Revisions} app=${app} />
         <${Group} title="Collaboration">
             <${Field} label="Partner's logo beside yours" hint="For projects done together — on the cover and the closing page. Partners are kept under Branding.">
                 <${Select} value=${S.doc.partner || ''} on=${(v) => app.commit((d) => { d.partner = v || null; })} options=${[['', 'None — only your logo'], ...(S.brand.partners || []).map((p) => [p.id, p.name])]} /><//>
@@ -236,6 +294,38 @@ export function ProjectTab({ app }) {
             <${Toggle} label="Watermark across every page" value=${S.doc.watermark.on} on=${(v) => app.commit((d) => { d.watermark.on = v; })} />
             ${S.doc.watermark.on && html`<${Field} label="Words"><${Text} value=${S.doc.watermark.text} on=${(v) => app.commit((d) => { d.watermark.text = v; }, 'wm')} /><//>`}
         <//>`;
+}
+
+/** Revisions issued: each a line in the revision history, and a copy of the presentation as it then was. */
+function Revisions({ app }) {
+    const { S } = app, list = S.doc.revisions, current = S.doc.info.revision;
+    const [rev, setRev] = useState(nextRevision(current));
+    const [note, setNote] = useState('');
+    const [busy, setBusy] = useState('');
+    useEffect(() => { setRev(nextRevision(current)); }, [current]);
+    const stored = (e) => S.revisions.find((r) => r.key === e.id);
+    const taken = list.some((e) => e.rev === rev.trim());
+    const act = async (label, fn) => { setBusy(label); try { await fn(); } catch (e) { alert(e.message); } finally { setBusy(''); } };
+    return html`<${Group} title="Revisions" open=${list.length > 0}>
+        <p class="pm-note">Issuing a revision keeps the presentation exactly as it is now — to open as a copy or go back to later — puts its letter in the project’s information and adds it to the history a “Revision history” page prints.</p>
+        <div class="pm-2"><${Field} label="Revision"><${Text} dir="ltr" value=${rev} on=${setRev} placeholder="A" /><//>
+        <${Field} label="What changed"><${Text} value=${note} on=${setNote} placeholder="e.g. Kitchen moved to the north side" /><//></div>
+        ${taken && html`<p class="pm-note is-warn">Revision ${rev.trim()} has been issued already.</p>`}
+        <${Btn} kind="is-sm is-primary" disabled=${!rev.trim() || taken || !!busy} on=${() => act('issue', async () => { await app.issueRevision(rev.trim(), note.trim()); setNote(''); })}>${busy === 'issue' ? 'Keeping a copy…' : `Issue revision ${rev.trim()}`}<//>
+        ${list.length > 0 && html`<div class="pm-revs">${list.slice().reverse().map((e) => {
+        const r = stored(e);
+        return html`<div class="pm-rev">
+                <div class="pm-rev__h"><strong>Rev ${e.rev}</strong><small>${fmtDate(e.date)}</small>
+                    <button type="button" class="pm-x" title="Take it out of the history (and delete its copy)" disabled=${!!busy}
+                        onClick=${() => confirm(`Take revision ${e.rev} out of the history?${r ? ' Its stored copy is deleted.' : ''}`) && act(`del${e.id}`, () => app.deleteRevision(e, r))}>×</button></div>
+                <${Text} value=${e.note} placeholder="What changed" on=${(v) => app.commit((d) => { d.revisions.find((x) => x.id === e.id).note = v; }, `rev:${e.id}`)} />
+                ${r ? html`<div class="pm-row">
+                    <${Btn} kind="is-sm" disabled=${!!busy} on=${() => act(`copy${e.id}`, () => app.copyRevision(r))}>${busy === `copy${e.id}` ? 'Copying…' : 'Open a copy'}<//>
+                    <${Btn} kind="is-sm" disabled=${!!busy} title="The pages and design as they were; the revision history stays. Undo takes it back." on=${() => confirm(`Put the pages back as they were at revision ${e.rev}?`) && act(`back${e.id}`, () => app.restoreRevision(r))}>Go back to this<//>
+                </div>` : html`<small class="pm-note">No copy was kept of this one.</small>`}
+            </div>`;
+    })}</div>`}
+    <//>`;
 }
 
 // ── Design tab ──
@@ -293,29 +383,56 @@ export function DesignTab({ app }) {
             ${t.logo.at !== 'none' && html`<${Field} label="Logo size" row><${Range} min=${60} max=${220} step=${10} value=${Math.round((t.logo.size || 1) * 100)} on=${(v) => set((th) => { th.logo.size = v / 100; }, 'logosz')} show=${(v) => `${v}%`} /><//>`}
         <//>
         <${Group} title="Covers & dividers" open=${false}>
-            <${Field} label="Cover style"><${Seg} value=${t.cover} on=${(v) => set((th) => { th.cover = v; })} options=${[['type', 'Typography'], ['image', 'Image'], ['logo', 'Logo']]} /><//>
-            <${Field} label="Divider style"><${Seg} value=${t.divider} on=${(v) => set((th) => { th.divider = v; })} options=${[['line', 'Line'], ['centered', 'Centred'], ['block', 'Block']]} /><//>
+            <${Field} label="Cover style"><${StylePick} app=${app} options=${COVER_STYLES} value=${t.cover} page=${SAMPLE.cover} on=${(v) => set((th) => { th.cover = v; })} /><//>
+            <${Field} label="Divider style"><${StylePick} app=${app} options=${DIVIDER_STYLES} value=${t.divider} page=${SAMPLE.divider} on=${(v) => set((th) => { th.divider = v; })} /><//>
             <p class="pm-note">A page set to its own style keeps it.</p>
         <//>`;
 }
 
 // ── Add a page ──
+const GROUPS = ['Structure', 'Content', 'Images', 'Drawings'];
 export function AddPageDialog({ app, onClose }) {
-    const groups = ['Structure', 'Content', 'Images', 'Drawings'];
-    const saved = app.S.presets.filter((p) => p.type === 'layout');
-    const add = (page) => { app.addPage(page); onClose(); };
+    const { S } = app, at = S.doc.pages.length ? S.page + 1 : 0, divider = S.doc.theme.divider;
+    const cards = useMemo(() => {
+        const out = [];
+        for (const [id, L] of Object.entries(LAYOUTS)) {
+            if (id === 'cover') COVER_STYLES.forEach(([v, name, hint]) => out.push({ group: L.group, name: `Cover — ${name}`, hint, page: newPage('cover', { opts: { variant: v } }) }));
+            // the template's own divider style is left unset, so the page follows the template if it changes
+            else if (id === 'divider') DIVIDER_STYLES.forEach(([v, name, hint]) => out.push({ group: L.group, name: `Divider — ${name}`, hint, page: newPage('divider', v === divider ? {} : { opts: { variant: v } }) }));
+            else out.push({ group: L.group, name: L.name, hint: L.hint, page: newPage(id) });
+        }
+        for (const p of S.presets.filter((x) => x.type === 'layout')) {
+            out.push({ group: 'Yours', preset: p, name: p.name, hint: (LAYOUTS[p.data.layout] || LAYOUTS.blank).name, page: { ...newPage(p.data.layout), ...clone(p.data) } });
+        }
+        return out;
+    }, [S.presets, divider]);
+    const own = pictures(S).renders.length > 0;
+    const add = (page) => { app.addPage({ ...clone(page), id: uid() }); onClose(); };
     return html`<${Dialog} title="Add a page" onClose=${onClose} wide>
-        ${groups.map((g) => html`<h3 class="pm-h">${g}</h3><div class="pm-tiles">
-            ${Object.entries(LAYOUTS).filter(([, L]) => L.group === g).map(([id, L]) => html`<button type="button" onClick=${() => add(newPage(id, id === 'cover' ? { opts: { variant: app.S.doc.theme.cover } } : {}))}>
-                <strong>${L.name}</strong><span>${L.hint}</span></button>`)}
-        </div>`)}
-        <h3 class="pm-h">Section dividers</h3>
-        <div class="pm-chips">${SECTIONS.map((t) => html`<button type="button" onClick=${() => add(newPage('divider', { title: t }))}>${t}</button>`)}</div>
-        ${saved.length > 0 && html`<h3 class="pm-h">Your layouts</h3><div class="pm-tiles">
-            ${saved.map((p) => html`<button type="button" onClick=${() => add({ ...newPage(p.data.layout), ...clone(p.data), id: uid() })}>
-                <strong>${p.name}</strong><span>${(LAYOUTS[p.data.layout] || LAYOUTS.blank).name}</span>
-                <i class="pm-tiles__x" title="Delete this layout" onClick=${(e) => { e.stopPropagation(); app.deletePreset(p); }}>×</i></button>`)}
-        </div>`}
+        <p class="pm-note">Each design is drawn in this presentation’s template${own ? ', with its own pictures as an example — the new page arrives empty, ready for the pictures you choose' : ''}. It goes after page ${at || 1}.</p>
+        ${[...GROUPS, 'Yours'].map((g) => {
+        const list = cards.filter((c) => c.group === g);
+        return list.length > 0 && html`<h3 class="pm-h">${g === 'Yours' ? 'Your layouts' : g}</h3><div class="pm-designs">
+            ${list.map((c) => html`<button type="button" class="pm-design" onClick=${() => add(c.page)}>
+                <${DesignThumb} app=${app} page=${c.page} at=${at} /><strong>${c.name}</strong><span>${c.hint}</span>
+                ${c.preset && html`<i class="pm-design__x" title="Delete this layout" onClick=${(e) => { e.stopPropagation(); app.deletePreset(c.preset); }}>×</i>`}
+            </button>`)}</div>`;
+    })}
+        <h3 class="pm-h">A section divider, by its name</h3>
+        <div class="pm-chips">${SECTIONS.map((t) => html`<button type="button" onClick=${() => add(newPage('divider', { title: sectionName(t, S.doc.lang) }))}>${sectionName(t, S.doc.lang)}</button>`)}</div>
+    <//>`;
+}
+
+/** This page in every layout, to change it to one. */
+export function LayoutDialog({ app, onClose }) {
+    const { S } = app, page = S.doc.pages[S.page];
+    const cards = useMemo(() => Object.entries(LAYOUTS).map(([id, L]) => ({ id, L, page: id === page.layout ? page : relayout(page, id, (h) => S.assets.get(h)?.kind === 'pdf') })), [page]);
+    return html`<${Dialog} title=${`Page ${S.page + 1} in another layout`} onClose=${onClose} wide>
+        <p class="pm-note">Its pictures, words and anything added by hand come along; the old layout’s own settings and moved places do not. Empty places show this presentation’s pictures only as an example. Undo (Ctrl+Z) takes it back.</p>
+        ${GROUPS.map((g) => html`<h3 class="pm-h">${g}</h3><div class="pm-designs">
+            ${cards.filter((c) => c.L.group === g).map((c) => html`<button type="button" class=${`pm-design${c.id === page.layout ? ' is-on' : ''}`} onClick=${() => { if (c.id !== page.layout) app.changeLayout(c.id); onClose(); }}>
+                <${DesignThumb} app=${app} page=${c.page} at=${S.page} replace=${true} /><strong>${c.L.name}</strong><span>${c.id === page.layout ? 'Its layout now' : c.L.hint}</span>
+            </button>`)}</div>`)}
     <//>`;
 }
 
@@ -465,46 +582,105 @@ export function PreviewDialog({ app, onClose }) {
     useEffect(() => { setW(Math.min(1300, box.current.clientWidth - 80)); }, []);
     return html`<div class="pm-preview" ref=${box}>
         <header><strong>${app.S.name}</strong><span>${app.S.doc.pages.length} pages — as they will be in the PDF</span><span class="pm-sp"></span>
-            <${Btn} kind="is-primary" on=${() => { onClose(); app.dialog({ type: 'export' }); }}>Export PDF…<//><${Btn} on=${onClose}>Back to editing<//></header>
+            <${Btn} on=${() => app.dialog({ type: 'present' })}>Present<//><${Btn} kind="is-primary" on=${() => app.dialog({ type: 'export' })}>Export…<//><${Btn} on=${onClose}>Back to editing<//></header>
         <div class="pm-preview__pages">${app.S.doc.pages.map((p, i) => { const lay = app.lay(i, false); return html`<figure><${PageView} lay=${lay} scale=${Math.min(w / lay.w, (window.innerHeight - 140) / lay.h)} media=${app.media} /><figcaption>${i + 1}</figcaption></figure>`; })}</div>
+    </div>`;
+}
+
+// ── Present: full screen, a page at a time ──
+export function PresentDialog({ app, onClose }) {
+    const { S } = app, n = S.doc.pages.length;
+    const [i, setI] = useState(S.page);
+    const [box, setBox] = useState({ w: window.innerWidth, h: window.innerHeight });
+    const el = useRef();
+    const go = (by) => setI((x) => Math.max(0, Math.min(n - 1, x + by)));
+    useEffect(() => {
+        document.activeElement?.blur();   // or Space would press the button that opened it
+        el.current.requestFullscreen?.().catch(() => {});
+        const key = (e) => {
+            const by = { ArrowRight: 1, ArrowDown: 1, PageDown: 1, ' ': 1, Enter: 1, ArrowLeft: -1, ArrowUp: -1, PageUp: -1, Backspace: -1 }[e.key];
+            if (by) { e.preventDefault(); go(by); } else if (e.key === 'Home') setI(0); else if (e.key === 'End') setI(n - 1);
+        };
+        const size = () => setBox({ w: window.innerWidth, h: window.innerHeight });
+        // leaving full screen (Esc) ends the presentation
+        const left = () => { if (!document.fullscreenElement) onClose(); };
+        window.addEventListener('keydown', key);
+        window.addEventListener('resize', size);
+        document.addEventListener('fullscreenchange', left);
+        return () => {
+            window.removeEventListener('keydown', key); window.removeEventListener('resize', size); document.removeEventListener('fullscreenchange', left);
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        };
+    }, []);
+    const view = (k) => { const lay = app.lay(k, false); return html`<${PageView} lay=${lay} scale=${Math.min(box.w / lay.w, box.h / lay.h)} media=${app.media} />`; };
+    return html`<div class="pm-present" ref=${el} onClick=${(e) => go(e.clientX < box.w / 3 ? -1 : 1)}>
+        ${view(i)}
+        ${i + 1 < n && html`<div class="pm-present__next" aria-hidden="true">${view(i + 1)}</div>`}
+        <span class="pm-present__n">${i + 1} / ${n}</span>
+        <button type="button" class="pm-present__x" title="End (Esc)" onClick=${(e) => { e.stopPropagation(); onClose(); }}>×</button>
     </div>`;
 }
 
 // ── Export ──
 export function ExportDialog({ app, onClose }) {
-    const { S } = app, n = S.doc.pages.length;
+    const { S } = app, n = S.doc.pages.length, rooms = app.boot.rooms || [];
+    const [format, setFormat] = useState('pdf');
     const [preset, setPreset] = useState('balanced');
+    const [px, setPx] = useState('2400');
+    const [to, setTo] = useState('download');
+    const [room, setRoom] = useState(rooms[0] ? String(rooms[0].id) : '');
+    const [note, setNote] = useState('');
     const [which, setWhich] = useState(S.picks.size > 1 ? 'range' : 'all');
     const [range, setRange] = useState(S.picks.size > 1 ? app.picksRange() : `1-${n}`);
     const [name, setName] = useState(fileName(S.doc, S.name));
-    const [state, setState] = useState(null);   // { done, total, label } | { error } | { size }
+    const [state, setState] = useState(null);   // { done, total, label } | { error } | { size } | { sent }
     const indices = which === 'all' ? S.doc.pages.map((_, i) => i) : which === 'page' ? [S.page] : parseRange(range, n);
     const warns = (indices || []).flatMap((i) => app.lay(i, false).warnings.map((w) => ({ ...w, page: i + 1 })));
     const lowres = warns.filter((w) => w.type === 'lowres'), empty = warns.filter((w) => w.type === 'empty'), other = warns.filter((w) => w.type !== 'lowres' && w.type !== 'empty');
     const mixed = new Set((indices || []).map((i) => { const s = pageSize(S.doc, S.doc.pages[i]); return `${mm(s.w)}×${mm(s.h)}`; }));
     const running = state && state.total && state.done < state.total;
+    const sending = format === 'pdf' && to === 'room';
 
     async function run() {
         setState({ done: 0, total: 1, label: 'Starting' });
         try {
             await app.saveNow();
-            const { bytes: data, pages } = await exportPdf({ doc: S.doc, indices, env: app.env(false), media: app.media, preset, title: name, onProgress: setState });
-            download(data, name);
-            setState({ size: data.length, pages });
+            const job = { doc: S.doc, indices, env: app.env(false), media: app.media, title: name, onProgress: setState };
+            if (format === 'jpg') {
+                const out = await exportImages({ ...job, size: px, uploader: app.uploader });
+                downloadBlob(out.blob, out.name);
+                return setState({ size: out.blob.size, pages: out.pages, file: out.name });
+            }
+            const { bytes: data, pages } = await exportPdf({ ...job, preset });
+            if (!sending) { download(data, name); return setState({ size: data.length, pages }); }
+            const file = new File([data], name.endsWith('.pdf') ? name : `${name}.pdf`, { type: 'application/pdf' });
+            setState({ done: 0, total: 100, label: 'Sending to the room' });
+            const sent = await app.uploader.upload(file, null, (p) => setState({ done: Math.min(99, Math.round(p * 100)), total: 100, label: 'Sending to the room' }),
+                app.boot.urls.toRoom, { room, title: name.replace(/\.pdf$/i, ''), note });
+            setState({ sent, size: data.length, pages });
         } catch (e) {
             console.error(e);
-            setState({ error: e.message || 'The PDF could not be made.' });
+            setState({ error: e.message || 'It could not be made.' });
         }
     }
 
-    return html`<${Dialog} title="Export PDF" onClose=${() => !running && onClose()}
-        foot=${html`<span class="pm-sp"></span><${Btn} on=${onClose} disabled=${running}>Close<//><${Btn} kind="is-primary" disabled=${running || !indices} on=${run}>${running ? 'Working…' : 'Export PDF'}<//>`}>
-        <${Field} label="Quality"><div class="pm-presets">${Object.entries(PRESETS).map(([id, p]) => html`<label class=${preset === id ? 'is-on' : ''}>
-            <input type="radio" name="preset" checked=${preset === id} onChange=${() => setPreset(id)} /><strong>${p.name}</strong><span>${p.note}</span></label>`)}</div><//>
+    const verb = format === 'jpg' ? 'Export pictures' : sending ? 'Send to the room' : 'Export PDF';
+    return html`<${Dialog} title="Export" onClose=${() => !running && onClose()}
+        foot=${html`<span class="pm-sp"></span><${Btn} on=${onClose} disabled=${running}>Close<//><${Btn} kind="is-primary" disabled=${running || !indices || (sending && !room)} on=${run}>${running ? 'Working…' : verb}<//>`}>
+        <${Field} label="As"><${Seg} value=${format} on=${setFormat} options=${[['pdf', 'PDF document'], ['jpg', 'JPG pictures', 'Each page as a picture — for WhatsApp, social media or a screen']]} /><//>
+        ${format === 'pdf' && html`<${Field} label="Quality"><div class="pm-presets">${Object.entries(PRESETS).map(([id, p]) => html`<label class=${preset === id ? 'is-on' : ''}>
+            <input type="radio" name="preset" checked=${preset === id} onChange=${() => setPreset(id)} /><strong>${p.name}</strong><span>${p.note}</span></label>`)}</div><//>`}
+        ${format === 'jpg' && html`<${Field} label="Picture size" hint="Several pages come in one .zip file. In a JPG a drawing is a picture too — send the PDF where it must stay sharp at any zoom.">
+            <${Seg} value=${px} on=${setPx} options=${JPG_SIZES} /><//>`}
         <${Field} label="Pages"><${Seg} value=${which} on=${setWhich} options=${[['all', `All ${n}`], ['page', `This page (${S.page + 1})`], ['range', 'Choose…']]} /><//>
         ${which === 'range' && html`<${Field} hint=${indices ? `${indices.length} page${indices.length > 1 ? 's' : ''}` : `Write page numbers between 1 and ${n}, like 1-4, 7`}><${Text} dir="ltr" value=${range} on=${setRange} placeholder="1-4, 7" /><//>`}
-        <${Field} label="File name"><${Text} value=${name} on=${setName} /><//>
-        ${mixed.size > 1 && html`<p class="pm-note">This PDF mixes page sizes (${[...mixed].join(', ')} mm): each page is exactly its own size. When printing, choose “fit to page” or print the larger sheets separately.</p>`}
+        <${Field} label=${sending ? 'Title in the room' : 'File name'}><${Text} value=${name} on=${setName} /><//>
+        ${format === 'pdf' && html`<${Field} label="Then"><${Seg} value=${to} on=${setTo} options=${[['download', 'Save to this computer'], ['room', 'Send to a client room', 'It appears in the client’s room, waiting for their approval']]} /><//>`}
+        ${sending && (rooms.length ? html`
+            <${Field} label="Room"><${Select} value=${room} on=${setRoom} options=${rooms.map((r) => [r.id, r.label])} /><//>
+            <${Field} label="A note for the client (optional)"><${Text} area=${2} value=${note} on=${setNote} /><//>`
+        : html`<p class="pm-note">There are no client rooms yet — make one under Clients → Client rooms.</p>`)}
+        ${format === 'pdf' && mixed.size > 1 && html`<p class="pm-note">This PDF mixes page sizes (${[...mixed].join(', ')} mm): each page is exactly its own size. When printing, choose “fit to page” or print the larger sheets separately.</p>`}
         ${(lowres.length > 0 || empty.length > 0 || other.length > 0) && html`<div class="pm-warns">
             ${lowres.length > 0 && html`<p><strong>${lowres.length} image${lowres.length > 1 ? 's are' : ' is'} too small for the space ${lowres.length > 1 ? 'they fill' : 'it fills'}</strong> and will look soft on paper: ${lowres.map((w) => `page ${w.page} (${w.ppi} PPI)`).join(', ')}. No export setting can add the missing detail — a larger original can.</p>`}
             ${empty.length > 0 && html`<p>Empty image places are left blank: page${empty.length > 1 ? 's' : ''} ${[...new Set(empty.map((w) => w.page))].join(', ')}.</p>`}
@@ -512,7 +688,10 @@ export function ExportDialog({ app, onClose }) {
         </div>`}
         ${state && state.total && html`<div class="pm-progress"><progress max=${state.total} value=${state.done}></progress><span>${state.label}</span></div>`}
         ${state && state.error && html`<p class="pm-error">${state.error}</p>`}
-        ${state && state.size && html`<p class="pm-ok">Done — ${state.pages} pages, ${bytes(state.size)}. It is in your downloads.</p>`}
+        ${state && state.sent && html`<div class="pm-ok"><p>Sent — ${state.pages} ${state.pages === 1 ? 'page' : 'pages'},${bytes(state.size)}. It is in ${state.sent.client}’s room, waiting for their approval.</p>
+            <div class="pm-row"><a class="pm-btn is-sm" href=${state.sent.room} target="_blank" rel="noopener">Open the room</a>
+            ${state.sent.whatsapp && html`<a class="pm-btn is-sm" href=${state.sent.whatsapp} target="_blank" rel="noopener">Tell them on WhatsApp</a>`}</div></div>`}
+        ${state && state.size && !state.sent && html`<p class="pm-ok">Done — ${state.file || `${state.pages} ${state.pages === 1 ? 'page' : 'pages'}`}, ${bytes(state.size)}. It is in your downloads.</p>`}
     <//>`;
 }
 

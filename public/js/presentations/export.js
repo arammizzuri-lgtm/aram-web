@@ -206,10 +206,72 @@ export async function exportPdf({ doc, indices, env, media, preset, title, onPro
 
 /** Hand a finished PDF to the browser as a download. */
 export function download(bytes, name) {
-    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-    const a = Object.assign(document.createElement('a'), { href: url, download: name.endsWith('.pdf') ? name : `${name}.pdf` });
+    downloadBlob(new Blob([bytes], { type: 'application/pdf' }), name.endsWith('.pdf') ? name : `${name}.pdf`);
+}
+export function downloadBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: name });
     document.body.append(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+/** Image sizes offered for JPG pages: the longest side in pixels, or 300 PPI at the page's printed size. */
+export const JPG_SIZES = [['2400', '2400 px — screens, WhatsApp'], ['4000', '4000 px — large screens'], ['300ppi', '300 PPI — for print']];
+const MAX_PX = 8000;
+
+/**
+ * The pages as JPG pictures: drawn once as a print-quality PDF (the same pages, exactly), then
+ * each page rendered at the chosen size. One page is one .jpg; several come in a .zip.
+ */
+export async function exportImages({ doc, indices, env, media, title, size, uploader, onProgress = () => {} }) {
+    const { bytes } = await exportPdf({ doc, indices, env, media, preset: 'print', title, onProgress: (p) => onProgress({ done: p.done, total: p.total * 2, label: p.done < p.total ? p.label : 'Drawing the pictures' }) });
+    const pdf = await uploader.openPdf(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    const n = pdf.pages.length, base = title.replace(/\.pdf$/i, ''), files = [];
+    for (let i = 1; i <= n; i++) {
+        onProgress({ done: n + i - 1, total: n * 2, label: `Making picture ${i} of ${n}` });
+        const p = pdf.pages[i - 1], long = Math.max(p.w, p.h);
+        const px = size === '300ppi' ? Math.min(MAX_PX, long / 72 * 300) : +size;
+        const canvas = await uploader.renderPage(pdf, i, px, Infinity);
+        const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.92));
+        if (!blob) throw new Error('The browser could not make a picture this large. Choose a smaller size.');
+        files.push({ name: `${base}${n > 1 ? ` — ${String(indices[i - 1] + 1).padStart(2, '0')}` : ''}.jpg`, data: new Uint8Array(await blob.arrayBuffer()) });
+        canvas.width = canvas.height = 0;   // let the memory go before the next page
+    }
+    onProgress({ done: n * 2, total: n * 2, label: 'Done' });
+    return files.length === 1
+        ? { blob: new Blob([files[0].data], { type: 'image/jpeg' }), name: files[0].name, pages: 1 }
+        : { blob: zipStore(files), name: `${base}.zip`, pages: n };
+}
+
+const CRC = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+export function crc32(data) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) c = CRC[(c ^ data[i]) & 255] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+}
+/** A .zip that stores the files as they are (JPGs gain nothing from compressing). Names are UTF-8. */
+export function zipStore(files) {
+    const enc = new TextEncoder(), parts = [], central = [];
+    let offset = 0;
+    const head = (sig, size) => { const v = new DataView(new ArrayBuffer(size)); v.setUint32(0, sig, true); return v; };
+    for (const f of files) {
+        const name = enc.encode(f.name), crc = crc32(f.data), len = f.data.length;
+        const local = head(0x04034b50, 30);
+        local.setUint16(4, 20, true); local.setUint16(6, 0x0800, true); local.setUint16(12, 0x21, true);   // version 2.0; UTF-8 names; dated 1 Jan 1980
+        local.setUint32(14, crc, true); local.setUint32(18, len, true); local.setUint32(22, len, true);
+        local.setUint16(26, name.length, true);
+        const dir = head(0x02014b50, 46);
+        dir.setUint16(4, 20, true); dir.setUint16(6, 20, true); dir.setUint16(8, 0x0800, true); dir.setUint16(14, 0x21, true);
+        dir.setUint32(16, crc, true); dir.setUint32(20, len, true); dir.setUint32(24, len, true);
+        dir.setUint16(28, name.length, true); dir.setUint32(42, offset, true);
+        parts.push(local, name, f.data);
+        central.push(dir, name);
+        offset += 30 + name.length + len;
+    }
+    const size = central.reduce((s, x) => s + x.byteLength, 0), end = head(0x06054b50, 22);
+    end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, size, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end], { type: 'application/zip' });
 }

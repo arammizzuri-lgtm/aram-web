@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Presentations\Pages;
 
 use App\Filament\Resources\Presentations\PresentationResource;
 use App\Models\Presentation;
+use App\Models\Project;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
@@ -22,11 +23,18 @@ class ManagePresentations extends ManageRecords
                 ->modalHeading('A presentation for a project')
                 ->schema(fn (): array => PresentationResource::newForm())
                 ->createAnother(false)
-                ->using(fn (array $data) => Presentation::create([
-                    'name' => $data['name'],
-                    'project_name' => $data['name'],
-                    'doc' => Presentation::blank($data['name'], $data['theme'], $data['size'], $data['orient']),
-                ]))
+                ->using(function (array $data) {
+                    $presentation = Presentation::create([
+                        'name' => $data['name'],
+                        'project_name' => $data['name'],
+                        'doc' => Presentation::blank($data['name'], $data['theme'], $data['size'], $data['orient'], $data['lang'] ?? 'en'),
+                    ]);
+                    if ($project = Project::find($data['project'] ?? null)) {
+                        $presentation->seedFrom($project);
+                    }
+
+                    return $presentation;
+                })
                 // straight into the editor
                 ->successNotification(null)
                 ->successRedirectUrl(fn (Presentation $record) => $record->editorUrl()),

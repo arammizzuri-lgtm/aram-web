@@ -2,12 +2,12 @@
 // panes — pages on the left, the page being worked on in the middle, its
 // settings on the right (panels.js). The document is saved as it changes.
 import { html, render, useState, useEffect, useRef } from 'htm-preact';
-import { normalize, starterPages, newPage, slot, uid, clone, LAYOUTS, SECTIONS, structure, resolveTheme, isDivider, sourceSize } from '@pm/model';
+import { normalize, starterPages, newPage, slot, uid, clone, LAYOUTS, SECTIONS, structure, resolveTheme, isDivider, sourceSize, relayout, sectionName } from '@pm/model';
 import { initText, ensureFonts } from '@pm/text';
 import { layoutPage, fontsOf } from '@pm/layout';
 import { PageView, createMedia } from '@pm/view';
 import { createUploader } from '@pm/uploads';
-import { PageTab, ProjectTab, DesignTab, AddPageDialog, ImportDialog, LibraryDialog, PreviewDialog, ExportDialog, BrandPanel } from '@pm/panels';
+import { PageTab, ProjectTab, DesignTab, AddPageDialog, LayoutDialog, ImportDialog, LibraryDialog, PreviewDialog, PresentDialog, ExportDialog, BrandPanel } from '@pm/panels';
 
 const boot = JSON.parse(document.getElementById('boot').textContent);
 const root = document.getElementById('app');
@@ -24,7 +24,7 @@ const S = {
     tab: 'page', dlg: null, zoom: 'fit', guides: [],
     save: 'saved', saveError: '',
     assets: new Map(boot.assets.map((a) => [a.hash, a])),
-    presets: boot.presets, brand: boot.brand,
+    presets: boot.presets, brand: boot.brand, revisions: boot.revisions || [],
 };
 
 let queued = false;
@@ -191,14 +191,7 @@ const app = {
         draw();
     },
     changeLayout(id) {
-        commit((d) => {
-            const p = d.pages[S.page], fresh = newPage(id), had = p.images.filter((s) => s.asset);
-            p.layout = id;
-            p.images = fresh.images.map((s, i) => (had[i] ? { ...s, asset: had[i].asset, page: had[i].page, caption: had[i].caption, fit: S.assets.get(had[i].asset)?.kind === 'pdf' ? 'fit' : s.fit } : s));
-            p.ov = Object.fromEntries(Object.entries(p.ov).filter(([k]) => k.startsWith('free:')));
-            p.opts = {};
-            delete p.size;
-        });
+        commit((d) => { d.pages[S.page] = relayout(d.pages[S.page], id, (h) => S.assets.get(h)?.kind === 'pdf'); });
     },
     /** Put an uploaded image (or a page of a PDF) in an image place, or on the page as a new element. */
     assign(target, asset, pdfPage = 0) {
@@ -300,7 +293,7 @@ const app = {
             const order = [...SECTIONS.filter((s) => groups.has(s)), ...[...groups.keys()].filter((k) => !SECTIONS.includes(k))];
             // a section that exists already takes its new pages at its end; new sections go before the closing page
             for (const sec of [...order].reverse()) {
-                const at = sec ? d.pages.findIndex((p) => isDivider(p) && p.title === sec) : -1;
+                const at = sec ? d.pages.findIndex((p) => isDivider(p) && (p.title === sec || p.title === sectionName(sec, d.lang))) : -1;
                 if (at < 0) continue;
                 let end = at + 1;
                 while (end < d.pages.length && !isDivider(d.pages[end]) && d.pages[end].layout !== 'closing') end++;
@@ -311,7 +304,7 @@ const app = {
             const tail = [];
             for (const sec of order) {
                 if (!groups.has(sec)) continue;
-                if (sec) tail.push(newPage('divider', { title: sec }));
+                if (sec) tail.push(newPage('divider', { title: sectionName(sec, d.lang) }));
                 tail.push(...groups.get(sec));
             }
             const last = d.pages[d.pages.length - 1];
@@ -319,6 +312,39 @@ const app = {
             first = tail[0] || first;
         });
         if (first) { S.page = Math.max(0, S.doc.pages.findIndex((p) => p.id === first.id)); S.key = null; draw(); }
+    },
+    /** Issue a revision: its letter in the project's information, a line in the history, and the presentation kept as it now is. */
+    async issueRevision(rev, note) {
+        const key = uid();
+        commit((d) => { d.info.revision = rev; d.revisions.push({ id: key, rev, date: new Date().toLocaleDateString('en-CA'), note }); });
+        await saveNow();
+        if (S.save !== 'saved') throw new Error('The presentation could not be saved, so no copy of this revision was kept. Check the connection and try again.');
+        S.revisions = [(await call(boot.urls.revisions, 'POST', { key, label: rev, note })).revision, ...S.revisions];
+        draw();
+    },
+    /** The presentation as it was at a revision, as a new presentation of its own (in a new tab). */
+    async copyRevision(r) {
+        const tab = window.open('', '_blank');   // opened now, while it is still the click: a tab opened after a wait is blocked
+        try { tab.location = (await call(boot.urls.revisionCopy.replace('__ID__', r.id), 'POST')).url; } catch (e) { tab.close(); throw e; }
+    },
+    /** Back to how it was at a revision — one step, which Undo takes back. The revision history stays as it is now. */
+    async restoreRevision(r) {
+        const { doc } = await call(boot.urls.revision.replace('__ID__', r.id), 'GET');
+        const was = normalize(doc, S.presets);
+        commit((d) => {
+            const keep = { revisions: d.revisions, revision: d.info.revision };
+            for (const k of Object.keys(d)) delete d[k];
+            Object.assign(d, was, { revisions: keep.revisions });
+            d.info.revision = keep.revision;
+        });
+        S.page = Math.min(S.page, Math.max(0, S.doc.pages.length - 1)); S.key = null;
+        draw();
+    },
+    /** A line out of the revision history, with the copy kept for it. */
+    async deleteRevision(entry, stored) {
+        if (stored) await call(boot.urls.revision.replace('__ID__', stored.id), 'DELETE');
+        S.revisions = S.revisions.filter((x) => x !== stored);
+        commit((d) => { d.revisions = d.revisions.filter((x) => x.id !== entry.id); });
     },
     /** The pages picked in the list, as "1-3, 6". */
     picksRange() {
@@ -334,6 +360,15 @@ const app = {
     },
 };
 const DRAWINGS = ['Site Plan', 'Floor Plans', 'Elevations', 'Sections'];
+async function call(url, method, body) {
+    const res = await fetch(url, { method, credentials: 'same-origin', headers: { ...uploader.headers, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }).catch(() => null);
+    if (!res) throw new Error('The connection dropped — try again.');
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(res.status === 401 || res.status === 419 ? 'You have been signed out. Sign in to the admin in another tab, then try again.' : data.message || `It did not work (${res.status}).`);
+    }
+    return res.status === 204 ? {} : res.json();
+}
 
 // ── Keyboard ──
 window.addEventListener('keydown', (e) => {
@@ -384,7 +419,8 @@ function TopBar() {
         </select>
         <${Btn} on=${() => app.openImport()}>Upload<//>
         <${Btn} on=${() => app.dialog({ type: 'preview' })}>Preview<//>
-        <${Btn} kind="is-primary" on=${() => app.dialog({ type: 'export' })}>Export PDF<//>
+        <${Btn} on=${() => app.dialog({ type: 'present' })} title="Full screen, a page at a time — for showing it to the client" disabled=${!S.doc.pages.length}>Present<//>
+        <${Btn} kind="is-primary" on=${() => app.dialog({ type: 'export' })}>Export<//>
     </header>`;
 }
 
@@ -595,6 +631,8 @@ function App() {
     return html`<div class="pm-app">
         <${TopBar} /><${Pages} /><${Stage} /><${Right} />
         ${d && d.type === 'add' && html`<${AddPageDialog} app=${app} onClose=${close} />`}
+        ${d && d.type === 'layout' && html`<${LayoutDialog} app=${app} onClose=${close} />`}
+        ${d && d.type === 'present' && html`<${PresentDialog} app=${app} onClose=${close} />`}
         ${d && d.type === 'import' && html`<${ImportDialog} key=${d.n} app=${app} files=${d.files} target=${d.target} onClose=${close} />`}
         ${d && d.type === 'library' && html`<${LibraryDialog} app=${app} target=${d.target} onClose=${close} />`}
         ${d && d.type === 'preview' && html`<${PreviewDialog} app=${app} onClose=${close} />`}
@@ -609,7 +647,8 @@ function App() {
         ? { theme: 'minimal-white', info: { project: 'Project name', client: 'Client', location: 'Location', stage: 'Stage' }, pages: [newPage('cover', { opts: { variant: 'logo' } }), newPage('closing')] }
         : boot.presentation.doc, boot.presets);
     const fresh = !brandMode && !S.doc.pages.length;
-    if (fresh) S.doc.pages = starterPages(S.doc);
+    if (fresh) S.doc.pages = starterPages(S.doc);   // with a website project's details and pictures, when it was made from one
+    delete S.doc.seed;
     hist.stack = [S.doc]; hist.i = 0;
     await Promise.all([
         ensureFonts(fontsOf(S.doc)).catch(() => {}),
@@ -617,6 +656,17 @@ function App() {
     ]);
     if (fresh) dirty();   // the starter pages are the presentation now
     draw();
+    if (!brandMode) previewImported();
 })().catch((e) => { root.innerHTML = `<p class="pm-boot">The editor could not start: ${String(e.message || e).replace(/</g, '&lt;')}</p>`; });
+
+/** Pictures brought in from a website project arrive without previews; they are made here, as for an upload. */
+async function previewImported() {
+    for (const a of [...S.assets.values()].filter((x) => !x.brand && x.kind === 'image' && !(x.meta.previews || []).length)) {
+        try {
+            const blob = await (await fetch(media.url(a.hash, 'original'), { credentials: 'same-origin' })).blob();
+            app.addAsset(await uploader.imagePreviews(blob, a));
+        } catch (e) { console.warn(`No preview for ${a.name}:`, e); }
+    }
+}
 
 window.pm = app;   // for looking at the state from the browser's console

@@ -99,3 +99,91 @@ test('lines break at words within the width, and a right-to-left line is laid fr
     assert.deepEqual(mixed.runs.map((r) => r.text), ['First', 'نهۆمی ']);   // placed left to right: the Latin word sits on the left
     assert.equal(mixed.runs[0].x, 0);
 });
+
+test('the words a page prints itself follow its language; what was typed does not change', () => {
+    const ku = m.normalize({ lang: 'ku' }), ar = m.normalize({ lang: 'ar' });
+    assert.equal(m.normalize({ lang: 'fr' }).lang, 'en');
+    assert.equal(m.word(m.normalize({}), 'scale'), 'Scale');
+    assert.equal(m.word(ku, 'scale'), 'پێوەر');
+    assert.equal(m.word(ar, 'contents'), 'المحتويات');
+    assert.equal(m.sectionName('Floor Plans', 'ku'), 'نەخشەی نهۆمەکان');
+    assert.equal(m.sectionName('Floor Plans', 'en'), 'Floor Plans');
+    assert.equal(m.sectionName('My own section', 'ku'), 'My own section');
+    assert.equal(m.fmtDate('2026-11-12', 'ku'), '١٢ تشرینی دووەم ٢٠٢٦');
+    assert.equal(m.fmtDate('2026-01-05', 'ar'), '٥ كانون الثاني ٢٠٢٦');
+    assert.equal(m.fmtDate('2026-11-12'), '12 November 2026');
+    assert.equal(m.fmtDate('soon', 'ku'), 'soon');
+});
+
+test('a page given another layout keeps its pictures, words and added elements', () => {
+    const page = m.newPage('two-up', { title: 'Views', opts: { textPos: 'side' }, size: { w: 1, h: 1 },
+        free: [{ id: 'f1', t: 'text', text: 'Note' }], ov: { title: { sz: 1.4 }, 'free:f1': { f: [0, 0, 0.2, 0.1] } } });
+    page.images[0].asset = 'render'; page.images[1].asset = 'plan'; page.images[1].page = 2;
+    const p = m.relayout(page, 'image-full', (h) => h === 'plan');
+    assert.equal(p.layout, 'image-full');
+    assert.equal(p.title, 'Views');
+    assert.deepEqual(p.images.map((s) => s.asset), ['render']);
+    assert.deepEqual(Object.keys(p.ov), ['free:f1']);
+    assert.deepEqual(p.opts, {});
+    assert.equal(p.size, undefined);
+    assert.equal(p.free.length, 1);
+    const g = m.relayout(page, 'grid', (h) => h === 'plan');
+    assert.deepEqual(g.images.map((s) => s.asset), ['render', 'plan', null, null]);
+    assert.equal(g.images[1].fit, 'fit');   // a PDF drawing is never cropped
+    assert.equal(g.images[1].page, 2);
+    assert.equal(page.layout, 'two-up');    // the page itself is left as it was
+});
+
+test('the next revision follows the last', () => {
+    assert.equal(m.nextRevision(''), 'A');
+    assert.equal(m.nextRevision(undefined), 'A');
+    assert.equal(m.nextRevision('A'), 'B');
+    assert.equal(m.nextRevision(' c '), 'd');
+    assert.equal(m.nextRevision('9'), '10');
+    assert.equal(m.nextRevision('Z'), '');
+    assert.equal(m.nextRevision('P1'), '');
+});
+
+test('a presentation made from a website project starts with its pictures in pages', () => {
+    const doc = m.normalize({ lang: 'ku', theme: 'editorial', seed: { cover: 'c', images: ['a', 'c', 'b', 'd', 'e', 7], body: 'The brief' } });
+    const pages = m.starterPages(doc);
+    assert.deepEqual(pages.map((p) => p.layout), ['cover', 'overview', 'image-full', 'image-full', 'closing']);
+    assert.equal(pages[0].images[0].asset, 'c');
+    assert.equal(pages[1].title, m.word(doc, 'overview'));
+    assert.equal(pages[1].body, 'The brief');
+    assert.deepEqual(pages[1].images.map((s) => s.asset), ['a', 'b']);
+    assert.deepEqual(pages.slice(2, 4).map((p) => p.images[0].asset), ['d', 'e']);
+    assert.deepEqual(m.starterPages(m.normalize({})).map((p) => p.layout), ['cover', 'overview', 'closing']);
+});
+
+test('the drawing index lists the drawing pages with their numbers, names and pages', async () => {
+    const { layoutPage } = await import('@pm/layout');
+    const assets = new Map([['pdf1', { hash: 'pdf1', kind: 'pdf', name: 'GF_plan-final.pdf', meta: { pages: [{ w: 2384, h: 1684 }] } }]]);
+    const sheet = m.newPage('sheet', { drawing: { number: 'A-102' } });
+    sheet.images[0].asset = 'pdf1'; sheet.images[0].page = 1;
+    const doc = m.normalize({ lang: 'en', pages: [m.newPage('drawing-index'), m.newPage('drawing', { title: 'Ground Floor Plan', drawing: { number: 'A-101' } }), sheet, m.newPage('image-full')] });
+    const lay = layoutPage(doc, 0, { brand: {}, assets, edit: false, logoRatio: () => 1 });
+    const cell = (key) => lay.items.filter((it) => it.key === key).flatMap((it) => it.lines.flatMap((l) => l.runs.map((r) => r.text))).join('').trim();
+    assert.match(cell('list:h0'), /^drawing no/i);
+    assert.deepEqual([cell('list:0:0'), cell('list:0:1'), cell('list:0:3')], ['A-101', 'Ground Floor Plan', '2']);
+    assert.deepEqual([cell('list:1:0'), cell('list:1:1'), cell('list:1:3')], ['A-102', 'GF plan final', '3']);
+    assert.equal(cell('list:2:0'), '');   // the image page is not a drawing
+    assert.ok(lay.frames.list);
+});
+
+test('pictures of the pages are packed in a zip that any unzipper reads', async () => {
+    const x = await import('@pm/export');
+    assert.equal(x.crc32(new TextEncoder().encode('The quick brown fox jumps over the lazy dog')), 0x414FA339);
+    const files = [{ name: 'Villa — 01.jpg', data: new Uint8Array([1, 2, 3]) }, { name: 'b.jpg', data: new Uint8Array(0) }];
+    const zip = new Uint8Array(await x.zipStore(files).arrayBuffer());
+    const v = new DataView(zip.buffer), name = new TextEncoder().encode(files[0].name);
+    assert.equal(v.getUint32(0, true), 0x04034b50);
+    assert.deepEqual([...zip.slice(30 + name.length, 30 + name.length + 3)], [1, 2, 3]);   // stored as it is
+    const end = zip.length - 22;
+    assert.equal(v.getUint32(end, true), 0x06054b50);
+    assert.equal(v.getUint16(end + 10, true), 2);
+    const dir = v.getUint32(end + 16, true);
+    assert.equal(v.getUint32(dir, true), 0x02014b50);
+    assert.equal(v.getUint32(dir + 16, true), x.crc32(files[0].data));
+    assert.equal(dir + v.getUint32(end + 12, true), end);
+});

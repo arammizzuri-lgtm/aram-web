@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\SiteText;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -192,5 +193,18 @@ class ClientRoom extends Model
         $digits = phone_digits($this->client_phone);
 
         return $digits ? 'https://wa.me/'.$digits.(filled($text) ? '?text='.rawurlencode($text) : '') : null;
+    }
+
+    /** A site text (room_invite_text, room_news_text…) in the room's language, with its {name} {project} {url} {pin} filled in. */
+    public function message(string $key): string
+    {
+        $ku = $this->lang === 'ku';
+        $project = $this->project;
+
+        return str_replace(
+            ['{name}', '{project}', '{url}', '{pin}'],
+            [$this->client_name, $ku ? ($project->name_ku ?: $project->name) : $project->name, $this->url(), $this->pin],
+            $ku ? SiteText::ku($key) : SiteText::en($key),
+        );
     }
 }

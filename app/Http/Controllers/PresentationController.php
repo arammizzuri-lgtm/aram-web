@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Filament\Resources\ClientRooms\ClientRoomResource;
 use App\Filament\Resources\Presentations\PresentationResource;
+use App\Models\ClientRoom;
 use App\Models\Presentation;
 use App\Models\PresentationAsset;
 use App\Models\PresentationPreset;
+use App\Models\PresentationRevision;
+use App\Models\RoomDrawing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -53,6 +58,11 @@ class PresentationController extends Controller
                 'brand' => json_decode($brand->data),
                 'presets' => PresentationPreset::whereIn('type', ['theme', 'layout'])->orderBy('name')->get()
                     ->map(fn (PresentationPreset $p) => self::preset($p))->values(),
+                'revisions' => $presentation ? $presentation->revisions()->latest('id')->get()->map->toEditor()->values() : [],
+                // where an exported PDF can be sent: the client rooms, newest first
+                'rooms' => $presentation ? ClientRoom::with('project')->latest('id')->get()
+                    ->map(fn (ClientRoom $r) => ['id' => $r->id, 'label' => $r->client_name.($r->project ? ' — '.$r->project->name : '').($r->is_open ? '' : ' (closed)')])
+                    ->values() : [],
                 'urls' => [
                     'list' => PresentationResource::getUrl(isAbsolute: false),
                     'save' => $presentation ? $url('save', ['presentation' => $presentation]) : null,
@@ -63,6 +73,10 @@ class PresentationController extends Controller
                     'presets' => $url('presets'),
                     'preset' => $url('preset', ['preset' => '__ID__']),
                     'brand' => $url('brand-save'),
+                    'revisions' => $presentation ? $url('revisions', ['presentation' => $presentation]) : null,
+                    'revision' => $url('revision', ['revision' => '__ID__']),
+                    'revisionCopy' => $url('revision-copy', ['revision' => '__ID__']),
+                    'toRoom' => $presentation ? $url('to-room', ['presentation' => $presentation]) : null,
                     'fonts' => '/fonts/presentations',
                     'vendor' => '/vendor/presentations',
                 ],
@@ -106,27 +120,7 @@ class PresentationController extends Controller
             'presentation' => 'nullable|integer|exists:presentations,id',
             'chunk' => 'required|file',
         ]);
-        $disk = Storage::disk(PresentationAsset::DISK);
-        $disk->makeDirectory(PresentationAsset::DIR.'/tmp');
-        $path = $disk->path(PresentationAsset::DIR."/tmp/{$data['upload']}.part");
-
-        if ((int) $data['offset'] === 0) {
-            @unlink($path);
-            foreach (glob(dirname($path).'/*.part') ?: [] as $stale) {   // uploads abandoned midway
-                if (filemtime($stale) < time() - 86400) {
-                    @unlink($stale);
-                }
-            }
-        }
-        $have = is_file($path) ? filesize($path) : 0;
-        abort_unless($have === (int) $data['offset'], 409, 'The upload lost its place — please try again.');
-        file_put_contents($path, file_get_contents($request->file('chunk')->getRealPath()), FILE_APPEND | LOCK_EX);
-        clearstatcache(true, $path);
-
-        if (filesize($path) > PresentationAsset::MAX_BYTES) {
-            @unlink($path);
-            abort(413, 'This file is larger than '.(PresentationAsset::MAX_BYTES / 1048576).' MB.');
-        }
+        $path = self::piece($request, $data['upload'], (int) $data['offset']);
         if (! $request->boolean('last')) {
             return response()->json(['received' => filesize($path)]);
         }
@@ -140,6 +134,107 @@ class PresentationController extends Controller
         }
 
         return response()->json(['asset' => $asset->toEditor()]);
+    }
+
+    /** Joins one piece of an upload onto those before it, on the private disk; the path of the file so far. */
+    private static function piece(Request $request, string $upload, int $offset): string
+    {
+        $disk = Storage::disk(PresentationAsset::DISK);
+        $disk->makeDirectory(PresentationAsset::DIR.'/tmp');
+        $path = $disk->path(PresentationAsset::DIR."/tmp/{$upload}.part");
+
+        if ($offset === 0) {
+            @unlink($path);
+            foreach (glob(dirname($path).'/*.part') ?: [] as $stale) {   // uploads abandoned midway
+                if (filemtime($stale) < time() - 86400) {
+                    @unlink($stale);
+                }
+            }
+        }
+        $have = is_file($path) ? filesize($path) : 0;
+        abort_unless($have === $offset, 409, 'The upload lost its place — please try again.');
+        file_put_contents($path, file_get_contents($request->file('chunk')->getRealPath()), FILE_APPEND | LOCK_EX);
+        clearstatcache(true, $path);
+
+        if (filesize($path) > PresentationAsset::MAX_BYTES) {
+            @unlink($path);
+            abort(413, 'This file is larger than '.(PresentationAsset::MAX_BYTES / 1048576).' MB.');
+        }
+
+        return $path;
+    }
+
+    /**
+     * An exported PDF, sent in pieces like an upload, put in a client's room as
+     * a drawing waiting for their approval — as one added in the room itself.
+     */
+    public function toRoom(Request $request, Presentation $presentation): JsonResponse
+    {
+        $data = $request->validate([
+            'upload' => ['required', 'regex:/^[a-f0-9]{32}$/'],
+            'offset' => 'required|integer|min:0',
+            'last' => 'required|boolean',
+            'name' => 'required|string|max:200',
+            'room' => 'required|integer|exists:client_rooms,id',
+            'title' => 'required|string|max:200',
+            'note' => 'nullable|string|max:2000',
+            'chunk' => 'required|file',
+        ]);
+        $path = self::piece($request, $data['upload'], (int) $data['offset']);
+        if (! $request->boolean('last')) {
+            return response()->json(['received' => filesize($path)]);
+        }
+        if (! str_starts_with((string) @file_get_contents($path, false, null, 0, 5), '%PDF-')) {
+            @unlink($path);
+
+            return response()->json(['message' => 'This is not a PDF.'], 422);
+        }
+
+        $room = ClientRoom::findOrFail($data['room']);
+        $stored = 'rooms/drawings/'.Str::random(40).'.pdf';
+        Storage::disk(RoomDrawing::DISK)->makeDirectory('rooms/drawings');
+        rename($path, Storage::disk(RoomDrawing::DISK)->path($stored));
+        $room->drawings()->create([
+            'title' => $data['title'], 'note' => $data['note'] ?? null, 'file_path' => $stored,
+            'file_name' => Str::finish(Str::of($data['name'])->replaceMatches('/[^\pL\pN .,_()—-]+/u', ' ')->squish()->limit(180, '')->toString(), '.pdf'),
+        ]);
+
+        return response()->json([
+            'client' => $room->client_name,
+            'room' => ClientRoomResource::getUrl('edit', ['record' => $room]),
+            'whatsapp' => $room->whatsappUrl($room->message('room_news_text')),
+        ]);
+    }
+
+    /** Keep the presentation as it is now saved, as the revision just issued. */
+    public function storeRevision(Request $request, Presentation $presentation): JsonResponse
+    {
+        $data = $request->validate(['key' => 'nullable|string|max:40', 'label' => 'required|string|max:20', 'note' => 'nullable|string|max:500']);
+
+        return response()->json(['revision' => $presentation->revisions()->create([...$data, 'doc' => $presentation->doc])->toEditor()]);
+    }
+
+    public function revision(PresentationRevision $revision): JsonResponse
+    {
+        return response()->json(['doc' => json_decode($revision->doc)]);
+    }
+
+    /** The presentation as it was at a revision, as a presentation of its own. */
+    public function copyRevision(PresentationRevision $revision): JsonResponse
+    {
+        $from = $revision->presentation;
+        $copy = $from->duplicate();
+        $doc = json_decode($revision->doc, true);
+        $copy->update(['name' => mb_substr("{$from->name} — Rev {$revision->label}", 0, 160), 'doc' => $revision->doc, 'page_count' => count($doc['pages'] ?? [])]);
+
+        return response()->json(['url' => $copy->editorUrl()]);
+    }
+
+    public function destroyRevision(PresentationRevision $revision): Response
+    {
+        $revision->delete();
+
+        return response()->noContent();
     }
 
     /** The light preview and thumbnail the browser made of an image, or of one page of a PDF. */
@@ -199,6 +294,9 @@ class PresentationController extends Controller
 
     public function destroyAsset(PresentationAsset $asset): Response
     {
+        // a revision kept of the presentation still shows it
+        abort_if($asset->presentation_id && PresentationRevision::where('presentation_id', $asset->presentation_id)
+            ->where('doc', 'like', '%"'.$asset->hash.'"%')->exists(), 422, 'A revision of this presentation uses this file, so it is kept.');
         $asset->delete();
 
         return response()->noContent();

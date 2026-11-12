@@ -128,6 +128,11 @@ class AdminPanelProvider extends PanelProvider
                     Route::post('assets/{asset}/previews', 'previews')->name('previews');
                     Route::delete('assets/{asset}', 'destroyAsset')->name('asset');
                     Route::get('files/{hash}/{variant}', 'file')->name('file');
+                    Route::get('revisions/{revision}', 'revision')->name('revision');
+                    Route::delete('revisions/{revision}', 'destroyRevision')->name('revision-delete');
+                    Route::post('revisions/{revision}/copy', 'copyRevision')->name('revision-copy');
+                    Route::post('{presentation}/revisions', 'storeRevision')->name('revisions');
+                    Route::post('{presentation}/to-room', 'toRoom')->name('to-room');
                     Route::get('{presentation}/editor', 'editor')->name('editor');
                     Route::put('{presentation}', 'save')->name('save');
                 });

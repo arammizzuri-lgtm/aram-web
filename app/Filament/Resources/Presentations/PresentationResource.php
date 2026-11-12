@@ -5,19 +5,24 @@ namespace App\Filament\Resources\Presentations;
 use App\Filament\Resources\Presentations\Pages\ManagePresentations;
 use App\Models\Presentation;
 use App\Models\PresentationPreset;
+use App\Models\Project;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
@@ -56,19 +61,48 @@ class PresentationResource extends Resource
         ]);
     }
 
-    /** A new presentation: its name, the template it starts in and its page format. */
+    /** The languages a presentation's own words can be in (LANGS in model.js). */
+    public const LANGS = ['en' => 'English', 'ku' => 'Kurdish (Sorani)', 'ar' => 'Arabic'];
+
+    /**
+     * A new presentation: its name, the template it starts in and its page
+     * format — and, if it is for a project on the website, that project, whose
+     * details and pictures it starts with.
+     */
     public static function newForm(): array
     {
         $defaults = json_decode(PresentationPreset::brand()->data, true)['defaults'] ?? [];
-        $saved = PresentationPreset::where('type', 'theme')->orderBy('name')->pluck('name', 'id')
-            ->mapWithKeys(fn (string $name, int $id) => ['saved:'.$id => $name.' (yours)'])->all();
+        // each template as its cover looks (pictures made from the editor itself), a saved one by its colours
+        $templates = collect(self::TEMPLATES)->map(fn (string $name, string $id) => new HtmlString(
+            '<img src="'.e(asset("images/presentations/templates/{$id}.jpg")).'" alt="" style="display:block;width:100%;max-width:220px;border-radius:6px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)">'.e($name)
+        ))->all();
+        foreach (PresentationPreset::where('type', 'theme')->orderBy('name')->get() as $preset) {
+            $c = (json_decode($preset->data, true)['colors'] ?? []) + ['bg' => '#ffffff', 'text' => '#111111', 'accent' => '#999999', 'line' => '#dddddd'];
+            $templates['saved:'.$preset->id] = new HtmlString(sprintf(
+                '<span style="display:flex;align-items:flex-end;gap:6px;width:100%%;max-width:220px;aspect-ratio:1.414;border-radius:6px;margin-bottom:6px;padding:12px;box-sizing:border-box;background:%s;color:%s;border:1px solid %s;font-size:20px">Aa<i style="width:18px;height:3px;margin-bottom:8px;background:%s"></i></span>%s (yours)',
+                e($c['bg']), e($c['text']), e($c['line']), e($c['accent']), e($preset->name),
+            ));
+        }
+        // the project's name, in the language chosen
+        $named = function (Get $get, Set $set) {
+            if ($project = Project::find($get('project'))) {
+                $set('name', $project->tr('name', $get('lang') ?: 'en'));
+            }
+        };
 
         return [
+            Select::make('project')->label('A project on the website (optional)')
+                ->options(fn () => Project::orderByDesc('id')->pluck('name', 'id'))->searchable()->native(false)
+                ->live()->afterStateUpdated($named)->columnSpanFull()
+                ->helperText('The presentation starts with its details and its uploaded pictures: a cover, an overview with its description, and a page for each picture. Pictures linked from other websites are left out.'),
             TextInput::make('name')->label('Project name')->required()->maxLength(160)
                 ->placeholder('Villa in Ankawa')->columnSpanFull()
                 ->helperText('It goes on the cover; everything can be changed in the editor.'),
-            Select::make('theme')->label('Template')->options(self::TEMPLATES + $saved)->native(false)
-                ->default($defaults['theme'] ?? 'minimal-white')->selectablePlaceholder(false)->required()->columnSpanFull(),
+            Select::make('lang')->label('Language of the pages')->options(self::LANGS)->native(false)
+                ->default('en')->selectablePlaceholder(false)->required()->live()->afterStateUpdated($named)->columnSpanFull()
+                ->helperText('The words the pages print themselves — “Client”, “Scale”, the dates. The layouts stay left to right.'),
+            Radio::make('theme')->label('Template')->options($templates)->columns(3)
+                ->default($defaults['theme'] ?? 'minimal-white')->required()->columnSpanFull(),
             Select::make('size')->label('Page size')->options(['A3' => 'A3', 'A4' => 'A4'])->native(false)
                 ->default($defaults['size'] ?? 'A3')->selectablePlaceholder(false)->required(),
             Select::make('orient')->label('Orientation')->options(['landscape' => 'Landscape', 'portrait' => 'Portrait'])->native(false)

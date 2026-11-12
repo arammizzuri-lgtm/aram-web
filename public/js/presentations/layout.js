@@ -6,7 +6,7 @@
 // gap; a long title is set smaller). Anything can still be moved, resized,
 // restyled or hidden: those choices are kept per element in page.ov[key] and
 // applied here.
-import { MM, LAYOUTS, INFO_LABEL, LOW_PPI, pageSize, structure, tokens, fillTokens, fontKey, sourceSize, scaleLabel, parseScale, isDivider } from '@pm/model';
+import { MM, LAYOUTS, LOW_PPI, pageSize, structure, tokens, fillTokens, fontKey, sourceSize, scaleLabel, parseScale, isDivider, word, fmtDate } from '@pm/model';
 import { layoutText } from '@pm/text';
 
 // Type roles — sizes in points on A4, scaled up for larger pages.
@@ -169,7 +169,8 @@ export function layoutPage(doc, index, env) {
     }
 
     /** Label-over-value cells for the fields that are filled in; anchored to the box's top, or its bottom. */
-    const cellsFor = (keys) => keys.map((key) => [INFO_LABEL[key], T[key]]).filter(([, v]) => has(v));
+    const lbl = (key) => word(doc, key);
+    const cellsFor = (keys) => keys.map((key) => [lbl(key), T[key]]).filter(([, v]) => has(v));
     function grid(key, cells, box, cols, o = {}) {
         if (!cells.length || ovOf(key).hide) return 0;
         const b = boxOf(key, box);
@@ -260,7 +261,7 @@ export function layoutPage(doc, index, env) {
                 y += 24 * k;
                 text('project', '{project}', 'h1', { x, y, w: tw }, { fit: 2, align: 'center' });
                 text('where', where, 'label', { x, y: y + hp + 12 * k, w: tw }, { align: 'center', sz: 1.15 });
-                const issue = [T.docTitle, T.stage, T.date, has(T.revision) && `Rev ${T.revision}`].filter(has).join('   ·   ');
+                const issue = [T.docTitle, T.stage, T.date, has(T.revision) && `${lbl('rev')} ${T.revision}`].filter(has).join('   ·   ');
                 const taken = note();
                 text('issue', issue, 'label', { x, y: P.y + P.h - taken - lineH('label'), w: tw }, { align: 'center' });
                 return;
@@ -323,7 +324,7 @@ export function layoutPage(doc, index, env) {
         },
 
         contents() {
-            let y = C.y + text('title', page.title || 'Contents', 'h1', { x: C.x, y: C.y, w: C.w }, { sz: 0.8, fit: 2 }) + 26 * k;
+            let y = C.y + text('title', page.title || lbl('contents'), 'h1', { x: C.x, y: C.y, w: C.w }, { sz: 0.8, fit: 2 }) + 26 * k;
             const rw = land ? C.w * 0.62 : C.w, rowH = lineH('lead') * 2.1, g = { group: 'toc', select: false };
             const rows = doc.pages.map((p, i) => (isDivider(p) ? { no: S[i].dividerNo, title: p.title, page: i + 1 } : null)).filter(Boolean);
             if (ovOf('toc').hide) return;
@@ -434,13 +435,13 @@ export function layoutPage(doc, index, env) {
                 if (land) {
                     const nw = C.w * 0.2, x = C.x + C.w - nw;
                     area.w -= nw + 20 * k;
-                    text('notes:l', 'Notes', 'label', { x, y: area.y, w: nw }, { group: 'notes', select: false });
+                    text('notes:l', lbl('notes'), 'label', { x, y: area.y, w: nw }, { group: 'notes', select: false });
                     const h = text('notes', page.notes, 'body', { x, y: area.y + lh, w: nw });
                     if (lh + h > area.h) warnings.push({ type: 'overflow', key: 'notes' });
                 } else {
                     const h = hOf('notes', page.notes, 'body', C.w * 0.8) + lh;
                     area.h -= h + 14 * k;
-                    text('notes:l', 'Notes', 'label', { x: C.x, y: area.y + area.h + 14 * k, w: C.w }, { group: 'notes', select: false });
+                    text('notes:l', lbl('notes'), 'label', { x: C.x, y: area.y + area.h + 14 * k, w: C.w }, { group: 'notes', select: false });
                     text('notes', page.notes, 'body', { x: C.x, y: area.y + area.h + 14 * k + lh, w: C.w * 0.8 });
                     if (area.h < C.h * 0.3) warnings.push({ type: 'overflow', key: 'notes' });
                 }
@@ -466,7 +467,7 @@ export function layoutPage(doc, index, env) {
 
             text('title', page.title, 'h2', { x: C.x, y: stripY, w: C.w * 0.5, h: stripH }, { valign: 'bottom', fit: 2 });
             if (ovOf('meta').hide) return;
-            const meta = [['Drawing no.', d.number], ['Area', d.area], ['Scale', scale]].filter(([, v]) => has(v));
+            const meta = [[lbl('drawingNo'), d.number], [lbl('area'), d.area], [lbl('scale'), scale]].filter(([, v]) => has(v));
             let x = C.x + C.w;
             const g = { group: 'meta', select: false };
             const y = stripY + stripH - (lineH('label') + 2 * k + lineH('value'));
@@ -482,8 +483,53 @@ export function layoutPage(doc, index, env) {
         },
 
         sheet() { image('img:0', imgs[0], { x: 0, y: 0, w: W, h: H }, { fit: 'fit', label: 'Drawing sheet — a PDF page', drawing: true }); },
+
+        'drawing-index'() {
+            const rows = doc.pages.map((p, i) => (p.layout === 'drawing' || p.layout === 'sheet' ? drawingRow(p, i) : null)).filter(Boolean);
+            table(page.title || lbl('drawingIndex'), [[lbl('drawingNo'), 0.18], [lbl('drawing'), 0.52], [lbl('scale'), 0.2], [lbl('page'), 0.1, 'right']],
+                rows, 'Drawing pages and drawing sheets will be listed here');
+        },
+        revisions() {
+            table(page.title || lbl('revisions'), [[lbl('revision'), 0.14], [lbl('date'), 0.26], [lbl('description'), 0.6]],
+                doc.revisions.map((r) => [r.rev, fmtDate(r.date, doc.lang), r.note]), 'Revisions issued under Project → Revisions will be listed here');
+        },
         blank() {},
     };
+
+    /** A drawing page as a row of the index: its number, name, the scale that is true of it as placed, and its page. */
+    function drawingRow(p, i) {
+        const s = p.images[0], a = asset(s), d = p.drawing || {};
+        let scale = '';
+        if (a && a.kind === 'pdf' && parseScale(d.scale)) {
+            const it = layoutPage(doc, i, { ...env, edit: false }).items.find((x) => x.t === 'image' && x.key === 'img:0');
+            scale = (it && scaleLabel(d.scale, it.k, [it.src.w / MM, it.src.h / MM])) || '';
+        }
+        const name = has(p.title) ? p.title
+            : a ? a.name.replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ') + (a.kind === 'pdf' && (a.meta.pages || []).length > 1 ? ` — ${s.page}` : '') : '';
+        return [d.number, name, scale, String(i + 1)];
+    }
+    /** A listing under a heading: the column names, then a ruled line per row. */
+    function table(title, cols, rows, empty) {
+        let y = C.y + text('title', title, 'h1', { x: C.x, y: C.y, w: C.w }, { sz: 0.8, fit: 2 }) + 26 * k;
+        if (ovOf('list').hide) return;
+        const g = { group: 'list', select: false }, gut = 12 * k, top = y;
+        const xs = cols.map((_, j) => C.x + cols.slice(0, j).reduce((a, c) => a + c[1] * C.w, 0));
+        const cell = (key, v, role, j, yy) => text(key, String(v ?? ''), role, { x: xs[j], y: yy, w: cols[j][1] * C.w - gut }, { ...g, fit: 2, align: cols[j][2] || 'start' });
+        cols.forEach(([label], j) => cell(`list:h${j}`, label, 'label', j, y));
+        y += lineH('label') + 6 * k;
+        rule(C.x, y, C.w, muted, 0.6);
+        y += 8 * k;
+        rows.forEach((r, i) => {
+            const h = Math.max(lineH('body'), ...cols.map(([, w], j) => hOf(`list:${i}:${j}`, String(r[j] ?? ''), 'body', w * C.w - gut, { ...g, fit: 2 })));
+            cols.forEach((_, j) => cell(`list:${i}:${j}`, r[j], 'body', j, y));
+            y += h + 7 * k;
+            rule(C.x, y, C.w);
+            y += 8 * k;
+        });
+        if (rows.length) frames.list = { x: C.x, y: top, w: C.w, h: y - top, kind: 'group' };
+        else if (env.edit) items.push({ t: 'ph', key: 'list', x: C.x, y, w: C.w, h: lineH('body') * 4, label: empty });
+        if (y > C.y + C.h) warnings.push({ type: 'overflow', key: 'list' });
+    }
 
     /** Where the images start under an optional page title. */
     function titleTop() {

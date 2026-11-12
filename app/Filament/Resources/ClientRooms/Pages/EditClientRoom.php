@@ -4,7 +4,6 @@ namespace App\Filament\Resources\ClientRooms\Pages;
 
 use App\Filament\Resources\ClientRooms\ClientRoomResource;
 use App\Models\ClientRoom;
-use App\Support\SiteText;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -34,13 +33,13 @@ class EditClientRoom extends EditRecord
             ActionGroup::make([
                 Action::make('sendLink')->label('1 · Send the link')
                     ->icon(Heroicon::OutlinedLink)
-                    ->url(fn () => $this->record->whatsappUrl($this->message('room_invite_text')), shouldOpenInNewTab: true),
+                    ->url(fn () => $this->record->whatsappUrl($this->record->message('room_invite_text')), shouldOpenInNewTab: true),
                 Action::make('sendPin')->label('2 · Send the PIN')
                     ->icon(Heroicon::OutlinedKey)
-                    ->url(fn () => $this->record->whatsappUrl($this->message('room_pin_msg')), shouldOpenInNewTab: true),
+                    ->url(fn () => $this->record->whatsappUrl($this->record->message('room_pin_msg')), shouldOpenInNewTab: true),
                 Action::make('sendNews')->label('Tell them there is something new')
                     ->icon(Heroicon::OutlinedBellAlert)
-                    ->url(fn () => $this->record->whatsappUrl($this->message('room_news_text')), shouldOpenInNewTab: true),
+                    ->url(fn () => $this->record->whatsappUrl($this->record->message('room_news_text')), shouldOpenInNewTab: true),
             ])->label('WhatsApp')->icon(Heroicon::OutlinedChatBubbleBottomCenterText)->color('success')->button()
                 ->visible(fn () => filled($this->record->whatsappUrl())),
 
@@ -66,21 +65,6 @@ class EditClientRoom extends EditRecord
                     ->modalDescription('The room, its drawings, receipts and conversation are deleted. The project and its progress updates stay.'),
             ])->icon(Heroicon::OutlinedEllipsisVertical)->color('gray'),
         ];
-    }
-
-    /** One of the WhatsApp messages, in the client's language, filled in. */
-    private function message(string $key): string
-    {
-        /** @var ClientRoom $room */
-        $room = $this->record;
-        $ku = $room->lang === 'ku';
-        $project = $room->project;
-
-        return str_replace(
-            ['{name}', '{project}', '{url}', '{pin}'],
-            [$room->client_name, $ku ? ($project->name_ku ?: $project->name) : $project->name, $room->url(), $room->pin],
-            $ku ? SiteText::ku($key) : SiteText::en($key),
-        );
     }
 
     /** Opening the room here counts as reading what the client did in it. */

@@ -103,13 +103,68 @@ export const LAYOUTS = {
     'materials': { name: 'Materials / mood board', group: 'Content', images: 8, texts: ['title'], fit: 'fill', captions: true, hint: 'Swatches with their names' },
     'drawing': { name: 'Floor plan / drawing', group: 'Drawings', images: 1, texts: ['title', 'notes'], fit: 'fit', hint: 'A drawing with its title, scale and notes' },
     'sheet': { name: 'Drawing sheet', group: 'Drawings', images: 1, texts: [], fit: 'fit', chrome: false, hint: 'A PDF page kept whole, at its own size' },
+    'drawing-index': { name: 'Drawing index', group: 'Drawings', images: 0, texts: ['title'], hint: 'Every drawing with its number and scale, listed automatically' },
+    'revisions': { name: 'Revision history', group: 'Structure', images: 0, texts: ['title'], hint: 'The revisions issued, from the Project tab' },
     'blank': { name: 'Blank page', group: 'Content', images: 0, texts: [], hint: 'Add your own text, images and lines' },
 };
-export const TEXT_LABELS = { title: 'Title', subtitle: 'Subtitle', caption: 'Caption', body: 'Text', notes: 'Notes' };
+export const COVER_STYLES = [['type', 'Typography', 'The project’s name carries the page'], ['image', 'Image', 'A large picture above the project’s details'], ['logo', 'Logo', 'Your logo in the middle, the project under it']];
+export const DIVIDER_STYLES = [['line', 'Line', 'Number, a short line and the title'], ['centered', 'Centred', 'All of it in the middle of the page'], ['block', 'Block', 'A solid page, the words at its foot']];
+
+/** A page given another layout: its pictures, words and added elements kept; the old layout's options and moved places let go. */
+export function relayout(page, id, isPdf = () => false) {
+    const p = clone(page), fresh = newPage(id), had = p.images.filter((s) => s.asset);
+    p.layout = id;
+    p.images = fresh.images.map((s, i) => (had[i] ? { ...s, asset: had[i].asset, page: had[i].page, caption: had[i].caption, fit: isPdf(had[i].asset) ? 'fit' : s.fit } : s));
+    p.ov = Object.fromEntries(Object.entries(p.ov).filter(([k]) => k.startsWith('free:')));
+    p.opts = {};
+    delete p.size;
+    return p;
+}
+
+// ── The words the pages print themselves, in the presentation's language ──
+export const LANGS = [['en', 'English'], ['ku', 'Kurdish (Sorani)'], ['ar', 'Arabic']];
+const WORDS = {
+    client: ['Client', 'خاوەن پرۆژە', 'العميل'],
+    location: ['Location', 'شوێن', 'الموقع'],
+    type: ['Project type', 'جۆری پرۆژە', 'نوع المشروع'],
+    plotArea: ['Plot area', 'ڕووبەری زەوی', 'مساحة الأرض'],
+    builtArea: ['Built-up area', 'ڕووبەری بنیاتنراو', 'مساحة البناء'],
+    stage: ['Stage', 'قۆناغ', 'المرحلة'],
+    date: ['Date', 'بەروار', 'التاريخ'],
+    ref: ['Project no.', 'ژمارەی پرۆژە', 'رقم المشروع'],
+    revision: ['Revision', 'پێداچوونەوە', 'المراجعة'],
+    team: ['Design team', 'تیمی دیزاین', 'فريق التصميم'],
+    issuedFor: ['Issued for', 'دەرچووە بۆ', 'صادر لغرض'],
+    contents: ['Contents', 'ناوەڕۆک', 'المحتويات'],
+    notes: ['Notes', 'تێبینی', 'ملاحظات'],
+    drawingNo: ['Drawing no.', 'ژمارەی نەخشە', 'رقم المخطط'],
+    area: ['Area', 'ڕووبەر', 'المساحة'],
+    scale: ['Scale', 'پێوەر', 'مقياس الرسم'],
+    drawing: ['Drawing', 'نەخشە', 'المخطط'],
+    drawingIndex: ['Drawing index', 'پێڕستی نەخشەکان', 'فهرس المخططات'],
+    page: ['Page', 'پەڕە', 'الصفحة'],
+    rev: ['Rev', 'پێداچوونەوەی', 'مراجعة'],
+    revisions: ['Revision history', 'مێژووی پێداچوونەوەکان', 'سجل المراجعات'],
+    description: ['Description', 'وەسف', 'الوصف'],
+    overview: ['Project Overview', 'پوختەی پرۆژە', 'نظرة عامة على المشروع'],
+};
+const LANG_AT = { ku: 1, ar: 2 };
+/** One of the words above in the document's language. */
+export const word = (doc, key) => (WORDS[key] ? WORDS[key][LANG_AT[doc.lang] || 0] : key);
 
 /** Section titles offered for a divider — only titles; nothing about the project is made up. */
 export const SECTIONS = ['Project Overview', 'Site Analysis', 'Concept Design', 'Site Plan', 'Floor Plans', 'Elevations', 'Sections',
     'Exterior Visualizations', 'Interior Visualizations', 'Materials & Finishes', 'Landscape Design'];
+const SECTION_WORDS = {
+    'Project Overview': ['پوختەی پرۆژە', 'نظرة عامة على المشروع'], 'Site Analysis': ['شیکاری شوێن', 'تحليل الموقع'],
+    'Concept Design': ['بیرۆکەی دیزاین', 'التصميم المبدئي'], 'Site Plan': ['نەخشەی شوێن', 'المخطط العام للموقع'],
+    'Floor Plans': ['نەخشەی نهۆمەکان', 'المساقط الأفقية'], 'Elevations': ['ڕووکارەکان', 'الواجهات'], 'Sections': ['بڕگەکان', 'المقاطع'],
+    'Exterior Visualizations': ['وێنەی دەرەوە', 'اللقطات الخارجية'], 'Interior Visualizations': ['وێنەی ناوەوە', 'اللقطات الداخلية'],
+    'Materials & Finishes': ['کەرەستە و ڕووپۆشەکان', 'المواد والتشطيبات'], 'Landscape Design': ['دیزاینی باخچە و دەوروبەر', 'تنسيق المواقع'],
+};
+/** A section's title as it is written in the document's language. */
+export const sectionName = (title, lang) => (SECTION_WORDS[title] && LANG_AT[lang] ? SECTION_WORDS[title][LANG_AT[lang] - 1] : title);
+export const TEXT_LABELS = { title: 'Title', subtitle: 'Subtitle', caption: 'Caption', body: 'Text', notes: 'Notes' };
 
 /** The project's information: filled in once, shown wherever it is used. */
 export const INFO = [
@@ -119,7 +174,6 @@ export const INFO = [
     ['revision', 'Revision'], ['team', 'Architect / design team'], ['issuedFor', 'Issued for', 'e.g. Client review'],
     ['confidential', 'Confidentiality note'],
 ];
-export const INFO_LABEL = { ...Object.fromEntries(INFO.map(([k, l]) => [k, l])), plotArea: 'Plot area', builtArea: 'Built-up area', ref: 'Project no.', team: 'Design team' };
 export const AREA_UNITS = ['m²', 'ft²', 'donum', 'ha'];
 
 export const slot = (fit = 'fill') => ({ asset: null, page: 0, fit, fx: 0.5, fy: 0.5, zoom: 1, caption: '' });
@@ -144,6 +198,9 @@ export function normalize(doc, presets = []) {
     doc.info = { plotUnit: 'm²', builtUnit: 'm²', ...obj(doc.info) };
     doc.partner = doc.partner || null;
     doc.watermark = { on: false, text: 'Client review copy', ...obj(doc.watermark) };
+    doc.lang = LANG_AT[doc.lang] ? doc.lang : 'en';
+    // the revisions issued, as the history page prints them; `snap` is the saved copy of the presentation at that revision
+    doc.revisions = arr(doc.revisions).map((r) => obj(r)).filter((r) => r.id);
     doc.pages = arr(doc.pages).map((p) => {
         p = obj(p);
         const fresh = newPage(LAYOUTS[p.layout] ? p.layout : 'blank');
@@ -156,13 +213,20 @@ export function normalize(doc, presets = []) {
     return doc;
 }
 
-/** The pages a new presentation opens with: a cover, an overview and a closing page. */
+/**
+ * The pages a new presentation opens with: a cover, an overview and a closing page —
+ * and, when it was started from a project on the website (doc.seed), that project's
+ * own description and photographs: the cover's picture, two beside the overview, the rest a page each.
+ */
 export function starterPages(doc) {
-    return [
-        newPage('cover', { opts: { variant: doc.theme.cover } }),
-        newPage('overview', { title: 'Project Overview' }),
-        newPage('closing'),
-    ];
+    const seed = obj(doc.seed), pics = arr(seed.images).filter((h) => typeof h === 'string');
+    const pic = (hash, fit = 'fill') => ({ ...slot(fit), asset: hash });
+    const cover = newPage('cover', { opts: { variant: doc.theme.cover } });
+    if (seed.cover) cover.images = [pic(seed.cover)];
+    const rest = pics.filter((h) => h !== seed.cover);
+    const overview = newPage('overview', { title: word(doc, 'overview'), body: typeof seed.body === 'string' ? seed.body : '' });
+    if (rest.length) overview.images = rest.slice(0, 2).map((h) => pic(h));
+    return [cover, overview, ...rest.slice(2).map((h) => newPage('image-full', { images: [pic(h)] })), newPage('closing')];
 }
 
 // ── Page size ──
@@ -192,9 +256,17 @@ export function structure(doc) {
 }
 
 // ── Linked text ──
-export function fmtDate(v) {
+// the month names used in the Kurdistan Region and Iraq
+const MONTHS = {
+    ku: ['کانوونی دووەم', 'شوبات', 'ئازار', 'نیسان', 'ئایار', 'حوزەیران', 'تەممووز', 'ئاب', 'ئەیلوول', 'تشرینی یەکەم', 'تشرینی دووەم', 'کانوونی یەکەم'],
+    ar: ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران', 'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول'],
+};
+const eastern = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
+/** "2026-11-12" → "12 November 2026" — or, in Kurdish or Arabic, its month and digits (which also set the line right to left). */
+export function fmtDate(v, lang = 'en') {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || '');
     if (!m) return v || '';
+    if (MONTHS[lang]) return `${eastern(+m[3])} ${MONTHS[lang][+m[2] - 1]} ${eastern(m[1])}`;
     return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
         .format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])));
 }
@@ -208,7 +280,7 @@ export function tokens(doc, brand, extra = {}) {
     const i = doc.info;
     return {
         project: i.project, docTitle: i.docTitle, client: i.client, location: i.location, type: i.type, stage: i.stage,
-        date: fmtDate(i.date), ref: i.ref, revision: i.revision, team: i.team, issuedFor: i.issuedFor, confidential: i.confidential,
+        date: fmtDate(i.date, doc.lang), ref: i.ref, revision: i.revision, team: i.team, issuedFor: i.issuedFor, confidential: i.confidential,
         plotArea: fmtArea(i.plotArea, i.plotUnit), builtArea: fmtArea(i.builtArea, i.builtUnit),
         studio: brand.studio, website: brand.website, phone: brand.phone, email: brand.email, address: brand.address,
         ...extra,
@@ -279,6 +351,15 @@ export function fileName(doc, fallback) {
     const i = doc.info;
     const parts = [i.project || fallback, i.stage, i.date, i.revision ? `Rev ${i.revision}` : ''];
     return parts.map((s) => String(s || '').trim()).filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140) || 'Presentation';
+}
+
+/** The revision after this one: B after A, 3 after 2, A when there is none — empty when it cannot be told. */
+export function nextRevision(current) {
+    const s = String(current ?? '').trim();
+    if (!s) return 'A';
+    if (/^\d+$/.test(s)) return String(+s + 1);
+    if (/^[A-Ya-y]$/.test(s)) return String.fromCharCode(s.charCodeAt(0) + 1);
+    return '';
 }
 
 export const bytes = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(n >= 10485760 ? 0 : 1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);

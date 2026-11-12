@@ -3,9 +3,13 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\Presentations\Pages\ManagePresentations;
+use App\Models\ClientRoom;
 use App\Models\Presentation;
 use App\Models\PresentationAsset;
 use App\Models\PresentationPreset;
+use App\Models\PresentationRevision;
+use App\Models\Project;
+use App\Models\RoomDrawing;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -58,17 +62,27 @@ class PresentationsTest extends TestCase
     /** Send bytes the way the editor does: in order, in pieces, the last one flagged. */
     private function upload(string $bytes, string $name, ?Presentation $for = null, int $piece = 100, ?string $id = null)
     {
+        return $this->pieces($this->url('chunk'), $bytes, ['name' => $name, 'presentation' => $for?->id], $piece, $id);
+    }
+
+    private function pieces(string $url, string $bytes, array $fields, int $piece = 100, ?string $id = null)
+    {
         $id ??= bin2hex(random_bytes(16));
         $response = null;
         foreach (str_split($bytes, $piece) as $i => $chunk) {
             $offset = $i * $piece;
-            $response = $this->post($this->url('chunk'), [
+            $response = $this->post($url, $fields + [
                 'upload' => $id, 'offset' => $offset, 'last' => $offset + strlen($chunk) >= strlen($bytes) ? 1 : 0,
-                'name' => $name, 'presentation' => $for?->id, 'chunk' => UploadedFile::fake()->createWithContent('chunk', $chunk),
+                'chunk' => UploadedFile::fake()->createWithContent('chunk', $chunk),
             ], ['Accept' => 'application/json']);
         }
 
         return $response;
+    }
+
+    private function project(array $attrs = []): Project
+    {
+        return Project::create($attrs + ['name' => 'Ankawa House', 'category' => 'residential', 'status' => 'Under Construction', 'size' => 'default', 'is_published' => true]);
     }
 
     public function test_the_editor_and_its_files_are_only_for_a_signed_in_admin(): void
@@ -93,7 +107,7 @@ class PresentationsTest extends TestCase
             ->assertHasNoActionErrors();
 
         $p = Presentation::sole();
-        $this->assertSame(['v' => 1, 'size' => 'A4', 'orient' => 'portrait', 'theme' => 'editorial', 'info' => ['project' => 'Kani Villa'], 'pages' => []], json_decode($p->doc, true));
+        $this->assertSame(['v' => 1, 'size' => 'A4', 'orient' => 'portrait', 'theme' => 'editorial', 'lang' => 'en', 'info' => ['project' => 'Kani Villa'], 'pages' => []], json_decode($p->doc, true));
 
         // the editor page: the modules it loads, and everything it needs to start
         $this->get($p->editorUrl())->assertOk()
@@ -255,5 +269,109 @@ class PresentationsTest extends TestCase
         $this->delete($this->url('preset', ['preset' => $theme['id']]))->assertNoContent();
         $this->delete($this->url('preset', ['preset' => PresentationPreset::brand()->id]))->assertNotFound();   // the branding is not a preset to delete
         $this->assertSame(['brand'], PresentationPreset::pluck('type')->all());
+    }
+
+    public function test_a_presentation_for_a_website_project_starts_with_its_details_and_its_uploaded_pictures(): void
+    {
+        $this->actingAs($this->admin());
+        Storage::fake('public');
+        $public = Storage::disk('public');
+        $public->put('projects/front.png', $this->png(60, 40));
+        $im = imagecreatetruecolor(50, 30);
+        ob_start();
+        imagewebp($im);
+        $public->put('projects/garden.webp', ob_get_clean());
+        $public->put('projects/broken.webp', 'not an image');
+        $project = $this->project([
+            'name_ku' => 'خانووی عەنکاوە', 'typology' => 'Villa', 'location' => 'Ankawa, Erbil', 'area' => '1,250 m²',
+            'desc' => 'The brief', 'desc_ku' => 'کورتەی پرۆژە', 'cover' => 'projects/garden.webp',
+            'imgs' => ['projects/front.png', 'https://example.com/elsewhere.jpg', 'projects/garden.webp', 'projects/missing.jpg', 'projects/broken.webp', 'projects/front.png'],
+        ]);
+        ClientRoom::create(['project_id' => $project->id, 'client_name' => 'Shilan', 'lang' => 'ku']);
+
+        Livewire::test(ManagePresentations::class)
+            ->callAction('create', ['project' => $project->id, 'lang' => 'ku', 'theme' => 'editorial', 'size' => 'A3', 'orient' => 'landscape'])
+            ->assertHasNoActionErrors();
+
+        $p = Presentation::sole();
+        $doc = json_decode($p->doc, true);
+        $this->assertSame('خانووی عەنکاوە', $p->name);   // the project's name, in the language chosen
+        $this->assertSame('ku', $doc['lang']);
+        $this->assertSame(['project' => 'خانووی عەنکاوە', 'client' => 'Shilan', 'location' => 'Ankawa, Erbil', 'type' => 'Villa',
+            'plotArea' => '1250', 'stage' => 'لەژێر بنیاتنان', 'date' => now()->toDateString()], $doc['info']);
+        $this->assertSame('Shilan', $p->client_name);
+
+        // its own pictures only — once each; the WebP made a JPEG; nothing from elsewhere, missing or unreadable
+        $assets = $p->assets()->orderBy('id')->get();
+        $this->assertSame([['front.png', 'png'], ['garden.jpg', 'jpg']], $assets->map(fn ($a) => [$a->name, $a->ext])->all());
+        $this->assertSame(['w' => 50, 'h' => 30], $assets[1]->meta);
+        $this->assertSame(['cover' => $assets[1]->hash, 'images' => $assets->pluck('hash')->all(), 'body' => 'کورتەی پرۆژە'], $doc['seed']);
+        Storage::disk('local')->assertExists($assets[1]->originalPath());
+        // the editor gets them without previews, and makes those itself
+        $this->get($p->editorUrl())->assertOk()->assertSee($assets[1]->hash);
+    }
+
+    public function test_a_revision_keeps_the_presentation_as_saved_and_the_files_it_shows(): void
+    {
+        $this->actingAs($this->admin());
+        $p = $this->presentation();
+        $asset = PresentationAsset::find($this->upload($this->png(), 'render.png', $p)->json('asset.id'));
+        $doc = '{"v":1,"info":{"project":"Ankawa Villa","revision":"A"},"revisions":[{"id":"k1","rev":"A"}],"pages":[{"layout":"image-full","images":[{"asset":"'.$asset->hash.'"}]}]}';
+        $this->putJson($this->url('save', ['presentation' => $p]), ['name' => 'Ankawa Villa', 'doc' => $doc])->assertOk();
+
+        $rev = $this->postJson($this->url('revisions', ['presentation' => $p]), ['key' => 'k1', 'label' => 'A', 'note' => 'First issue'])
+            ->assertOk()->json('revision');
+        $this->assertSame(['k1', 'A', 'First issue'], [$rev['key'], $rev['label'], $rev['note']]);
+        $this->assertSame($doc, PresentationRevision::find($rev['id'])->doc);
+        $this->get($p->editorUrl())->assertOk()->assertSee('"label":"A"', false);
+
+        // the page changes afterwards; the revision is as it was
+        $this->putJson($this->url('save', ['presentation' => $p]), ['name' => 'Ankawa Villa', 'doc' => '{"v":1,"pages":[]}'])->assertOk();
+        $this->assertSame(json_decode($doc, true), $this->getJson($this->url('revision', ['revision' => $rev['id']]))->assertOk()->json('doc'));
+
+        // a file the revision shows is kept, though no page uses it now
+        $this->deleteJson($this->url('asset', ['asset' => $asset]))->assertStatus(422);
+        $this->assertModelExists($asset);
+
+        // a copy: a presentation of its own, as it was, with its files
+        $url = $this->postJson($this->url('revision-copy', ['revision' => $rev['id']]))->assertOk()->json('url');
+        $copy = Presentation::where('name', 'Ankawa Villa — Rev A')->sole();
+        $this->assertSame($copy->editorUrl(), $url);
+        $this->assertSame($doc, $copy->doc);
+        $this->assertSame(1, $copy->page_count);
+        $this->assertSame([$asset->hash], $copy->assets->pluck('hash')->all());
+
+        $this->delete($this->url('revision-delete', ['revision' => $rev['id']]))->assertNoContent();
+        $this->deleteJson($this->url('asset', ['asset' => $asset]))->assertNoContent();
+        // and they go with their presentation
+        $copy->revisions()->create(['label' => 'B', 'doc' => '{}']);
+        $copy->delete();
+        $this->assertSame(0, PresentationRevision::count());
+    }
+
+    public function test_an_exported_pdf_is_sent_to_a_client_room_to_wait_for_approval(): void
+    {
+        $this->actingAs($this->admin());
+        $p = $this->presentation();
+        $room = ClientRoom::create(['project_id' => $this->project()->id, 'client_name' => 'Shilan', 'client_phone' => '0750 123 4567', 'lang' => 'en']);
+        $this->get($p->editorUrl())->assertOk()->assertSee('Shilan — Ankawa House');
+
+        $pdf = "%PDF-1.7\n".str_repeat('x', 450)."\n%%EOF";
+        $sent = $this->pieces($this->url('to-room', ['presentation' => $p]), $pdf,
+            ['name' => 'Ankawa: Villa.pdf', 'room' => $room->id, 'title' => 'Ankawa Villa — design', 'note' => 'For Thursday'])->assertOk()->json();
+        $this->assertSame('Shilan', $sent['client']);
+        $this->assertStringContainsString('/client-rooms/'.$room->id, $sent['room']);
+        $this->assertStringStartsWith('https://wa.me/9647501234567?text=', $sent['whatsapp']);
+        $this->assertStringContainsString(rawurlencode($room->url()), $sent['whatsapp']);
+
+        $drawing = RoomDrawing::sole();
+        $this->assertSame([$room->id, 'Ankawa Villa — design', 'For Thursday', RoomDrawing::PENDING, 'Ankawa Villa.pdf'],
+            [$drawing->client_room_id, $drawing->title, $drawing->note, $drawing->status, $drawing->file_name]);
+        $this->assertSame($pdf, Storage::disk('local')->get($drawing->file_path));
+        $this->assertSame([], Storage::disk('local')->files('presentations/tmp'));
+
+        // only a PDF
+        $this->pieces($this->url('to-room', ['presentation' => $p]), $this->png(), ['name' => 'x.pdf', 'room' => $room->id, 'title' => 'x'])->assertStatus(422);
+        $this->assertSame(1, RoomDrawing::count());
     }
 }

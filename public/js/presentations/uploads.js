@@ -25,8 +25,8 @@ export function createUploader(boot) {
         }
     }
 
-    /** Send a file, whole and unchanged; resolves with the asset the server recorded. */
-    async function upload(file, presentation, onProgress = () => {}) {
+    /** Send a file, whole and unchanged; resolves with the asset the server recorded (or, to another `url`, its answer). */
+    async function upload(file, presentation, onProgress = () => {}, url = boot.urls.chunk, fields = {}) {
         if (!/\.(jpe?g|png|pdf)$/i.test(file.name) && !/^(image\/(jpeg|png)|application\/pdf)$/.test(file.type)) {
             throw new Error('Only JPG and PNG images and PDF files can be used.');
         }
@@ -41,10 +41,11 @@ export function createUploader(boot) {
             form.set('last', end >= file.size ? 1 : 0);
             form.set('name', file.name.slice(0, 200));
             if (presentation) form.set('presentation', presentation);
+            for (const [k, v] of Object.entries(fields)) form.set(k, v);
             form.set('chunk', file.slice(offset, end), 'chunk');
-            const data = await send(boot.urls.chunk, form);
+            const data = await send(url, form);
             onProgress(end / file.size);
-            if (data.asset) return data.asset;
+            if (end >= file.size) return data.asset || data;
         }
         throw new Error('The upload did not finish.');
     }
@@ -135,10 +136,11 @@ export function createUploader(boot) {
             throw new Error(/encrypt/i.test(String(e && e.message)) ? 'This PDF is protected against changes. Save an unprotected copy and upload that.' : 'This PDF opens for viewing but its pages cannot be placed in another PDF. Re-save it from your PDF reader and upload that.');
         }
     }
-    async function renderPage(pdf, n, max) {
+    /** One page drawn on a canvas, its longest side `max` pixels (and at most `cap` times its size in points). */
+    async function renderPage(pdf, n, max, cap = 4) {
         const page = await pdf.doc.getPage(n);
         const base = page.getViewport({ scale: 1 });
-        const vp = page.getViewport({ scale: Math.min(4, max / Math.max(base.width, base.height)) });
+        const vp = page.getViewport({ scale: Math.min(cap, max / Math.max(base.width, base.height)) });
         const c = document.createElement('canvas');
         c.width = Math.round(vp.width); c.height = Math.round(vp.height);
         const g = c.getContext('2d');
@@ -162,7 +164,7 @@ export function createUploader(boot) {
         return latest;
     }
 
-    return { upload, imagePreviews, openPdf, checkPdf, pdfThumbs, pdfPreviews, send, headers };
+    return { upload, imagePreviews, openPdf, checkPdf, pdfThumbs, pdfPreviews, renderPage, send, headers };
 }
 
 /** A guess at what an uploaded file shows, from its name — only to pre-select the section; always editable. */
