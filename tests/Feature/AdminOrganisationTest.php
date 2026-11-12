@@ -183,10 +183,14 @@ class AdminOrganisationTest extends TestCase
 
         // every form remembers what was saved, so leaving with changes asks first
         $this->assertTrue(Filament::getPanel('studio-aks-panel')->hasUnsavedChangesAlerts());
+        // pages switch without a reload, but a download is never a page switch
+        $panel = Filament::getPanel('studio-aks-panel');
+        $this->assertTrue($panel->hasSpaMode());
+        $this->assertTrue(str(route('filament.studio-aks-panel.backup-everything'))->is($panel->getSpaUrlExceptions()));
         foreach ([ManageSiteContent::class, CostEstimator::class, ReadAloudSettings::class, EnquiryAlerts::class] as $page) {
             $this->assertNotEmpty(Livewire::test($page)->get('savedDataHash'), $page);
         }
-        $this->get(ManageSiteContent::getUrl())->assertSee('setUpUnsavedDataChangesAlert', false);
+        $this->get(ManageSiteContent::getUrl())->assertSee('setUpSpaModeUnsavedDataChangesAlert', false);   // asks on a page switch too
 
         // a published client opens its band on the homepage; a hidden one has nothing to open
         $client = Client::create(['name' => 'Rotana', 'is_published' => true]);
@@ -198,6 +202,29 @@ class AdminOrganisationTest extends TestCase
         $category = Category::query()->firstOrFail();
         Livewire::test(EditCategory::class, ['record' => $category->getRouteKey()])
             ->assertActionHasUrl('viewOnSite', url('/projects').'?type='.$category->key);
+    }
+
+    public function test_a_project_is_duplicated_hidden_with_its_own_number_and_address(): void
+    {
+        $this->actingAs($this->admin());
+        $original = Project::create([
+            'name' => 'Garden House', 'category' => 'residential', 'status' => 'Completed', 'size' => 'default', 'is_published' => true,
+            'imgs' => ['projects/garden/a.jpg', 'projects/garden/b.jpg'], 'photo_rooms' => ['projects/garden/a.jpg' => 'kitchen'],
+            'desc' => 'A house around a garden.', 'voice_en' => 'projects/voices/garden.m4a', 'sort_order' => 1,
+        ]);
+
+        Livewire::test(ListProjects::class)->callTableAction('replicate', $original);
+
+        $copy = Project::query()->where('name', 'Garden House (copy)')->firstOrFail();
+        $this->assertFalse($copy->is_published);
+        $this->assertSame('garden-house-copy', $copy->slug);
+        $this->assertSame(Project::formatNum((int) $original->num + 1), $copy->num);
+        $this->assertSame($original->imgs, $copy->imgs);
+        $this->assertSame(['projects/garden/a.jpg' => 'kitchen'], $copy->photo_rooms);
+        $this->assertSame('A house around a garden.', $copy->desc);
+        $this->assertNull($copy->voice_en);   // its file would go with whichever project let it go
+        $this->assertGreaterThan($original->sort_order, $copy->sort_order);
+        $this->assertTrue($original->fresh()->is_published);
     }
 
     public function test_texts_english_only_on_purpose_are_not_counted_as_missing(): void

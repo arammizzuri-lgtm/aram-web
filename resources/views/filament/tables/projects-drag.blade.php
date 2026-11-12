@@ -147,10 +147,15 @@
         };
 
         // Re-arm after every Livewire round-trip (save, search, sort, toggle).
-        const hook = () => window.Livewire?.hook('commit', ({ succeed }) => succeed(() => queueMicrotask(setup)));
-        if (window.Livewire) hook();
-        document.addEventListener('livewire:init', hook);
-        document.addEventListener('livewire:navigated', setup);
+        // Once per browser tab: with the panel's quick page switch this script
+        // runs again on every visit to the list, and the hooks would pile up.
+        if (!window.amDragArmed) {
+            window.amDragArmed = true;
+            const hook = () => window.Livewire?.hook('commit', ({ succeed }) => succeed(() => queueMicrotask(setup)));
+            if (window.Livewire) hook();
+            document.addEventListener('livewire:init', hook);
+            document.addEventListener('livewire:navigated', setup);
+        }
 
         document.readyState === 'loading'
             ? document.addEventListener('DOMContentLoaded', setup)

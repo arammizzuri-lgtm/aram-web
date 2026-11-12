@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Projects\Tables;
 
+use App\Filament\Resources\Projects\ProjectResource;
 use App\Models\Category;
 use App\Models\Project;
 use App\Models\Status;
@@ -13,6 +14,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\ReplicateAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Notifications\Notification;
@@ -138,6 +140,19 @@ class ProjectsTable
                                 ->title($record->name.' moved to the end')
                                 ->send();
                         }),
+                    // A copy to start a similar project from: hidden from the site, at
+                    // the end, with its own number and address. The photographs are
+                    // shared (their files are never deleted); the voice notes are not,
+                    // as a voice note's file goes when its project lets it go.
+                    ReplicateAction::make()->label('Duplicate')
+                        ->excludeAttributes(['num', 'slug', 'voice_en', 'voice_ku', 'deleted_at'])
+                        ->hidden(fn (Project $record): bool => $record->trashed())
+                        ->beforeReplicaSaved(function (Project $replica) {
+                            $replica->name = $replica->name.' (copy)';
+                            $replica->is_published = false;
+                            $replica->sort_order = (int) Project::withTrashed()->max('sort_order') + 1;
+                        })
+                        ->successRedirectUrl(fn (Project $replica): string => ProjectResource::getUrl('edit', ['record' => $replica])),
                     DeleteAction::make()->label('Move to trash'),
                     RestoreAction::make(),
                     ForceDeleteAction::make()->label('Delete forever'),

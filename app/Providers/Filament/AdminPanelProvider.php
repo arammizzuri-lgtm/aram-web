@@ -60,6 +60,12 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             // leaving a form with changes not saved asks first
             ->unsavedChangesAlerts()
+            // pages switch without a full reload; a file to download still needs one
+            ->spa()
+            ->spaUrlExceptions(fn (): array => [
+                url('studio-aks-panel/backups/*'),
+                url('studio-aks-panel/cv/*'),
+            ])
             // The sidebar in the order the studio's work runs: the portfolio, the
             // people it is for, hiring, how the website reads, and the plumbing.
             ->navigationGroups([

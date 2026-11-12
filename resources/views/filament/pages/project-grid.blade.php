@@ -214,7 +214,9 @@
     </div>
 
     <script>
-        document.addEventListener('alpine:init', () => {
+        // Arriving by the panel's quick page switch, Alpine is already running and
+        // alpine:init will not come again: register straight away then.
+        (window.Alpine ? (fn) => fn() : (fn) => document.addEventListener('alpine:init', fn))(() => {
             Alpine.data('projectGrid', (initial) => ({
                 tiles: initial,
                 saved: JSON.parse(JSON.stringify(initial)),
