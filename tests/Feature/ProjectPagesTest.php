@@ -162,7 +162,9 @@ class ProjectPagesTest extends TestCase
         // the new strings are editable alongside the rest of the site's text
         $this->actingAs($admin)->get(ManageSiteContent::getUrl())
             ->assertOk()
-            ->assertSee('Search &amp; sharing', false)
+            ->assertSee('Search &amp; sharing', false);
+        $this->actingAs($admin)->get(ManageSiteContent::getUrl(['section' => 'project-page']))
+            ->assertOk()
             ->assertSee('Project page');
     }
 

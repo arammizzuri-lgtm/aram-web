@@ -32,7 +32,7 @@ class Project extends Model
     public const BLOCKS = ['text', 'quote', 'figures', 'photos', 'image'];
 
     protected $fillable = [
-        'num', 'name', 'slug', 'name_ku', 'name_ar', 'typology_ar', 'location_ar', 'desc_ar', 'narrative_ar', 'category', 'categories', 'status', 'size', 'area', 'typology',
+        'num', 'name', 'slug', 'name_ku', 'name_ar', 'typology_ku', 'typology_ar', 'location_ku', 'location_ar', 'desc_ar', 'narrative_ar', 'category', 'categories', 'status', 'size', 'area', 'typology',
         'location', 'neighbourhood', 'city', 'country', 'lat', 'lng', 'year',
         'desc', 'desc_ku', 'narrative', 'narrative_ku', 'materials',
         'related', 'imgs', 'cover', 'cover_x', 'cover_y',
@@ -211,7 +211,7 @@ class Project extends Model
     {
         $lang ??= site_lang();
         $en = $this->{$field};
-        $ku = in_array($field, ['name', 'desc', 'narrative'], true) ? $this->{$field.'_ku'} : null;
+        $ku = in_array($field, ['name', 'desc', 'narrative', 'typology', 'location'], true) ? $this->{$field.'_ku'} : null;
 
         return bi_record($lang, $en, $ku, $this->{$field.'_ar'} ?? null);
     }

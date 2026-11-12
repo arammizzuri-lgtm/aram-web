@@ -43,7 +43,7 @@ class ContactMessagesTable
                     ->placeholder('—')->toggleable(),
                 TextColumn::make('timeline')->formatStateUsing(fn (ContactMessage $r) => $r->timelineLabel())
                     ->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('project.name')->label('Came from')->placeholder('—')
+                TextColumn::make('project.name')->label('About project')->placeholder('—')
                     ->limit(28)->toggleable(),
                 TextColumn::make('source')->label('Came from')->placeholder('—')
                     ->formatStateUsing(fn (?string $state) => TrafficSource::label($state))->toggleable(),

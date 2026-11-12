@@ -53,13 +53,104 @@ class ManageSiteContent extends Page
     #[Url]
     public string $section = '';
 
+    /** What the search box is looking for, in any section and any language (?find=). */
+    #[Url]
+    public string $find = '';
+
+    /** Listing the texts still waiting for their Kurdish or Arabic (?missing=1). */
+    #[Url]
+    public bool $missing = false;
+
     public const MEDIA = 'Numbers & Media';
+
+    public const GOOGLE = 'Google';
+
+    /**
+     * The sections by the part of the site they belong to, so the row of
+     * links stays short. A section added later and not placed here shows
+     * under "Other" until it is.
+     */
+    private const GROUPS = [
+        'Everywhere' => ['Navigation & UI', 'Search & sharing', self::GOOGLE, 'Footer', 'Saved & sharing', 'Page not found', 'Loading & waiting'],
+        'Home page' => ['Hero', 'The Record (stats band)', 'Map', 'Clients', 'Client quotes', 'Projects gallery', 'Services', 'Process', 'Heritage', 'About', 'Contact', self::MEDIA],
+        'Projects' => ['Projects page', 'Project page', 'Project overlay', 'Rooms', 'Journal'],
+        'For clients' => ['Client rooms', 'Client review page', 'Cost estimate', 'Sketch', 'Site boards', 'Holiday cards'],
+        'Heritage' => ['Kurdistan heritage'],
+        'Studio' => ['Architect page', 'Careers', 'Partners'],
+    ];
 
     /** slug => section name, in the order they appear on the site */
     public static function sections(): array
     {
-        return collect([...array_keys(SiteText::tabs()), self::MEDIA])
+        return collect([...array_keys(SiteText::tabs()), self::GOOGLE, self::MEDIA])
             ->mapWithKeys(fn ($name) => [Str::slug($name) => $name])->all();
+    }
+
+    /** @return array<string, array<string, string>> group => [slug => section name] */
+    public static function groups(): array
+    {
+        $sections = self::sections();
+        $groups = [];
+        foreach (self::GROUPS as $group => $names) {
+            $groups[$group] = array_intersect($sections, $names);
+        }
+        $placed = array_merge(...array_values(self::GROUPS));
+        $groups['Other'] = array_diff($sections, $placed);
+
+        return array_filter($groups);
+    }
+
+    /** The group the section on screen belongs to. */
+    public function currentGroup(): string
+    {
+        foreach (self::groups() as $group => $sections) {
+            if (isset($sections[$this->section])) {
+                return $group;
+            }
+        }
+
+        return array_key_first(self::groups());
+    }
+
+    /**
+     * The texts the search box matches (by their name or their words in any
+     * language), or those missing a translation — each linking straight to
+     * its field. Null when neither is asked for.
+     *
+     * @return list<array{section: string, label: string, url: string, values: array<string, string>, missing: list<string>}>|null
+     */
+    public function results(): ?array
+    {
+        $find = trim($this->find);
+        if (! $this->missing && mb_strlen($find) < 2) {
+            return null;
+        }
+
+        $untranslated = SiteText::untranslated();
+        $out = [];
+        foreach (SiteText::tabs() as $tab => $entries) {
+            foreach ($entries as $key => $def) {
+                if ($this->missing && ! isset($untranslated[$key])) {
+                    continue;
+                }
+                $values = ['EN' => SiteText::en($key), 'KU' => SiteText::ku($key), 'AR' => SiteText::ar($key)];
+                if (! $this->missing && ! collect([$def[0], $key, ...array_values($values)])->contains(fn ($text) => mb_stripos($text, $find) !== false)) {
+                    continue;
+                }
+                $out[] = [
+                    'section' => $tab,
+                    'label' => $def[0],
+                    'url' => static::getUrl(['section' => Str::slug($tab)]).'#t-'.$key,
+                    'values' => $values,
+                    'missing' => $untranslated[$key] ?? [],
+                ];
+                if (count($out) === 60) {
+                    return $out;   // enough to see the search wants narrowing
+                }
+            }
+        }
+
+        return $out;
     }
 
     /** The name of the section on screen. */
@@ -109,7 +200,8 @@ class ManageSiteContent extends Page
             foreach ($entries as $key => $def) {
                 $label = $def[0];
                 $type = $def[3] ?? 'text';
-                $fields[] = $this->biField("{$key}_en", "{$label} — EN", $type, false);
+                $fields[] = $this->biField("{$key}_en", "{$label} — EN", $type, false)
+                    ->extraFieldWrapperAttributes(['id' => 't-'.$key, 'class' => 'aram-sc-field']);
                 $fields[] = $this->biField("{$key}_ku", "{$label} — KU", $type, true);
                 $fields[] = $this->biField("{$key}_ar", "{$label} — AR", $type, true, 'ar');
             }
@@ -122,6 +214,12 @@ class ManageSiteContent extends Page
                 // English, Kurdish, Arabic side by side
                 Grid::make(3)->schema($fields),
             ]);
+        }
+
+        if ($current === self::GOOGLE) {
+            $tabs[] = Section::make('Google Business Profile')
+                ->description('Once the link and the rating are set: a rating badge with the client quotes, the contact map opens your listing, and a client who has sent their words is asked to write them on Google too. Copy the rating and the number of reviews from the profile now and then.')
+                ->schema([Grid::make(2)->schema($this->extrasFor(self::GOOGLE))]);
         }
 
         // A dedicated home for the numeric metrics and images (not text).
@@ -185,14 +283,15 @@ class ManageSiteContent extends Page
             // reviews shown on the homepage — copied from the profile, so
             // update them now and then. The badge shows once the link and the
             // rating are set.
-            'Google' => [
+            self::GOOGLE => [
                 $this->text('google_profile_url', 'Google Business Profile — its link (Google Maps → your studio → Share → Copy link)', true)
                     ->placeholder('https://maps.app.goo.gl/…')->url(),
                 $this->text('google_review_url', 'Google — the "write a review" link (Business Profile → Ask for reviews → copy)', true)
                     ->placeholder('https://g.page/r/…/review')->url(),
-                $this->text('google_rating', 'Google rating, as shown on the profile (e.g. 4.9)')
+                // numbers, so no length limit: on a number Filament makes it a digits rule, which refuses 4.9
+                TextInput::make('google_rating')->label('Google rating, as shown on the profile (e.g. 4.9)')
                     ->placeholder('4.9')->numeric()->minValue(1)->maxValue(5),
-                $this->text('google_review_count', 'Number of Google reviews')
+                TextInput::make('google_review_count')->label('Number of Google reviews')
                     ->placeholder('23')->numeric()->minValue(0),
             ],
             'Contact' => [

@@ -123,7 +123,9 @@ class ProjectForm
                 ->columns(3)
                 ->schema([
                     TextInput::make('typology')->maxLength(120)->placeholder('Cultural / Civic'),
-                    // Arabic pages (/ar): blank shows the English
+                    // Kurdish and Arabic pages: blank shows the English
+                    TextInput::make('typology_ku')->label('Typology (Kurdish)')->maxLength(120)
+                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
                     TextInput::make('typology_ar')->label('Typology (Arabic)')->maxLength(120)
                         ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
                     TextInput::make('year')->maxLength(40)->placeholder('2022 – 2024'),
@@ -146,10 +148,14 @@ class ProjectForm
                         ->label('Neighbourhood / area')
                         ->maxLength(120)->placeholder('Kawrgusk')
                         ->helperText('Shown on the map when the project is opened.'),
-                    TextInput::make('location_ar')->label('Location (Arabic)')->maxLength(191)
-                        ->helperText('The whole place in one line, e.g. «فيوتشر سيتي، أربيل، كوردستان». Left blank, the English location is shown.')
-                        ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar'])
-                        ->columnSpan(2),
+                    Grid::make(2)->columnSpanFull()->schema([
+                        TextInput::make('location_ku')->label('Location (Kurdish)')->maxLength(191)
+                            ->helperText('The whole place in one line. Left blank, the English location is shown.')
+                            ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ckb']),
+                        TextInput::make('location_ar')->label('Location (Arabic)')->maxLength(191)
+                            ->helperText('The whole place in one line, e.g. «فيوتشر سيتي، أربيل، كوردستان». Left blank, the English location is shown.')
+                            ->extraInputAttributes(['dir' => 'rtl', 'lang' => 'ar']),
+                    ]),
                     // The map picker below writes to these; kept as hidden fields
                     // so they still persist to the lat/lng columns and drive the
                     // public site map.

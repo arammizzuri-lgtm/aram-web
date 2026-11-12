@@ -1,8 +1,8 @@
 <x-filament-panels::page>
-    <form wire:submit="save" class="space-y-6">
+    <form wire:submit="save" class="aram-form">
         {{ $this->form }}
 
-        <div class="flex justify-end">
+        <div class="aram-form-actions">
             <x-filament::button type="submit" size="lg" icon="heroicon-o-check">
                 Save settings
             </x-filament::button>

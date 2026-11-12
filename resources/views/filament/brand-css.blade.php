@@ -80,6 +80,37 @@
 .aram-todo__go { color: #666; transition: color .15s, transform .15s; }
 .aram-todo__item:hover .aram-todo__go { color: #f5c518; transform: translateX(2px); }
 
+/* ───────── Settings pages: the form and its save row ───────── */
+.aram-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.aram-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; flex-wrap: wrap; }
+.aram-form-actions__note { font-size: 0.85rem; color: #8c8c8c; }
+
+/* ───────── Site content: search, parts of the site, sections ───────── */
+.aram-sc-bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.aram-sc-search { flex: 1 1 18rem; }
+.aram-sc-sections { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.aram-sc-chip {
+    padding: 0.38rem 0.8rem; border-radius: 999px; font-size: 0.84rem; text-decoration: none;
+    color: #bdbdbd; border: 1px solid rgba(255, 255, 255, 0.1); transition: border-color .15s, color .15s;
+}
+.aram-sc-chip:hover { color: #f4f1ea; border-color: rgba(245, 197, 24, 0.45); }
+.aram-sc-chip.is-active { color: #0a0a0a; background: #f5c518; border-color: #f5c518; font-weight: 600; }
+.aram-sc-hit {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.2rem 1rem;
+    padding: 0.8rem 0.15rem; border-top: 1px solid rgba(255, 255, 255, 0.05); text-decoration: none;
+}
+.aram-sc-hit:hover .aram-sc-hit__label { color: #f5c518; }
+.aram-sc-hit__where { grid-column: 1 / -1; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a000; }
+.aram-sc-hit__label { grid-column: 1 / -1; color: #e7e7e7; font-weight: 500; font-size: 0.92rem; transition: color .15s; }
+.aram-sc-hit__val { font-size: 0.82rem; line-height: 1.45; color: #9a9a9a; min-width: 0; overflow-wrap: anywhere; }
+.aram-sc-hit__val b { font-size: 0.68rem; color: #666; margin-inline-end: 0.35rem; }
+.aram-sc-hit__gap { color: #f59e0b; font-style: normal; }
+@media (max-width: 760px) { .aram-sc-hit { grid-template-columns: 1fr; } }
+/* the text a search result opened: brought into view and marked for a moment */
+.aram-sc-field { scroll-margin-top: 6rem; }
+.aram-sc-field:target { animation: aram-sc-flash 2.4s ease-out; border-radius: 0.5rem; }
+@keyframes aram-sc-flash { 0%, 40% { box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.55); } 100% { box-shadow: 0 0 0 3px transparent; } }
+
 /* ───────── Insight tables (most viewed projects, traffic sources) ───────── */
 .aram-card__note { font-size: 0.75rem; color: #777; }
 .aram-card__foot { margin-top: 0.9rem; font-size: 0.74rem; line-height: 1.5; color: #777; }

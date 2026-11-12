@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\ManageSiteContent;
 use App\Filament\Resources\Landmarks\Pages\CreateLandmark;
 use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
@@ -10,6 +11,7 @@ use App\Models\ContactMessage;
 use App\Models\Landmark;
 use App\Models\MissingPage;
 use App\Models\Project;
+use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\SiteText;
 use Filament\Facades\Filament;
@@ -79,11 +81,16 @@ class AdminOrganisationTest extends TestCase
             ->assertSee(['Details', 'Story', 'Photographs', 'More on the page'])
             ->assertDontSee('Card cover & focal point')
             ->assertDontSee('Notes on the photographs')
-            ->fillForm(['name' => 'Twin House', 'categories' => ['residential'], 'status' => 'Completed', 'size' => 'default', 'desc' => 'Two houses, one garden.'])
+            ->fillForm(['name' => 'Twin House', 'categories' => ['residential'], 'status' => 'Completed', 'size' => 'default', 'desc' => 'Two houses, one garden.',
+                'typology' => 'Villa', 'typology_ku' => 'ڤێلا', 'location_ku' => 'هەولێر'])
             ->call('create')
             ->assertHasNoFormErrors();
         $project = Project::query()->where('name', 'Twin House')->firstOrFail();
         $this->assertSame('Two houses, one garden.', $project->desc);
+        // the typology and the place in Kurdish too; Arabic left blank shows the English
+        $this->assertSame('ڤێلا', $project->tr('typology', 'ku'));
+        $this->assertSame('هەولێر', $project->tr('location', 'ku'));
+        $this->assertSame('Villa', $project->tr('typology', 'ar'));
         Livewire::test(EditProject::class, ['record' => $project->getRouteKey()])->assertSee('Card cover & focal point');
 
         Livewire::test(CreateLandmark::class)
@@ -91,6 +98,45 @@ class AdminOrganisationTest extends TestCase
             ->call('create')
             ->assertHasNoFormErrors();
         $this->assertSame('split', Landmark::query()->where('name_en', 'Amedi Gate')->value('hero_style'));
+    }
+
+    public function test_site_content_is_in_parts_of_the_site_and_can_be_searched(): void
+    {
+        $this->actingAs($this->admin());
+
+        // every section belongs to a part of the site — none left under "Other"
+        $groups = ManageSiteContent::groups();
+        $this->assertArrayNotHasKey('Other', $groups);
+        $this->assertSame(count(ManageSiteContent::sections()), count(array_merge(...array_values($groups))));
+
+        // a search finds a text by its words, in any section, and links to its field
+        $key = array_key_first(SiteText::tabs()['Footer']);
+        $label = SiteText::tabs()['Footer'][$key][0];
+        Livewire::test(ManageSiteContent::class)
+            ->assertSee(['Everywhere', 'Home page', 'Missing translations'])
+            ->set('find', mb_substr(SiteText::ku($key), 0, 12))
+            ->assertSee($label)
+            ->assertSee('#t-'.$key, false)
+            ->assertDontSee('Save changes')
+            ->set('find', 'zzqx-nothing-like-this')
+            ->assertSee('No text has these words.')
+            ->set('find', '')
+            ->set('missing', true)
+            ->assertSee('Every text has its Kurdish and Arabic.');
+    }
+
+    public function test_the_google_profile_has_its_own_section_and_saves(): void
+    {
+        $this->actingAs($this->admin());
+
+        Livewire::withQueryParams(['section' => 'google'])->test(ManageSiteContent::class)
+            ->assertSee('Google Business Profile')
+            ->fillForm(['google_profile_url' => 'https://maps.app.goo.gl/abc', 'google_rating' => '4.9', 'google_review_count' => '23'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('4.9', (string) SiteSetting::get('google_rating'));
+        $this->assertSame('https://maps.app.goo.gl/abc', (string) SiteSetting::get('google_profile_url'));
     }
 
     public function test_texts_english_only_on_purpose_are_not_counted_as_missing(): void

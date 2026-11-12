@@ -37,7 +37,7 @@ class NeedsAttention extends Widget
             [PartnerResource::getNavigationBadge(), 'Partner applications', PartnerResource::getUrl()],
             [PhotoRooms::untaggedCount(), 'Photos without a room', PhotoRooms::getUrl()],
             [MissingPage::query()->fromThisSite()->count(), 'Broken links on your own pages', MissingPageResource::getUrl()],
-            [count(SiteText::untranslated()), 'Site texts missing Kurdish or Arabic', ManageSiteContent::getUrl()],
+            [count(SiteText::untranslated()), 'Site texts missing Kurdish or Arabic', ManageSiteContent::getUrl(['missing' => 1])],
         ];
 
         return [
