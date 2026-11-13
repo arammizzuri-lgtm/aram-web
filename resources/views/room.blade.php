@@ -22,6 +22,8 @@
     $choices = $room->choices;
     $toChoose = $choices->filter->isPending()->count();
     $picked = $choices->reject->isPending();
+    $meetings = $room->meetings;
+    $toConfirm = $meetings->filter->isPending()->count();
     $totals = $room->paymentTotals();
     $flash = session('room_flash');
     // every progress photo, for the viewer (each update's set steps on its own)
@@ -69,6 +71,9 @@
             </a>
             <a class="rm-tab" href="#choices">{{ bival('room_nav_choices') }}
                 @if ($toChoose)<span class="rm-tab__n rm-tab__n--ask">{{ $toChoose }}</span>@elseif ($choices->isNotEmpty())<span class="rm-tab__n">{{ $choices->count() }}</span>@endif
+            </a>
+            <a class="rm-tab" href="#meetings">{{ bival('room_nav_meetings') }}
+                @if ($toConfirm)<span class="rm-tab__n rm-tab__n--ask">{{ $toConfirm }}</span>@elseif ($meetings->isNotEmpty())<span class="rm-tab__n">{{ $meetings->count() }}</span>@endif
             </a>
             <a class="rm-tab" href="#payments">{{ bival('room_nav_payments') }}
                 @if ($payments->isNotEmpty())<span class="rm-tab__n">{{ $totals['percent'] }}%</span>@endif
@@ -378,6 +383,84 @@
                     @endforeach
                 </div>
             @endif
+        </section>
+
+        {{-- Meeting notes: what was decided, numbered, for the client to agree
+             to or to say what is not right (the studio then corrects them). --}}
+        <section class="rm-section" id="meetings">
+            <h2 class="pp-label">{{ bival('room_nav_meetings') }}</h2>
+            @forelse ($meetings as $m)
+                @if ($loop->first)<div class="rm-drawings">@endif
+                @php $file = $m->fileExists() ? $base.'/meetings/'.$m->id : null; @endphp
+                <article class="rm-drawing @if ($m->isPending()) rm-drawing--pending @endif @unless ($file) rm-drawing--text @endunless" id="meeting-{{ $m->id }}">
+                    @if ($file)
+                        <a class="rm-drawing__file" href="{{ $file }}" target="_blank" rel="noopener noreferrer" aria-label="{{ bival('room_open') }}: {{ $m->title ?: bival('room_meeting') }}">
+                            @if ($m->isImage())
+                                <img src="{{ $file }}" alt="" loading="lazy" decoding="async">
+                            @else
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5M9 13h7M9 17h7M9 9h2"/></svg>
+                                <span>PDF</span>
+                            @endif
+                        </a>
+                    @endif
+                    <div class="rm-drawing__body">
+                        <h3 class="rm-drawing__title" dir="auto">{{ $m->title ?: bival('room_meeting') }}</h3>
+                        <p class="rm-drawing__date"><time datetime="{{ $m->met_on->toDateString() }}">{{ site_date($m->met_on, $lang) }}</time></p>
+                        @if (filled($m->attendees))
+                            <p class="rm-drawing__note" dir="auto">{{ $fill('room_meeting_who', ['{who}' => $m->attendees]) }}</p>
+                        @endif
+                        <ol class="rm-decisions" dir="auto">
+                            @foreach ($m->decisionList() as $line)
+                                <li>{{ $line }}</li>
+                            @endforeach
+                        </ol>
+                        @if ($file)
+                            <p class="rm-drawing__links">
+                                <a href="{{ $file }}" target="_blank" rel="noopener noreferrer">{{ bival('room_open') }}</a>
+                                <a href="{{ $file }}?download=1">{{ bival('room_download') }}</a>
+                            </p>
+                        @endif
+
+                        @if ($m->isPending())
+                            <p class="rm-status rm-status--pending">{{ bival('room_meeting_wait') }}</p>
+                            @unless ($preview)
+                                <div class="rm-decide">
+                                    <form method="post" action="{{ $base }}/meetings/{{ $m->id }}"
+                                          onsubmit="return confirm(this.dataset.sure)" data-sure="{{ bival('room_meeting_agree_sure') }}">
+                                        @csrf
+                                        <input type="hidden" name="answer" value="agreed">
+                                        <input type="hidden" name="v" value="{{ $m->updated_at->timestamp }}">
+                                        <button class="pp-btn rm-approve" type="submit">✓ {{ bival('room_meeting_agree') }}</button>
+                                    </form>
+                                    <details class="rm-changes" @if ($errors->has('note') && old('meeting') == $m->id) open @endif>
+                                        <summary class="pp-act">{{ bival('room_meeting_object') }}</summary>
+                                        <form method="post" action="{{ $base }}/meetings/{{ $m->id }}">
+                                            @csrf
+                                            <input type="hidden" name="answer" value="objected">
+                                            <input type="hidden" name="meeting" value="{{ $m->id }}">
+                                            <input type="hidden" name="v" value="{{ $m->updated_at->timestamp }}">
+                                            <textarea name="note" rows="3" maxlength="2000" required dir="auto" placeholder="{{ bival('room_meeting_object_ph') }}" aria-label="{{ bival('room_meeting_object_ph') }}"></textarea>
+                                            <button class="pp-act" type="submit">{{ bival('room_changes_send') }}</button>
+                                        </form>
+                                    </details>
+                                </div>
+                            @endunless
+                        @else
+                            @php $yes = $m->status === \App\Models\RoomMeeting::AGREED; @endphp
+                            <p class="rm-status rm-status--{{ $yes ? 'approved' : 'changes' }}">
+                                {{ $yes ? '✓' : '✎' }}
+                                {{ $fill($yes ? 'room_meeting_agreed' : 'room_meeting_objected', ['{date}' => site_date($m->decided_at ?? $m->updated_at, $lang)]) }}
+                            </p>
+                            @if (filled($m->client_note))
+                                <blockquote class="rm-drawing__said" dir="auto">{{ $m->client_note }}</blockquote>
+                            @endif
+                        @endif
+                    </div>
+                </article>
+                @if ($loop->last)</div>@endif
+            @empty
+                <p class="rm-empty">{{ bival('room_no_meetings') }}</p>
+            @endforelse
         </section>
 
         {{-- Payment stages: the studio's record, shown — nothing is paid here. --}}

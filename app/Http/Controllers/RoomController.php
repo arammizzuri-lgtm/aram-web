@@ -8,6 +8,7 @@ use App\Models\RoomChange;
 use App\Models\RoomChoice;
 use App\Models\RoomChoiceOption;
 use App\Models\RoomDrawing;
+use App\Models\RoomMeeting;
 use App\Support\StudioMail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -55,7 +56,7 @@ class RoomController extends Controller
             ClientRoom::query()->whereKey($room->id)->toBase()->update(['last_seen_at' => now()]);
         }
 
-        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner']);
+        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner', 'meetings']);
 
         return response()->view('room', [
             'room' => $room,
@@ -286,6 +287,49 @@ class RoomController extends Controller
         abort_unless($o->imageExists(), 404);
 
         return $this->file($o->image_path, basename($o->image_path), false);
+    }
+
+    /**
+     * The client answers a meeting's notes: they agree, or something is not
+     * right (and what). Only the notes they were shown (v: when last edited).
+     */
+    public function answerMeeting(Request $request, string $token, int $meeting): RedirectResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $m = $room->meetings()->whereKey($meeting)->firstOrFail();
+        $data = $request->validate([
+            'answer' => ['required', Rule::in([RoomMeeting::AGREED, RoomMeeting::OBJECTED])],
+            'note' => ['nullable', 'required_if:answer,'.RoomMeeting::OBJECTED, 'string', 'max:2000'],
+            'v' => ['required', 'integer'],
+        ]);
+        $back = redirect()->to($this->address($room).'#meeting-'.$m->id);
+
+        if ($m->isPending() && (int) $data['v'] !== $m->updated_at->timestamp) {
+            return $back->with('room_flash', 'room_meeting_moved');
+        }
+
+        $done = RoomMeeting::query()->whereKey($m->id)->where('status', RoomMeeting::PENDING)->update([
+            'status' => $data['answer'],
+            'client_note' => filled($data['note'] ?? null) ? trim($data['note']) : null,
+            'decided_at' => now(),
+            'decided_ip' => $request->ip(),
+            'seen_at' => null,
+            'updated_at' => now(),
+        ]);
+        if ($done) {
+            $this->tellStudio(RoomActivity::answered($room, $m->refresh()));
+        }
+
+        return $back->with('room_flash', 'room_decided');
+    }
+
+    public function meetingFile(Request $request, string $token, int $meeting): Response
+    {
+        $room = $this->viewableRoom($request, $token);
+        $m = $room->meetings()->whereKey($meeting)->firstOrFail();
+        abort_unless($m->fileExists(), 404);
+
+        return $this->file($m->file_path, $m->file_name ?: 'meeting.'.pathinfo($m->file_path, PATHINFO_EXTENSION), $request->has('download'));
     }
 
     public function changeFile(Request $request, string $token, int $change): Response

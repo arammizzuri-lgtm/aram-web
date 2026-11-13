@@ -22,12 +22,13 @@ class ClientRoomsTable
                 'drawings as unseen_decisions' => fn ($q) => $q->where('status', '!=', RoomDrawing::PENDING)->whereNull('seen_at'),
                 'changes as unseen_changes' => fn ($q) => $q->whereNull('seen_at'),
                 'choices as unseen_choices' => fn ($q) => $q->whereNull('seen_at'),
+                'meetings as unseen_meetings' => fn ($q) => $q->whereNull('seen_at'),
             ]))
             ->columns([
                 TextColumn::make('client_name')->label('Client')->searchable()
                     ->description(fn (ClientRoom $r) => $r->project?->name),
                 TextColumn::make('news')->label('New from them')->badge()
-                    ->state(fn (ClientRoom $r) => $r->unseen_comments + $r->unseen_decisions + $r->unseen_changes + $r->unseen_choices ?: null)
+                    ->state(fn (ClientRoom $r) => $r->unseen_comments + $r->unseen_decisions + $r->unseen_changes + $r->unseen_choices + $r->unseen_meetings ?: null)
                     ->color('danger')->placeholder('—'),
                 TextColumn::make('waiting_count')->label('Drawings waiting')->badge()
                     ->color(fn ($state) => $state ? 'warning' : 'gray'),

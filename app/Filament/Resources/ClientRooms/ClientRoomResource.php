@@ -9,6 +9,7 @@ use App\Filament\Resources\ClientRooms\RelationManagers\ChangesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ChoicesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\MeetingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
 use App\Filament\Resources\ClientRooms\Schemas\ClientRoomForm;
 use App\Filament\Resources\ClientRooms\Tables\ClientRoomsTable;
@@ -58,6 +59,7 @@ class ClientRoomResource extends Resource
             DrawingsRelationManager::class,
             ChangesRelationManager::class,
             ChoicesRelationManager::class,
+            MeetingsRelationManager::class,
             CommentsRelationManager::class,
         ];
     }

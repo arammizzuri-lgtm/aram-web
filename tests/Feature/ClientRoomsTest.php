@@ -7,6 +7,7 @@ use App\Filament\Resources\ClientRooms\RelationManagers\ChangesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ChoicesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\MeetingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
 use App\Filament\Resources\ClientRooms\Pages\EditClientRoom;
 use App\Mail\RoomActivity;
@@ -19,6 +20,7 @@ use App\Models\RoomChange;
 use App\Models\RoomChoice;
 use App\Models\RoomComment;
 use App\Models\RoomDrawing;
+use App\Models\RoomMeeting;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\StudioMail;
@@ -402,6 +404,64 @@ class ClientRoomsTest extends TestCase
         $this->assertSame(0, RoomChoice::query()->whereKey($choice->id)->count());
     }
 
+    public function test_meeting_notes_are_agreed_to_or_sent_back_corrected_and_asked_again(): void
+    {
+        $room = $this->room();
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $manager = fn () => Livewire::test(MeetingsRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class]);
+        $answer = fn (RoomMeeting $m, array $with) => $this->post('/room/'.$room->token.'/meetings/'.$m->id, $with + ['v' => $m->fresh()->updated_at->timestamp]);
+
+        // the studio writes the notes in the admin
+        $this->actingAs($admin);
+        $manager()->callTableAction('create', null, ['met_on' => '2026-11-10', 'title' => 'Site visit', 'attendees' => 'Shilan, Aram',
+            'decisions' => "Kitchen window 40 cm wider\n\nThe column moves left\nGrey tiles in the bathrooms"])->assertHasNoTableActionErrors();
+        auth()->logout();
+        $meeting = RoomMeeting::sole();
+        $this->assertSame([RoomMeeting::PENDING, 3], [$meeting->status, count($meeting->decisionList())]);
+        $this->assertSame(0, $room->unseenCount());
+        Storage::disk('local')->put('rooms/meetings/notes.jpg', 'jpeg');
+        $meeting->update(['file_path' => 'rooms/meetings/notes.jpg', 'file_name' => 'notes.jpg']);
+        $this->enter($room);
+
+        $this->get('/room/'.$room->token)->assertOk()->assertSee('Please confirm these notes')->assertSee('Present: Shilan, Aram')
+            ->assertSee('<li>The column moves left</li>', false)->assertSee('name="answer"', false);
+        $this->get('/room/'.$room->token.'/meetings/'.$meeting->id)->assertOk();
+
+        // only the notes they were shown; something not right needs saying what
+        $this->post('/room/'.$room->token.'/meetings/'.$meeting->id, ['answer' => 'agreed', 'v' => $meeting->updated_at->timestamp - 60])
+            ->assertSessionHas('room_flash', 'room_meeting_moved');
+        $answer($meeting, ['answer' => 'objected'])->assertSessionHasErrors('note');
+        $answer($meeting, ['answer' => 'objected', 'note' => 'It was 50 cm, not 40.'])
+            ->assertRedirect('/room/'.$room->token.'#meeting-'.$meeting->id)->assertSessionHas('room_flash', 'room_decided');
+        $answer($meeting, ['answer' => 'agreed']);                              // a second answer changes nothing
+        $this->assertSame([RoomMeeting::OBJECTED, 'It was 50 cm, not 40.'], [$meeting->fresh()->status, $meeting->fresh()->client_note]);
+        Mail::assertSent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan says something is not right in the notes of the meeting on 10 Nov 2026 (“Site visit”)'
+            && $m->words === 'It was 50 cm, not 40.' && $m->tone === 'warn');
+        $this->assertSame(1, $room->unseenCount());
+        $this->get('/room/'.$room->token)->assertSee('you said something is not right')->assertDontSee('name="answer"', false);
+
+        // the studio corrects them, and they are asked again
+        $this->actingAs($admin);
+        $this->get(route('filament.studio-aks-panel.room-meeting', $meeting))->assertOk();
+        $manager()->assertSee('It was 50 cm, not 40.')
+            ->callTableAction('edit', $meeting, ['decisions' => "Kitchen window 50 cm wider\nThe column moves left"])->assertHasNoTableActionErrors();
+        auth()->logout();
+        $meeting->refresh();
+        $this->assertSame([RoomMeeting::PENDING, null, 0], [$meeting->status, $meeting->client_note, $room->unseenCount()]);
+
+        $answer($meeting, ['answer' => 'agreed']);
+        $this->assertSame(RoomMeeting::AGREED, $meeting->fresh()->status);
+        Mail::assertSent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan agreed to the notes of the meeting on 10 Nov 2026 (“Site visit”)' && $m->tone === 'good');
+        $this->get('/room/'.$room->token)->assertSee('Agreed on')->assertSee('Kitchen window 50 cm wider');
+        $this->actingAs($admin);
+        $manager()->assertTableActionHidden('edit', $meeting);                 // agreed notes stay as they were
+        auth()->logout();
+
+        // deleting the room takes the file with it
+        $room->fresh()->delete();
+        Storage::disk('local')->assertMissing('rooms/meetings/notes.jpg');
+    }
+
     public function test_without_the_pin_nothing_can_be_done_or_downloaded(): void
     {
         $room = $this->room();
@@ -442,6 +502,7 @@ class ClientRoomsTest extends TestCase
         $plan = $this->drawing($room);
         $room->changes()->create(['title' => 'A wider kitchen window', 'price' => 500]);
         $room->choices()->create(['title' => 'Kitchen worktop'])->options()->create(['name' => 'Calacatta marble']);
+        $room->meetings()->create(['met_on' => '2026-11-10', 'decisions' => 'Grey tiles in the bathrooms']);
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
         $this->actingAs($admin);
 
@@ -449,7 +510,8 @@ class ClientRoomsTest extends TestCase
             ->assertSee('Studio preview')->assertSee('Kitchen layout agreed')->assertSee('A wider kitchen window')
             ->assertDontSee('<textarea name="body"', false)->assertDontSee('name="decision"', false)
             ->assertDontSee('name="details"', false)
-            ->assertSee('Calacatta marble')->assertDontSee('name="option"', false);
+            ->assertSee('Calacatta marble')->assertDontSee('name="option"', false)
+            ->assertSee('Grey tiles in the bathrooms')->assertDontSee('name="answer"', false);
         $this->get('/room/'.$room->token.'/drawings/'.$plan->id)->assertOk();
         $this->post('/room/'.$room->token.'/drawings/'.$plan->id, ['decision' => 'approved'])->assertForbidden();
         $this->assertNull($room->fresh()->last_seen_at);

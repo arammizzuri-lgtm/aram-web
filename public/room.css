@@ -160,6 +160,11 @@
 .rm-status a { color: inherit; border-bottom: 1px solid currentColor; }
 .rm-change-ask { margin-top: 18px; }
 
+/* ---- Meeting notes ---------------------------------------------- */
+.rm-decisions { margin: 12px 0 0; padding-inline-start: 22px; font-size: 14px; line-height: 1.65; }
+.rm-decisions li { margin-top: 4px; padding-inline-start: 4px; white-space: pre-line; }
+.rm-decisions li::marker { color: var(--gold); }
+
 /* ---- Finish choices -------------------------------------------- */
 .rm-picks { margin-bottom: 16px; padding: 16px 18px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.02); }
 .rm-picks__title { font-size: 11px; font-weight: 400; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
