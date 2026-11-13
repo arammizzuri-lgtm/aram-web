@@ -95,6 +95,8 @@ $rooms = function (string $lang) {
             Route::post('/pin', [RoomController::class, 'unlock'])->middleware('throttle:30,1')->name('room.unlock');
             Route::post('/drawings/{drawing}', [RoomController::class, 'decide'])->whereNumber('drawing')
                 ->middleware('throttle:30,1')->name('room.decide');
+            Route::post('/drawings/{drawing}/pins', [RoomController::class, 'pin'])->whereNumber('drawing')
+                ->middleware('throttle:30,1')->name('room.pin');
             Route::post('/updates/{update}/comments', [RoomController::class, 'comment'])->whereNumber('update')
                 ->middleware('throttle:30,1')->name('room.comment');
             Route::get('/drawings/{drawing}', [RoomController::class, 'drawing'])->whereNumber('drawing')->name('room.drawing');
@@ -109,6 +111,7 @@ Route::prefix('ar')->name('ar.')->group(fn () => $rooms('ar'));
 // What a site board's QR code says (BoardController): short, so the code
 // reads from across a street; on to the project's page, counted as a board.
 Route::get('/b/{id}', [BoardController::class, 'scan'])->whereNumber('id')->name('board');
+Route::get('/d/{id}', [BoardController::class, 'scan'])->whereNumber('id')->name('deck');   // …and a presentation's
 
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');

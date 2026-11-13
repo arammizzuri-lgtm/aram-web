@@ -71,6 +71,9 @@ class PresentationController extends Controller
                 ],
                 'pins' => $presentation ? Project::whereNotNull('lat')->whereNotNull('lng')->orderBy('name')->get()
                     ->map(fn (Project $p) => ['name' => $p->name, 'lat' => (float) $p->lat, 'lng' => (float) $p->lng])->values() : [],
+                // what a QR code in the presentation can open: a project's page on the website (or a client's room, above)
+                'pages' => $presentation ? Project::orderBy('name')->get()->filter->hasPage()
+                    ->map(fn (Project $p) => ['id' => $p->id, 'name' => $p->name])->values() : [],
                 'urls' => [
                     'list' => PresentationResource::getUrl(isAbsolute: false),
                     'save' => $presentation ? $url('save', ['presentation' => $presentation]) : null,
@@ -85,6 +88,7 @@ class PresentationController extends Controller
                     'revision' => $url('revision', ['revision' => '__ID__']),
                     'revisionCopy' => $url('revision-copy', ['revision' => '__ID__']),
                     'toRoom' => $presentation ? $url('to-room', ['presentation' => $presentation]) : null,
+                    'qr' => $url('qr'),
                     'fonts' => '/fonts/presentations',
                     'vendor' => '/vendor/presentations',
                 ],
@@ -215,6 +219,27 @@ class PresentationController extends Controller
     }
 
     /** Keep the presentation as it is now saved, as the revision just issued. */
+    /**
+     * A QR code for a presentation's page: what it opens — a project's page on the website
+     * (by the short /d/ link, which sends each phone to the page in its own language, counted
+     * as come from a presentation) or a client's room — and its modules, for the page to draw.
+     */
+    public function qr(Request $request): JsonResponse
+    {
+        $to = $request->validate(['to' => ['required', 'regex:/^(project|room):\d+$/']])['to'];
+        [$kind, $id] = explode(':', $to);
+        if ($kind === 'project') {
+            $project = Project::findOrFail($id);
+            abort_unless($project->hasPage(), 422, 'That project has no page on the website yet.');
+            [$url, $label] = [url('/d/'.$project->id), $project->name];
+        } else {
+            $room = ClientRoom::findOrFail($id);
+            [$url, $label] = [$room->url(), $room->client_name];
+        }
+
+        return response()->json(['to' => $to, 'url' => $url, 'label' => $label, 'rows' => BoardController::qrRows($url)]);
+    }
+
     public function storeRevision(Request $request, Presentation $presentation): JsonResponse
     {
         $data = $request->validate(['key' => 'nullable|string|max:40', 'label' => 'required|string|max:20', 'note' => 'nullable|string|max:500']);

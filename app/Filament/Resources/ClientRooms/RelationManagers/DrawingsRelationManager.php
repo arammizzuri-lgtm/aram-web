@@ -49,6 +49,7 @@ class DrawingsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('title')
             ->defaultSort('created_at', 'desc')
+            ->modifyQueryUsing(fn ($query) => $query->withCount(['comments as pins_count' => fn ($c) => $c->where('from_studio', false)]))
             ->columns([
                 TextColumn::make('title')->wrap()
                     ->description(fn (RoomDrawing $r) => $r->file_name),
@@ -60,6 +61,8 @@ class DrawingsRelationManager extends RelationManager
                         ? $r->decided_at->timezone('Asia/Baghdad')->format('j M Y, H:i').' (Erbil)' : null),
                 TextColumn::make('decision_note')->label('Their words')->wrap()->placeholder('—')
                     ->extraAttributes(['dir' => 'auto']),
+                TextColumn::make('pins_count')->label('Pinned comments')
+                    ->formatStateUsing(fn (int $state) => $state ?: '—'),
             ])
             ->headerActions([
                 CreateAction::make()->label('Send a drawing'),
@@ -68,10 +71,15 @@ class DrawingsRelationManager extends RelationManager
                 Action::make('openFile')->label('Open')
                     ->icon(Heroicon::OutlinedEye)->color('gray')
                     ->url(fn (RoomDrawing $r) => route('filament.studio-aks-panel.room-drawing', $r), shouldOpenInNewTab: true),
+                // the room's preview, read-only: the drawing with the client's numbered pins
+                Action::make('pins')->label('See the pins')
+                    ->icon(Heroicon::OutlinedMapPin)->color('gray')
+                    ->visible(fn (RoomDrawing $r) => $r->pins_count > 0)
+                    ->url(fn (RoomDrawing $r) => $this->getOwnerRecord()->url().'#pins-'.$r->id, shouldOpenInNewTab: true),
                 EditAction::make()->visible(fn (RoomDrawing $r) => $r->isPending()),
                 DeleteAction::make(),
             ])
             ->emptyStateHeading('No drawings yet')
-            ->emptyStateDescription('Send one: the client opens it in their room, and approves it or asks for changes. You are e-mailed either way.');
+            ->emptyStateDescription('Send one: the client opens it in their room, and approves it or asks for changes — and can pin comments to spots on it. You are e-mailed either way.');
     }
 }

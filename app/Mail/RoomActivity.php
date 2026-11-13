@@ -12,7 +12,8 @@ use Illuminate\Mail\Mailables\Envelope;
 
 /**
  * Tells the studio what a client just did in their room: approved a drawing,
- * sent one back with what to change, or commented on a progress update —
+ * sent one back with what to change, pinned a comment on one, or commented
+ * on a progress update —
  * with their words, a WhatsApp button to answer, and the room in the admin.
  */
 class RoomActivity extends Mailable
@@ -33,6 +34,9 @@ class RoomActivity extends Mailable
 
     public static function commented(ClientRoom $room, RoomComment $comment): self
     {
+        if ($drawing = $comment->drawing) {
+            return new self($room, $room->client_name.' pinned a comment on “'.$drawing->title.'”', $comment->body);
+        }
         $update = $comment->projectUpdate;
         $about = $update ? ($update->title_en ?: $update->title_ku ?: 'the update of '.$update->date->format('j M Y')) : 'an update';
 

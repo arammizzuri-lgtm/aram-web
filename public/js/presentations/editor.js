@@ -149,7 +149,7 @@ function setBrand(fn) {
 // ── What can be done ──
 const slotFor = (page, key) => (key.startsWith('img:') ? page.images[+key.slice(4)] : page.free.find((f) => f.t === 'image' && `free:${f.id}` === key));
 const app = {
-    S, boot, media, uploader, lay, env, commit, saveNow, setBrand,
+    S, boot, media, uploader, lay, env, commit, saveNow, setBrand, call,
     select(key) { S.key = key; if (!key) S.crop = false; else S.tab = 'page'; draw(); },
     tab(name) { S.tab = name; draw(); },
     dialog(d) { S.dlg = d ? { ...d, n: uid() } : null; draw(); },

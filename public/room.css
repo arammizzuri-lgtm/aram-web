@@ -150,6 +150,51 @@
 }
 .rm-changes .pp-act { justify-self: start; }
 
+/* ---- Comments pinned on a drawing (room-pins.js) --------------- */
+.rm-pins-open { margin-top: 14px; }
+.rm-pins-open svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.rm-pins-open .rm-tab__n { background: var(--gold); color: #111; font-weight: 500; letter-spacing: 0; }
+.rm-marks { list-style: none; display: grid; gap: 12px; margin-top: 14px; }
+.rm-marks:empty { display: none; }
+.rm-mark { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; }
+.rm-mark .rm-thread { margin-top: 0; }
+.rm-mark .rm-msg, .rm-pins__thread .rm-msg { max-width: 100%; }
+.rm-mark .rm-msg { justify-self: start; }
+.rm-dot {
+    width: 28px; height: 28px; padding: 0; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer;
+    font: 600 12px/1 var(--font); color: #111; background: var(--gold);
+    border: 2px solid #111; box-shadow: 0 2px 10px rgba(0,0,0,.45);
+}
+.rm-dot.is-on { background: #fff; box-shadow: 0 0 0 4px rgba(245,197,24,.65), 0 2px 10px rgba(0,0,0,.45); z-index: 1; }
+
+.rm-pins {
+    position: fixed; inset: 0; width: 100%; height: 100dvh; max-width: none; max-height: none;
+    margin: 0; padding: 0; border: 0; background: #0b0b0b; color: var(--text);
+}
+.rm-pins[open] { display: grid; grid-template: "bar bar" auto "view side" minmax(0, 1fr) / minmax(0, 1fr) 360px; }
+.rm-pins [hidden] { display: none !important; }
+.rm-pins__bar { grid-area: bar; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.rm-pins__title { flex: 1; min-width: 0; font-size: 15px; font-weight: 400; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rm-pins__pages, .rm-pins__zoom { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rm-pins__btn {
+    width: 38px; height: 38px; flex: none; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.14); background: none; color: #fff; font-size: 16px; line-height: 1;
+}
+.rm-pins__btn:hover { border-color: var(--gold); color: var(--gold); }
+.rm-pins__view { grid-area: view; position: relative; overflow: auto; display: flex; padding: 12px; background: #1b1b1b; }
+/* left to right even in Kurdish: pdf.js draws its text in the canvas's direction */
+.rm-pins__sheet { position: relative; flex: none; margin: auto; background: #fff; cursor: crosshair; direction: ltr; }
+.rm-pins[data-readonly] .rm-pins__sheet { cursor: default; }
+.rm-pins__sheet > canvas, .rm-pins__sheet > img { display: block; width: 100%; height: auto; }
+.rm-pins__sheet .rm-dot { position: absolute; transform: translate(-50%, -50%); }
+.rm-pins__loading { position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; color: var(--muted); }
+.rm-pins__side { grid-area: side; overflow: auto; display: grid; align-content: start; gap: 12px; padding: 18px; border-inline-start: 1px solid var(--line); }
+.rm-pins__hint { font-size: 14px; line-height: 1.6; color: var(--muted); }
+.rm-pins__thread { margin-top: 0; }
+.rm-pins__thread:empty { display: none; }
+.rm-pins__error { font-size: 13px; color: #ff8a8a; }
+
 /* ---- Payments ------------------------------------------------- */
 .rm-paybar { height: 10px; border-radius: 5px; background: rgba(255,255,255,.07); overflow: hidden; }
 .rm-paybar span { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #c9a000, var(--gold)); }
@@ -177,4 +222,10 @@
     .rm-tab { padding: 0 12px; font-size: 12px; }
     .rm-drawing { grid-template-columns: 1fr; }
     .rm-msg { max-width: 92%; }
+}
+@media (max-width: 760px) {
+    .rm-pins[open] { grid-template: "bar" auto "view" minmax(0, 1fr) "side" auto / minmax(0, 1fr); }
+    .rm-pins__side { max-height: 42dvh; padding: 14px; border-inline-start: 0; border-top: 1px solid var(--line); }
+    .rm-pins__bar { padding: 8px 10px; gap: 6px; }
+    .rm-pins__btn { width: 34px; height: 34px; }
 }

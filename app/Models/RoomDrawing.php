@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 /**
  * A drawing sent to a client in their room — a PDF or an image, kept on the
  * private disk — and what they decided: approved, or changes asked for (with
  * what to change). The decision is the record: when, and from which address.
+ * Their comments can also be pinned to spots on it (RoomComment).
  */
 class RoomDrawing extends Model
 {
@@ -51,6 +54,37 @@ class RoomDrawing extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(ClientRoom::class, 'client_room_id');
+    }
+
+    /** The comments pinned to it, oldest first. */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(RoomComment::class)->oldest()->orderBy('id');
+    }
+
+    /**
+     * Its pins: a thread to each spot, numbered 1, 2, 3… in the order they
+     * were first made — the same numbers in the room and in the admin.
+     *
+     * @return Collection<int, Collection<int, RoomComment>>
+     */
+    public function pins(): Collection
+    {
+        return $this->comments->groupBy(fn (RoomComment $c) => $c->spot())->values()
+            ->mapWithKeys(fn (Collection $thread, int $i) => [$i + 1 => $thread->values()]);
+    }
+
+    /** The pins as the room's drawing viewer reads them (room-pins.js). */
+    public function pinData(string $lang): array
+    {
+        return $this->pins()->map(fn (Collection $t, int $n) => [
+            'n' => $n, 'page' => $t[0]->page, 'x' => (float) $t[0]->x, 'y' => (float) $t[0]->y,
+            'msgs' => $t->map(fn (RoomComment $c) => [
+                'studio' => $c->from_studio,
+                'who' => ($c->from_studio ? bival('room_studio') : bival('room_you')).' · '.site_date($c->created_at, $lang),
+                'body' => $c->body,
+            ])->all(),
+        ])->values()->all();
     }
 
     public function fileExists(): bool

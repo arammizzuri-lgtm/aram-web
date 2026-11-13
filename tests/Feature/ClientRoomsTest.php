@@ -181,6 +181,59 @@ class ClientRoomsTest extends TestCase
         $this->get('/room/'.$room->token)->assertSee('Can the island be longer?');
     }
 
+    public function test_the_client_pins_comments_on_a_drawing_and_the_studio_answers_at_the_same_spot(): void
+    {
+        $room = $this->room();
+        $plan = $this->drawing($room);
+        $url = '/room/'.$room->token.'/drawings/'.$plan->id.'/pins';
+
+        // only the client, in their room (the viewer's fetch carries the room's cookie, as the browser does)
+        $this->withCredentials();
+        $this->postJson($url, ['page' => 1, 'x' => 0.5, 'y' => 0.5, 'body' => 'Hi'])->assertForbidden();
+        $this->enter($room);
+
+        $this->postJson($url, ['page' => 2, 'x' => 0.25, 'y' => 0.75, 'body' => 'Can this window be wider?'])->assertOk()
+            ->assertJson(['n' => 1, 'pins' => [['n' => 1, 'page' => 2, 'x' => 0.25, 'y' => 0.75, 'msgs' => [['studio' => false, 'body' => 'Can this window be wider?']]]]]);
+        Mail::assertSent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan pinned a comment on “Ground floor plan”'
+            && $m->words === 'Can this window be wider?');
+
+        // another spot is another pin; the same spot, the same thread
+        $this->postJson($url, ['page' => 1, 'x' => 0.1, 'y' => 0.2, 'body' => 'A door here?'])->assertJson(['n' => 2]);
+        $this->postJson($url, ['page' => 2, 'x' => '0.25000', 'y' => '0.75000', 'body' => 'Or a door?'])
+            ->assertJson(['n' => 1])->assertJsonCount(2, 'pins.0.msgs');
+
+        // off the page, wordless, or another room's drawing: refused
+        $this->postJson($url, ['page' => 1, 'x' => 1.2, 'y' => 0.2, 'body' => 'x'])->assertUnprocessable();
+        $this->postJson($url, ['page' => 0, 'x' => 0.2, 'y' => 0.2, 'body' => 'x'])->assertUnprocessable();
+        $this->postJson($url, ['page' => 1, 'x' => 0.2, 'y' => 0.2, 'body' => ' '])->assertUnprocessable();
+        $theirs = $this->drawing($this->room(['client_name' => 'Someone else']), 'Their plan');
+        $this->postJson('/room/'.$room->token.'/drawings/'.$theirs->id.'/pins', ['page' => 1, 'x' => 0.2, 'y' => 0.2, 'body' => 'x'])->assertNotFound();
+
+        // the room lists them under the drawing (room-pins.js draws them from its data)
+        $this->get('/room/'.$room->token)->assertOk()
+            ->assertSee('Comment on the drawing')->assertSee('Can this window be wider?')->assertSee('room-pins.js');
+        $this->assertSame(3, $room->unseenCount());
+
+        // the studio: each listed with its number, answered at the same spot, and seen on the drawing in the preview
+        $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']));
+        $first = RoomComment::where('body', 'Can this window be wider?')->sole();
+        Livewire::test(CommentsRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class])
+            ->assertSee('Pin 1 on “Ground floor plan”, page 2')->assertSee('Pin 2 on “Ground floor plan”')
+            ->assertSee($room->url().'#pins-'.$plan->id.'-1', false)
+            ->callTableAction('reply', $first, ['body' => 'Yes — 20 cm wider.']);
+        $answer = RoomComment::where('body', 'Yes — 20 cm wider.')->sole();
+        $this->assertTrue($answer->from_studio);
+        $this->assertSame([$plan->id, 2, '0.25000', '0.75000'], [$answer->room_drawing_id, $answer->page, $answer->x, $answer->y]);
+        $this->assertSame(['Can this window be wider?', 'Or a door?', 'Yes — 20 cm wider.'], $plan->fresh()->pins()[1]->pluck('body')->all());
+
+        Livewire::test(DrawingsRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class])
+            ->assertSee('See the pins')->assertSee($room->url().'#pins-'.$plan->id, false);
+
+        // deleting the drawing takes its pins with it
+        $plan->delete();
+        $this->assertSame(0, RoomComment::count());
+    }
+
     public function test_without_the_pin_nothing_can_be_done_or_downloaded(): void
     {
         $room = $this->room();

@@ -16,8 +16,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 /**
- * The conversation in this room, under the project's progress updates: what
- * the client wrote, and the studio's answers — which appear in the room.
+ * The conversation in this room, under the project's progress updates and
+ * pinned to spots on its drawings: what the client wrote, and the studio's
+ * answers — which appear in the room.
  */
 class CommentsRelationManager extends RelationManager
 {
@@ -31,10 +32,13 @@ class CommentsRelationManager extends RelationManager
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn ($query) => $query->with('projectUpdate'))
+            ->modifyQueryUsing(fn ($query) => $query->with(['projectUpdate', 'drawing.comments']))
             ->columns([
-                TextColumn::make('under')->label('Under the update')->wrap()
-                    ->state(fn (RoomComment $r) => self::updateLabel($r->projectUpdate)),
+                // a pin opens the drawing in the room's preview, at that pin
+                TextColumn::make('under')->label('About')->wrap()
+                    ->state(fn (RoomComment $r) => $r->drawing ? self::pinLabel($r) : self::updateLabel($r->projectUpdate))
+                    ->url(fn (RoomComment $r) => $r->drawing ? $this->room()->url().'#pins-'.$r->room_drawing_id.'-'.self::pinNumber($r) : null, shouldOpenInNewTab: true)
+                    ->color(fn (RoomComment $r) => $r->drawing ? 'primary' : null),
                 TextColumn::make('from_studio')->label('From')->badge()
                     ->formatStateUsing(fn (bool $state) => $state ? 'Studio' : $this->room()->client_name)
                     ->color(fn (bool $state) => $state ? 'gray' : 'primary'),
@@ -52,7 +56,7 @@ class CommentsRelationManager extends RelationManager
                         Textarea::make('body')->label('Message')->required()->rows(4)->maxLength(2000)
                             ->extraInputAttributes(['dir' => 'auto']),
                     ])
-                    ->action(fn (array $data) => $this->post((int) $data['project_update_id'], $data['body'])),
+                    ->action(fn (array $data) => $this->post(['project_update_id' => (int) $data['project_update_id']], $data['body'])),
             ])
             ->recordActions([
                 Action::make('reply')->label('Answer')
@@ -63,11 +67,11 @@ class CommentsRelationManager extends RelationManager
                         Textarea::make('body')->label('Your answer')->required()->rows(4)->maxLength(2000)
                             ->extraInputAttributes(['dir' => 'auto']),
                     ])
-                    ->action(fn (array $data, RoomComment $record) => $this->post($record->project_update_id, $data['body'])),
+                    ->action(fn (array $data, RoomComment $record) => $this->post($record->place(), $data['body'])),
                 DeleteAction::make(),
             ])
             ->emptyStateHeading('No conversation yet')
-            ->emptyStateDescription('The client can comment under any progress update in their room; you answer here, and they see it there.');
+            ->emptyStateDescription('The client can comment under any progress update in their room, or pin a comment to a spot on a drawing; you answer here, and they see it there.');
     }
 
     private function room(): ClientRoom
@@ -76,19 +80,34 @@ class CommentsRelationManager extends RelationManager
         return $this->getOwnerRecord();
     }
 
-    /** The studio's words, under an update of this room's project. */
-    private function post(int $updateId, string $body): void
+    /**
+     * The studio's words: under an update of this room's project, or at the
+     * spot on a drawing the client pinned (an answer's place is its comment's).
+     */
+    private function post(array $place, string $body): void
     {
-        abort_unless($this->room()->project->updates()->whereKey($updateId)->exists(), 404);
+        if (isset($place['project_update_id'])) {
+            abort_unless($this->room()->project->updates()->whereKey($place['project_update_id'])->exists(), 404);
+        }
 
-        $this->room()->comments()->create([
-            'project_update_id' => $updateId,
+        $this->room()->comments()->create($place + [
             'from_studio' => true,
             'body' => trim($body),
             'seen_at' => now(),
         ]);
         Notification::make()->success()->title('Posted in the room')
             ->body('Use WhatsApp → "Tell them there is something new" to let them know.')->send();
+    }
+
+    /** Its number on the drawing, as the room shows it. */
+    private static function pinNumber(RoomComment $r): int
+    {
+        return (int) $r->drawing->pins()->search(fn ($thread) => $thread->contains('id', $r->id));
+    }
+
+    private static function pinLabel(RoomComment $r): string
+    {
+        return 'Pin '.self::pinNumber($r).' on “'.$r->drawing->title.'”'.($r->page > 1 ? ', page '.$r->page : '');
     }
 
     private static function updateLabel(?ProjectUpdate $u): string

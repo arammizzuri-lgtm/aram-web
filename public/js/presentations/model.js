@@ -96,10 +96,12 @@ export const LAYOUTS = {
     'closing': { name: 'Closing page', group: 'Structure', images: 0, texts: ['title'], chrome: false, hint: 'Logo and contact details' },
     'overview': { name: 'Overview — text & images', group: 'Content', images: 1, texts: ['title', 'body'], hint: 'A text column beside one or two images' },
     'location': { name: 'Location map', group: 'Content', images: 0, texts: ['title', 'body'], hint: 'The site on a map: the city and a close-up, the places around it' },
+    'areas': { name: 'Area schedule', group: 'Content', images: 0, texts: ['title'], hint: 'Rooms and their areas, floor by floor, added up' },
     'image-full': { name: 'Full-page image', group: 'Images', images: 1, texts: [], fit: 'fill', chrome: false, hint: 'Edge to edge' },
     'image-fit': { name: 'Image within margins', group: 'Images', images: 1, texts: [], fit: 'fit', hint: 'The whole image, nothing cropped' },
     'image-caption': { name: 'Image, title & caption', group: 'Images', images: 1, texts: ['title', 'caption'], fit: 'fit', hint: 'One image with words under or beside it' },
     'two-up': { name: 'Two images', group: 'Images', images: 2, texts: ['title'], fit: 'fill', captions: true, hint: 'Side by side' },
+    'compare': { name: 'Existing / Proposed', group: 'Images', images: 2, texts: ['title'], fit: 'fill', hint: 'The site as it is beside the design, labelled alike' },
     'grid': { name: 'Image grid', group: 'Images', images: 4, texts: ['title'], fit: 'fill', captions: true, hint: 'Three or four images' },
     'materials': { name: 'Materials / mood board', group: 'Content', images: 8, texts: ['title'], fit: 'fill', captions: true, hint: 'Swatches with their names' },
     'drawing': { name: 'Floor plan / drawing', group: 'Drawings', images: 1, texts: ['title', 'notes'], fit: 'fit', hint: 'A drawing with its title, scale and notes' },
@@ -148,6 +150,13 @@ const WORDS = {
     revisions: ['Revision history', 'مێژووی پێداچوونەوەکان', 'سجل المراجعات'],
     description: ['Description', 'وەسف', 'الوصف'],
     overview: ['Project Overview', 'پوختەی پرۆژە', 'نظرة عامة على المشروع'],
+    areas: ['Area schedule', 'خشتەی ڕووبەرەکان', 'جدول المساحات'],
+    floorTotal: ['Floor total', 'کۆی نهۆم', 'مجموع الطابق'],
+    totalArea: ['Total area', 'کۆی ڕووبەر', 'المساحة الإجمالية'],
+    existing: ['Existing', 'باری ئێستا', 'الوضع الحالي'],
+    proposed: ['Proposed', 'پێشنیارکراو', 'المقترح'],
+    scanProject: ['Scan to see the project', 'سکانی بکە بۆ بینینی پرۆژەکە', 'امسح الرمز لمشاهدة المشروع'],
+    scanRoom: ['Scan to open your room', 'سکانی بکە بۆ کردنەوەی ژوورەکەت', 'امسح الرمز لفتح غرفتك'],
 };
 const LANG_AT = { ku: 1, ar: 2 };
 /** One of the words above in the document's language. */
@@ -176,6 +185,18 @@ export const INFO = [
     ['confidential', 'Confidentiality note'],
 ];
 export const AREA_UNITS = ['m²', 'ft²', 'donum', 'ha'];
+/** A number as it may be typed: "1,250.5", "24 m²", or in Arabic or Persian digits ("٢٤٫٥"); NaN when it is not one. */
+export function toNum(v) {
+    const s = String(v ?? '').trim().replace(/[٠-٩]/g, (d) => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, (d) => d.charCodeAt(0) - 0x6f0)
+        .replace(/٫/g, '.').replace(/[,٬\s]/g, '').replace(/(m²|m2|sqm|م²|م2)$/i, '');
+    return /^-?\d*\.?\d+$/.test(s) ? +s : NaN;
+}
+export const fmtNum = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+/** An area schedule's floors with their totals, and the total of them all; rooms without an area count as nothing. */
+export function areaTotals(floors) {
+    const sums = floors.map((f) => f.rooms.reduce((a, r) => a + (toNum(r.area) || 0), 0));
+    return { sums, total: sums.reduce((a, b) => a + b, 0) };
+}
 
 export const slot = (fit = 'fill') => ({ asset: null, page: 0, fit, fx: 0.5, fy: 0.5, zoom: 1, caption: '' });
 
@@ -209,6 +230,10 @@ export function normalize(doc, presets = []) {
     };
     // the revisions issued, as the history page prints them; `snap` is the saved copy of the presentation at that revision
     doc.revisions = arr(doc.revisions).map((r) => obj(r)).filter((r) => r.id);
+    // what a QR code in the presentation opens, and its modules ('1' dark), as the server made them
+    const qr = obj(doc.qr), rows = arr(qr.rows);
+    doc.qr = typeof qr.url === 'string' && rows.length >= 21 && rows.every((r) => typeof r === 'string' && r.length === rows.length && /^[01]+$/.test(r))
+        ? { to: String(qr.to || ''), url: qr.url, label: String(qr.label || ''), rows } : null;
     doc.pages = arr(doc.pages).map((p) => {
         p = obj(p);
         const fresh = newPage(LAYOUTS[p.layout] ? p.layout : 'blank');
@@ -216,6 +241,10 @@ export function normalize(doc, presets = []) {
         page.images = arr(p.images).length || !LAYOUTS[page.layout].images ? arr(p.images).map((s) => ({ ...slot(), ...obj(s) })) : fresh.images;
         for (const k of ['drawing', 'opts', 'ov']) page[k] = obj(p[k]);
         page.free = arr(p.free).map((f) => obj(f)).filter((f) => f.id && f.t);
+        if (page.layout === 'areas') {   // floors, each with its rooms: [{ id, name, rooms: [{ id, name, area }] }]
+            page.areas = arr(p.areas).map((f) => obj(f)).map((f) => ({ id: f.id || uid(), name: String(f.name ?? ''),
+                rooms: arr(f.rooms).map((r) => obj(r)).map((r) => ({ id: r.id || uid(), name: String(r.name ?? ''), area: String(r.area ?? '') })) }));
+        }
         return page;
     });
     return doc;

@@ -6,7 +6,7 @@
 // gap; a long title is set smaller). Anything can still be moved, resized,
 // restyled or hidden: those choices are kept per element in page.ov[key] and
 // applied here.
-import { MM, LAYOUTS, LOW_PPI, pageSize, structure, tokens, fillTokens, fontKey, sourceSize, scaleLabel, parseScale, isDivider, word, fmtDate } from '@pm/model';
+import { MM, LAYOUTS, LOW_PPI, pageSize, structure, tokens, fillTokens, fontKey, sourceSize, scaleLabel, parseScale, isDivider, word, fmtDate, toNum, fmtNum, areaTotals } from '@pm/model';
 import { layoutText } from '@pm/text';
 import { Q, world, latLng, onMap, inside, scaleBar, mapStyle, TILESETS, distance, fmtDistance, fmtCoords } from '@pm/map';
 
@@ -270,6 +270,32 @@ export function layoutPage(doc, index, env) {
     }
     const smallMap = (box, o = {}) => page.opts.map && siteMap('map', box, page.opts.mapZoom ?? 15, { small: true, ...o });
 
+    // ── A QR code: what it opens is chosen once for the presentation (doc.qr); dark squares on white, whatever the page ──
+    const qrOn = !!page.opts.qr && !ovOf('qr').hide, qrSize = 64 * k;
+    const qrWords = () => lbl(doc.qr && doc.qr.to.startsWith('room') ? 'scanRoom' : 'scanProject');
+    /** How tall the code and its words under it are in a width. */
+    const qrH = (w) => (qrOn ? qrSize + 7 * k + hOf('qr:t', qrWords(), 'label', Math.max(qrSize, w), { group: 'qr' }) : 0);
+    /** The code at the top of a box, to its left, right or centre, with what it opens under it. */
+    function qrCode(box, align = 'right') {
+        if (!qrOn) return;
+        const x = align === 'center' ? box.x + (box.w - qrSize) / 2 : align === 'right' ? box.x + box.w - qrSize : box.x;
+        const b = boxOf('qr', { x, y: box.y, w: qrSize, h: qrSize }), side = Math.min(b.w, b.h);
+        frames.qr = { x: b.x, y: b.y, w: side, h: side, kind: 'qr' };
+        if (!doc.qr) {
+            if (env.edit) items.push({ t: 'ph', key: 'qr', x: b.x, y: b.y, w: side, h: side, label: 'QR code' });
+            warnings.push({ type: 'qr', key: 'qr', text: 'Choose what the QR code opens — under Page → QR code.' });
+            return;
+        }
+        const rows = doc.qr.rows, u = side / (rows.length + 4), o = 2 * u;   // two modules of white around it
+        let d = '';
+        rows.forEach((r, j) => { for (const m of r.matchAll(/1+/g)) d += `M${f2(b.x + o + m.index * u)} ${f2(b.y + o + j * u)}h${f2(m[0].length * u)}v${f2(u)}h${f2(-m[0].length * u)}Z`; });
+        items.push({ t: 'rect', x: b.x, y: b.y, w: side, h: side, fill: '#ffffff' });
+        items.push({ t: 'path', key: 'qr', d, clip: { x: b.x, y: b.y, w: side, h: side }, fill: '#000000' });
+        const words = qrWords(), tw = Math.max(side, Math.min(Math.max(box.w, side), wOf('qr:t', words, 'label', { group: 'qr' }) + 1));
+        const tx = align === 'center' ? b.x + (side - tw) / 2 : align === 'right' ? b.x + side - tw : b.x;
+        text('qr:t', words, 'label', { x: tx, y: b.y + side + 7 * k, w: tw }, { group: 'qr', select: false, align });
+    }
+
     // ── What surrounds the content: header, footer, page number ──
     const L = LAYOUTS[page.layout];
     const chromeOn = page.opts.chrome ?? (L.chrome !== false);
@@ -338,6 +364,8 @@ export function layoutPage(doc, index, env) {
                 const issue = [T.docTitle, T.stage, T.date, has(T.revision) && `${lbl('rev')} ${T.revision}`].filter(has).join('   ·   ');
                 const taken = note();
                 text('issue', issue, 'label', { x, y: P.y + P.h - taken - lineH('label'), w: tw }, { align: 'center' });
+                const qw = (P.w - tw) / 2 - 12 * k;
+                qrCode({ x: P.x + P.w - qw, y: P.y + P.h - taken - qrH(qw), w: qw });
                 const mw = P.w * (land ? 0.2 : 0.3);
                 smallMap({ x: P.x + P.w - mw, y: P.y, w: mw, h: mw * 0.7 });
                 return;
@@ -353,9 +381,15 @@ export function layoutPage(doc, index, env) {
                 y += hd ? hd + 6 * k : 0;
                 y += text('project', '{project}', 'display', { x: P.x, y, w: tw }, { fit: 2, sz: 0.6 });
                 text('where', [T.client, T.location].filter(has).join('   ·   '), 'lead', { x: P.x, y: y + 6 * k, w: tw }, { color: muted });
+                const textEnd = y + 6 * k + hOf('where', [T.client, T.location].filter(has).join('   ·   '), 'lead', tw);
                 const taken = note();
-                grid('info', cellsFor(['type', 'plotArea', 'builtArea', 'stage', 'date', 'ref', 'revision', 'team', 'issuedFor']),
+                const gh = grid('info', cellsFor(['type', 'plotArea', 'builtArea', 'stage', 'date', 'ref', 'revision', 'team', 'issuedFor']),
                     { x: P.x, y: top, w: P.w, h: P.y + P.h - taken - top }, land ? 6 : 3, { bottom: true });
+                if (qrOn) {   // under the logo; on a portrait page the words above run the full width, so the code goes below them
+                    const qw = P.w * 0.36, qy = land ? top + 17 * k + 16 * k : textEnd + 16 * k;
+                    qrCode({ x: P.x + P.w - qw, y: qy, w: qw });
+                    if (qy + qrH(qw) > P.y + P.h - taken - gh - 10 * k) warnings.push({ type: 'qr', key: 'qr', text: 'The QR code does not fit here — move it, or make room for it.' });
+                }
                 const mw = W * (land ? 0.18 : 0.28), mh = mw * 0.72;
                 smallMap({ x: W - m.r - mw, y: ih - m.r - mh, w: mw, h: mh }, { frame: true });
                 return;
@@ -365,8 +399,10 @@ export function layoutPage(doc, index, env) {
             logos('logo', { x: P.x, y: P.y, w: P.w * 0.55, h: 24 * k }, 'left');
             const hs = text('stage', '{stage}', 'label', { x: P.x + P.w * 0.5, y: P.y, w: P.w * 0.5 }, { align: 'right', color: col.accent });
             const hdt = text('date', '{date}', 'label', { x: P.x + P.w * 0.5, y: P.y + hs, w: P.w * 0.5 }, { align: 'right' });
-            const mw = P.w * (land ? 0.22 : 0.34);
-            smallMap({ x: P.x + P.w - mw, y: P.y + hs + hdt + (hs + hdt ? 16 * k : 0), w: mw, h: mw * 0.7 });
+            const mw = P.w * (land ? 0.22 : 0.34), my = P.y + hs + hdt + (hs + hdt ? 16 * k : 0);
+            smallMap({ x: P.x + P.w - mw, y: my, w: mw, h: mw * 0.7 });
+            const qy = page.opts.map ? my + mw * 0.7 + 16 * k : my;
+            qrCode({ x: P.x + P.w - mw, y: qy, w: mw });
             let bottom = P.y + P.h - note();
             const gh = grid('info', cellsFor(['client', 'location', 'type', 'plotArea', 'builtArea', 'ref', 'revision', 'team', 'issuedFor']),
                 { x: P.x, y: P.y, w: P.w, h: bottom - P.y }, land ? 5 : 3, { bottom: true });
@@ -376,6 +412,8 @@ export function layoutPage(doc, index, env) {
             text('project', '{project}', 'display', { x: P.x, y: bottom - hp, w: tw }, { fit: 3 });
             const hd = hOf('docTitle', '{docTitle}', 'label', tw);
             text('docTitle', '{docTitle}', 'label', { x: P.x, y: bottom - hp - 12 * k - hd, w: tw }, { color: col.accent });
+            // in landscape the name leaves the right-hand column free down to the facts; in portrait it runs the full width
+            if (qrOn && qy + qrH(mw) > (land ? bottom : bottom - hp - 12 * k - hd) - 10 * k) warnings.push({ type: 'qr', key: 'qr', text: 'The QR code does not fit here — move it, or make room for it.' });
         },
 
         divider() {
@@ -426,12 +464,13 @@ export function layoutPage(doc, index, env) {
             const lh = Math.min(W, H) * 0.07, tw = P.w * 0.7, x = P.x + (P.w - tw) / 2;
             const contact = [T.address, [T.phone, T.email].filter(has).join('   ·   '), T.website].filter(has).join('\n');
             const ht = hOf('title', page.title, 'h2', tw), hc = hOf('contact', contact, 'label', tw, { sz: 1.15 });
-            const total = lh + 30 * k + (ht ? ht + 20 * k : 0) + hc;
+            const hq = qrH(tw), total = lh + 30 * k + (ht ? ht + 20 * k : 0) + hc + (hq ? 30 * k + hq : 0);
             let y = (H - total) / 2 - H * 0.02;
             logos('logo', { x, y, w: tw, h: lh }, 'center');
             y += lh + 30 * k;
             if (ht) { text('title', page.title, 'h2', { x, y, w: tw }, { align: 'center' }); y += ht + 20 * k; }
             text('contact', contact, 'label', { x, y, w: tw }, { align: 'center', sz: 1.15 });
+            qrCode({ x, y: y + hc + 30 * k, w: tw }, 'center');
         },
 
         overview() {
@@ -497,6 +536,72 @@ export function layoutPage(doc, index, env) {
                 const street = siteMap('map', { x: C.x, y: top, w: C.w, h: sh }, z, { bar: true });
                 if (two) siteMap('cityMap', { x: C.x, y: top + sh + 10 * k, w: C.w, h: ah - sh - 10 * k }, page.opts.cityZoom ?? 13, { extent: street });
             }
+        },
+
+        areas() {
+            const top = C.y + text('title', page.title || lbl('areas'), 'h1', { x: C.x, y: C.y, w: C.w }, { sz: 0.8, fit: 2 }) + 26 * k;
+            const floors = (page.areas || []).map((f) => ({ ...f, rooms: f.rooms.filter((r) => has(r.name) || has(r.area)) })).filter((f) => f.rooms.length);
+            if (ovOf('areas').hide) return;
+            if (!floors.length) {
+                if (env.edit) items.push({ t: 'ph', key: 'areas', x: C.x, y: top, w: C.w, h: lineH('body') * 6, label: 'Floors and their rooms, from Page → Rooms and areas' });
+                return;
+            }
+            const unit = doc.info.builtUnit || 'm²', show = (v) => (Number.isNaN(toNum(v)) ? String(v) : `${fmtNum(toNum(v))} ${unit}`);
+            const { sums, total } = areaTotals(floors);
+            const cols = land ? 3 : 2, gut = 28 * k, cw = (C.w - gut * (cols - 1)) / cols, aw = Math.min(70 * k, cw * 0.32), g = { group: 'areas', select: false };
+            // the total of every floor at the foot of the page; a schedule of one floor is its own total
+            const totalH = floors.length > 1 ? 14 * k + lineH('h2') : 0, foot = C.y + C.h - totalH - (totalH ? 18 * k : 0);
+            // a floor is its name, its rooms and its total: each a row, flowing down the columns (a floor's name never ends one)
+            const pad = 5 * k, roomH = (r) => Math.max(lineH('body'), hOf('', r.name || '—', 'body', cw - aw - 8 * k, { ...g, fit: 2 })) + pad * 2;
+            const headH = lineH('label') + 9 * k, sumH = lineH('value') + 12 * k;
+            let c = 0, y = top;
+            const at = () => C.x + c * (cw + gut);
+            const room = (fi, ri, r, h) => {
+                text(`areas:${fi}:${ri}:n`, r.name || '—', 'body', { x: at(), y: y + pad, w: cw - aw - 8 * k }, { ...g, fit: 2 });
+                text(`areas:${fi}:${ri}:a`, has(r.area) ? show(r.area) : '', 'body', { x: at() + cw - aw, y: y + pad, w: aw }, { ...g, align: 'right', up: false });
+                rule(at(), y + h, cw);
+            };
+            floors.forEach((f, fi) => {
+                if (fi) { if (floors.length <= cols && c < cols - 1) { c++; y = top; } else y += 22 * k; }
+                const first = roomH(f.rooms[0]);
+                if (y + headH + first > foot && y > top && c < cols - 1) { c++; y = top; }
+                text(`areas:${fi}:f`, f.name || '—', 'label', { x: at(), y, w: cw }, { ...g, color: col.accent });
+                y += headH - 4 * k;
+                rule(at(), y, cw, muted, 0.6);
+                f.rooms.forEach((r, ri) => {
+                    const h = roomH(r);
+                    if (y + h > foot && y > top && c < cols - 1) { c++; y = top; }
+                    room(fi, ri, r, h);
+                    y += h;
+                });
+                if (y + sumH > foot && y > top && c < cols - 1) { c++; y = top; }
+                text(`areas:${fi}:tl`, lbl('floorTotal'), 'label', { x: at(), y: y + 8 * k + (lineH('value') - lineH('label')) / 2, w: cw - aw }, g);
+                text(`areas:${fi}:t`, `${fmtNum(sums[fi])} ${unit}`, 'value', { x: at() + cw - aw - 20 * k, y: y + 8 * k, w: aw + 20 * k }, { ...g, align: 'right', up: false });
+                y += sumH;
+            });
+            frames.areas = { x: C.x, y: top, w: c ? C.w : cw, h: (c ? foot : y) - top, kind: 'group' };
+            if (y > foot + 1) warnings.push({ type: 'overflow', key: 'areas' });
+            if (totalH && !ovOf('total').hide) {
+                const ty = C.y + C.h - totalH;
+                rule(C.x, ty, C.w, fg, 0.8);
+                text('total:l', lbl('totalArea'), 'label', { x: C.x, y: ty + 14 * k + (lineH('h2') - lineH('label')) / 2, w: C.w * 0.5 }, { group: 'total', select: false });
+                text('total:v', `${fmtNum(total)} ${unit}`, 'h2', { x: C.x + C.w * 0.5, y: ty + 14 * k, w: C.w * 0.5 }, { group: 'total', select: false, align: 'right', up: false });   // "m²", never "M²"
+                frames.total = { x: C.x, y: ty, w: C.w, h: totalH, kind: 'group' };
+            }
+        },
+
+        compare() {
+            // the two pictures the same size, so the eye goes straight from one to the other, each labelled the same way
+            const top = titleTop(), gap = 10 * k, a = { x: C.x, y: top, w: C.w, h: C.y + C.h - top };
+            [0, 1].forEach((i) => {
+                const b = land ? { x: a.x + i * (a.w + gap) / 2, y: a.y, w: (a.w - gap) / 2, h: a.h } : { x: a.x, y: a.y + i * (a.h + gap) / 2, w: a.w, h: (a.h - gap) / 2 };
+                image(`img:${i}`, imgs[i], b, { fit: 'fill', label: i ? 'Proposed — the design' : 'Existing — a photo of the site' });
+                const fb = frames[`img:${i}`], words = has(imgs[i].caption) ? imgs[i].caption : lbl(i ? 'proposed' : 'existing');
+                if (!fb || ovOf(`cap:${i}`).hide) return;
+                const o = { sz: 1.3, group: `cap:${i}` }, p = 8 * k, tw = Math.min(fb.w - p * 3, wOf(`cap:${i}`, words, 'label', o) + 1);
+                items.push({ t: 'rect', x: fb.x + p, y: fb.y + p, w: tw + p * 2, h: lineH('label', 1.3) + p * 1.2, fill: col.bg, opacity: 0.92 });
+                text(`cap:${i}`, words, 'label', { x: fb.x + p * 2, y: fb.y + p * 1.6, w: tw }, { ...o, color: fg, select: false });
+            });
         },
 
         'image-full'() { image('img:0', imgs[0], { x: 0, y: 0, w: W, h: H }, { fit: 'fill' }); },

@@ -133,6 +133,7 @@ class AdminPanelProvider extends PanelProvider
                     Route::post('revisions/{revision}/copy', 'copyRevision')->name('revision-copy');
                     Route::post('{presentation}/revisions', 'storeRevision')->name('revisions');
                     Route::post('{presentation}/to-room', 'toRoom')->name('to-room');
+                    Route::get('qr', 'qr')->name('qr');
                     Route::get('{presentation}/editor', 'editor')->name('editor');
                     Route::put('{presentation}', 'save')->name('save');
                 });

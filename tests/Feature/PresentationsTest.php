@@ -377,4 +377,38 @@ class PresentationsTest extends TestCase
         $this->pieces($this->url('to-room', ['presentation' => $p]), $this->png(), ['name' => 'x.pdf', 'room' => $room->id, 'title' => 'x'])->assertStatus(422);
         $this->assertSame(1, RoomDrawing::count());
     }
+
+    public function test_a_qr_code_opens_a_project_page_or_a_client_room_and_scans_are_counted(): void
+    {
+        $url = fn (string $to) => $this->url('qr').'?to='.urlencode($to);
+        $page = Project::create(['name' => 'Garden Villa', 'category' => 'residential', 'status' => 'Completed', 'size' => 'default',
+            'imgs' => ['https://example.com/garden.jpg'], 'is_published' => true]);
+        $hidden = Project::create(['name' => 'Draft House', 'category' => 'residential', 'status' => 'Completed', 'size' => 'default', 'is_published' => false]);
+        $room = ClientRoom::create(['project_id' => $page->id, 'client_name' => 'Shilan', 'lang' => 'ku']);
+
+        $this->getJson($url('project:'.$page->id))->assertUnauthorized();        // the studio's only
+
+        $this->actingAs($this->admin());
+        $made = $this->getJson($url('project:'.$page->id))->assertOk()->json();
+        $this->assertSame(url('/d/'.$page->id), $made['url']);                  // short: each phone picks its own language
+        $this->assertSame('Garden Villa', $made['label']);
+        $this->assertCount(strlen($made['rows'][0]), $made['rows']);             // square, a row of modules each
+        $this->assertMatchesRegularExpression('/^[01]+$/', implode('', $made['rows']));
+        $this->assertSame($room->url(), $this->getJson($url('room:'.$room->id))->assertOk()->json('url'));
+        $this->getJson($url('project:'.$hidden->id))->assertStatus(422);       // no page on the website to open
+        $this->getJson($url('room:999'))->assertNotFound();
+        $this->getJson($url('anything'))->assertStatus(422);
+
+        // the editor offers the projects that have a page
+        $p = Presentation::create(['name' => 'Deck', 'doc' => Presentation::blank('Deck', 'minimal-white', 'A3', 'landscape')]);
+        $this->get($p->editorUrl())->assertOk()->assertSee('"pages":[{"id":'.$page->id.',"name":"Garden Villa"}]', false);
+
+        // a scan goes on to the page, counted as come from a presentation
+        auth()->logout();
+        $this->withHeaders(['Accept-Language' => 'ckb-IQ'])->get('/d/'.$page->id)
+            ->assertRedirect(url('/ku/projects/garden-villa').'?utm_source=presentation');
+        $this->get('/b/'.$page->id)->assertRedirect(url('/ku/projects/garden-villa').'?utm_source=board');   // the same phone, at a site board
+        $this->assertSame('presentation', \App\Support\TrafficSource::classify(null, null, 'presentation'));
+        $this->assertSame('Presentations (QR)', \App\Support\TrafficSource::label('presentation'));
+    }
 }

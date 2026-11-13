@@ -6,6 +6,7 @@ use App\Mail\RoomActivity;
 use App\Models\ClientRoom;
 use App\Models\RoomDrawing;
 use App\Support\StudioMail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -50,7 +51,7 @@ class RoomController extends Controller
             ClientRoom::query()->whereKey($room->id)->toBase()->update(['last_seen_at' => now()]);
         }
 
-        $room->load(['payments', 'drawings', 'comments']);
+        $room->load(['payments', 'drawings.comments', 'comments']);
 
         return response()->view('room', [
             'room' => $room,
@@ -121,6 +122,35 @@ class RoomController extends Controller
         $this->tellStudio(RoomActivity::commented($room, $comment->setRelation('projectUpdate', $u)));
 
         return redirect()->to($this->address($room).'#update-'.$u->id)->with('room_flash', 'room_comment_sent');
+    }
+
+    /**
+     * A comment pinned to a spot on a drawing — or added to a spot's thread —
+     * from the room's drawing viewer, which gets back every pin on it.
+     */
+    public function pin(Request $request, string $token, int $drawing): JsonResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $d = $room->drawings()->whereKey($drawing)->firstOrFail();
+        $data = $request->validate([
+            'page' => ['required', 'integer', 'between:1,9999'],
+            'x' => ['required', 'numeric', 'between:0,1'],
+            'y' => ['required', 'numeric', 'between:0,1'],
+            'body' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $comment = $room->comments()->create([
+            'room_drawing_id' => $d->id, 'page' => (int) $data['page'],
+            'x' => round((float) $data['x'], 5), 'y' => round((float) $data['y'], 5), 'body' => trim($data['body']),
+        ]);
+        $this->tellStudio(RoomActivity::commented($room, $comment->setRelation('drawing', $d)));
+
+        $pins = $d->load('comments')->pins();
+
+        return response()->json([
+            'pins' => $d->pinData(site_lang()),
+            'n' => $pins->search(fn ($thread) => $thread->contains('id', $comment->id)),
+        ]);
     }
 
     public function drawing(Request $request, string $token, int $drawing): Response

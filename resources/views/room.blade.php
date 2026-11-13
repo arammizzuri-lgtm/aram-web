@@ -125,8 +125,11 @@
             @else
                 <div class="rm-drawings">
                     @foreach ($drawings as $d)
-                        @php $file = $base.'/drawings/'.$d->id; @endphp
-                        <article class="rm-drawing rm-drawing--{{ $d->status }}" id="drawing-{{ $d->id }}">
+                        @php
+                            $file = $base.'/drawings/'.$d->id;
+                            $viewer = ['id' => $d->id, 'title' => $d->title, 'file' => $file, 'pdf' => ! $d->isImage(), 'post' => $file.'/pins', 'pins' => $d->pinData($lang)];
+                        @endphp
+                        <article class="rm-drawing rm-drawing--{{ $d->status }}" id="drawing-{{ $d->id }}" data-drawing='@json($viewer)'>
                             <a class="rm-drawing__file" href="{{ $file }}" target="_blank" rel="noopener noreferrer" aria-label="{{ bival('room_open') }}: {{ $d->title }}">
                                 @if ($d->isImage())
                                     <img src="{{ $file }}" alt="" loading="lazy" decoding="async">
@@ -145,6 +148,14 @@
                                     <a href="{{ $file }}" target="_blank" rel="noopener noreferrer">{{ bival('room_open') }}</a>
                                     <a href="{{ $file }}?download=1">{{ bival('room_download') }}</a>
                                 </p>
+                                {{-- comments pinned to spots on it (room-pins.js), numbered --}}
+                                @if (! $preview || $d->comments->isNotEmpty())
+                                    <button class="pp-act rm-pins-open" type="button" data-pins-open>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                                        {{ bival('room_pins_open') }} <span class="rm-tab__n" data-count hidden></span>
+                                    </button>
+                                @endif
+                                <ol class="rm-marks"></ol>
 
                                 @if ($d->isPending())
                                     <p class="rm-status rm-status--pending">{{ bival('room_waiting') }}</p>
@@ -241,6 +252,50 @@
         <button class="pp-lightbox__btn pp-lightbox__prev" type="button" aria-label="Previous image">←</button>
         <button class="pp-lightbox__btn pp-lightbox__next" type="button" aria-label="Next image">→</button>
     </dialog>
+
+    {{-- A drawing, with the comments pinned to it (room-pins.js); read-only in the studio's preview. --}}
+    @if ($drawings->isNotEmpty())
+        <dialog class="rm-pins" id="rmPins" aria-label="{{ bival('room_nav_drawings') }}" @if ($preview) data-readonly @endif
+                data-pdfjs="{{ asset('vendor/presentations/pdf.min.js') }}" data-worker="{{ asset('vendor/presentations/pdf.worker.min.js') }}"
+                data-error="{{ bival('room_pins_error') }}" data-open-label="{{ bival('room_open') }}">
+            <header class="rm-pins__bar">
+                <h2 class="rm-pins__title" dir="auto"></h2>
+                <span class="rm-pins__pages" dir="ltr" hidden>
+                    <button class="rm-pins__btn" type="button" data-go="-1" aria-label="Previous page">‹</button>
+                    <span class="rm-pins__page"></span>
+                    <button class="rm-pins__btn" type="button" data-go="1" aria-label="Next page">›</button>
+                </span>
+                <span class="rm-pins__zoom" dir="ltr">
+                    <button class="rm-pins__btn" type="button" data-zoom="-1" aria-label="Zoom out">−</button>
+                    <button class="rm-pins__btn" type="button" data-zoom="1" aria-label="Zoom in">+</button>
+                </span>
+                <button class="rm-pins__btn" type="button" data-close aria-label="Close">✕</button>
+            </header>
+            <div class="rm-pins__view">
+                <div class="rm-pins__sheet"></div>
+                <p class="rm-pins__loading">{{ bival('room_pins_loading') }}</p>
+            </div>
+            <aside class="rm-pins__side">
+                <p class="rm-pins__hint">
+                    @if ($preview)
+                        <span dir="ltr">Studio preview — the client's comments, numbered on the drawing. Tap a number to read one; answer it in the admin, under Conversation.</span>
+                    @else
+                        {{ bival('room_pins_hint') }}
+                    @endif
+                </p>
+                <div class="rm-thread rm-pins__thread"></div>
+                @unless ($preview)
+                    <form class="rm-reply rm-pins__form" hidden>
+                        @csrf
+                        <textarea name="body" rows="2" maxlength="2000" required dir="auto" placeholder="{{ bival('room_pins_ph') }}" aria-label="{{ bival('room_pins_ph') }}"></textarea>
+                        <button class="pp-act" type="submit">{{ bival('room_comment_send') }}</button>
+                    </form>
+                    <p class="rm-pins__error" role="alert" hidden></p>
+                @endunless
+            </aside>
+        </dialog>
+        <script src="{{ asset('room-pins.js') }}?v={{ filemtime(public_path('room-pins.js')) }}" defer></script>
+    @endif
 
     <script src="{{ asset('project.js') }}?v={{ filemtime(public_path('project.js')) }}" defer></script>
 </body>

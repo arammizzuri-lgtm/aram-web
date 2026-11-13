@@ -20,6 +20,7 @@ use Illuminate\View\View;
  *             page — in Kurdish unless the phone is set to English — marked
  *             as come from a board (utm_source=board), which the dashboard
  *             counts as its own source.
+ *   /d/{id}   the same, from a QR code printed in a presentation (utm_source=presentation).
  *   poster()  the poster itself, for the studio only (the panel's
  *             authenticated routes), in A3 to A0 and dark or light, to print
  *             or save as a PDF for the printer.
@@ -36,7 +37,7 @@ class BoardController extends Controller
         $lang = str_starts_with(strtolower((string) $request->getPreferredLanguage(['en', 'ckb', 'ku', 'ar'])), 'en') ? 'en' : 'ku';
         $target = $project && $project->hasPage() ? $project->pageUrl($lang) : site_url('/', $lang);
 
-        return redirect()->away($target.'?utm_source=board', 302);
+        return redirect()->away($target.'?utm_source='.($request->routeIs('deck') ? 'presentation' : 'board'), 302);
     }
 
     public function poster(Request $request, Project $project): View
@@ -71,5 +72,14 @@ class BoardController extends Controller
         ]);
 
         return (new QRCode($options))->render($text);
+    }
+
+    /** The same code as rows of modules ('1' dark), for a page that draws it itself: the presentation editor. */
+    public static function qrRows(string $text): array
+    {
+        $qr = new QRCode(new QROptions(['eccLevel' => EccLevel::Q, 'addQuietzone' => false]));
+
+        return array_map(fn (array $row) => implode('', array_map(fn ($on) => $on ? '1' : '0', $row)),
+            $qr->addByteSegment($text)->getQRMatrix()->getMatrix(true));
     }
 }

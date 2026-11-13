@@ -257,3 +257,82 @@ test('a location page shows the site on two maps with the places around it, and 
     assert.ok(m.starterPages(m.normalize({ site: { lat: 1, lng: 2 } })).some((p) => p.layout === 'location'));
     assert.ok(!m.starterPages(m.normalize({})).some((p) => p.layout === 'location'));
 });
+
+test('an area schedule adds up its floors, however the areas were typed, and flows down the page', async () => {
+    const { layoutPage } = await import('@pm/layout');
+    assert.equal(m.toNum('1,250.5'), 1250.5);
+    assert.equal(m.toNum('٢٤٫٥'), 24.5);
+    assert.equal(m.toNum('۱۸'), 18);
+    assert.equal(m.toNum('24 m²'), 24);
+    assert.equal(m.toNum('24m2'), 24);
+    assert.ok(Number.isNaN(m.toNum('about 20')) && Number.isNaN(m.toNum('')));
+    const floors = [{ name: 'Ground floor', rooms: [{ name: 'Living', area: '46.5' }, { name: 'Store', area: 'n/a' }] }, { name: 'First floor', rooms: [{ name: 'Bed', area: '20' }] }];
+    assert.deepEqual(m.areaTotals(floors), { sums: [46.5, 20], total: 66.5 });
+
+    const env = { brand: {}, assets: new Map(), edit: true, logoRatio: () => 1 };
+    const doc = m.normalize({ lang: 'ku', pages: [{ layout: 'areas', areas: [...floors, { name: 'Roof', rooms: [{ name: '', area: '' }] }] }] });
+    assert.ok(doc.pages[0].areas.every((f) => f.id && f.rooms.every((r) => r.id)));
+    const lay = layoutPage(doc, 0, env);
+    const words = (key) => lay.items.filter((it) => it.key === key).flatMap((it) => it.lines.flatMap((l) => l.runs.map((r) => r.text))).join('').trim();
+    assert.equal(words('title'), 'خشتەی ڕووبەرەکان');
+    assert.equal(words('areas:0:0:a'), '46.5 m²');
+    assert.equal(words('areas:0:1:a'), 'n/a');   // printed as written, not added up
+    assert.equal(words('areas:0:t'), '46.5 m²');
+    assert.equal(words('total:v'), '66.5 m²');
+    assert.ok(!lay.items.some((it) => it.key === 'areas:2:f'), 'a floor with no rooms filled in is left out');
+    // two floors, three columns on a landscape page: each floor its own column
+    const x0 = lay.items.find((it) => it.key === 'areas:0:f').lines[0].runs[0].x, x1 = lay.items.find((it) => it.key === 'areas:1:f').lines[0].runs[0].x;
+    assert.ok(x1 > x0 + 100);
+    // a long floor runs on into the next column rather than off the page
+    const long = m.normalize({ pages: [{ layout: 'areas', areas: [{ name: 'Ground', rooms: Array.from({ length: 60 }, (_, i) => ({ name: `Room ${i}`, area: '10' })) }] }] });
+    const ll = layoutPage(long, 0, env);
+    const xs = new Set(ll.items.filter((it) => /^areas:0:\d+:n$/.test(it.key || '')).map((it) => Math.round(it.lines[0].runs[0].x)));
+    assert.ok(xs.size >= 2 && ll.warnings.length === 0, `${xs.size} columns, ${JSON.stringify(ll.warnings)}`);
+    assert.ok(!ll.items.some((it) => it.key === 'total:v'), 'one floor is its own total');
+    // empty: a place-holder in the editor, nothing in the PDF
+    const none = m.normalize({ pages: [{ layout: 'areas' }] });
+    assert.deepEqual(none.pages[0].areas, []);
+    assert.ok(layoutPage(none, 0, env).items.some((it) => it.t === 'ph' && it.key === 'areas'));
+    assert.ok(!layoutPage(none, 0, { ...env, edit: false }).items.some((it) => it.t === 'ph'));
+});
+
+test('an Existing / Proposed page labels both pictures alike, in the language of the pages', async () => {
+    const { layoutPage } = await import('@pm/layout');
+    const env = { brand: {}, assets: new Map(), edit: true, logoRatio: () => 1 };
+    const doc = m.normalize({ lang: 'ar', pages: [m.newPage('compare')] });
+    doc.pages[0].images[1].caption = 'After';
+    const lay = layoutPage(doc, 0, env);
+    const words = (key) => lay.items.filter((it) => it.key === key).flatMap((it) => it.lines.flatMap((l) => l.runs.map((r) => r.text))).join('').trim();
+    assert.equal(words('cap:0'), 'الوضع الحالي');
+    assert.equal(words('cap:1'), 'AFTER');   // a label, in the template's label style
+    const [a, b] = ['img:0', 'img:1'].map((k) => lay.frames[k]);
+    assert.ok(a.w === b.w && a.h === b.h && a.y === b.y && b.x > a.x, 'the same size, side by side on a landscape page');
+    const tags = lay.items.filter((it) => it.t === 'rect');
+    assert.equal(tags.length, 2);
+    assert.equal(tags[0].h, tags[1].h);
+});
+
+test('a QR code is drawn from its modules on the cover and the closing page, and asks what it opens until told', async () => {
+    const { layoutPage } = await import('@pm/layout');
+    const env = { brand: {}, assets: new Map(), edit: true, logoRatio: () => 1 };
+    const rows = Array.from({ length: 21 }, (_, y) => Array.from({ length: 21 }, (_, x) => ((x + y) % 3 ? '0' : '1')).join(''));
+    const qr = { to: 'project:4', url: 'https://example.test/d/4', label: 'Ankawa House', rows };
+    assert.deepEqual(m.normalize({ qr }).qr, qr);
+    assert.equal(m.normalize({ qr: { ...qr, rows: rows.slice(1) } }).qr, null, 'a code that is not square is let go');
+    assert.equal(m.normalize({ qr: { ...qr, rows: rows.map((r) => r.replace(/1/, '2')) } }).qr, null);
+    for (const [layout, variant] of [['cover', 'type'], ['cover', 'image'], ['cover', 'logo'], ['closing']]) {
+        const doc = m.normalize({ qr, pages: [m.newPage(layout, { opts: { qr: true, variant } })] });
+        const lay = layoutPage(doc, 0, env);
+        const path = lay.items.find((it) => it.t === 'path' && it.key === 'qr');
+        assert.ok(path, `${layout} ${variant}: the code`);
+        assert.equal((path.d.match(/M/g) || []).length, rows.join('').match(/1+/g).length, 'one square per run of dark modules');
+        assert.ok(lay.items.some((it) => it.key === 'qr:t'), 'with what it opens under it');
+        const f = lay.frames.qr;
+        assert.ok(f.x >= 0 && f.y >= 0 && f.x + f.w <= lay.w && f.y + f.h <= lay.h, `${layout} ${variant}: on the page`);
+        assert.deepEqual(lay.warnings.filter((w) => w.type !== 'empty'), [], `${layout} ${variant}`);
+    }
+    const unset = layoutPage(m.normalize({ pages: [m.newPage('closing', { opts: { qr: true } })] }), 0, env);
+    assert.deepEqual(unset.warnings.map((w) => w.type), ['qr']);
+    assert.ok(unset.items.some((it) => it.t === 'ph' && it.key === 'qr'));
+    assert.ok(!layoutPage(m.normalize({ qr, pages: [m.newPage('closing')] }), 0, env).items.some((it) => it.key === 'qr'), 'only where it is switched on');
+});

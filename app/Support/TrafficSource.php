@@ -34,6 +34,8 @@ class TrafficSource
             'snapchat' => 'Snapchat',
             // the QR code on a building site's board (BoardController)
             'board' => 'Site boards (QR)',
+            // the QR code printed in a presentation (PresentationController::qr)
+            'presentation' => 'Presentations (QR)',
             'search' => 'Other search engines',
             'other' => 'Other websites',
             'direct' => 'Direct / unknown',

@@ -3,7 +3,8 @@
 // Everything here reads and changes the app through `app` (editor.js).
 import { html, useState, useEffect, useRef, useMemo } from 'htm-preact';
 import { LAYOUTS, TEXT_LABELS, SECTIONS, INFO, AREA_UNITS, FONTS, THEMES, PRESETS, LOW_PPI, PAGE_MM, COVER_STYLES, DIVIDER_STYLES, LANGS,
-    newPage, slot, uid, clone, resolveTheme, pageSize, mm, isoName, parseRange, fileName, bytes, sourceSize, structure, relayout, sectionName, nextRevision, fmtDate } from '@pm/model';
+    newPage, slot, uid, clone, resolveTheme, pageSize, mm, isoName, parseRange, fileName, bytes, sourceSize, structure, relayout, sectionName, nextRevision, fmtDate,
+    word, toNum, fmtNum, areaTotals } from '@pm/model';
 import { ROLE_NAMES, layoutPage } from '@pm/layout';
 import { PageView } from '@pm/view';
 import { guessSection, titleFromName } from '@pm/uploads';
@@ -61,6 +62,10 @@ function sampled(page, pics, doc) {
     if (L.texts.includes('body') && !p.body) p.body = 'A few words about the project — the brief, the site and the idea behind the design.';
     if (L.texts.includes('caption') && !p.caption) p.caption = 'A caption under the picture';
     if (L.captions) p.images.forEach((s) => { s.caption = s.caption || 'Caption'; });
+    if (p.layout === 'areas' && !(p.areas || []).some((f) => f.rooms.length)) {
+        const floor = (name, rooms) => ({ id: name, name, rooms: rooms.map(([n, a], i) => ({ id: `${name}${i}`, name: n, area: String(a) })) });
+        p.areas = [floor('Ground floor', [['Living room', 46], ['Kitchen', 22], ['Guest room', 18], ['Bathroom', 6]]), floor('First floor', [['Bedroom', 24], ['Bedroom', 20], ['Bathroom', 8]])];
+    }
     return p;
 }
 /** A page drawn small as it would be at `at` (inserted there, or in place of the page there). */
@@ -85,7 +90,8 @@ const SAMPLE = { cover: newPage('cover'), divider: newPage('divider') };
 const KEY_NAMES = { title: 'Title', subtitle: 'Subtitle', caption: 'Caption', body: 'Text', notes: 'Notes', project: 'Project name', docTitle: 'Document title',
     stage: 'Stage', date: 'Date', info: 'Project facts', facts: 'Key facts', logo: 'Logo', where: 'Client & location', issue: 'Issue line',
     confidential: 'Confidentiality note', contact: 'Contact details', number: 'Section number', toc: 'Contents list', meta: 'Drawing details', north: 'North arrow', list: 'The list',
-    map: 'Map', cityMap: 'City map', address: 'Address', coords: 'Coordinates', places: 'Places around the site' };
+    map: 'Map', cityMap: 'City map', address: 'Address', coords: 'Coordinates', places: 'Places around the site',
+    qr: 'QR code', areas: 'Area schedule', total: 'Total area' };
 export function keyName(key, page) {
     if (key.startsWith('img:')) return `Image ${+key.slice(4) + 1}`;
     if (key.startsWith('cap:')) return `Caption ${+key.slice(4) + 1}`;
@@ -151,7 +157,7 @@ function ElementBox({ app }) {
 }
 
 // ── One image slot ──
-function SlotBox({ app, i, page, lay, captions }) {
+function SlotBox({ app, i, page, lay, captions, capHint }) {
     const { S } = app, s = page.images[i], a = s.asset ? S.assets.get(s.asset) : null, fr = lay.frames[`img:${i}`] || {};
     const set = (patch, tag) => app.commit((d) => Object.assign(d.pages[S.page].images[i], patch), tag && `${page.id}:img${i}:${tag}`);
     return html`<div class=${`pm-slot${S.key === `img:${i}` ? ' is-on' : ''}`} onClick=${() => app.select(`img:${i}`)}>
@@ -174,7 +180,7 @@ function SlotBox({ app, i, page, lay, captions }) {
             ${s.fit === 'fill' && html`<${Btn} kind=${`is-sm${S.crop && S.key === `img:${i}` ? ' is-on' : ''}`} on=${(e) => { e.stopPropagation(); app.cropMode(`img:${i}`); }}>Adjust crop<//>`}
         </div>`}
         ${a && s.fit === 'fill' && html`<${Field} label="Zoom" row><${Range} min=${100} max=${300} step=${5} value=${Math.round((s.zoom || 1) * 100)} on=${(v) => set({ zoom: v / 100 }, 'zoom')} show=${(v) => `${v}%`} /><//>`}
-        ${captions && html`<${Text} placeholder="Caption (optional)" value=${s.caption} on=${(v) => set({ caption: v }, 'cap')} />`}
+        ${captions && html`<${Text} placeholder=${capHint || 'Caption (optional)'} value=${s.caption} on=${(v) => set({ caption: v }, 'cap')} />`}
     </div>`;
 }
 
@@ -209,6 +215,10 @@ export function PageTab({ app }) {
             ${page.layout === 'divider' && html`
                 <${Field} label="Style"><${StylePick} app=${app} options=${DIVIDER_STYLES} value=${page.opts.variant || S.doc.theme.divider} page=${page} on=${(v) => opt('variant', v)} /><//>
                 <${Toggle} label="Section number" value=${page.opts.number !== false} on=${(v) => opt('number', v ? undefined : false)} />`}
+            ${(page.layout === 'cover' || page.layout === 'closing') && html`
+                <${Toggle} label="A QR code" value=${page.opts.qr} on=${(v) => opt('qr', v || undefined)} />
+                ${page.opts.qr && html`<${QrPick} app=${app} />`}`}
+            ${page.layout === 'compare' && html`<p class="pm-note">Each picture is labelled “${word(S.doc, 'existing')}” and “${word(S.doc, 'proposed')}” in the presentation's language — write another label under Images. Use the same viewpoint for both: Adjust crop lines them up.</p>`}
             ${page.layout === 'image-caption' && html`<${Field} label="Words"><${Seg} value=${page.opts.textPos || 'below'} on=${(v) => opt('textPos', v)} options=${[['below', 'Below'], ['side', 'Beside']]} /><//>`}
             ${page.layout === 'overview' && html`<${Toggle} label="Key facts from the project's information" value=${page.opts.facts !== false} on=${(v) => opt('facts', v ? undefined : false)} />`}
             ${page.layout === 'location' && html`
@@ -237,8 +247,11 @@ export function PageTab({ app }) {
         : `The sheet is scaled to fit the presentation's page (${S.doc.size}); it is no longer at its drawn scale.`}</p>`}
         <//>
 
+        ${page.layout === 'areas' && html`<${Group} title="Rooms and areas"><${AreasEditor} app=${app} page=${page} set=${set} /><//>`}
+
         ${L.images > 0 && !(page.layout === 'cover' && (page.opts.variant || S.doc.theme.cover) !== 'image') && html`<${Group} title=${page.layout === 'cover' ? 'Cover image' : page.layout === 'divider' ? 'Background image (optional)' : 'Images'}>
-            ${page.images.map((s, i) => html`<${SlotBox} app=${app} i=${i} page=${page} lay=${lay} captions=${L.captions} />`)}
+            ${page.images.map((s, i) => html`<${SlotBox} app=${app} i=${i} page=${page} lay=${lay} captions=${L.captions || page.layout === 'compare'}
+                capHint=${page.layout === 'compare' ? `Label — “${word(S.doc, i ? 'proposed' : 'existing')}”` : null} />`)}
             ${page.layout === 'divider' && page.images[0].asset && html`<${Field} label="Darken the image" row><${Range} min=${0} max=${80} step=${5} value=${Math.round((page.opts.scrim ?? 0.45) * 100)} on=${(v) => set((p) => { p.opts.scrim = v / 100; }, 'scrim')} show=${(v) => `${v}%`} /><//>`}
             ${{ overview: [1, 3], grid: [3, 6], materials: [2, 12] }[page.layout] && html`<${Field} label="Number of images" row>
                 <${Seg} value=${page.images.length} on=${slots} options=${(() => { const [a, b] = { overview: [1, 3], grid: [3, 6], materials: [2, 12] }[page.layout]; return Array.from({ length: b - a + 1 }, (_, n) => [a + n, a + n]); })()} /><//>`}
@@ -267,6 +280,72 @@ export function PageTab({ app }) {
         ${lay.warnings.length > 0 && html`<div class="pm-warns">${lay.warnings.map((w) => html`<p>${warningText(w)}</p>`)}</div>`}
     `;
 }
+/** What the QR code opens — a project's page on the website or a client's room — the same on every page that shows it. */
+function QrPick({ app }) {
+    const { S } = app, qr = S.doc.qr, [busy, setBusy] = useState(false), [err, setErr] = useState('');
+    async function pick(to) {
+        if (!to) return;
+        setBusy(true); setErr('');
+        try {
+            const made = await app.call(`${app.boot.urls.qr}?to=${encodeURIComponent(to)}`, 'GET');
+            app.commit((d) => { d.qr = made; });
+        } catch (e) { setErr(e.message); }
+        setBusy(false);
+    }
+    const options = [['', busy ? 'Making the code…' : 'Choose what it opens…'],
+        ...(app.boot.pages || []).map((p) => [`project:${p.id}`, `Project page — ${p.name}`]),
+        ...(app.boot.rooms || []).map((r) => [`room:${r.id}`, `Client's room — ${r.label}`])];
+    if (qr && !options.some(([v]) => v === qr.to)) options.push([qr.to, qr.label]);
+    return html`<${Field} label="The QR code opens"><${Select} value=${qr ? qr.to : ''} on=${pick} options=${options} /><//>
+        ${err && html`<p class="pm-note is-warn">${err}</p>`}
+        ${qr && html`<p class="pm-note">${qr.to.startsWith('room')
+        ? html`<b>${qr.url}</b> — their room, which still asks for the room's PIN.`
+        : html`<b>${qr.url}</b> — the project's page, in the language each phone is set to. Scans are counted on the dashboard as “Presentations (QR)”.`}
+            The same code is on every page that shows one.</p>`}`;
+}
+
+/** The area schedule's floors and their rooms. Rows copied from a spreadsheet (a name and an area to a line) can be pasted in. */
+function AreasEditor({ app, page, set }) {
+    const floors = page.areas || [], unit = app.S.doc.info.builtUnit || 'm²', { sums, total } = areaTotals(floors);
+    const names = useRef({}), [focus, setFocus] = useState(null);
+    useEffect(() => { if (focus && names.current[focus]) { names.current[focus].focus(); setFocus(null); } });
+    const blank = () => ({ id: uid(), name: '', area: '' });
+    const addRoom = (fi) => { const r = blank(); set((p) => { p.areas[fi].rooms.push(r); }); setFocus(r.id); };
+    const addFloor = () => { const r = blank(); set((p) => { p.areas = [...(p.areas || []), { id: uid(), name: '', rooms: [r] }]; }); setFocus(r.id); };
+    const paste = (fi, ri) => (e) => {
+        const t = e.clipboardData.getData('text');
+        if (!/[\t\n]/.test(t.trim())) return;
+        e.preventDefault();
+        const rows = t.split(/\r?\n/).map((l) => l.split('\t').map((c) => c.trim())).filter((c) => c.some(Boolean)).map((c) => {
+            let ai = c.findLastIndex((x, j) => j > 0 && !Number.isNaN(toNum(x)));   // the area: the last cell that is a number…
+            if (ai < 1 && c.length > 1) ai = c.length - 1;                            // …or else the last cell, as written
+            return { id: uid(), name: (ai > 0 ? c.slice(0, ai) : c).filter(Boolean).join(' '), area: ai > 0 ? c[ai] : '' };
+        });
+        set((p) => { const rooms = p.areas[fi].rooms, cur = rooms[ri]; rooms.splice(cur.name || cur.area ? ri + 1 : ri, cur.name || cur.area ? 0 : 1, ...rows); });
+    };
+    const enter = (fi) => (e) => { if (e.key === 'Enter') { e.preventDefault(); addRoom(fi); } };
+    return html`
+        ${floors.map((f, fi) => html`<div class="pm-floor" key=${f.id}>
+            <div class="pm-floor__h">
+                <input class="pm-in" dir="auto" value=${f.name} placeholder="Floor — e.g. Ground floor" onInput=${(e) => set((p) => { p.areas[fi].name = e.target.value; }, `af:${f.id}`)} />
+                <button type="button" class="pm-x" title="Remove this floor and its rooms" onClick=${() => set((p) => { p.areas.splice(fi, 1); })}>×</button>
+            </div>
+            ${f.rooms.map((r, ri) => html`<div class="pm-room" key=${r.id}>
+                <input class="pm-in" dir="auto" ref=${(el) => { names.current[r.id] = el; }} value=${r.name} placeholder="Room" onPaste=${paste(fi, ri)} onKeyDown=${enter(fi)}
+                    onInput=${(e) => set((p) => { p.areas[fi].rooms[ri].name = e.target.value; }, `ar:${r.id}`)} />
+                <input class=${`pm-in${r.area.trim() && Number.isNaN(toNum(r.area)) ? ' is-warn' : ''}`} dir="ltr" inputmode="decimal" value=${r.area} placeholder=${unit} onKeyDown=${enter(fi)}
+                    title=${r.area.trim() && Number.isNaN(toNum(r.area)) ? 'Not a number: it is printed as written, and not added up' : ''}
+                    onInput=${(e) => set((p) => { p.areas[fi].rooms[ri].area = e.target.value; }, `aa:${r.id}`)} />
+                <button type="button" class="pm-x" title="Remove this room" onClick=${() => set((p) => { p.areas[fi].rooms.splice(ri, 1); })}>×</button>
+            </div>`)}
+            <div class="pm-row"><${Btn} kind="is-sm" on=${() => addRoom(fi)}>+ Room<//><span class="pm-floor__sum">${fmtNum(sums[fi])} ${unit}</span></div>
+        </div>`)}
+        <${Btn} kind="is-sm" on=${addFloor}>+ Floor<//>
+        <p class="pm-note">Enter adds the next room. Rows copied from a spreadsheet — each room's name and its area — can be pasted into a room's name. The area's unit is the built-up area's, under Project.</p>
+        ${total > 0 && html`<div class="pm-row pm-row--wrap"><strong class="pm-floor__sum">Total ${fmtNum(total)} ${unit}</strong>
+            <${Btn} kind="is-sm" on=${() => app.commit((d) => { d.info.builtArea = String(Math.round(total * 100) / 100); })}>Use it as the built-up area<//></div>`}`;
+}
+
 const zoomName = (z) => `${z >= 17 ? 'Street' : z >= 15 ? 'Neighbourhood' : z >= 12 ? 'City' : 'Region'} · ${z}`;
 /** How a page's map looks and how close it is. */
 function MapOpts({ app, page, opt, set, zoom: [lo, hi, def] }) {

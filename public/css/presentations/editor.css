@@ -238,6 +238,12 @@ progress { width: 100%; height: 6px; accent-color: var(--gold); }
 .pm-place { display: grid; grid-template-columns: 18px 1fr auto auto; gap: 6px; align-items: center; }
 .pm-place b { color: var(--gold); font-size: 12px; text-align: center; }
 .pm-place small { color: var(--quiet); font-size: 11px; white-space: nowrap; }
+.pm-floor { display: grid; gap: 6px; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.pm-floor__h { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+.pm-floor__h .pm-in { font-weight: 600; }
+.pm-room { display: grid; grid-template-columns: 1fr 76px auto; gap: 6px; align-items: center; }
+.pm-in.is-warn { border-color: var(--warn); }
+.pm-floor__sum { margin-left: auto; color: var(--quiet); font-size: 12px; }
 .pm-map span { position: absolute; inset: 0; display: grid; place-items: center; font: 12px Inter, system-ui, sans-serif; color: #777; }
 @media (max-width: 860px) { .pm-site { grid-template-columns: 1fr; } }
 .pm-designs { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 10px; }
