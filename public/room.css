@@ -144,11 +144,21 @@
 .rm-changes summary::-webkit-details-marker { display: none; }
 .rm-changes[open] summary { border-color: var(--gold); color: var(--gold); }
 .rm-changes form { display: grid; gap: 8px; margin-top: 10px; width: min(100%, 420px); }
-.rm-changes textarea {
+.rm-changes textarea, .rm-changes input {
     padding: 11px 14px; border-radius: 12px; font: 300 14px/1.5 var(--font); color: #fff;
     background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.14); resize: vertical;
 }
 .rm-changes .pp-act { justify-self: start; }
+
+/* ---- Changes with a price ------------------------------------- */
+.rm-drawing--text { grid-template-columns: minmax(0, 1fr); }
+.rm-change__price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-top: 10px; font-size: 20px; color: var(--gold); }
+.rm-change__price span { font-size: 13px; color: var(--muted); }
+.rm-change__note { margin-top: 10px; }
+.rm-status--accepted { color: var(--done); }
+.rm-status--declined { color: #ff9f6b; }
+.rm-status a { color: inherit; border-bottom: 1px solid currentColor; }
+.rm-change-ask { margin-top: 18px; }
 
 /* ---- Comments pinned on a drawing (room-pins.js) --------------- */
 .rm-pins-open { margin-top: 14px; }

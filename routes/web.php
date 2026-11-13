@@ -101,6 +101,10 @@ $rooms = function (string $lang) {
                 ->middleware('throttle:30,1')->name('room.comment');
             Route::get('/drawings/{drawing}', [RoomController::class, 'drawing'])->whereNumber('drawing')->name('room.drawing');
             Route::get('/receipts/{payment}', [RoomController::class, 'receipt'])->whereNumber('payment')->name('room.receipt');
+            Route::post('/changes', [RoomController::class, 'askChange'])->middleware('throttle:30,1')->name('room.change.ask');
+            Route::post('/changes/{change}', [RoomController::class, 'decideChange'])->whereNumber('change')
+                ->middleware('throttle:30,1')->name('room.change.decide');
+            Route::get('/changes/{change}', [RoomController::class, 'changeFile'])->whereNumber('change')->name('room.change.file');
         });
 };
 

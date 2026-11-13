@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ClientRooms;
 use App\Filament\Resources\ClientRooms\Pages\CreateClientRoom;
 use App\Filament\Resources\ClientRooms\Pages\EditClientRoom;
 use App\Filament\Resources\ClientRooms\Pages\ListClientRooms;
+use App\Filament\Resources\ClientRooms\RelationManagers\ChangesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
@@ -54,11 +55,12 @@ class ClientRoomResource extends Resource
         return [
             ProgressRelationManager::class,
             DrawingsRelationManager::class,
+            ChangesRelationManager::class,
             CommentsRelationManager::class,
         ];
     }
 
-    /** Rooms where a client has commented or decided on a drawing since the studio last looked. */
+    /** Rooms where a client has commented, decided on a drawing, or asked for or decided on a change since the studio last looked. */
     public static function getNavigationBadge(): ?string
     {
         $count = ClientRoom::query()->withUnseen()->count();

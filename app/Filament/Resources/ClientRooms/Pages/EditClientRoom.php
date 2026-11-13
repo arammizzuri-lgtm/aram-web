@@ -15,6 +15,9 @@ class EditClientRoom extends EditRecord
 {
     protected static string $resource = ClientRoomResource::class;
 
+    /** The newest payment stage when the form was filled (see beforeSave). */
+    public int $lastPaymentId = 0;
+
     /**
      * Look at the room as the client will; send them the link, the PIN (in a
      * separate message) or word that there is something new — on WhatsApp,
@@ -71,5 +74,26 @@ class EditClientRoom extends EditRecord
     protected function afterFill(): void
     {
         $this->record->markSeen();
+        $this->lastPaymentId = (int) $this->record->payments()->max('id');
+    }
+
+    /**
+     * A change the client accepted while this page was open added a payment
+     * stage the form does not have: saving would delete it. Reload first.
+     */
+    protected function beforeSave(): void
+    {
+        if ((int) $this->record->payments()->max('id') > $this->lastPaymentId) {
+            Notification::make()->warning()->persistent()
+                ->title('A payment stage was added meanwhile')
+                ->body('The client accepted a change while this page was open. Reload the page, then make your edits again.')
+                ->send();
+            $this->halt();
+        }
+    }
+
+    protected function afterSave(): void
+    {
+        $this->lastPaymentId = (int) $this->record->payments()->max('id');
     }
 }

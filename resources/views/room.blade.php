@@ -17,6 +17,8 @@
     $drawings = $room->drawings;
     $payments = $room->payments;
     $waiting = $drawings->filter->isPending()->count();
+    $changes = $room->changes;
+    $openChanges = $changes->filter->isOpen()->count();
     $totals = $room->paymentTotals();
     $flash = session('room_flash');
     // every progress photo, for the viewer (each update's set steps on its own)
@@ -58,6 +60,9 @@
             <a class="rm-tab" href="#progress">{{ bival('room_nav_progress') }} <span class="rm-tab__n">{{ $updates->count() }}</span></a>
             <a class="rm-tab" href="#drawings">{{ bival('room_nav_drawings') }}
                 @if ($waiting)<span class="rm-tab__n rm-tab__n--ask">{{ $waiting }}</span>@else<span class="rm-tab__n">{{ $drawings->count() }}</span>@endif
+            </a>
+            <a class="rm-tab" href="#changes">{{ bival('room_nav_changes') }}
+                @if ($openChanges)<span class="rm-tab__n rm-tab__n--ask">{{ $openChanges }}</span>@elseif ($changes->isNotEmpty())<span class="rm-tab__n">{{ $changes->count() }}</span>@endif
             </a>
             <a class="rm-tab" href="#payments">{{ bival('room_nav_payments') }}
                 @if ($payments->isNotEmpty())<span class="rm-tab__n">{{ $totals['percent'] }}%</span>@endif
@@ -193,6 +198,107 @@
                     @endforeach
                 </div>
             @endif
+        </section>
+
+        {{-- Changes with a price: offered by the studio, or asked for here and
+             priced by it. Accepted, the price becomes a payment stage of its own. --}}
+        <section class="rm-section" id="changes">
+            <h2 class="pp-label">{{ bival('room_nav_changes') }}</h2>
+            @if ($changes->isEmpty())
+                <p class="rm-empty">{{ bival('room_no_changes') }}</p>
+            @else
+                <div class="rm-drawings">
+                    @foreach ($changes as $c)
+                        @php $file = $c->fileExists() ? $base.'/changes/'.$c->id : null; @endphp
+                        <article class="rm-drawing rm-drawing--{{ $c->isOpen() ? 'pending' : $c->status }} @unless ($file) rm-drawing--text @endunless" id="change-{{ $c->id }}">
+                            @if ($file)
+                                <a class="rm-drawing__file" href="{{ $file }}" target="_blank" rel="noopener noreferrer" aria-label="{{ bival('room_open') }}: {{ $c->title }}">
+                                    @if ($c->isImage())
+                                        <img src="{{ $file }}" alt="" loading="lazy" decoding="async">
+                                    @else
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5M9 13h7M9 17h7M9 9h2"/></svg>
+                                        <span>PDF</span>
+                                    @endif
+                                </a>
+                            @endif
+                            <div class="rm-drawing__body">
+                                <h3 class="rm-drawing__title" dir="auto">{{ $c->title }}</h3>
+                                <p class="rm-drawing__date">{{ site_date($c->created_at, $lang) }}@if ($c->asked_by_client) · {{ bival('room_change_by_you') }}@endif</p>
+                                @if (filled($c->details))
+                                    <p class="rm-drawing__note" dir="auto">{{ $c->details }}</p>
+                                @endif
+                                @if ($c->price !== null)
+                                    <p class="rm-change__price">
+                                        <bdi>{{ $c->price > 0 ? $room->money($c->price, $lang) : bival('room_change_free') }}</bdi>
+                                        {{-- "+7" isolated left to right, or Kurdish shows "7+" --}}
+                                        @if ($c->extra_days)<span>{!! str_replace('{days}', '<bdi dir="ltr">+'.(int) $c->extra_days.'</bdi>', e(bival('room_change_days'))) !!}</span>@endif
+                                    </p>
+                                @endif
+                                @if (filled($c->note))
+                                    <div class="rm-msg rm-msg--studio rm-change__note">
+                                        <span class="rm-msg__who">{{ bival('room_studio') }}</span>
+                                        <p class="rm-msg__body" dir="auto">{{ $c->note }}</p>
+                                    </div>
+                                @endif
+                                @if ($file)
+                                    <p class="rm-drawing__links">
+                                        <a href="{{ $file }}" target="_blank" rel="noopener noreferrer">{{ bival('room_open') }}</a>
+                                        <a href="{{ $file }}?download=1">{{ bival('room_download') }}</a>
+                                    </p>
+                                @endif
+
+                                @if ($c->status === \App\Models\RoomChange::ASKED)
+                                    <p class="rm-status rm-status--pending">{{ bival('room_change_wait') }}</p>
+                                @elseif ($c->isOpen())
+                                    <p class="rm-status rm-status--pending">{{ bival('room_waiting') }}</p>
+                                    @unless ($preview)
+                                        <div class="rm-decide">
+                                            <form method="post" action="{{ $base }}/changes/{{ $c->id }}"
+                                                  onsubmit="return confirm(this.dataset.sure)" data-sure="{{ bival('room_change_accept_sure') }}">
+                                                @csrf
+                                                <input type="hidden" name="decision" value="accepted">
+                                                <input type="hidden" name="v" value="{{ $c->updated_at->timestamp }}">
+                                                <button class="pp-btn rm-approve" type="submit">✓ {{ bival('room_change_accept') }}</button>
+                                            </form>
+                                            <details class="rm-changes" @if ($errors->has('note') && old('change') == $c->id) open @endif>
+                                                <summary class="pp-act">{{ bival('room_change_decline') }}</summary>
+                                                <form method="post" action="{{ $base }}/changes/{{ $c->id }}">
+                                                    @csrf
+                                                    <input type="hidden" name="decision" value="declined">
+                                                    <input type="hidden" name="change" value="{{ $c->id }}">
+                                                    <input type="hidden" name="v" value="{{ $c->updated_at->timestamp }}">
+                                                    <textarea name="note" rows="3" maxlength="2000" required dir="auto" placeholder="{{ bival('room_change_decline_ph') }}" aria-label="{{ bival('room_change_decline_ph') }}"></textarea>
+                                                    <button class="pp-act" type="submit">{{ bival('room_changes_send') }}</button>
+                                                </form>
+                                            </details>
+                                        </div>
+                                    @endunless
+                                @else
+                                    @php $yes = $c->status === \App\Models\RoomChange::ACCEPTED; @endphp
+                                    <p class="rm-status rm-status--{{ $c->status }}">
+                                        {{ $yes ? '✓' : '✕' }}
+                                        {{ $fill($yes ? 'room_change_accepted' : 'room_change_declined', ['{date}' => site_date($c->decided_at ?? $c->updated_at, $lang)]) }}@if ($yes && $c->room_payment_id) · <a href="#payments">{{ bival('room_change_in_payments') }}</a>@endif
+                                    </p>
+                                    @if (filled($c->decline_note))
+                                        <blockquote class="rm-drawing__said" dir="auto">{{ $c->decline_note }}</blockquote>
+                                    @endif
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
+            @unless ($preview)
+                <details class="rm-changes rm-change-ask" @if ($errors->has('title')) open @endif>
+                    <summary class="pp-act">+ {{ bival('room_change_ask') }}</summary>
+                    <form method="post" action="{{ $base }}/changes">
+                        @csrf
+                        <input name="title" maxlength="160" required dir="auto" value="{{ old('title') }}" placeholder="{{ bival('room_changes_ph') }}" aria-label="{{ bival('room_changes_ph') }}">
+                        <textarea name="details" rows="3" maxlength="2000" dir="auto" placeholder="{{ bival('room_change_details_ph') }}" aria-label="{{ bival('room_change_details_ph') }}">{{ old('details') }}</textarea>
+                        <button class="pp-act" type="submit">{{ bival('room_changes_send') }}</button>
+                    </form>
+                </details>
+            @endunless
         </section>
 
         {{-- Payment stages: the studio's record, shown — nothing is paid here. --}}

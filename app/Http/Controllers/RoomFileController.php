@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RoomChange;
 use App\Models\RoomDrawing;
 use App\Models\RoomPayment;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * A client room's drawings and receipts, for the studio: registered inside
+ * A client room's drawings, receipts and change pictures, for the studio: registered inside
  * the panel's authenticated routes (AdminPanelProvider). The client reaches
  * the same files through their room (RoomController).
  */
@@ -19,6 +20,16 @@ class RoomFileController extends Controller
         abort_unless($drawing->fileExists(), 404);
 
         return Storage::disk(RoomDrawing::DISK)->response($drawing->file_path, $drawing->downloadName(), [
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    public function change(RoomChange $change): Response
+    {
+        abort_unless($change->fileExists(), 404);
+
+        return Storage::disk(RoomChange::DISK)->response($change->file_path, $change->file_name ?: 'change', [
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);

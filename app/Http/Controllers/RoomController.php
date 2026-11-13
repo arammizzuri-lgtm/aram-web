@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Mail\RoomActivity;
 use App\Models\ClientRoom;
+use App\Models\RoomChange;
 use App\Models\RoomDrawing;
 use App\Support\StudioMail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -51,7 +53,7 @@ class RoomController extends Controller
             ClientRoom::query()->whereKey($room->id)->toBase()->update(['last_seen_at' => now()]);
         }
 
-        $room->load(['payments', 'drawings.comments', 'comments']);
+        $room->load(['payments', 'drawings.comments', 'comments', 'changes']);
 
         return response()->view('room', [
             'room' => $room,
@@ -151,6 +153,84 @@ class RoomController extends Controller
             'pins' => $d->pinData(site_lang()),
             'n' => $pins->search(fn ($thread) => $thread->contains('id', $comment->id)),
         ]);
+    }
+
+    /** The client asks for a change; the studio answers with its price and the days it adds. */
+    public function askChange(Request $request, string $token): RedirectResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:160'],
+            'details' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $change = $room->changes()->create([
+            'title' => trim($data['title']),
+            'details' => filled($data['details'] ?? null) ? trim($data['details']) : null,
+            'asked_by_client' => true,
+            'status' => RoomChange::ASKED,
+        ]);
+        $this->tellStudio(RoomActivity::changed($room, $change));
+
+        return redirect()->to($this->address($room).'#change-'.$change->id)->with('room_flash', 'room_change_sent');
+    }
+
+    /**
+     * The client accepts a priced change — its price becomes a payment stage
+     * of its own — or declines it, saying why. Only the price they were shown
+     * (v: when the change was last edited) can be accepted, and only once.
+     */
+    public function decideChange(Request $request, string $token, int $change): RedirectResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $c = $room->changes()->whereKey($change)->firstOrFail();
+        $data = $request->validate([
+            'decision' => ['required', Rule::in([RoomChange::ACCEPTED, RoomChange::DECLINED])],
+            'note' => ['nullable', 'required_if:decision,'.RoomChange::DECLINED, 'string', 'max:2000'],
+            'v' => ['required', 'integer'],
+        ]);
+        $back = redirect()->to($this->address($room).'#change-'.$c->id);
+
+        if ($c->isOpen() && (int) $data['v'] !== $c->updated_at->timestamp) {
+            return $back->with('room_flash', 'room_change_moved');
+        }
+
+        $accepted = $data['decision'] === RoomChange::ACCEPTED;
+        $done = DB::transaction(function () use ($room, $c, $data, $accepted, $request) {
+            $done = RoomChange::query()->whereKey($c->id)->where('status', RoomChange::PRICED)->update([
+                'status' => $data['decision'],
+                'decline_note' => $accepted ? null : trim($data['note']),
+                'decided_at' => now(),
+                'decided_ip' => $request->ip(),
+                'seen_at' => null,
+                'updated_at' => now(),
+            ]);
+            if ($done && $accepted && $c->price > 0) {
+                $payment = $room->payments()->create([
+                    'label' => mb_substr(str_replace('{title}', $c->title, bival('room_change_pay_label')), 0, 160),
+                    'amount' => $c->price,
+                    'sort_order' => (int) $room->payments()->max('sort_order') + 1,
+                ]);
+                RoomChange::query()->whereKey($c->id)->update(['room_payment_id' => $payment->id]);
+            }
+
+            return $done > 0;
+        });
+
+        if ($done) {
+            $this->tellStudio(RoomActivity::changed($room, $c->refresh()));
+        }
+
+        return $back->with('room_flash', 'room_decided');
+    }
+
+    public function changeFile(Request $request, string $token, int $change): Response
+    {
+        $room = $this->viewableRoom($request, $token);
+        $c = $room->changes()->whereKey($change)->firstOrFail();
+        abort_unless($c->fileExists(), 404);
+
+        return $this->file($c->file_path, $c->file_name ?: 'change.'.pathinfo($c->file_path, PATHINFO_EXTENSION), $request->has('download'));
     }
 
     public function drawing(Request $request, string $token, int $drawing): Response

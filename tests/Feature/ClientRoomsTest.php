@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\ClientRooms\ClientRoomResource;
+use App\Filament\Resources\ClientRooms\RelationManagers\ChangesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
@@ -11,6 +12,7 @@ use App\Mail\RoomActivity;
 use App\Models\ClientRoom;
 use App\Models\Project;
 use App\Models\ProjectUpdate;
+use App\Models\RoomChange;
 use App\Models\RoomComment;
 use App\Models\RoomDrawing;
 use App\Models\SiteSetting;
@@ -234,6 +236,90 @@ class ClientRoomsTest extends TestCase
         $this->assertSame(0, RoomComment::count());
     }
 
+    public function test_a_change_is_asked_for_priced_and_accepted_as_a_payment_stage_or_declined_with_a_reason(): void
+    {
+        $room = $this->room();
+        $room->payments()->create(['label' => 'Concept design', 'amount' => 3000, 'sort_order' => 1]);
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $manager = fn () => Livewire::test(ChangesRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class]);
+        $decide = fn (RoomChange $c, array $with) => $this->post('/room/'.$room->token.'/changes/'.$c->id, $with + ['v' => $c->fresh()->updated_at->timestamp]);
+        $this->enter($room);
+
+        // the client asks; the studio is told, and it waits for a price
+        $response = $this->post('/room/'.$room->token.'/changes', ['title' => 'A wider kitchen window', 'details' => 'About 40 cm wider.']);
+        $asked = RoomChange::sole();
+        $response->assertRedirect('/room/'.$room->token.'#change-'.$asked->id)->assertSessionHas('room_flash', 'room_change_sent');
+        $this->assertSame(RoomChange::ASKED, $asked->status);
+        $this->assertTrue($asked->asked_by_client);
+        Mail::assertSent(RoomActivity::class, fn (RoomActivity $m) => str_starts_with($m->headline, 'Shilan asked for a change: “A wider kitchen window”')
+            && $m->words === 'About 40 cm wider.');
+        $this->assertSame(1, $room->unseenCount());
+        $decide($asked, ['decision' => 'accepted']);
+        $this->assertSame(RoomChange::ASKED, $asked->fresh()->status);           // nothing to accept before a price
+        $this->get('/room/'.$room->token)->assertSee('Waiting for the studio’s price')->assertDontSee('name="v"', false);
+
+        // the studio gives it a price
+        $this->actingAs($admin);
+        $manager()->assertSee('Asked — needs a price')
+            ->callTableAction('edit', $asked, ['price' => 500, 'extra_days' => 7, 'note' => 'The column moves too.'])
+            ->assertHasNoTableActionErrors();
+        auth()->logout();
+        $asked->refresh();
+        $this->assertSame(RoomChange::PRICED, $asked->status);
+        $this->assertSame('500.00', $asked->price);
+        $this->assertSame('About 40 cm wider.', $asked->details);              // their words stay theirs
+        $this->assertSame(0, $room->unseenCount());
+
+        // the client accepts the price they were shown, once, and it is a payment stage of its own
+        $this->get('/room/'.$room->token)->assertSee('$500')->assertSee('+7</bdi> days', false)->assertSee('The column moves too.');
+        $this->post('/room/'.$room->token.'/changes/'.$asked->id, ['decision' => 'accepted', 'v' => $asked->updated_at->timestamp - 60])
+            ->assertSessionHas('room_flash', 'room_change_moved');
+        $this->assertSame(RoomChange::PRICED, $asked->fresh()->status);
+        $decide($asked, ['decision' => 'accepted'])->assertRedirect('/room/'.$room->token.'#change-'.$asked->id)->assertSessionHas('room_flash', 'room_decided');
+        $this->post('/room/'.$room->token.'/changes/'.$asked->id, ['decision' => 'accepted', 'v' => $asked->updated_at->timestamp]);
+        $asked->refresh();
+        $this->assertSame(RoomChange::ACCEPTED, $asked->status);
+        $this->assertSame(2, $room->payments()->count());
+        $stage = $room->payments()->get()->last();
+        $this->assertSame(['Change: A wider kitchen window', '500.00', 2, $stage->id], [$stage->label, $stage->amount, $stage->sort_order, $asked->room_payment_id]);
+        $this->assertCount(1, Mail::sent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan accepted the change “A wider kitchen window” — $500 (+7 days)'));
+        $this->get('/room/'.$room->token)->assertSee('Change: A wider kitchen window')->assertSee('Added to your payments')
+            ->assertSee('$3,500');
+
+        // the studio offers one, with a picture; the client declines it, saying why
+        $this->actingAs($admin);
+        $manager()->callTableAction('create', null, ['title' => 'Marble floor in the hall', 'price' => 2400, 'extra_days' => 10])
+            ->assertHasNoTableActionErrors();
+        auth()->logout();
+        $offer = RoomChange::where('title', 'Marble floor in the hall')->sole();
+        Storage::disk('local')->put('rooms/changes/marble.jpg', 'jpeg');
+        $offer->update(['file_path' => 'rooms/changes/marble.jpg', 'file_name' => 'marble.jpg']);
+        $this->assertFalse($offer->asked_by_client);
+        $this->get('/room/'.$room->token.'/changes/'.$offer->id)->assertOk();
+        $decide($offer, ['decision' => 'declined'])->assertSessionHasErrors('note');
+        $decide($offer, ['decision' => 'declined', 'note' => 'Too dear for now.']);
+        $offer->refresh();
+        $this->assertSame([RoomChange::DECLINED, 'Too dear for now.', null], [$offer->status, $offer->decline_note, $offer->room_payment_id]);
+        $this->assertSame(2, $room->payments()->count());
+        Mail::assertSent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan declined the change “Marble floor in the hall”'
+            && $m->words === 'Too dear for now.' && $m->tone === 'warn');
+        $this->assertSame(2, $room->unseenCount());
+        $this->assertSame('1', ClientRoomResource::getNavigationBadge());
+
+        // the studio's side: the file, and the room's form kept from losing a stage added while it was open
+        $this->actingAs($admin);
+        $this->get(route('filament.studio-aks-panel.room-change', $offer))->assertOk();
+        $page = Livewire::test(EditClientRoom::class, ['record' => $room->getRouteKey()]);
+        $this->assertSame(0, $room->unseenCount());
+        $room->payments()->create(['label' => 'Change: something else', 'amount' => 100, 'sort_order' => 3]);
+        $page->call('save')->assertNotified('A payment stage was added meanwhile');
+        $this->assertSame(3, $room->payments()->count());
+
+        // deleting the room takes the change pictures with it
+        $room->fresh()->delete();
+        Storage::disk('local')->assertMissing('rooms/changes/marble.jpg');
+    }
+
     public function test_without_the_pin_nothing_can_be_done_or_downloaded(): void
     {
         $room = $this->room();
@@ -272,12 +358,14 @@ class ClientRoomsTest extends TestCase
     {
         $room = $this->room();
         $plan = $this->drawing($room);
+        $room->changes()->create(['title' => 'A wider kitchen window', 'price' => 500]);
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
         $this->actingAs($admin);
 
         $this->get('/room/'.$room->token)->assertOk()
-            ->assertSee('Studio preview')->assertSee('Kitchen layout agreed')
-            ->assertDontSee('<textarea name="body"', false)->assertDontSee('name="decision"', false);
+            ->assertSee('Studio preview')->assertSee('Kitchen layout agreed')->assertSee('A wider kitchen window')
+            ->assertDontSee('<textarea name="body"', false)->assertDontSee('name="decision"', false)
+            ->assertDontSee('name="details"', false);
         $this->get('/room/'.$room->token.'/drawings/'.$plan->id)->assertOk();
         $this->post('/room/'.$room->token.'/drawings/'.$plan->id, ['decision' => 'approved'])->assertForbidden();
         $this->assertNull($room->fresh()->last_seen_at);
