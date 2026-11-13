@@ -111,6 +111,10 @@ $rooms = function (string $lang) {
             Route::post('/meetings/{meeting}', [RoomController::class, 'answerMeeting'])->whereNumber('meeting')
                 ->middleware('throttle:30,1')->name('room.meeting.answer');
             Route::get('/meetings/{meeting}', [RoomController::class, 'meetingFile'])->whereNumber('meeting')->name('room.meeting.file');
+            Route::post('/documents', [RoomController::class, 'uploadDocument'])->middleware('throttle:10,1')->name('room.document.upload');
+            Route::post('/documents/{document}/read', [RoomController::class, 'readDocument'])->whereNumber('document')
+                ->middleware('throttle:30,1')->name('room.document.read');
+            Route::get('/documents/{document}', [RoomController::class, 'documentFile'])->whereNumber('document')->name('room.document.file');
         });
 };
 

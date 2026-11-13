@@ -106,7 +106,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             // Private files, behind the panel login: an applicant's CV, a client
-            // room's drawings, receipts, change pictures and meeting files, and the database copies on
+            // room's drawings, receipts, change pictures, meeting files and documents, and the database copies on
             // System → Backups.
             ->authenticatedRoutes(function () {
                 Route::get('cv/{application}', ApplicationCvController::class)->name('application-cv');
@@ -117,6 +117,7 @@ class AdminPanelProvider extends PanelProvider
                 Route::get('rooms/receipts/{payment}', [RoomFileController::class, 'receipt'])->name('room-receipt');
                 Route::get('rooms/changes/{change}', [RoomFileController::class, 'change'])->name('room-change');
                 Route::get('rooms/meetings/{meeting}', [RoomFileController::class, 'meeting'])->name('room-meeting');
+                Route::get('rooms/documents/{document}', [RoomFileController::class, 'document'])->name('room-document');
                 Route::get('testimonials/{testimonial}/photo', TestimonialPhotoController::class)->name('testimonial-photo');
                 Route::get('projects/{project}/board', [BoardController::class, 'poster'])->name('project-board');
 

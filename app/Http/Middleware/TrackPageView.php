@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\PageView;
+use App\Support\DocumentReminders;
 use App\Support\TrafficSource;
 use App\Support\WeeklyReport;
 use Closure;
@@ -47,6 +48,10 @@ class TrackPageView
                 // the host runs no scheduled jobs; checked after the page is sent
                 if (WeeklyReport::isDue()) {
                     \Illuminate\Support\defer(fn () => WeeklyReport::sendIfDue());
+                }
+                // and so do the reminders of room documents about to expire, checked once a day
+                if (DocumentReminders::isDue()) {
+                    \Illuminate\Support\defer(fn () => DocumentReminders::sendIfDue());
                 }
 
                 if ($source !== TrafficSource::INTERNAL && $request->hasSession()

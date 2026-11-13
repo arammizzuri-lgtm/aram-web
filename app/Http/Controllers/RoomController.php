@@ -7,6 +7,7 @@ use App\Models\ClientRoom;
 use App\Models\RoomChange;
 use App\Models\RoomChoice;
 use App\Models\RoomChoiceOption;
+use App\Models\RoomDocument;
 use App\Models\RoomDrawing;
 use App\Models\RoomMeeting;
 use App\Support\StudioMail;
@@ -39,6 +40,9 @@ use function Illuminate\Support\defer;
  */
 class RoomController extends Controller
 {
+    /** A document the client adds: a PDF or a photo. */
+    public const MAX_DOCUMENT_KB = 20480;
+
     public function show(Request $request, string $token): Response
     {
         $room = $this->room($token);
@@ -56,7 +60,7 @@ class RoomController extends Controller
             ClientRoom::query()->whereKey($room->id)->toBase()->update(['last_seen_at' => now()]);
         }
 
-        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner', 'meetings', 'stages']);
+        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner', 'meetings', 'stages', 'documents']);
 
         return response()->view('room', [
             'room' => $room,
@@ -330,6 +334,60 @@ class RoomController extends Controller
         abort_unless($m->fileExists(), 404);
 
         return $this->file($m->file_path, $m->file_name ?: 'meeting.'.pathinfo($m->file_path, PATHINFO_EXTENSION), $request->has('download'));
+    }
+
+    /** The client adds a document to their shelf (a title deed, an ID); the studio is told. */
+    public function uploadDocument(Request $request, string $token): RedirectResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $data = $request->validate([
+            'doc_title' => ['required', 'string', 'max:160'],   // not "title": the change form has that
+            'file' => ['required', 'file', 'max:'.self::MAX_DOCUMENT_KB, 'mimes:pdf,jpg,jpeg,png,webp',
+                'mimetypes:application/pdf,image/jpeg,image/png,image/webp'],
+        ]);
+
+        $doc = $room->documents()->create([
+            'group' => 'other',
+            'title' => trim($data['doc_title']),
+            'file_path' => $data['file']->store('rooms/documents', RoomDocument::DISK),
+            'file_name' => mb_substr($data['file']->getClientOriginalName(), -200),
+            'from_client' => true,
+        ]);
+        $this->tellStudio(RoomActivity::uploaded($room, $doc));
+
+        return redirect()->to($this->address($room).'#document-'.$doc->id)->with('room_flash', 'room_doc_sent');
+    }
+
+    /** "I have read it", on a document the studio asked them to read: once, dated. */
+    public function readDocument(Request $request, string $token, int $document): RedirectResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $doc = $room->documents()->whereKey($document)->firstOrFail();
+
+        $done = RoomDocument::query()->whereKey($doc->id)->where('needs_reading', true)->whereNull('read_at')->update([
+            'read_at' => now(),
+            'read_ip' => $request->ip(),
+            'seen_at' => null,
+            'updated_at' => now(),
+        ]);
+        if ($done) {
+            $this->tellStudio(RoomActivity::read($room, $doc));
+        }
+
+        return redirect()->to($this->address($room).'#document-'.$doc->id)->with('room_flash', 'room_decided');
+    }
+
+    /** A document, for the client or the studio's preview; the client's first opening is noted. */
+    public function documentFile(Request $request, string $token, int $document): Response
+    {
+        $room = $this->viewableRoom($request, $token);
+        $doc = $room->documents()->whereKey($document)->firstOrFail();
+        abort_unless($doc->fileExists(), 404);
+        if (! $this->preview() && ! $doc->from_client && ! $doc->first_opened_at) {
+            RoomDocument::query()->whereKey($doc->id)->whereNull('first_opened_at')->update(['first_opened_at' => now()]);
+        }
+
+        return $this->file($doc->file_path, $doc->file_name ?: 'document.'.pathinfo($doc->file_path, PATHINFO_EXTENSION), $request->has('download'));
     }
 
     public function changeFile(Request $request, string $token, int $change): Response

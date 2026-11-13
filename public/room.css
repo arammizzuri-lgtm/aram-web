@@ -176,6 +176,22 @@
 .rm-stage__meta { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
 .rm-badge--late { background: rgba(255,159,107,.1); border-color: rgba(255,159,107,.4); color: #ff9f6b; }
 
+/* ---- Documents shelf ---------------------------------------------- */
+.rm-docs__group { margin: 26px 0 8px; font-size: 13px; font-weight: 400; color: var(--muted); }
+.rm-docs__group:first-of-type { margin-top: 4px; }
+.rm-docs { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.rm-doc { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 130px; }
+.rm-doc__icon { flex: none; display: grid; place-items: center; width: 40px; height: 48px; border-radius: 8px; background: rgba(255,255,255,.05); }
+.rm-doc__icon svg { width: 22px; height: 22px; fill: none; stroke: var(--gold); stroke-width: 1.4; }
+.rm-doc__body { min-width: 0; flex: 1; }
+.rm-doc__title { display: block; font-size: 15px; color: #fff; overflow-wrap: anywhere; }
+.rm-doc__title:hover { color: var(--gold); }
+.rm-doc__meta { margin-top: 4px; font-size: 13px; color: var(--muted); }
+.rm-doc__meta a { color: inherit; border-bottom: 1px solid currentColor; }
+.rm-doc__expiry { color: #ff9f6b; }
+.rm-doc__hint { margin: 0; font-size: 12px; color: var(--muted); }
+.rm-doc__hint--error { color: #ff9f6b; }
+
 /* ---- Meeting notes ---------------------------------------------- */
 .rm-decisions { margin: 12px 0 0; padding-inline-start: 22px; font-size: 14px; line-height: 1.65; }
 .rm-decisions li { margin-top: 4px; padding-inline-start: 4px; white-space: pre-line; }

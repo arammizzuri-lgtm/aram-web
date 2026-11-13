@@ -24,6 +24,9 @@
     $picked = $choices->reject->isPending();
     $meetings = $room->meetings;
     $timeline = $room->timeline();
+    $documents = $room->documents;
+    $toRead = $documents->filter(fn ($d) => $d->needs_reading && ! $d->read_at)->count();
+    $shelf = $documents->groupBy('group')->sortBy(fn ($docs, $group) => array_search($group, array_keys(\App\Models\RoomDocument::GROUPS)));
     $now = $timeline->first(fn ($s) => ! $s->isDone()) ?? $timeline->last();
     $span = fn (?\DateTimeInterface $a, ?\DateTimeInterface $b) => collect([$a, $b])->filter()->map(fn ($d) => site_date($d, $lang))->join(' – ');
     // "+7" isolated left to right, or Kurdish shows "7+"
@@ -89,6 +92,9 @@
             </a>
             <a class="rm-tab" href="#meetings">{{ bival('room_nav_meetings') }}
                 @if ($toConfirm)<span class="rm-tab__n rm-tab__n--ask">{{ $toConfirm }}</span>@elseif ($meetings->isNotEmpty())<span class="rm-tab__n">{{ $meetings->count() }}</span>@endif
+            </a>
+            <a class="rm-tab" href="#documents">{{ bival('room_nav_docs') }}
+                @if ($toRead)<span class="rm-tab__n rm-tab__n--ask">{{ $toRead }}</span>@elseif ($documents->isNotEmpty())<span class="rm-tab__n">{{ $documents->count() }}</span>@endif
             </a>
             <a class="rm-tab" href="#payments">{{ bival('room_nav_payments') }}
                 @if ($payments->isNotEmpty())<span class="rm-tab__n">{{ $totals['percent'] }}%</span>@endif
@@ -508,6 +514,61 @@
             @empty
                 <p class="rm-empty">{{ bival('room_no_meetings') }}</p>
             @endforelse
+        </section>
+
+        {{-- The documents shelf, in fixed groups: the studio's papers and what
+             the client adds; "I have read it" where the studio asks. --}}
+        <section class="rm-section" id="documents">
+            <h2 class="pp-label">{{ bival('room_nav_docs') }}</h2>
+            @forelse ($shelf as $group => $docs)
+                <h3 class="rm-docs__group">{{ bival('room_doc_'.$group) }}</h3>
+                <ul class="rm-docs">
+                    @foreach ($docs as $doc)
+                        @php $file = $base.'/documents/'.$doc->id; @endphp
+                        <li class="rm-doc" id="document-{{ $doc->id }}">
+                            <a class="rm-doc__icon" href="{{ $file }}" target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z"/><path d="M14 2v5h5M9 13h7M9 17h7M9 9h2"/></svg>
+                            </a>
+                            <div class="rm-doc__body">
+                                <a class="rm-doc__title" href="{{ $file }}" target="_blank" rel="noopener noreferrer" dir="auto">{{ $doc->title }}</a>
+                                <p class="rm-doc__meta">
+                                    {{ site_date($doc->created_at, $lang) }}@if ($doc->from_client) · {{ bival('room_doc_from_you') }}@endif
+                                    @if ($doc->expires_on)
+                                        · <span @class(['rm-doc__expiry' => $doc->isExpired() || $doc->expiresSoon()])>{{ $fill($doc->isExpired() ? 'room_doc_expired' : 'room_doc_expires', ['{date}' => site_date($doc->expires_on, $lang)]) }}</span>
+                                    @endif
+                                    · <a href="{{ $file }}?download=1">{{ bival('room_download') }}</a>
+                                </p>
+                                @if ($doc->needs_reading && $doc->read_at)
+                                    <p class="rm-status rm-status--approved">✓ {{ $fill('room_doc_read_on', ['{date}' => site_date($doc->read_at, $lang)]) }}</p>
+                                @elseif ($doc->needs_reading)
+                                    <p class="rm-status rm-status--pending">{{ bival('room_doc_please_read') }}</p>
+                                    @unless ($preview)
+                                        <form class="rm-decide" method="post" action="{{ $file }}/read"
+                                              onsubmit="return confirm(this.dataset.sure)" data-sure="{{ bival('room_doc_read_sure') }}">
+                                            @csrf
+                                            <button class="pp-btn rm-approve" type="submit">✓ {{ bival('room_doc_read') }}</button>
+                                        </form>
+                                    @endunless
+                                @endif
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @empty
+                <p class="rm-empty">{{ bival('room_no_docs') }}</p>
+            @endforelse
+            @unless ($preview)
+                <details class="rm-changes rm-change-ask" @if ($errors->hasAny(['doc_title', 'file'])) open @endif>
+                    <summary class="pp-act">+ {{ bival('room_doc_add') }}</summary>
+                    <form method="post" action="{{ $base }}/documents" enctype="multipart/form-data">
+                        @csrf
+                        <input name="doc_title" maxlength="160" required dir="auto" value="{{ old('doc_title') }}" placeholder="{{ bival('room_doc_title_ph') }}" aria-label="{{ bival('room_doc_title_ph') }}">
+                        <input type="file" name="file" required accept="application/pdf,image/jpeg,image/png,image/webp" aria-describedby="rmDocHint">
+                        <p @class(['rm-doc__hint', 'rm-doc__hint--error' => $errors->has('file')]) id="rmDocHint">{{ bival('room_doc_file_hint') }}</p>
+                        <button class="pp-act" type="submit">{{ bival('room_changes_send') }}</button>
+                    </form>
+                </details>
+            @endunless
         </section>
 
         {{-- Payment stages: the studio's record, shown — nothing is paid here. --}}

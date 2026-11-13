@@ -65,6 +65,7 @@ class ClientRoom extends Model
             $room->changes()->get()->each->delete();
             $room->choices()->get()->each->delete();
             $room->meetings()->get()->each->delete();
+            $room->documents()->get()->each->delete();
         });
     }
 
@@ -94,6 +95,12 @@ class ClientRoom extends Model
     }
 
     /** Changes with a price, newest first. */
+    /** The documents shelf, the latest first. */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(RoomDocument::class)->latest('id');
+    }
+
     /** The timeline's stages, in order. */
     public function stages(): HasMany
     {
@@ -182,14 +189,15 @@ class ClientRoom extends Model
         return hash_equals((string) $this->pin, (string) preg_replace('/\D/', '', $pin));
     }
 
-    /** What the client did that the studio has not read yet: comments, drawing decisions, changes asked for or decided, finishes chosen, answers to meeting notes. */
+    /** What the client did that the studio has not read yet: comments, drawing decisions, changes asked for or decided, finishes chosen, answers to meeting notes, documents added or read. */
     public function unseenCount(): int
     {
         return $this->comments()->where('from_studio', false)->whereNull('seen_at')->count()
             + $this->drawings()->where('status', '!=', RoomDrawing::PENDING)->whereNull('seen_at')->count()
             + $this->changes()->whereNull('seen_at')->count()
             + $this->choices()->whereNull('seen_at')->count()
-            + $this->meetings()->whereNull('seen_at')->count();
+            + $this->meetings()->whereNull('seen_at')->count()
+            + $this->documents()->whereNull('seen_at')->count();
     }
 
     /** Mark everything the client has done here as read by the studio. */
@@ -200,6 +208,7 @@ class ClientRoom extends Model
         $this->changes()->whereNull('seen_at')->update(['seen_at' => now()]);
         $this->choices()->whereNull('seen_at')->update(['seen_at' => now()]);
         $this->meetings()->whereNull('seen_at')->update(['seen_at' => now()]);
+        $this->documents()->whereNull('seen_at')->update(['seen_at' => now()]);
     }
 
     /** Rooms with something the studio has not read yet. */
@@ -210,7 +219,8 @@ class ClientRoom extends Model
             ->orWhereHas('drawings', fn ($d) => $d->where('status', '!=', RoomDrawing::PENDING)->whereNull('seen_at'))
             ->orWhereHas('changes', fn ($c) => $c->whereNull('seen_at'))
             ->orWhereHas('choices', fn ($c) => $c->whereNull('seen_at'))
-            ->orWhereHas('meetings', fn ($m) => $m->whereNull('seen_at')));
+            ->orWhereHas('meetings', fn ($m) => $m->whereNull('seen_at'))
+            ->orWhereHas('documents', fn ($d) => $d->whereNull('seen_at')));
     }
 
     /** "$12,500" or "12,500,000 IQD" (دینار in Kurdish). */

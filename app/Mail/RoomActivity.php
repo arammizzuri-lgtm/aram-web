@@ -7,6 +7,7 @@ use App\Models\ClientRoom;
 use App\Models\RoomChange;
 use App\Models\RoomChoice;
 use App\Models\RoomComment;
+use App\Models\RoomDocument;
 use App\Models\RoomDrawing;
 use App\Models\RoomMeeting;
 use Illuminate\Mail\Mailable;
@@ -17,7 +18,8 @@ use Illuminate\Mail\Mailables\Envelope;
  * Tells the studio what a client just did in their room: approved a drawing,
  * sent one back with what to change, pinned a comment on one, commented on a
  * progress update, asked for, accepted or declined a change with a price, or
- * chose a finish, or answered a meeting's notes —
+ * chose a finish, answered a meeting's notes, added a document or read one
+ * (and a document of theirs is expiring) —
  * with their words, a WhatsApp button to answer, and the room in the admin.
  */
 class RoomActivity extends Mailable
@@ -74,6 +76,24 @@ class RoomActivity extends Mailable
         return $meeting->status === RoomMeeting::AGREED
             ? new self($room, $room->client_name.' agreed to '.$about, $meeting->client_note, 'good')
             : new self($room, $room->client_name.' says something is not right in '.$about, $meeting->client_note, 'warn');
+    }
+
+    public static function uploaded(ClientRoom $room, RoomDocument $doc): self
+    {
+        return new self($room, $room->client_name.' added a document: “'.$doc->title.'”', 'It is on their shelf, under Other — move it to its group in the room if you like.');
+    }
+
+    public static function read(ClientRoom $room, RoomDocument $doc): self
+    {
+        return new self($room, $room->client_name.' has read “'.$doc->title.'”', null, 'good');
+    }
+
+    public static function expiring(ClientRoom $room, RoomDocument $doc): self
+    {
+        $when = $doc->isExpired() ? 'expired on ' : 'expires on ';
+
+        return new self($room, '“'.$doc->title.'” in '.$room->client_name.'’s room '.$when.$doc->expires_on->format('j M Y'),
+            'Renew it, then give it its new expiry date in the room.', 'warn');
     }
 
     public function envelope(): Envelope

@@ -6,6 +6,7 @@ use App\Filament\Resources\ClientRooms\ClientRoomResource;
 use App\Filament\Resources\ClientRooms\RelationManagers\ChangesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ChoicesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\DocumentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\MeetingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
@@ -20,12 +21,15 @@ use App\Models\ProjectUpdate;
 use App\Models\RoomChange;
 use App\Models\RoomChoice;
 use App\Models\RoomComment;
+use App\Models\RoomDocument;
 use App\Models\RoomDrawing;
 use App\Models\RoomMeeting;
 use App\Models\RoomStage;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Support\DocumentReminders;
 use App\Support\StudioMail;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -499,6 +503,84 @@ class ClientRoomsTest extends TestCase
             ->assertSee('Planned: 1 October 2026 – 31 October 2026')->assertSee('Finished 5 November 2026')
             ->assertSee('Landscaping');
         $this->assertSame(1, substr_count($page->getContent(), 'rm-badge--late'));  // Concept finished after its planned end
+    }
+
+    public function test_the_documents_shelf_read_confirmations_client_uploads_and_expiry_reminders(): void
+    {
+        $this->travelTo('2026-11-20 10:00');
+        $room = $this->room();
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $manager = fn () => Livewire::test(DocumentsRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class]);
+
+        // the studio adds them in the admin
+        $this->actingAs($admin);
+        $manager()->callTableAction('create', null, ['group' => 'contract', 'title' => 'Design contract', 'needs_reading' => true,
+            'file_path' => UploadedFile::fake()->create('contract.pdf', 50, 'application/pdf')])->assertHasNoTableActionErrors();
+        $contract = RoomDocument::sole();
+        $this->assertSame(['contract.pdf', 'contract'], [$contract->file_name, $contract->group]);
+        Storage::disk('local')->assertExists($contract->file_path);
+        $permit = $room->documents()->create(['group' => 'permits', 'title' => 'Building permit', 'file_path' => 'rooms/documents/permit.pdf', 'expires_on' => '2026-12-10', 'seen_at' => now()]);
+        $room->documents()->create(['group' => 'permits', 'title' => 'Old permit', 'file_path' => 'rooms/documents/old.pdf', 'expires_on' => '2027-06-01', 'seen_at' => now()]);
+        Storage::disk('local')->put('rooms/documents/permit.pdf', "%PDF-1.4\n%%EOF");
+        $this->get('/room/'.$room->token.'/documents/'.$permit->id)->assertOk();   // the studio's preview
+        $this->assertNull($permit->fresh()->first_opened_at);
+        auth()->logout();
+        $this->assertSame(0, $room->unseenCount());
+
+        // the client: the shelf in its groups, the contract to confirm, the permit's expiry
+        $this->enter($room);
+        $this->get('/room/'.$room->token)->assertOk()
+            ->assertSeeInOrder(['id="documents"', 'Contract', 'Design contract', 'Please read it and confirm', 'Permits', 'Building permit', 'Expires 10 December 2026'], false)
+            ->assertSee('action="'.url('/room/'.$room->token.'/documents/'.$contract->id.'/read').'"', false);
+        $this->get('/room/'.$room->token.'/documents/'.$contract->id)->assertOk()->assertHeader('Content-Disposition', 'inline; filename=contract.pdf');
+        $this->assertNotNull($contract->fresh()->first_opened_at);
+
+        // "I have read it": once, dated, and the studio is told
+        $this->post('/room/'.$room->token.'/documents/'.$contract->id.'/read')
+            ->assertRedirect('/room/'.$room->token.'#document-'.$contract->id)->assertSessionHas('room_flash', 'room_decided');
+        $this->post('/room/'.$room->token.'/documents/'.$contract->id.'/read');
+        $this->post('/room/'.$room->token.'/documents/'.$permit->id.'/read');      // not asked: nothing
+        $this->assertNotNull($contract->fresh()->read_at);
+        $this->assertNull($permit->fresh()->read_at);
+        $this->assertCount(1, Mail::sent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan has read “Design contract”'));
+        $this->get('/room/'.$room->token)->assertSee('Read on 20 November 2026');
+
+        // the client adds one: only a PDF or a photo
+        $this->post('/room/'.$room->token.'/documents', ['doc_title' => 'Notes', 'file' => UploadedFile::fake()->create('notes.exe', 10, 'application/x-msdownload')])
+            ->assertSessionHasErrors('file');
+        $this->post('/room/'.$room->token.'/documents', ['doc_title' => 'Title deed', 'file' => UploadedFile::fake()->create('tapu.pdf', 300, 'application/pdf')])
+            ->assertSessionHas('room_flash', 'room_doc_sent');
+        $deed = RoomDocument::where('title', 'Title deed')->sole();
+        $this->assertSame([true, 'other', 'tapu.pdf'], [$deed->from_client, $deed->group, $deed->file_name]);
+        Storage::disk('local')->assertExists($deed->file_path);
+        Mail::assertSent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan added a document: “Title deed”');
+        $this->assertSame(2, $room->unseenCount());
+        $this->get('/room/'.$room->token)->assertSeeInOrder(['Other', 'Title deed', 'From you']);
+
+        // 30 days before it expires the studio is e-mailed, once; a new date is reminded of again
+        $this->assertTrue(DocumentReminders::isDue());
+        $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'])
+            ->get('/')->assertOk();                                              // the first visit of the day checks
+        $this->assertFalse(DocumentReminders::isDue());
+        $this->assertNotNull($permit->fresh()->reminded_at);
+        DocumentReminders::sendIfDue();                                          // again the same day: nothing
+        $this->assertCount(1, Mail::sent(RoomActivity::class, fn (RoomActivity $m) => str_starts_with($m->headline, '“Building permit” in Shilan’s room expires on 10 Dec 2026')));
+        $this->assertCount(0, Mail::sent(RoomActivity::class, fn (RoomActivity $m) => str_contains($m->headline, 'Old permit')));
+        $permit->refresh()->update(['expires_on' => '2026-12-15']);
+        $this->assertNull($permit->reminded_at);
+
+        // the studio's side: who opened, read and added what
+        $this->actingAs($admin);
+        $manager()->assertSee('Read 20 Nov 2026')->assertSee('Added 20 Nov 2026')->assertSee('Not opened yet')
+            ->callTableAction('edit', $deed, ['group' => 'permits'])->assertHasNoTableActionErrors();
+        $this->assertSame('permits', $deed->fresh()->group);
+        $this->get(route('filament.studio-aks-panel.room-document', $deed))->assertOk();
+        $this->assertSame('1', DocumentsRelationManager::getBadge($room, EditClientRoom::class));   // the permit expiring within 30 days
+
+        // deleting the room takes the files with it
+        $room->fresh()->delete();
+        Storage::disk('local')->assertMissing($deed->file_path);
+        Storage::disk('local')->assertMissing($contract->file_path);
     }
 
     public function test_without_the_pin_nothing_can_be_done_or_downloaded(): void

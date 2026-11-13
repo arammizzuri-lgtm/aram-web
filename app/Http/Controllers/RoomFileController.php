@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\RoomChange;
+use App\Models\RoomDocument;
 use App\Models\RoomDrawing;
 use App\Models\RoomMeeting;
 use App\Models\RoomPayment;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * A client room's drawings, receipts, change pictures and meeting files, for the studio: registered inside
+ * A client room's drawings, receipts, change pictures, meeting files and documents, for the studio: registered inside
  * the panel's authenticated routes (AdminPanelProvider). The client reaches
  * the same files through their room (RoomController).
  */
@@ -41,6 +42,16 @@ class RoomFileController extends Controller
         abort_unless($meeting->fileExists(), 404);
 
         return Storage::disk(RoomMeeting::DISK)->response($meeting->file_path, $meeting->file_name ?: 'meeting', [
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    public function document(RoomDocument $document): Response
+    {
+        abort_unless($document->fileExists(), 404);
+
+        return Storage::disk(RoomDocument::DISK)->response($document->file_path, $document->file_name ?: 'document', [
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);
