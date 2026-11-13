@@ -23,6 +23,11 @@
     $toChoose = $choices->filter->isPending()->count();
     $picked = $choices->reject->isPending();
     $meetings = $room->meetings;
+    $timeline = $room->timeline();
+    $now = $timeline->first(fn ($s) => ! $s->isDone()) ?? $timeline->last();
+    $span = fn (?\DateTimeInterface $a, ?\DateTimeInterface $b) => collect([$a, $b])->filter()->map(fn ($d) => site_date($d, $lang))->join(' – ');
+    // "+7" isolated left to right, or Kurdish shows "7+"
+    $plusDays = fn (string $key, int $n) => str_replace('{days}', '<bdi dir="ltr">+'.$n.'</bdi>', e(bival($key)));
     $toConfirm = $meetings->filter->isPending()->count();
     $totals = $room->paymentTotals();
     $flash = session('room_flash');
@@ -61,7 +66,17 @@
             </div>
         </section>
 
+        @if ($now)
+            <a class="rm-now" href="#timeline">
+                <span class="rm-now__text">{{ $fill('room_now', ['{stage}' => $now->name]) }} — <bdi dir="ltr">{{ $now->percent }}%</bdi></span>
+                <span class="rm-bar" aria-hidden="true"><i style="width: {{ $now->percent }}%"></i></span>
+            </a>
+        @endif
+
         <nav class="rm-tabs" aria-label="{{ $name }}">
+            @if ($timeline->isNotEmpty())
+                <a class="rm-tab" href="#timeline">{{ bival('room_nav_timeline') }}</a>
+            @endif
             <a class="rm-tab" href="#progress">{{ bival('room_nav_progress') }} <span class="rm-tab__n">{{ $updates->count() }}</span></a>
             <a class="rm-tab" href="#drawings">{{ bival('room_nav_drawings') }}
                 @if ($waiting)<span class="rm-tab__n rm-tab__n--ask">{{ $waiting }}</span>@else<span class="rm-tab__n">{{ $drawings->count() }}</span>@endif
@@ -82,6 +97,39 @@
 
         @if ($flash)
             <p class="rm-flash" role="status">{{ bival($flash) }}</p>
+        @endif
+
+        {{-- The timeline: each stage with its planned dates (pushed by accepted
+             changes), when it really started and finished, and how far along. --}}
+        @if ($timeline->isNotEmpty())
+            <section class="rm-section" id="timeline">
+                <h2 class="pp-label">{{ bival('room_nav_timeline') }}</h2>
+                <ol class="rm-stages">
+                    @foreach ($timeline as $s)
+                        <li class="rm-stage {{ $s->isDone() ? 'rm-stage--done' : ($s->is($now) ? 'rm-stage--now' : '') }}">
+                            <p class="rm-stage__head">
+                                <b dir="auto">{{ $s->name }}</b>
+                                @if ($s->isLate())<span class="rm-badge rm-badge--late">{{ bival('room_stage_late') }}</span>@endif
+                                <bdi dir="ltr" class="rm-stage__pc">{{ $s->percent }}%</bdi>
+                            </p>
+                            <span class="rm-bar" aria-hidden="true"><i style="width: {{ $s->percent }}%"></i></span>
+                            @if ($s->planned_start || $s->planned_end)
+                                <p class="rm-stage__meta">
+                                    {{ $fill('room_stage_planned', ['{dates}' => $span($s->plannedStart(), $s->plannedEnd())]) }}
+                                    @if ($s->pushEnd) · {!! $plusDays('room_stage_pushed', $s->pushEnd) !!}@endif
+                                </p>
+                            @endif
+                            @if ($s->started_on || $s->finished_on)
+                                <p class="rm-stage__meta">
+                                    @if ($s->started_on){{ $fill('room_stage_started', ['{date}' => site_date($s->started_on, $lang)]) }}@endif
+                                    @if ($s->started_on && $s->finished_on) · @endif
+                                    @if ($s->finished_on){{ $fill('room_stage_finished', ['{date}' => site_date($s->finished_on, $lang)]) }}@endif
+                                </p>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
         @endif
 
         {{-- Progress: every update of the project, the private ones marked, each
@@ -241,8 +289,7 @@
                                 @if ($c->price !== null)
                                     <p class="rm-change__price">
                                         <bdi>{{ $c->price > 0 ? $room->money($c->price, $lang) : bival('room_change_free') }}</bdi>
-                                        {{-- "+7" isolated left to right, or Kurdish shows "7+" --}}
-                                        @if ($c->extra_days)<span>{!! str_replace('{days}', '<bdi dir="ltr">+'.(int) $c->extra_days.'</bdi>', e(bival('room_change_days'))) !!}</span>@endif
+                                        @if ($c->extra_days)<span>{!! $plusDays('room_change_days', (int) $c->extra_days) !!}</span>@endif
                                     </p>
                                 @endif
                                 @if (filled($c->note))

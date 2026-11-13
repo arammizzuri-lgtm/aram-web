@@ -94,6 +94,26 @@ class ClientRoom extends Model
     }
 
     /** Changes with a price, newest first. */
+    /** The timeline's stages, in order. */
+    public function stages(): HasMany
+    {
+        return $this->hasMany(RoomStage::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /**
+     * The stages with their planned dates pushed by the changes the client
+     * accepted (RoomStage::pushBy).
+     *
+     * @return Collection<int, RoomStage>
+     */
+    public function timeline(): Collection
+    {
+        // not $this->changes: inside the model that is Eloquent's own array of changed attributes
+        $accepted = $this->getRelationValue('changes')->where('status', RoomChange::ACCEPTED)->where('extra_days', '>', 0);
+
+        return $this->stages->each->pushBy($accepted);
+    }
+
     public function changes(): HasMany
     {
         return $this->hasMany(RoomChange::class)->latest()->orderByDesc('id');

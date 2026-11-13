@@ -11,6 +11,7 @@ use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\MeetingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\StagesRelationManager;
 use App\Filament\Resources\ClientRooms\Schemas\ClientRoomForm;
 use App\Filament\Resources\ClientRooms\Tables\ClientRoomsTable;
 use App\Models\ClientRoom;
@@ -55,6 +56,7 @@ class ClientRoomResource extends Resource
     public static function getRelations(): array
     {
         return [
+            StagesRelationManager::class,
             ProgressRelationManager::class,
             DrawingsRelationManager::class,
             ChangesRelationManager::class,

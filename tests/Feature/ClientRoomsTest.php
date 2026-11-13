@@ -9,6 +9,7 @@ use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\MeetingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\StagesRelationManager;
 use App\Filament\Resources\ClientRooms\Pages\EditClientRoom;
 use App\Mail\RoomActivity;
 use Filament\Forms\Components\Repeater;
@@ -21,6 +22,7 @@ use App\Models\RoomChoice;
 use App\Models\RoomComment;
 use App\Models\RoomDrawing;
 use App\Models\RoomMeeting;
+use App\Models\RoomStage;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\StudioMail;
@@ -462,6 +464,43 @@ class ClientRoomsTest extends TestCase
         Storage::disk('local')->assertMissing('rooms/meetings/notes.jpg');
     }
 
+    public function test_the_timeline_starts_from_the_standard_stages_and_accepted_changes_push_its_dates(): void
+    {
+        $this->travelTo('2026-11-20 10:00');
+        $room = $this->room();
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $manager = fn (ClientRoom $r) => Livewire::test(StagesRelationManager::class, ['ownerRecord' => $r, 'pageClass' => EditClientRoom::class]);
+
+        // the studio starts from the standard list, in the room's language, then edits it
+        $this->actingAs($admin);
+        $manager($room)->callTableAction('standard')->assertTableActionHidden('standard');
+        $this->assertSame(RoomStage::STANDARD['en'], $room->stages()->pluck('name')->all());
+        $manager($ku = $this->room(['lang' => 'ku']))->callTableAction('standard');
+        $this->assertSame('بیرۆکەی دیزاین', $ku->stages()->value('name'));
+        [$concept, $permit] = $room->stages()->get()->all();
+        $manager($room)
+            ->callTableAction('edit', $concept, ['planned_start' => '2026-10-01', 'planned_end' => '2026-10-31', 'started_on' => '2026-10-01', 'finished_on' => '2026-11-05', 'percent' => 60])
+            ->callTableAction('edit', $permit, ['planned_start' => '2026-11-06', 'planned_end' => '2026-11-30', 'started_on' => '2026-11-06', 'percent' => 40])
+            ->callTableAction('create', null, ['name' => 'Landscaping', 'percent' => 0])
+            ->assertHasNoTableActionErrors();
+        $this->assertSame(100, $concept->fresh()->percent);                    // finished is 100%
+        $this->assertSame(['Landscaping', 6], [$room->stages()->get()->last()->name, $room->stages()->get()->last()->sort_order]);
+
+        // a change accepted on the 15th pushes what was still ahead of it; a declined one does not
+        $room->changes()->create(['title' => 'Wider window', 'price' => 500, 'extra_days' => 7, 'status' => RoomChange::ACCEPTED, 'decided_at' => '2026-11-15 09:00']);
+        $room->changes()->create(['title' => 'Marble', 'price' => 900, 'extra_days' => 30, 'status' => RoomChange::DECLINED, 'decided_at' => '2026-11-15 09:00']);
+        $manager($room->fresh())->assertSee('+7 days from accepted changes')->assertSee('Late');
+        auth()->logout();
+
+        $this->enter($room);
+        $page = $this->get('/room/'.$room->token)->assertOk()
+            ->assertSeeInOrder(['Now: Permit — <bdi dir="ltr">40%</bdi>', 'href="#timeline"', 'id="timeline"'], false)
+            ->assertSee('Planned: 6 November 2026 – 7 December 2026')->assertSee('<bdi dir="ltr">+7</bdi> days from changes', false)
+            ->assertSee('Planned: 1 October 2026 – 31 October 2026')->assertSee('Finished 5 November 2026')
+            ->assertSee('Landscaping');
+        $this->assertSame(1, substr_count($page->getContent(), 'rm-badge--late'));  // Concept finished after its planned end
+    }
+
     public function test_without_the_pin_nothing_can_be_done_or_downloaded(): void
     {
         $room = $this->room();
@@ -511,7 +550,8 @@ class ClientRoomsTest extends TestCase
             ->assertDontSee('<textarea name="body"', false)->assertDontSee('name="decision"', false)
             ->assertDontSee('name="details"', false)
             ->assertSee('Calacatta marble')->assertDontSee('name="option"', false)
-            ->assertSee('Grey tiles in the bathrooms')->assertDontSee('name="answer"', false);
+            ->assertSee('Grey tiles in the bathrooms')->assertDontSee('name="answer"', false)
+            ->assertDontSee('id="timeline"', false)->assertDontSee('class="rm-now"', false);   // no stages, no timeline
         $this->get('/room/'.$room->token.'/drawings/'.$plan->id)->assertOk();
         $this->post('/room/'.$room->token.'/drawings/'.$plan->id, ['decision' => 'approved'])->assertForbidden();
         $this->assertNull($room->fresh()->last_seen_at);

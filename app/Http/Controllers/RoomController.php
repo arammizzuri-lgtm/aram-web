@@ -56,7 +56,7 @@ class RoomController extends Controller
             ClientRoom::query()->whereKey($room->id)->toBase()->update(['last_seen_at' => now()]);
         }
 
-        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner', 'meetings']);
+        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner', 'meetings', 'stages']);
 
         return response()->view('room', [
             'room' => $room,
