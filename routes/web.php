@@ -105,6 +105,9 @@ $rooms = function (string $lang) {
             Route::post('/changes/{change}', [RoomController::class, 'decideChange'])->whereNumber('change')
                 ->middleware('throttle:30,1')->name('room.change.decide');
             Route::get('/changes/{change}', [RoomController::class, 'changeFile'])->whereNumber('change')->name('room.change.file');
+            Route::post('/choices/{choice}', [RoomController::class, 'choose'])->whereNumber('choice')
+                ->middleware('throttle:30,1')->name('room.choose');
+            Route::get('/choices/options/{option}', [RoomController::class, 'optionImage'])->whereNumber('option')->name('room.option');
         });
 };
 

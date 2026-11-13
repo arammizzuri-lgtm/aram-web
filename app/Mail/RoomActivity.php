@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Filament\Resources\ClientRooms\ClientRoomResource;
 use App\Models\ClientRoom;
 use App\Models\RoomChange;
+use App\Models\RoomChoice;
 use App\Models\RoomComment;
 use App\Models\RoomDrawing;
 use Illuminate\Mail\Mailable;
@@ -14,7 +15,8 @@ use Illuminate\Mail\Mailables\Envelope;
 /**
  * Tells the studio what a client just did in their room: approved a drawing,
  * sent one back with what to change, pinned a comment on one, commented on a
- * progress update, or asked for, accepted or declined a change with a price —
+ * progress update, asked for, accepted or declined a change with a price, or
+ * chose a finish —
  * with their words, a WhatsApp button to answer, and the room in the admin.
  */
 class RoomActivity extends Mailable
@@ -54,6 +56,14 @@ class RoomActivity extends Mailable
             RoomChange::DECLINED => new self($room, $room->client_name.' declined the change “'.$change->title.'”', $change->decline_note, 'warn'),
             default => new self($room, $room->client_name.' asked for a change: “'.$change->title.'” — give it a price in the room', $change->details),
         };
+    }
+
+    public static function chose(ClientRoom $room, RoomChoice $choice): self
+    {
+        $option = $choice->chosen;
+        $extra = $option && $option->extra_cost > 0 ? ' (+'.$room->money($option->extra_cost, 'en').', now a payment stage)' : '';
+
+        return new self($room, $room->client_name.' chose “'.$option?->name.'” for “'.$choice->title.'”'.$extra, $choice->client_note, 'good');
     }
 
     public function envelope(): Envelope

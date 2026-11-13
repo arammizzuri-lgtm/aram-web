@@ -4,15 +4,19 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\ClientRooms\ClientRoomResource;
 use App\Filament\Resources\ClientRooms\RelationManagers\ChangesRelationManager;
+use App\Filament\Resources\ClientRooms\RelationManagers\ChoicesRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\DrawingsRelationManager;
 use App\Filament\Resources\ClientRooms\RelationManagers\ProgressRelationManager;
 use App\Filament\Resources\ClientRooms\Pages\EditClientRoom;
 use App\Mail\RoomActivity;
+use Filament\Forms\Components\Repeater;
 use App\Models\ClientRoom;
+use App\Models\Partner;
 use App\Models\Project;
 use App\Models\ProjectUpdate;
 use App\Models\RoomChange;
+use App\Models\RoomChoice;
 use App\Models\RoomComment;
 use App\Models\RoomDrawing;
 use App\Models\SiteSetting;
@@ -312,12 +316,90 @@ class ClientRoomsTest extends TestCase
         $page = Livewire::test(EditClientRoom::class, ['record' => $room->getRouteKey()]);
         $this->assertSame(0, $room->unseenCount());
         $room->payments()->create(['label' => 'Change: something else', 'amount' => 100, 'sort_order' => 3]);
-        $page->call('save')->assertNotified('A payment stage was added meanwhile');
+        $page->call('save')->assertNotified('The payment stages changed meanwhile');
         $this->assertSame(3, $room->payments()->count());
 
         // deleting the room takes the change pictures with it
         $room->fresh()->delete();
         Storage::disk('local')->assertMissing('rooms/changes/marble.jpg');
+    }
+
+    public function test_the_client_picks_a_finish_once_and_its_extra_cost_becomes_a_payment_stage(): void
+    {
+        $room = $this->room();
+        $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
+        $partner = Partner::create(['name' => 'Erbil Stone Co.', 'category' => 'stone', 'phone' => '0750 222 3344', 'is_published' => true]);
+
+        // the studio sets it out in the admin
+        $this->actingAs($admin);
+        $undoFake = Repeater::fake();
+        Livewire::test(ChoicesRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class])
+            ->callTableAction('create', null, ['title' => 'Kitchen worktop', 'note' => 'Both come 3 cm thick.', 'options' => [
+                ['name' => 'Porcelain slab', 'extra_cost' => 0],
+                ['name' => 'Calacatta marble', 'extra_cost' => 800, 'partner_id' => $partner->id],
+            ]])->assertHasNoTableActionErrors();
+        $undoFake();
+        auth()->logout();
+        $choice = RoomChoice::where('title', 'Kitchen worktop')->sole();
+        [$porcelain, $marble] = $choice->options->all();
+        $this->assertSame(['Porcelain slab', 'Calacatta marble', $partner->id], [$porcelain->name, $marble->name, $marble->partner_id]);
+        $this->assertNotNull($choice->seen_at);
+        Storage::disk('local')->put('rooms/choices/marble.jpg', 'jpeg');
+        $marble->update(['image_path' => 'rooms/choices/marble.jpg']);
+        $other = $this->room(['client_name' => 'Someone else']);
+        $theirs = $other->choices()->create(['title' => 'Tiles'])->options()->create(['name' => 'Grey', 'image_path' => 'rooms/choices/marble.jpg']);
+        $v = $choice->load('options')->version();
+        $pick = fn (array $with) => $this->post('/room/'.$room->token.'/choices/'.$choice->id, $with + ['v' => $v]);
+        $this->enter($room);
+
+        $this->get('/room/'.$room->token)->assertOk()
+            ->assertSee('Kitchen worktop')->assertSee('Both come 3 cm thick.')->assertSee('+$800')->assertSee('Included')
+            ->assertSee('Erbil Stone Co.')->assertSee('tel:07502223344', false)->assertSee('name="option"', false);
+        $this->get('/room/'.$room->token.'/choices/options/'.$marble->id)->assertOk();
+        $this->get('/room/'.$room->token.'/choices/options/'.$theirs->id)->assertNotFound();   // another room's
+
+        // only the options and prices they were shown, and only this choice's
+        $pick(['option' => $marble->id, 'v' => 'stale'])->assertSessionHas('room_flash', 'room_choice_moved');
+        $pick(['option' => $theirs->id])->assertStatus(422);
+        $this->assertTrue($choice->fresh()->isPending());
+
+        // the pick: final, dated, with their note, and the extra cost a payment stage of its own
+        $pick(['option' => $marble->id, 'note' => 'Veins running lengthwise, please.'])
+            ->assertRedirect('/room/'.$room->token.'#choice-'.$choice->id)->assertSessionHas('room_flash', 'room_decided');
+        $pick(['option' => $porcelain->id]);                                    // a second pick changes nothing
+        $choice->refresh();
+        $this->assertSame([RoomChoice::CHOSEN, $marble->id, 'Veins running lengthwise, please.'], [$choice->status, $choice->chosen_option_id, $choice->client_note]);
+        $stage = $room->payments()->sole();
+        $this->assertSame(['Kitchen worktop: Calacatta marble', '800.00', $stage->id], [$stage->label, $stage->amount, $choice->room_payment_id]);
+        $this->assertCount(1, Mail::sent(RoomActivity::class, fn (RoomActivity $m) => $m->headline === 'Shilan chose “Calacatta marble” for “Kitchen worktop” (+$800, now a payment stage)'
+            && $m->words === 'Veins running lengthwise, please.'));
+        $this->assertSame(1, $room->unseenCount());
+        $this->get('/room/'.$room->token)->assertSee('Your choices')->assertSee('Chosen on')->assertSee('Added to your payments')
+            ->assertDontSee('name="option"', false);
+
+        // the studio reopens it: the unpaid stage goes; they pick again, an included one: no stage
+        $this->actingAs($admin);
+        Livewire::test(ChoicesRelationManager::class, ['ownerRecord' => $room, 'pageClass' => EditClientRoom::class])
+            ->assertSee('Calacatta marble')->assertSee('Veins running lengthwise')
+            ->callTableAction('reopen', $choice);
+        auth()->logout();
+        $this->assertTrue($choice->fresh()->isPending());
+        $this->assertSame(0, $room->payments()->count());
+        $pick(['option' => $porcelain->id]);
+        $this->assertSame([$porcelain->id, null], [$choice->fresh()->chosen_option_id, $choice->fresh()->room_payment_id]);
+        $this->assertSame(0, $room->payments()->count());
+
+        // a paid stage is kept when it is reopened
+        $choice->fresh()->reopen();
+        $pick(['option' => $marble->id]);
+        $room->payments()->sole()->update(['paid_on' => today()]);
+        $this->assertTrue($choice->fresh()->reopen());
+        $this->assertSame(1, $room->payments()->count());
+
+        // deleting the choice takes its pictures with it
+        $choice->fresh()->delete();
+        Storage::disk('local')->assertMissing('rooms/choices/marble.jpg');
+        $this->assertSame(0, RoomChoice::query()->whereKey($choice->id)->count());
     }
 
     public function test_without_the_pin_nothing_can_be_done_or_downloaded(): void
@@ -359,13 +441,15 @@ class ClientRoomsTest extends TestCase
         $room = $this->room();
         $plan = $this->drawing($room);
         $room->changes()->create(['title' => 'A wider kitchen window', 'price' => 500]);
+        $room->choices()->create(['title' => 'Kitchen worktop'])->options()->create(['name' => 'Calacatta marble']);
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
         $this->actingAs($admin);
 
         $this->get('/room/'.$room->token)->assertOk()
             ->assertSee('Studio preview')->assertSee('Kitchen layout agreed')->assertSee('A wider kitchen window')
             ->assertDontSee('<textarea name="body"', false)->assertDontSee('name="decision"', false)
-            ->assertDontSee('name="details"', false);
+            ->assertDontSee('name="details"', false)
+            ->assertSee('Calacatta marble')->assertDontSee('name="option"', false);
         $this->get('/room/'.$room->token.'/drawings/'.$plan->id)->assertOk();
         $this->post('/room/'.$room->token.'/drawings/'.$plan->id, ['decision' => 'approved'])->assertForbidden();
         $this->assertNull($room->fresh()->last_seen_at);

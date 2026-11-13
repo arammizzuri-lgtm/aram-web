@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Mail\RoomActivity;
 use App\Models\ClientRoom;
 use App\Models\RoomChange;
+use App\Models\RoomChoice;
+use App\Models\RoomChoiceOption;
 use App\Models\RoomDrawing;
 use App\Support\StudioMail;
 use Illuminate\Http\JsonResponse;
@@ -53,7 +55,7 @@ class RoomController extends Controller
             ClientRoom::query()->whereKey($room->id)->toBase()->update(['last_seen_at' => now()]);
         }
 
-        $room->load(['payments', 'drawings.comments', 'comments', 'changes']);
+        $room->load(['payments', 'drawings.comments', 'comments', 'changes', 'choices.options.partner']);
 
         return response()->view('room', [
             'room' => $room,
@@ -222,6 +224,68 @@ class RoomController extends Controller
         }
 
         return $back->with('room_flash', 'room_decided');
+    }
+
+    /**
+     * The client picks one option of a finish, with a note if they like. The
+     * pick is final (the studio can reopen it), and taken only for the
+     * options and prices they were shown; an extra cost becomes a payment
+     * stage of its own.
+     */
+    public function choose(Request $request, string $token, int $choice): RedirectResponse
+    {
+        $room = $this->clientRoom($request, $token);
+        $c = $room->choices()->whereKey($choice)->with('options')->firstOrFail();
+        $data = $request->validate([
+            'option' => ['required', 'integer'],
+            'note' => ['nullable', 'string', 'max:2000'],
+            'v' => ['required', 'string'],
+        ]);
+        $back = redirect()->to($this->address($room).'#choice-'.$c->id);
+        $option = $c->options->firstWhere('id', (int) $data['option']);
+        abort_unless($option, 422);
+
+        if ($c->isPending() && $data['v'] !== $c->version()) {
+            return $back->with('room_flash', 'room_choice_moved');
+        }
+
+        $done = DB::transaction(function () use ($room, $c, $option, $data, $request) {
+            $done = RoomChoice::query()->whereKey($c->id)->where('status', RoomChoice::PENDING)->update([
+                'status' => RoomChoice::CHOSEN,
+                'chosen_option_id' => $option->id,
+                'client_note' => filled($data['note'] ?? null) ? trim($data['note']) : null,
+                'decided_at' => now(),
+                'decided_ip' => $request->ip(),
+                'seen_at' => null,
+                'updated_at' => now(),
+            ]);
+            if ($done && $option->extra_cost > 0) {
+                $payment = $room->payments()->create([
+                    'label' => mb_substr($c->title.': '.$option->name, 0, 160),
+                    'amount' => $option->extra_cost,
+                    'sort_order' => (int) $room->payments()->max('sort_order') + 1,
+                ]);
+                RoomChoice::query()->whereKey($c->id)->update(['room_payment_id' => $payment->id]);
+            }
+
+            return $done > 0;
+        });
+
+        if ($done) {
+            $this->tellStudio(RoomActivity::chose($room, $c->refresh()->load('chosen')));
+        }
+
+        return $back->with('room_flash', 'room_decided');
+    }
+
+    public function optionImage(Request $request, string $token, int $option): Response
+    {
+        $room = $this->viewableRoom($request, $token);
+        $o = RoomChoiceOption::query()->whereKey($option)
+            ->whereHas('choice', fn ($q) => $q->where('client_room_id', $room->id))->firstOrFail();
+        abort_unless($o->imageExists(), 404);
+
+        return $this->file($o->image_path, basename($o->image_path), false);
     }
 
     public function changeFile(Request $request, string $token, int $change): Response

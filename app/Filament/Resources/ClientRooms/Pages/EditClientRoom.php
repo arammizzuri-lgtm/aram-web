@@ -15,8 +15,8 @@ class EditClientRoom extends EditRecord
 {
     protected static string $resource = ClientRoomResource::class;
 
-    /** The newest payment stage when the form was filled (see beforeSave). */
-    public int $lastPaymentId = 0;
+    /** The payment stages when the form was filled (see beforeSave). */
+    public string $paymentIds = '';
 
     /**
      * Look at the room as the client will; send them the link, the PIN (in a
@@ -74,19 +74,20 @@ class EditClientRoom extends EditRecord
     protected function afterFill(): void
     {
         $this->record->markSeen();
-        $this->lastPaymentId = (int) $this->record->payments()->max('id');
+        $this->paymentIds = $this->currentPaymentIds();
     }
 
     /**
-     * A change the client accepted while this page was open added a payment
-     * stage the form does not have: saving would delete it. Reload first.
+     * The payment stages changed while this page was open — a change the
+     * client accepted, a choice they made or one reopened: saving the form
+     * would delete or bring back a stage. Reload first.
      */
     protected function beforeSave(): void
     {
-        if ((int) $this->record->payments()->max('id') > $this->lastPaymentId) {
+        if ($this->currentPaymentIds() !== $this->paymentIds) {
             Notification::make()->warning()->persistent()
-                ->title('A payment stage was added meanwhile')
-                ->body('The client accepted a change while this page was open. Reload the page, then make your edits again.')
+                ->title('The payment stages changed meanwhile')
+                ->body('A change or a finish choice added or removed a stage while this page was open. Reload the page, then make your edits again.')
                 ->send();
             $this->halt();
         }
@@ -94,6 +95,11 @@ class EditClientRoom extends EditRecord
 
     protected function afterSave(): void
     {
-        $this->lastPaymentId = (int) $this->record->payments()->max('id');
+        $this->paymentIds = $this->currentPaymentIds();
+    }
+
+    private function currentPaymentIds(): string
+    {
+        return $this->record->payments()->reorder()->orderBy('id')->pluck('id')->join(',');
     }
 }

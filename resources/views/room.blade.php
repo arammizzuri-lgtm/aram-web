@@ -19,6 +19,9 @@
     $waiting = $drawings->filter->isPending()->count();
     $changes = $room->changes;
     $openChanges = $changes->filter->isOpen()->count();
+    $choices = $room->choices;
+    $toChoose = $choices->filter->isPending()->count();
+    $picked = $choices->reject->isPending();
     $totals = $room->paymentTotals();
     $flash = session('room_flash');
     // every progress photo, for the viewer (each update's set steps on its own)
@@ -63,6 +66,9 @@
             </a>
             <a class="rm-tab" href="#changes">{{ bival('room_nav_changes') }}
                 @if ($openChanges)<span class="rm-tab__n rm-tab__n--ask">{{ $openChanges }}</span>@elseif ($changes->isNotEmpty())<span class="rm-tab__n">{{ $changes->count() }}</span>@endif
+            </a>
+            <a class="rm-tab" href="#choices">{{ bival('room_nav_choices') }}
+                @if ($toChoose)<span class="rm-tab__n rm-tab__n--ask">{{ $toChoose }}</span>@elseif ($choices->isNotEmpty())<span class="rm-tab__n">{{ $choices->count() }}</span>@endif
             </a>
             <a class="rm-tab" href="#payments">{{ bival('room_nav_payments') }}
                 @if ($payments->isNotEmpty())<span class="rm-tab__n">{{ $totals['percent'] }}%</span>@endif
@@ -299,6 +305,79 @@
                     </form>
                 </details>
             @endunless
+        </section>
+
+        {{-- Finish choices: one option to pick for each, final once picked (the
+             studio can reopen it); an extra cost becomes a payment stage. --}}
+        <section class="rm-section" id="choices">
+            <h2 class="pp-label">{{ bival('room_nav_choices') }}</h2>
+            @if ($choices->isEmpty())
+                <p class="rm-empty">{{ bival('room_no_choices') }}</p>
+            @else
+                @if ($picked->isNotEmpty())
+                    <div class="rm-picks">
+                        <h3 class="rm-picks__title">{{ bival('room_choice_summary') }}</h3>
+                        <ul>
+                            @foreach ($picked as $c)
+                                <li>
+                                    <a href="#choice-{{ $c->id }}" dir="auto">{{ $c->title }}</a>
+                                    <b dir="auto">{{ $c->chosen?->name }}</b>
+                                    <time datetime="{{ $c->decided_at?->toDateString() }}">{{ site_date($c->decided_at ?? $c->updated_at, $lang) }}</time>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                <div class="rm-drawings">
+                    @foreach ($choices as $c)
+                        <article class="rm-drawing rm-drawing--text @if ($c->isPending()) rm-drawing--pending @endif" id="choice-{{ $c->id }}">
+                            <div class="rm-drawing__body">
+                                <h3 class="rm-drawing__title" dir="auto">{{ $c->title }}</h3>
+                                @if (filled($c->note))
+                                    <p class="rm-drawing__note" dir="auto">{{ $c->note }}</p>
+                                @endif
+                                @if ($c->isPending())
+                                    <p class="rm-status rm-status--pending">{{ bival('room_waiting') }}</p>
+                                    @if ($preview)
+                                        <div class="rm-options">
+                                            @foreach ($c->options as $o)
+                                                @include('partials.room-option', ['radio' => false])
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <form method="post" action="{{ $base }}/choices/{{ $c->id }}"
+                                              onsubmit="return confirm(this.dataset.sure)" data-sure="{{ bival('room_choice_sure') }}">
+                                            @csrf
+                                            <input type="hidden" name="v" value="{{ $c->version() }}">
+                                            <div class="rm-options">
+                                                @foreach ($c->options as $o)
+                                                    @include('partials.room-option', ['radio' => true])
+                                                @endforeach
+                                            </div>
+                                            <div class="rm-choose">
+                                                <textarea name="note" rows="2" maxlength="2000" dir="auto" placeholder="{{ bival('room_choice_note_ph') }}" aria-label="{{ bival('room_choice_note_ph') }}"></textarea>
+                                                <button class="pp-btn rm-approve" type="submit">✓ {{ bival('room_choice_confirm') }}</button>
+                                            </div>
+                                        </form>
+                                    @endif
+                                @else
+                                    @if ($o = $c->chosen)
+                                        <div class="rm-options rm-options--chosen">
+                                            @include('partials.room-option', ['radio' => false])
+                                        </div>
+                                    @endif
+                                    <p class="rm-status rm-status--approved">
+                                        ✓ {{ $fill('room_choice_chosen', ['{date}' => site_date($c->decided_at ?? $c->updated_at, $lang)]) }}@if ($c->room_payment_id) · <a href="#payments">{{ bival('room_change_in_payments') }}</a>@endif
+                                    </p>
+                                    @if (filled($c->client_note))
+                                        <blockquote class="rm-drawing__said" dir="auto">{{ $c->client_note }}</blockquote>
+                                    @endif
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
         </section>
 
         {{-- Payment stages: the studio's record, shown — nothing is paid here. --}}
