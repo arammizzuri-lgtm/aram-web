@@ -9,6 +9,7 @@ use App\Models\Presentation;
 use App\Models\PresentationAsset;
 use App\Models\PresentationPreset;
 use App\Models\PresentationRevision;
+use App\Models\Project;
 use App\Models\RoomDrawing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -63,6 +64,13 @@ class PresentationController extends Controller
                 'rooms' => $presentation ? ClientRoom::with('project')->latest('id')->get()
                     ->map(fn (ClientRoom $r) => ['id' => $r->id, 'label' => $r->client_name.($r->project ? ' — '.$r->project->name : '').($r->is_open ? '' : ' (closed)')])
                     ->values() : [],
+                // the tiles a map of the site is made of (the street maps carry the studio's CARTO key), and the pins of the website's projects
+                'maps' => [
+                    'light' => carto_tiles('light_all'), 'dark' => carto_tiles('dark_all'), 'voyager' => carto_tiles('voyager'),
+                    'satellite' => 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                ],
+                'pins' => $presentation ? Project::whereNotNull('lat')->whereNotNull('lng')->orderBy('name')->get()
+                    ->map(fn (Project $p) => ['name' => $p->name, 'lat' => (float) $p->lat, 'lng' => (float) $p->lng])->values() : [],
                 'urls' => [
                     'list' => PresentationResource::getUrl(isAbsolute: false),
                     'save' => $presentation ? $url('save', ['presentation' => $presentation]) : null,

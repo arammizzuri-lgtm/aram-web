@@ -7,7 +7,7 @@ import { initText, ensureFonts } from '@pm/text';
 import { layoutPage, fontsOf } from '@pm/layout';
 import { PageView, createMedia } from '@pm/view';
 import { createUploader } from '@pm/uploads';
-import { PageTab, ProjectTab, DesignTab, AddPageDialog, LayoutDialog, ImportDialog, LibraryDialog, PreviewDialog, PresentDialog, ExportDialog, BrandPanel } from '@pm/panels';
+import { PageTab, ProjectTab, DesignTab, AddPageDialog, LayoutDialog, ImportDialog, LibraryDialog, PreviewDialog, PresentDialog, ExportDialog, BrandPanel, SiteDialog } from '@pm/panels';
 
 const boot = JSON.parse(document.getElementById('boot').textContent);
 const root = document.getElementById('app');
@@ -47,7 +47,8 @@ function lay(i, edit = true) {
     const d = S.doc;
     if (sigDoc !== d) {
         sigDoc = d;
-        sig = JSON.stringify([d.theme, d.info, d.size, d.orient, d.partner, d.watermark, d.pages.length, d.pages.map((p) => (isDivider(p) ? p.title : 0))]);
+        sig = JSON.stringify([d.theme, d.info, d.size, d.orient, d.partner, d.watermark, d.lang, d.site, d.revisions, d.pages.length,
+            d.pages.map((p) => (isDivider(p) ? p.title : p.layout === 'drawing' || p.layout === 'sheet' ? [p.title, p.drawing, p.images[0]] : 0))]);
     }
     const p = d.pages[i], id = `${p.id}|${edit}`, key = `${i}|${JSON.stringify(p)}|${sig}`;
     const hit = cache.get(id);
@@ -564,6 +565,7 @@ function Stage() {
         const f = L.frames[key];
         if (f.kind === 'image' && f.empty) app.openLibrary(key.startsWith('img:') ? { page: S.page, slot: +key.slice(4) } : { page: S.page, key });
         else if (f.kind === 'image' && f.fit === 'fill') { S.key = key; S.crop = true; draw(); }
+        else if (f.kind === 'map') app.dialog({ type: 'site' });
     };
     const wheel = (e) => {
         if (!cropItem) return;
@@ -637,6 +639,7 @@ function App() {
         ${d && d.type === 'library' && html`<${LibraryDialog} app=${app} target=${d.target} onClose=${close} />`}
         ${d && d.type === 'preview' && html`<${PreviewDialog} app=${app} onClose=${close} />`}
         ${d && d.type === 'export' && html`<${ExportDialog} key=${d.n} app=${app} onClose=${close} />`}
+        ${d && d.type === 'site' && html`<${SiteDialog} app=${app} onClose=${close} />`}
     </div>`;
 }
 

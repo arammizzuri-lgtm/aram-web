@@ -187,3 +187,73 @@ test('pictures of the pages are packed in a zip that any unzipper reads', async 
     assert.equal(v.getUint32(dir + 16, true), x.crc32(files[0].data));
     assert.equal(dir + v.getUint32(end + 12, true), end);
 });
+
+test('a map places the site, measures the ground and is made of the right tiles', async () => {
+    const g = await import('@pm/map');
+    // a point goes to the world map and back
+    const [x, y] = g.world(36.1912, 44.0094, 17);
+    const [lat, lng] = g.latLng(x, y, 17);
+    assert.ok(Math.abs(lat - 36.1912) < 1e-9 && Math.abs(lng - 44.0094) < 1e-9);
+    // the centre of a map box is the site; 100 m east is where the scale says it is
+    const box = { x: 10, y: 20, w: 300, h: 200, lat: 36.1912, lng: 44.0094, z: 17 };
+    assert.deepEqual(g.onMap(box, 36.1912, 44.0094), [160, 120]);
+    const east = 44.0094 + 100 / (111320 * Math.cos(36.1912 * Math.PI / 180));
+    assert.ok(Math.abs((g.onMap(box, 36.1912, east)[0] - 160) * g.metresPerPt(36.1912, 17) - 100) < 0.5);
+    // a round scale bar, never longer than asked
+    const bar = g.scaleBar(36.1912, 17, 120);
+    assert.match(bar.label, /^(1|2|5)0* (m|km)$/);
+    assert.ok(bar.pt <= 120 && bar.pt > 120 / 2.6);
+    // distances, areas, coordinates as they print
+    assert.ok(Math.abs(g.distance({ lat: 36.1912, lng: 44.0094 }, { lat: 36.1912, lng: east }) - 100) < 0.5);
+    assert.equal(g.fmtDistance(842), '840 m');
+    assert.equal(g.fmtDistance(4230), '4.2 km');
+    assert.equal(g.fmtDistance(23400), '23 km');
+    const m20 = 20 / 111320, m30 = 30 / (111320 * Math.cos(36.19 * Math.PI / 180));
+    assert.ok(Math.abs(g.plotArea([[36.19, 44], [36.19, 44 + m30], [36.19 + m20, 44 + m30], [36.19 + m20, 44]]) - 600) < 2);
+    assert.equal(g.plotArea([[36.19, 44], [36.2, 44]]), 0);
+    assert.equal(g.fmtCoords(36.1912, 44.0094), '36.19120° N, 44.00940° E');
+    // the look follows the template: a light street map, a dark one on a dark template
+    assert.equal(g.mapStyle(undefined, m.THEMES['minimal-white']), 'light');
+    assert.equal(g.mapStyle('template', m.THEMES['dark-portfolio']), 'dark');
+    assert.equal(g.mapStyle('satellite', m.THEMES['dark-portfolio']), 'satellite');
+    // the tiles cover the whole box, no deeper than the service goes, and their addresses fill in
+    for (const [style, z, dpp] of [['light', 17, 1], ['light', 19, 4], ['satellite', 13, 2.5]]) {
+        const tiles = g.tilesFor({ ...box, z, style }, dpp);
+        assert.ok(tiles.every((t) => t.z <= g.TILESETS[style].max));
+        assert.ok(Math.min(...tiles.map((t) => t.left)) <= 0 && Math.max(...tiles.map((t) => t.left + t.size)) >= box.w);
+        assert.ok(Math.min(...tiles.map((t) => t.top)) <= 0 && Math.max(...tiles.map((t) => t.top + t.size)) >= box.h);
+    }
+    const t = { z: 17, x: 85123, y: 51234 };
+    assert.equal(g.tileUrl('https://{s}.x/{z}/{x}/{y}{r}.png?key=k', t), 'https://b.x/17/85123/51234@2x.png?key=k');
+    assert.equal(g.tileUrl('https://e/tile/{z}/{y}/{x}', t), 'https://e/tile/17/51234/85123');
+});
+
+test('a location page shows the site on two maps with the places around it, and asks for a pin without one', async () => {
+    const { layoutPage } = await import('@pm/layout');
+    const env = { brand: {}, assets: new Map(), edit: true, logoRatio: () => 1 };
+    const site = { lat: 36.1912, lng: 44.0094, places: [{ id: 'a', name: 'Erbil Citadel', lat: 36.1912, lng: 44.0094 + 0.03 }], plot: [] };
+    const doc = m.normalize({ info: { location: 'Ankawa, Erbil' }, site, pages: [m.newPage('location'), m.newPage('cover', { opts: { variant: 'type', map: true } })] });
+    const lay = layoutPage(doc, 0, env);
+    const maps = lay.items.filter((it) => it.t === 'map');
+    assert.deepEqual(maps.map((it) => [it.key, it.z, it.style]), [['map', 17, 'light'], ['cityMap', 13, 'light']]);
+    const words = (key) => lay.items.filter((it) => it.key === key).flatMap((it) => it.lines.flatMap((l) => l.runs.map((r) => r.text))).join('').trim();
+    assert.equal(words('coords'), '36.19120° N, 44.00940° E');
+    assert.equal(words('places:t0'), 'Erbil Citadel');
+    assert.equal(words('places:d0'), '2.7 km');
+    assert.ok(lay.items.some((it) => it.t === 'north') && lay.items.some((it) => it.key === 'map:scale'));
+    assert.match(words('map:scale'), /^\d+ k?m$/);   // a unit, never uppercased by the label style
+    assert.ok(lay.items.some((it) => it.key === 'map:credit'));
+    assert.equal(lay.frames.map.kind, 'map');
+    // the cover's small map
+    assert.deepEqual(layoutPage(doc, 1, env).items.filter((it) => it.t === 'map').map((it) => it.z), [15]);
+    // not pinned: a place-holder, a warning, and nothing fetched
+    const bare = m.normalize({ pages: [m.newPage('location')] });
+    const none = layoutPage(bare, 0, env);
+    assert.equal(none.items.filter((it) => it.t === 'map').length, 0);
+    assert.deepEqual(none.warnings.map((w) => w.type), ['nopin']);
+    assert.ok(none.items.some((it) => it.t === 'ph' && it.key === 'map'));
+    // a plot outline is kept only with real corners; a presentation made from a pinned project opens with a location page
+    assert.deepEqual(m.normalize({ site: { lat: 1, lng: 2, plot: [[1, 2], ['x', 2], [1]], places: [{ id: 'b', lat: 'n', lng: 1 }] } }).site, { lat: 1, lng: 2, plot: [[1, 2]], places: [] });
+    assert.ok(m.starterPages(m.normalize({ site: { lat: 1, lng: 2 } })).some((p) => p.layout === 'location'));
+    assert.ok(!m.starterPages(m.normalize({})).some((p) => p.layout === 'location'));
+});

@@ -3,6 +3,7 @@
 import { html } from 'htm-preact';
 import { baseline, cssFamily } from '@pm/text';
 import { northShape } from '@pm/layout';
+import { tilesFor, tileUrl } from '@pm/map';
 
 /**
  * Where files are fetched from, and the logos as single-colour artwork:
@@ -78,6 +79,8 @@ export function createMedia(boot, assets, changed) {
         },
         /** The same, as PNG bytes for the PDF. */
         logoPng: async (hash, color) => new Uint8Array(await (await tint(hash, color)).arrayBuffer()),
+        /** The address of a map style's tiles ({z}/{x}/{y}); null when the map service has no key. */
+        tiles: (style) => (boot.maps || {})[style] || null,
     };
 }
 
@@ -93,7 +96,7 @@ function Text({ it }) {
     });
 }
 
-function Item({ it, media, small }) {
+function Item({ it, media, small, scale }) {
     switch (it.t) {
         case 'text': return html`<${Text} it=${it} />`;
         case 'rect': return html`<div class="pm-a" style=${{ left: px(it.x), top: px(it.y), width: px(it.w), height: px(it.h), background: it.fill, opacity: it.opacity }}></div>`;
@@ -111,6 +114,20 @@ function Item({ it, media, small }) {
         case 'logo': {
             const src = it.color ? media.logoUrl(it.hash, it.color) : media.url(it.hash, 'preview');
             return src && html`<img class="pm-a" src=${src} draggable=${false} alt="" style=${{ left: px(it.x), top: px(it.y), width: px(it.w), height: px(it.h) }} />`;
+        }
+        case 'map': {
+            const tpl = media.tiles(it.style);
+            return html`<div class="pm-a pm-img pm-map" style=${{ left: px(it.x), top: px(it.y), width: px(it.w), height: px(it.h) }}>
+                ${tpl ? tilesFor(it, scale * (window.devicePixelRatio || 1)).map((t) => html`<img src=${tileUrl(tpl, t)} draggable=${false} alt="" key=${`${t.z}/${t.x}/${t.y}`}
+                    style=${{ left: px(t.left), top: px(t.top), width: px(t.size + 0.4), height: px(t.size + 0.4) }} />`)
+        : html`<span>The map service has no key (CARTO_BASEMAPS_KEY)</span>`}
+            </div>`;
+        }
+        case 'path': {
+            const c = it.clip;
+            return html`<svg class="pm-a" viewBox=${`${c.x} ${c.y} ${c.w} ${c.h}`} style=${{ left: px(c.x), top: px(c.y), width: px(c.w), height: px(c.h), overflow: 'hidden' }}>
+                <path d=${it.d} fill=${it.fill || 'none'} fill-opacity=${it.opacity} stroke=${it.stroke} stroke-width=${it.lw} stroke-linejoin="round" />
+            </svg>`;
         }
         case 'ph': return html`<div class="pm-a pm-ph" style=${{ left: px(it.x), top: px(it.y), width: px(it.w), height: px(it.h) }}>
             <span style=${{ fontSize: px(Math.max(9, Math.min(it.w, it.h) * 0.06)) }}>${it.label}</span>
@@ -138,7 +155,7 @@ function Item({ it, media, small }) {
 export function PageView({ lay, scale, media, small }) {
     return html`<div class="pm-page" style=${{ width: px(lay.w * scale), height: px(lay.h * scale) }}>
         <div class="pm-sheet" style=${{ width: px(lay.w), height: px(lay.h), transform: `scale(${scale})`, background: lay.bg }}>
-            ${lay.items.map((it) => html`<${Item} it=${it} media=${media} small=${small} />`)}
+            ${lay.items.map((it) => html`<${Item} it=${it} media=${media} small=${small} scale=${scale} />`)}
         </div>
     </div>`;
 }

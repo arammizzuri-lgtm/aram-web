@@ -70,6 +70,9 @@ class Presentation extends Model
         }
         $cover = $hashes[$project->coverImage()] ?? null;
         $doc['seed'] = ['cover' => $cover, 'images' => array_values($hashes), 'body' => (string) $project->tr('desc', $lang)];
+        if ($project->lat !== null && $project->lng !== null) {   // pinned on the website's map: the presentation's map starts there
+            $doc['site'] = ['lat' => (float) $project->lat, 'lng' => (float) $project->lng];
+        }
 
         $this->update(['doc' => json_encode($doc, JSON_UNESCAPED_UNICODE), 'client_name' => $doc['info']['client'] ?? null]);
     }

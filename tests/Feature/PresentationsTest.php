@@ -284,7 +284,7 @@ class PresentationsTest extends TestCase
         $public->put('projects/broken.webp', 'not an image');
         $project = $this->project([
             'name_ku' => 'خانووی عەنکاوە', 'typology' => 'Villa', 'location' => 'Ankawa, Erbil', 'area' => '1,250 m²',
-            'desc' => 'The brief', 'desc_ku' => 'کورتەی پرۆژە', 'cover' => 'projects/garden.webp',
+            'desc' => 'The brief', 'desc_ku' => 'کورتەی پرۆژە', 'cover' => 'projects/garden.webp', 'lat' => 36.2101, 'lng' => 43.9876,
             'imgs' => ['projects/front.png', 'https://example.com/elsewhere.jpg', 'projects/garden.webp', 'projects/missing.jpg', 'projects/broken.webp', 'projects/front.png'],
         ]);
         ClientRoom::create(['project_id' => $project->id, 'client_name' => 'Shilan', 'lang' => 'ku']);
@@ -300,6 +300,7 @@ class PresentationsTest extends TestCase
         $this->assertSame(['project' => 'خانووی عەنکاوە', 'client' => 'Shilan', 'location' => 'Ankawa, Erbil', 'type' => 'Villa',
             'plotArea' => '1250', 'stage' => 'لەژێر بنیاتنان', 'date' => now()->toDateString()], $doc['info']);
         $this->assertSame('Shilan', $p->client_name);
+        $this->assertSame(['lat' => 36.2101, 'lng' => 43.9876], $doc['site']);   // its pin on the website's map
 
         // its own pictures only — once each; the WebP made a JPEG; nothing from elsewhere, missing or unreadable
         $assets = $p->assets()->orderBy('id')->get();
@@ -307,8 +308,10 @@ class PresentationsTest extends TestCase
         $this->assertSame(['w' => 50, 'h' => 30], $assets[1]->meta);
         $this->assertSame(['cover' => $assets[1]->hash, 'images' => $assets->pluck('hash')->all(), 'body' => 'کورتەی پرۆژە'], $doc['seed']);
         Storage::disk('local')->assertExists($assets[1]->originalPath());
-        // the editor gets them without previews, and makes those itself
-        $this->get($p->editorUrl())->assertOk()->assertSee($assets[1]->hash);
+        // the editor gets them without previews, and makes those itself — and the pinned projects, to take a pin from
+        $this->get($p->editorUrl())->assertOk()->assertSee($assets[1]->hash)
+            ->assertSee('"pins":[{"name":"Ankawa House","lat":36.2101,"lng":43.9876}]', false)
+            ->assertSee('World_Imagery', false);
     }
 
     public function test_a_revision_keeps_the_presentation_as_saved_and_the_files_it_shows(): void

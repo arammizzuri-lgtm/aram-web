@@ -8,6 +8,7 @@
 // applied here.
 import { MM, LAYOUTS, LOW_PPI, pageSize, structure, tokens, fillTokens, fontKey, sourceSize, scaleLabel, parseScale, isDivider, word, fmtDate } from '@pm/model';
 import { layoutText } from '@pm/text';
+import { Q, world, latLng, onMap, inside, scaleBar, mapStyle, TILESETS, distance, fmtDistance, fmtCoords } from '@pm/map';
 
 // Type roles — sizes in points on A4, scaled up for larger pages.
 const ROLES = {
@@ -56,7 +57,7 @@ export function layoutPage(doc, index, env) {
             size: r.size * k * (o.sz || 1) * (ov.sz || 1),
             lh: r.lh,
             ls: ov.ls ?? f.ls ?? 0,
-            up: ov.up ?? f.up ?? false,
+            up: ov.up ?? o.up ?? f.up ?? false,
             color: ov.color || o.color || (r.muted ? muted : fg),
         };
     }
@@ -196,6 +197,79 @@ export function layoutPage(doc, index, env) {
         return total;
     }
 
+    // ── Maps of the site ──
+    const site = doc.site || {}, places = site.places || [], plot = site.plot || [];
+    const pinned = Number.isFinite(site.lat) && Number.isFinite(site.lng);
+    const f2 = (n) => n.toFixed(2);
+    const poly = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${f2(x)} ${f2(y)}`).join(' ') + ' Z';
+    const circle = (x, y, r) => `M${f2(x - r)} ${f2(y)} A${f2(r)} ${f2(r)} 0 1 0 ${f2(x + r)} ${f2(y)} A${f2(r)} ${f2(r)} 0 1 0 ${f2(x - r)} ${f2(y)} Z`;
+    /**
+     * A map of the site in a box, at a zoom: the plot's outline (or, when it would be too small
+     * to read, the pin) and the places, numbered as the list beside it numbers them. A page's
+     * main map has a scale bar and a north arrow (o.bar); a map of the wider area outlines the
+     * closer map's box (o.extent); a small one has the pin only (o.small).
+     */
+    function siteMap(key, box, z, o = {}) {
+        if (ovOf(key).hide) return null;
+        const b = boxOf(key, box);
+        frames[key] = { ...b, kind: 'map' };
+        if (!pinned) {
+            if (env.edit) items.push({ t: 'ph', key, ...b, label: 'Map — pin the site under Project → Site on the map' });
+            if (!warnings.some((w) => w.type === 'nopin')) warnings.push({ type: 'nopin' });
+            return null;
+        }
+        const style = mapStyle(page.opts.mapLook, th), s = o.small ? 0.8 : 1, g = { group: `${key}:marks`, select: false };
+        const light = style === 'light' || style === 'voyager', ink = light ? '#141414' : '#ffffff', halo = light ? '#ffffff' : '#000000';
+        if (o.frame) items.push({ t: 'rect', x: b.x - 3 * k, y: b.y - 3 * k, w: b.w + 6 * k, h: b.h + 6 * k, fill: col.bg });
+        const m = { t: 'map', key, ...b, lat: site.lat, lng: site.lng, z, style };
+        items.push(m);
+        const path = (d, p) => items.push({ t: 'path', d, clip: { x: b.x, y: b.y, w: b.w, h: b.h }, ...p });
+
+        if (o.extent) {
+            const e = o.extent, [cx, cy] = world(site.lat, site.lng, e.z);
+            const corner = (dx, dy) => onMap(m, ...latLng(cx + dx * e.w / 2 / Q, cy + dy * e.h / 2 / Q, e.z));
+            const box4 = poly([corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)]);
+            path(box4, { stroke: halo, lw: 2.4 });
+            path(box4, { stroke: col.accent, lw: 1 });
+        }
+        const outline = !o.small && plot.length >= 3 ? plot.map(([la, ln]) => onMap(m, la, ln)) : null;
+        if (outline && Math.max(...outline.map((p) => p[0])) - Math.min(...outline.map((p) => p[0])) > 12) {
+            path(poly(outline), { fill: col.accent, opacity: 0.22 });
+            path(poly(outline), { stroke: halo, lw: 2.6 });
+            path(poly(outline), { stroke: col.accent, lw: 1.2 });
+        } else {
+            const r = 6 * k * s, [px, py] = onMap(m, site.lat, site.lng), cy = py - r * 2.3;
+            path(`M${f2(px)} ${f2(py)} L${f2(px - r * 0.8)} ${f2(cy + r * 0.6)} A${f2(r)} ${f2(r)} 0 1 1 ${f2(px + r * 0.8)} ${f2(cy + r * 0.6)} Z`, { fill: col.accent, stroke: halo, lw: 1 });
+            path(circle(px, cy, r * 0.38), { fill: halo });
+        }
+        if (!o.small) places.forEach((p, i) => {
+            const at = onMap(m, p.lat, p.lng), r = 5.5 * k;
+            if (!inside(m, at, r)) return;
+            path(circle(at[0], at[1], r), { fill: ink, stroke: halo, lw: 0.8 });
+            text(`${key}:p${i}`, String(i + 1), 'label', { x: at[0] - r * 2, y: at[1] - lineH('label') / 2, w: r * 4 }, { ...g, align: 'center', color: halo });
+        });
+        if (o.bar) {
+            const pad = 8 * k, sb = scaleBar(site.lat, z, Math.min(b.w * 0.3, 120 * k));
+            const gs = { ...g, up: false };   // "200 m", never "200 M"
+            const bw = Math.max(sb.pt, wOf(`${key}:scale`, sb.label, 'label', gs)) + 10 * k, bh = lineH('label') + 12 * k;
+            const x0 = b.x + pad, y0 = b.y + b.h - pad - bh, yb = y0 + bh - 5 * k;
+            items.push({ t: 'rect', x: x0, y: y0, w: bw, h: bh, fill: halo, opacity: 0.78 });
+            text(`${key}:scale`, sb.label, 'label', { x: x0 + 5 * k, y: y0 + 3 * k, w: bw }, { ...gs, color: ink });
+            rule(x0 + 5 * k, yb, sb.pt, ink, 1);
+            for (const x of [x0 + 5 * k, x0 + 5 * k + sb.pt]) items.push({ t: 'line', x1: x, y1: yb - 3 * k, x2: x, y2: yb, color: ink, lw: 0.8 });
+            const ns = 26 * k, nx = b.x + b.w - pad - ns, ny = b.y + pad;
+            path(circle(nx + ns / 2, ny + ns / 2, ns / 2), { fill: halo, opacity: 0.78 });
+            items.push({ t: 'north', x: nx, y: ny, size: ns, angle: 0, color: ink });
+        }
+        // the map's makers, as their terms ask: in a corner, short on a small map
+        const credit = TILESETS[style][o.small ? 'short' : 'credit'], cs = { ...g, sz: 0.72, color: ink };
+        const cw = wOf(`${key}:credit`, credit, 'caption', cs) + 6, ch = lineH('caption', 0.72) + 2;
+        items.push({ t: 'rect', x: b.x + b.w - cw, y: b.y + b.h - ch, w: cw, h: ch, fill: halo, opacity: 0.7 });
+        text(`${key}:credit`, credit, 'caption', { x: b.x + b.w - cw + 3, y: b.y + b.h - ch + 1, w: cw }, cs);
+        return m;
+    }
+    const smallMap = (box, o = {}) => page.opts.map && siteMap('map', box, page.opts.mapZoom ?? 15, { small: true, ...o });
+
     // ── What surrounds the content: header, footer, page number ──
     const L = LAYOUTS[page.layout];
     const chromeOn = page.opts.chrome ?? (L.chrome !== false);
@@ -264,6 +338,8 @@ export function layoutPage(doc, index, env) {
                 const issue = [T.docTitle, T.stage, T.date, has(T.revision) && `${lbl('rev')} ${T.revision}`].filter(has).join('   ·   ');
                 const taken = note();
                 text('issue', issue, 'label', { x, y: P.y + P.h - taken - lineH('label'), w: tw }, { align: 'center' });
+                const mw = P.w * (land ? 0.2 : 0.3);
+                smallMap({ x: P.x + P.w - mw, y: P.y, w: mw, h: mw * 0.7 });
                 return;
             }
 
@@ -280,13 +356,17 @@ export function layoutPage(doc, index, env) {
                 const taken = note();
                 grid('info', cellsFor(['type', 'plotArea', 'builtArea', 'stage', 'date', 'ref', 'revision', 'team', 'issuedFor']),
                     { x: P.x, y: top, w: P.w, h: P.y + P.h - taken - top }, land ? 6 : 3, { bottom: true });
+                const mw = W * (land ? 0.18 : 0.28), mh = mw * 0.72;
+                smallMap({ x: W - m.r - mw, y: ih - m.r - mh, w: mw, h: mh }, { frame: true });
                 return;
             }
 
             // typography-led: the project's name carries the page
             logos('logo', { x: P.x, y: P.y, w: P.w * 0.55, h: 24 * k }, 'left');
             const hs = text('stage', '{stage}', 'label', { x: P.x + P.w * 0.5, y: P.y, w: P.w * 0.5 }, { align: 'right', color: col.accent });
-            text('date', '{date}', 'label', { x: P.x + P.w * 0.5, y: P.y + hs, w: P.w * 0.5 }, { align: 'right' });
+            const hdt = text('date', '{date}', 'label', { x: P.x + P.w * 0.5, y: P.y + hs, w: P.w * 0.5 }, { align: 'right' });
+            const mw = P.w * (land ? 0.22 : 0.34);
+            smallMap({ x: P.x + P.w - mw, y: P.y + hs + hdt + (hs + hdt ? 16 * k : 0), w: mw, h: mw * 0.7 });
             let bottom = P.y + P.h - note();
             const gh = grid('info', cellsFor(['client', 'location', 'type', 'plotArea', 'builtArea', 'ref', 'revision', 'team', 'issuedFor']),
                 { x: P.x, y: P.y, w: P.w, h: bottom - P.y }, land ? 5 : 3, { bottom: true });
@@ -363,7 +443,13 @@ export function layoutPage(doc, index, env) {
             let area;
             if (land) {
                 const fh = grid('facts', facts, { x: C.x, y: C.y, w: tw, h: C.h }, 2, { bottom: true });
-                if (y > C.y + C.h - fh - (fh ? 10 * k : 0) + 1) warnings.push({ type: 'overflow', key: 'body' });
+                let free = C.y + C.h - fh - (fh ? 10 * k : 0);
+                if (page.opts.map) {
+                    const mh = tw * 0.62, my = free - (fh ? 8 * k : 0) - mh;
+                    smallMap({ x: C.x, y: my, w: tw, h: mh });
+                    free = my - 14 * k;
+                }
+                if (y > free + 1) warnings.push({ type: 'overflow', key: 'body' });
                 area = { x: C.x + tw + g, y: C.y, w: C.w - tw - g, h: C.h };
             } else {
                 const fh = grid('facts', facts, { x: C.x, y: y + (y > C.y ? 18 * k : 0), w: tw, h: 0 }, 3);
@@ -371,13 +457,46 @@ export function layoutPage(doc, index, env) {
                 area = { x: C.x, y: y + g, w: C.w, h: C.y + C.h - y - g };
                 if (area.h < C.h * 0.2) warnings.push({ type: 'overflow', key: 'body' });
             }
-            const n = imgs.length, gap = 8 * k;
-            imgs.forEach((s, i) => {
+            const list = page.opts.map && !land ? [...imgs, null] : imgs, n = list.length, gap = 8 * k;
+            list.forEach((s, i) => {
                 const b = land
                     ? { x: area.x, y: area.y + i * (area.h + gap) / n, w: area.w, h: (area.h - gap * (n - 1)) / n }
                     : { x: area.x + i * (area.w + gap) / n, y: area.y, w: (area.w - gap * (n - 1)) / n, h: area.h };
-                if (b.h > 10 && b.w > 10) image(`img:${i}`, s, b, { fit: 'fill' });
+                if (b.h > 10 && b.w > 10) s ? image(`img:${i}`, s, b, { fit: 'fill' }) : smallMap(b);
             });
+        },
+
+        location() {
+            const two = page.opts.zooms !== 1, z = page.opts.mapZoom ?? 17;
+            const tw = land ? C.w * 0.3 : C.w, after = (h, by) => (h ? h + by : 0);
+            let y = C.y;
+            y += after(text('title', page.title || lbl('location'), 'h1', { x: C.x, y, w: tw }, { fit: 3, sz: 0.8 }), 16 * k);
+            y += after(text('address', '{location}', 'lead', { x: C.x, y, w: tw }), 4 * k);
+            if (pinned) y += after(text('coords', fmtCoords(site.lat, site.lng), 'label', { x: C.x, y, w: tw }), 14 * k);
+            y += after(text('body', page.body, 'body', { x: C.x, y, w: tw }), 14 * k);
+            if (pinned && places.length && !ovOf('places').hide) {   // numbered as on the map, each with its distance from the site
+                const g = { group: 'places', select: false }, top = y, nw = 18 * k, dw = 52 * k, off = (lineH('body') - lineH('label')) / 2;
+                places.forEach((p, i) => {
+                    const h = Math.max(lineH('body'), hOf(`places:t${i}`, p.name || '—', 'body', tw - nw - dw, { ...g, fit: 2 }));
+                    text(`places:n${i}`, String(i + 1), 'label', { x: C.x, y: y + off, w: nw }, { ...g, color: col.accent });
+                    text(`places:t${i}`, p.name || '—', 'body', { x: C.x + nw, y, w: tw - nw - dw }, { ...g, fit: 2 });
+                    text(`places:d${i}`, fmtDistance(distance(site, p)), 'body', { x: C.x + tw - dw, y, w: dw }, { ...g, align: 'right', color: muted });
+                    y += h + 6 * k;
+                });
+                frames.places = { x: C.x, y: top, w: tw, h: y - top, kind: 'group' };
+            }
+            // the close-up is the page's map; the city around it beside it (in the text column) or under it
+            if (land) {
+                const street = siteMap('map', { x: C.x + tw + 24 * k, y: C.y, w: C.w - tw - 24 * k, h: C.h }, z, { bar: true });
+                const ch = two ? tw * 0.8 : 0;
+                if (two) siteMap('cityMap', { x: C.x, y: C.y + C.h - ch, w: tw, h: ch }, page.opts.cityZoom ?? 13, { extent: street });
+                if (y > C.y + C.h - ch - (ch ? 14 * k : 0) + 1) warnings.push({ type: 'overflow', key: 'body' });
+            } else {
+                const top = y + (y > C.y ? 10 * k : 0), ah = C.y + C.h - top, sh = two ? ah * 0.62 : ah;
+                if (ah < C.h * 0.3) warnings.push({ type: 'overflow', key: 'body' });
+                const street = siteMap('map', { x: C.x, y: top, w: C.w, h: sh }, z, { bar: true });
+                if (two) siteMap('cityMap', { x: C.x, y: top + sh + 10 * k, w: C.w, h: ah - sh - 10 * k }, page.opts.cityZoom ?? 13, { extent: street });
+            }
         },
 
         'image-full'() { image('img:0', imgs[0], { x: 0, y: 0, w: W, h: H }, { fit: 'fill' }); },

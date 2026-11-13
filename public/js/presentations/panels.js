@@ -8,6 +8,7 @@ import { ROLE_NAMES, layoutPage } from '@pm/layout';
 import { PageView } from '@pm/view';
 import { guessSection, titleFromName } from '@pm/uploads';
 import { exportPdf, exportImages, download, downloadBlob, JPG_SIZES } from '@pm/export';
+import { Q, MAP_LOOKS, TILESETS, mapStyle, world, latLng, onMap, tilesFor, tileUrl, plotArea, distance, fmtDistance, fmtCoords } from '@pm/map';
 
 // ── Small form pieces ──
 const Field = ({ label, hint, children, row }) => html`<label class=${`pm-f${row ? ' pm-f--row' : ''}`}>
@@ -83,7 +84,8 @@ const SAMPLE = { cover: newPage('cover'), divider: newPage('divider') };
 
 const KEY_NAMES = { title: 'Title', subtitle: 'Subtitle', caption: 'Caption', body: 'Text', notes: 'Notes', project: 'Project name', docTitle: 'Document title',
     stage: 'Stage', date: 'Date', info: 'Project facts', facts: 'Key facts', logo: 'Logo', where: 'Client & location', issue: 'Issue line',
-    confidential: 'Confidentiality note', contact: 'Contact details', number: 'Section number', toc: 'Contents list', meta: 'Drawing details', north: 'North arrow', list: 'The list' };
+    confidential: 'Confidentiality note', contact: 'Contact details', number: 'Section number', toc: 'Contents list', meta: 'Drawing details', north: 'North arrow', list: 'The list',
+    map: 'Map', cityMap: 'City map', address: 'Address', coords: 'Coordinates', places: 'Places around the site' };
 export function keyName(key, page) {
     if (key.startsWith('img:')) return `Image ${+key.slice(4) + 1}`;
     if (key.startsWith('cap:')) return `Caption ${+key.slice(4) + 1}`;
@@ -209,6 +211,13 @@ export function PageTab({ app }) {
                 <${Toggle} label="Section number" value=${page.opts.number !== false} on=${(v) => opt('number', v ? undefined : false)} />`}
             ${page.layout === 'image-caption' && html`<${Field} label="Words"><${Seg} value=${page.opts.textPos || 'below'} on=${(v) => opt('textPos', v)} options=${[['below', 'Below'], ['side', 'Beside']]} /><//>`}
             ${page.layout === 'overview' && html`<${Toggle} label="Key facts from the project's information" value=${page.opts.facts !== false} on=${(v) => opt('facts', v ? undefined : false)} />`}
+            ${page.layout === 'location' && html`
+                <${Toggle} label="Two maps: the city, and a close-up" value=${page.opts.zooms !== 1} on=${(v) => opt('zooms', v ? undefined : 1)} />
+                <${MapOpts} app=${app} page=${page} opt=${opt} set=${set} zoom=${[14, 19, 17]} />
+                ${page.opts.zooms !== 1 && html`<${Field} label="City map" row><${Range} min=${9} max=${15} step=${0.5} value=${page.opts.cityZoom ?? 13} on=${(v) => set((p) => { p.opts.cityZoom = v; }, 'czoom')} show=${zoomName} /><//>`}`}
+            ${(page.layout === 'cover' || page.layout === 'overview') && html`
+                <${Toggle} label="A small map of the site" value=${page.opts.map} on=${(v) => opt('map', v || undefined)} />
+                ${page.opts.map && html`<${MapOpts} app=${app} page=${page} opt=${opt} set=${set} zoom=${[11, 18, 15]} />`}`}
             ${page.layout === 'drawing' && html`
                 <div class="pm-2"><${Field} label="Drawing no."><${Text} value=${d.number} on=${(v) => setD('number', v, 'dn')} /><//>
                 <${Field} label="Area"><${Text} value=${d.area} placeholder="e.g. 245 m²" on=${(v) => setD('area', v, 'da')} /><//></div>
@@ -258,7 +267,18 @@ export function PageTab({ app }) {
         ${lay.warnings.length > 0 && html`<div class="pm-warns">${lay.warnings.map((w) => html`<p>${warningText(w)}</p>`)}</div>`}
     `;
 }
+const zoomName = (z) => `${z >= 17 ? 'Street' : z >= 15 ? 'Neighbourhood' : z >= 12 ? 'City' : 'Region'} · ${z}`;
+/** How a page's map looks and how close it is. */
+function MapOpts({ app, page, opt, set, zoom: [lo, hi, def] }) {
+    const pinned = Number.isFinite(app.S.doc.site.lat);
+    return html`
+        <${Field} label="Map"><${Seg} value=${page.opts.mapLook || 'template'} on=${(v) => opt('mapLook', v === 'template' ? undefined : v)} options=${MAP_LOOKS} /><//>
+        <${Field} label=${page.layout === 'location' ? 'Close-up' : 'Zoom'} row><${Range} min=${lo} max=${hi} step=${0.5} value=${page.opts.mapZoom ?? def} on=${(v) => set((p) => { p.opts.mapZoom = v; }, 'mzoom')} show=${zoomName} /><//>
+        <${Btn} kind="is-sm" on=${() => app.dialog({ type: 'site' })}>${pinned ? 'The site on the map…' : 'Pin the site on the map…'}<//>
+        ${page.opts.mapLook === 'satellite' && html`<p class="pm-note">Satellite pictures are Esri’s, free for non-commercial use. For client work Esri asks for an ArcGIS account (a free one will do).</p>`}`;
+}
 export function warningText(w) {
+    if (w.type === 'nopin') return 'The map needs the site: pin it under Project → Site on the map.';
     if (w.type === 'empty') return 'An image place on this page is empty.';
     if (w.type === 'lowres') return `“${w.name}” prints at ${w.ppi} PPI here — below ${LOW_PPI} it looks soft on paper. Use a larger original or give it less space.`;
     if (w.type === 'overflow') return 'There is more text than fits — shorten it or give it more room.';
@@ -281,6 +301,7 @@ export function ProjectTab({ app }) {
     })}
             <${Toggle} label="Website, e-mail and phone on the cover" value=${i.showContact} on=${(v) => set('showContact', v)} />
         <//>
+        <${SiteGroup} app=${app} />
         <${Group} title="Language of the pages">
             <${Select} value=${S.doc.lang} on=${(v) => app.commit((d) => { d.lang = v; })} options=${LANGS} />
             <p class="pm-note">The words the pages print themselves — “Client”, “Scale”, “Contents”, the dates — in this language. What you write is printed as you write it, so write the project’s details in it too. The layouts stay as they are, left to right.</p>
@@ -294,6 +315,149 @@ export function ProjectTab({ app }) {
             <${Toggle} label="Watermark across every page" value=${S.doc.watermark.on} on=${(v) => app.commit((d) => { d.watermark.on = v; })} />
             ${S.doc.watermark.on && html`<${Field} label="Words"><${Text} value=${S.doc.watermark.text} on=${(v) => app.commit((d) => { d.watermark.text = v; }, 'wm')} /><//>`}
         <//>`;
+}
+
+/** Where the site is: pinned, outlined and with the places around it, in the Site dialog. */
+function SiteGroup({ app }) {
+    const { S } = app, site = S.doc.site, pinned = Number.isFinite(site.lat), area = plotArea(site.plot);
+    return html`<${Group} title="Site on the map" open=${pinned}>
+        <p class="pm-note">${pinned
+        ? [fmtCoords(site.lat, site.lng), area && `plot outline ${Math.round(area).toLocaleString('en-US')} m²`, site.places.length && `${site.places.length} ${site.places.length > 1 ? 'places' : 'place'} around it`].filter(Boolean).join(' · ')
+        : 'Pin the site for a Location page, and for a small map on the cover or the overview.'}</p>
+        <div class="pm-row pm-row--wrap">
+            <${Btn} kind="is-sm" on=${() => app.dialog({ type: 'site' })}>${pinned ? 'Change…' : 'Pin the site…'}<//>
+            ${pinned && !S.doc.pages.some((p) => p.layout === 'location') && html`<${Btn} kind="is-sm" on=${() => app.addPage(newPage('location'))}>Add a Location page<//>`}
+        </div>
+    <//>`;
+}
+
+// ── The site on the map ──
+const ERBIL = { lat: 36.1912, lng: 44.0094 };
+const MARK = '#e8b931';
+const MODES = [['pin', 'Pin the site', 'Click the map where the site is.'],
+    ['plot', 'Draw the plot', 'Optional. Click each corner of the plot in turn; it prints as an outline on the close-up map. Leave it empty and the pin is shown.'],
+    ['place', 'Add places', 'Click a place that matters to the client — a school, a hospital, the airport — and name it. Its distance from the site is printed beside the map.']];
+export function SiteDialog({ app, onClose }) {
+    const { S } = app, site = S.doc.site, pinned = Number.isFinite(site.lat), info = S.doc.info;
+    const [view, setView] = useState(() => ({ ...(pinned ? { lat: site.lat, lng: site.lng } : ERBIL), z: pinned ? 17 : 12 }));
+    const [look, setLook] = useState('template');
+    const [mode, setMode] = useState('pin');
+    const [size, setSize] = useState(null);
+    const [q, setQ] = useState('');
+    const [msg, setMsg] = useState('');
+    const [named, setNamed] = useState(null);
+    const box = useRef(), names = useRef({});
+    useEffect(() => {
+        const ro = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height }));
+        ro.observe(box.current);
+        return () => ro.disconnect();
+    }, []);
+    useEffect(() => { if (named && names.current[named]) { names.current[named].focus(); setNamed(null); } }, [named, S.doc]);
+
+    const setSite = (fn, tag) => app.commit((d) => fn(d.site, d), tag);
+    const style = mapStyle(look, S.doc.theme), tpl = app.media.tiles(style);
+    const m = size && { x: 0, y: 0, w: size.w * Q, h: size.h * Q, ...view, style };
+    const scr = (lat, lng) => onMap(m, lat, lng).map((v) => v / Q);
+    const at = (e) => { const r = box.current.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    const where = ([x, y], v = view) => { const [cx, cy] = world(v.lat, v.lng, v.z); return latLng(cx + x - size.w / 2, cy + y - size.h / 2, v.z); };
+    const zoomTo = (z, p = [size.w / 2, size.h / 2]) => {
+        z = Math.max(3, Math.min(19, z));
+        const [lat, lng] = where(p), [wx, wy] = world(lat, lng, z), c = latLng(wx - (p[0] - size.w / 2), wy - (p[1] - size.h / 2), z);
+        setView({ lat: c[0], lng: c[1], z });
+    };
+    function click(ll) {
+        const [lat, lng] = ll.map((n) => Math.round(n * 1e6) / 1e6);
+        if (mode === 'pin') setSite((s) => { s.lat = lat; s.lng = lng; });
+        else if (mode === 'plot') setSite((s) => { s.plot.push([lat, lng]); });
+        else { const id = uid(); setSite((s) => { s.places.push({ id, name: '', lat, lng }); }); setNamed(id); }
+    }
+    // dragging moves the map; a click without a drag does what the mode says
+    function down(e) {
+        if (e.button !== 0 || !size) return;
+        const start = at(e), v0 = view, [cx, cy] = world(v0.lat, v0.lng, v0.z);
+        let moved = false;
+        const move = (ev) => {
+            const p = at(ev), dx = p[0] - start[0], dy = p[1] - start[1];
+            if (!moved && Math.hypot(dx, dy) < 4) return;
+            moved = true;
+            const [lat, lng] = latLng(cx - dx, cy - dy, v0.z);
+            setView({ ...v0, lat, lng });
+        };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            if (!moved) click(where(start, v0));
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    }
+    async function search(e) {
+        e.preventDefault();
+        const t = q.trim();
+        setMsg('');
+        if (!t) return;
+        const ll = /^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/.exec(t);   // coordinates, as Google Maps copies them
+        if (ll) return setView({ lat: +ll[1], lng: +ll[2], z: 17 });
+        try {
+            const hits = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(t)}`, { headers: { 'Accept-Language': 'en' } })).json();
+            if (hits[0]) setView({ lat: +hits[0].lat, lng: +hits[0].lon, z: 16 });
+            else setMsg('Nothing found by that name. Try the district or the city, or paste the coordinates from Google Maps.');
+        } catch { setMsg('The search could not be reached — check the connection.'); }
+    }
+    const area = plotArea(site.plot), typed = Number(String(info.plotArea || '').replace(/,/g, ''));
+    const hint = MODES.find(([v]) => v === mode)[2];
+
+    return html`<${Dialog} title="The site on the map" wide onClose=${onClose} foot=${html`<${Btn} kind="is-primary" on=${onClose}>Done<//>`}>
+        <div class="pm-site">
+            <div class="pm-site__map">
+                <form class="pm-row" onSubmit=${search}>
+                    <input class="pm-in" value=${q} onInput=${(e) => setQ(e.target.value)} placeholder="Search a place, or paste coordinates: 36.1912, 44.0094" />
+                    <${Btn} kind="is-sm" on=${search}>Find<//>
+                </form>
+                ${msg && html`<p class="pm-note is-warn">${msg}</p>`}
+                <div class=${`pm-site__box is-${mode}`} ref=${box} onPointerDown=${down} onWheel=${(e) => { e.preventDefault(); if (size) zoomTo(view.z + (e.deltaY < 0 ? 0.5 : -0.5), at(e)); }}>
+                    ${m && tpl && tilesFor(m, (window.devicePixelRatio || 1) / Q).map((t) => html`<img key=${`${t.z}/${t.x}/${t.y}`} src=${tileUrl(tpl, t)} alt="" draggable=${false}
+                        style=${{ left: `${t.left / Q}px`, top: `${t.top / Q}px`, width: `${t.size / Q + 0.5}px`, height: `${t.size / Q + 0.5}px` }} />`)}
+                    ${m && html`<svg width=${size.w} height=${size.h}>
+                        ${site.plot.length > 0 && html`<polygon points=${site.plot.map(([la, ln]) => scr(la, ln).join(',')).join(' ')} fill=${MARK} fill-opacity="0.22" stroke=${MARK} stroke-width="2" stroke-linejoin="round" />`}
+                        ${site.plot.map(([la, ln]) => { const [x, y] = scr(la, ln); return html`<circle cx=${x} cy=${y} r="4" fill="#fff" stroke=${MARK} stroke-width="2" />`; })}
+                        ${site.places.map((p, i) => { const [x, y] = scr(p.lat, p.lng); return html`<g><circle cx=${x} cy=${y} r="10" fill="#141414" stroke="#fff" stroke-width="1.5" /><text x=${x} y=${y + 4} text-anchor="middle" fill="#fff" font-size="11" font-weight="600">${i + 1}</text></g>`; })}
+                        ${pinned && (() => { const [x, y] = scr(site.lat, site.lng); return html`<path d=${`M${x} ${y} l-7 -15 a9 9 0 1 1 14 0 z`} fill=${MARK} stroke="#141414" stroke-width="1.5" /><circle cx=${x} cy=${y - 21} r="3.4" fill="#141414" />`; })()}
+                    </svg>`}
+                    <div class="pm-site__zoom"><button type="button" onPointerDown=${(e) => e.stopPropagation()} onClick=${() => zoomTo(view.z + 1)}>+</button><button type="button" onPointerDown=${(e) => e.stopPropagation()} onClick=${() => zoomTo(view.z - 1)}>−</button></div>
+                    <small class="pm-site__credit">${TILESETS[style].credit}</small>
+                </div>
+                <div class="pm-row"><${Seg} value=${look} on=${setLook} options=${MAP_LOOKS} /><small class="pm-note">Drag to move, scroll to zoom. The look here is only for finding the site; each page chooses its own.</small></div>
+            </div>
+            <div class="pm-site__side">
+                <${Seg} value=${mode} on=${setMode} options=${MODES.map(([v, l]) => [v, l])} />
+                <p class="pm-note">${hint}</p>
+                ${mode === 'pin' && html`
+                    ${pinned ? html`<p class="pm-note">${fmtCoords(site.lat, site.lng)}</p>` : html`<p class="pm-note is-warn">Not pinned yet.</p>`}
+                    ${app.boot.pins && app.boot.pins.length > 0 && html`<${Field} label="Or take a website project's pin">
+                        <${Select} value="" on=${(v) => { const p = app.boot.pins[+v]; if (p) { setSite((s) => { s.lat = p.lat; s.lng = p.lng; }); setView({ lat: p.lat, lng: p.lng, z: 17 }); } }}
+                            options=${[['', 'Choose a project…'], ...app.boot.pins.map((p, i) => [i, p.name])]} /><//>`}
+                    ${pinned && html`<${Btn} kind="is-sm" on=${() => setSite((s) => { delete s.lat; delete s.lng; })}>Remove the pin<//>`}`}
+                ${mode === 'plot' && html`
+                    ${area > 0 && html`<p class="pm-note">The outline is <strong>${Math.round(area).toLocaleString('en-US')} m²</strong>${typed > 0 && info.plotUnit === 'm²' ? ` — the plot area in the project's information is ${typed.toLocaleString('en-US')} m²` : ''}.</p>`}
+                    <div class="pm-row pm-row--wrap">
+                        ${area > 0 && html`<${Btn} kind="is-sm" on=${() => app.commit((d) => { d.info.plotArea = String(Math.round(area)); d.info.plotUnit = 'm²'; })}>Use it as the plot area<//>`}
+                        <${Btn} kind="is-sm" disabled=${!site.plot.length} on=${() => setSite((s) => { s.plot.pop(); })}>Undo last corner<//>
+                        <${Btn} kind="is-sm" disabled=${!site.plot.length} on=${() => setSite((s) => { s.plot = []; })}>Clear the outline<//>
+                    </div>`}
+                ${mode === 'place' && html`<div class="pm-places">
+                    ${site.places.map((p, i) => html`<div class="pm-place" key=${p.id}>
+                        <b>${i + 1}</b>
+                        <input class="pm-in" ref=${(el) => { names.current[p.id] = el; }} value=${p.name} placeholder="Name it, e.g. Erbil Citadel"
+                            onInput=${(e) => setSite((s) => { s.places.find((x) => x.id === p.id).name = e.target.value; }, `place:${p.id}`)} />
+                        <small>${pinned ? fmtDistance(distance(site, p)) : '—'}</small>
+                        <button type="button" class="pm-x" title="Take it off" onClick=${() => setSite((s) => { s.places = s.places.filter((x) => x.id !== p.id); })}>×</button>
+                    </div>`)}
+                    ${!site.places.length && html`<p class="pm-note">No places yet.</p>`}
+                </div>`}
+            </div>
+        </div>
+    <//>`;
 }
 
 /** Revisions issued: each a line in the revision history, and a copy of the presentation as it then was. */

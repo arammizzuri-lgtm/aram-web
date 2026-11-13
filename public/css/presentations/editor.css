@@ -223,6 +223,23 @@ progress { width: 100%; height: 6px; accent-color: var(--gold); }
 
 /* Designs drawn as they will look: adding a page, changing its layout, choosing a style */
 .pm-dlg__box--wide:has(.pm-designs) { width: min(1180px, 100%); }
+.pm-dlg__box--wide:has(.pm-site) { width: min(1180px, 100%); }
+.pm-site { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
+.pm-site__map { display: grid; gap: 8px; min-width: 0; }
+.pm-site__map form .pm-in { flex: 1; }
+.pm-site__box { position: relative; height: min(58vh, 560px); overflow: hidden; border-radius: 10px; background: #d9d9d9; cursor: crosshair; touch-action: none; user-select: none; }
+.pm-site__box img { position: absolute; max-width: none; pointer-events: none; }
+.pm-site__box svg { position: absolute; inset: 0; pointer-events: none; }
+.pm-site__zoom { position: absolute; top: 10px; right: 10px; display: grid; gap: 4px; }
+.pm-site__zoom button { width: 30px; height: 30px; border: 0; border-radius: 6px; background: rgba(20, 20, 20, .8); color: #fff; font-size: 18px; cursor: pointer; }
+.pm-site__credit { position: absolute; right: 0; bottom: 0; padding: 1px 6px; background: rgba(255, 255, 255, .75); color: #333; font-size: 10px; }
+.pm-site__side { display: grid; gap: 10px; align-content: start; }
+.pm-places { display: grid; gap: 6px; }
+.pm-place { display: grid; grid-template-columns: 18px 1fr auto auto; gap: 6px; align-items: center; }
+.pm-place b { color: var(--gold); font-size: 12px; text-align: center; }
+.pm-place small { color: var(--quiet); font-size: 11px; white-space: nowrap; }
+.pm-map span { position: absolute; inset: 0; display: grid; place-items: center; font: 12px Inter, system-ui, sans-serif; color: #777; }
+@media (max-width: 860px) { .pm-site { grid-template-columns: 1fr; } }
 .pm-designs { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 10px; }
 .pm-design { position: relative; display: grid; gap: 3px; align-content: start; text-align: left; padding: 8px 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); cursor: pointer; color: var(--text); }
 .pm-design:hover { border-color: var(--gold); }

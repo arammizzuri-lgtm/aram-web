@@ -7,6 +7,7 @@
 import { PRESETS } from '@pm/model';
 import { layoutPage, northShape } from '@pm/layout';
 import { baseline, fontUrl } from '@pm/text';
+import { stitch } from '@pm/map';
 
 const hex = (c) => { const n = parseInt(c.slice(1, 7), 16); return [(n >> 16) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; };
 
@@ -24,6 +25,7 @@ export async function exportPdf({ doc, indices, env, media, preset, title, onPro
     // What each image is asked for, at its largest use: pixels across, for the preset's resolution.
     const need = new Map(), drawings = new Set(), sources = new Set();
     for (const lay of lays) for (const it of lay.items) {
+        if (it.t === 'map') sources.add(it);   // each map is fetched and drawn once, a step of its own
         if (it.t !== 'image') continue;
         sources.add(it.kind === 'pdf' ? `${it.hash}|pdf` : it.hash);
         if (it.kind !== 'image') continue;
@@ -124,6 +126,17 @@ export async function exportPdf({ doc, indices, env, media, preset, title, onPro
         return logos.get(id);
     }
 
+    /** A map's tiles drawn into one picture at the preset's resolution (Print: 250 PPI — tiles hold no more). */
+    async function map(it) {
+        const tpl = media.tiles(it.style);
+        if (!tpl) throw new Error('The map cannot be drawn: the map service has no key (CARTO_BASEMAPS_KEY).');
+        const dpp = Math.min((P.ppi || 250) / 72, 8000 / Math.max(it.w, it.h));
+        const canvas = await stitch(it, dpp, tpl);
+        const jpg = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', P.q || 0.9));
+        step('Map');
+        return pdf.embedJpg(new Uint8Array(await jpg.arrayBuffer()));
+    }
+
     /** An image (a unit square) or a sheet (w0 × h0) into its place, turned as it must be, cropped to its frame. */
     function place(page, name, it, turn, w0 = 1, h0 = 1) {
         const H = page.getHeight(), x = it.dx, y = H - it.dy - it.dh, w = it.dw, h = it.dh;
@@ -180,6 +193,16 @@ export async function exportPdf({ doc, indices, env, media, preset, title, onPro
             } else if (it.t === 'image') {
                 const s = await sheet(it);
                 place(page, page.node.newXObject('Sheet', s.ref), it, s.turn, s.w0, s.h0);
+            } else if (it.t === 'map') {
+                page.drawImage(await map(it), { x: it.x, y: H - it.y - it.h, width: it.w, height: it.h });
+            } else if (it.t === 'path') {
+                const c = it.clip;
+                page.pushOperators(pushGraphicsState(), rectangle(c.x, H - c.y - c.h, c.w, c.h), clip(), endPath());
+                page.drawSvgPath(it.d, {
+                    x: 0, y: H, color: it.fill ? rgb(...hex(it.fill)) : undefined, opacity: it.opacity,
+                    borderColor: it.stroke ? rgb(...hex(it.stroke)) : undefined, borderWidth: it.stroke ? it.lw : 0,
+                });
+                page.pushOperators(popGraphicsState());
             } else if (it.t === 'logo') {
                 page.drawImage(await logo(it), { x: it.x, y: H - it.y - it.h, width: it.w, height: it.h });
             } else if (it.t === 'north') {

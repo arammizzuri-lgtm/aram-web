@@ -12,7 +12,7 @@
         'fontkit' => $v('vendor/presentations/fontkit2.es.min.js'),
         'pdfjs' => $v('vendor/presentations/pdf.min.js'),
     ];
-    foreach (['model', 'text', 'layout', 'view', 'uploads', 'export', 'panels', 'editor'] as $module) {
+    foreach (['model', 'text', 'map', 'layout', 'view', 'uploads', 'export', 'panels', 'editor'] as $module) {
         $imports['@pm/'.$module] = $v("js/presentations/{$module}.js");
     }
     $boot['urls']['pdfWorker'] = $v('vendor/presentations/pdf.worker.min.js');

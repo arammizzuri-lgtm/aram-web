@@ -95,6 +95,7 @@ export const LAYOUTS = {
     'contents': { name: 'Contents', group: 'Structure', images: 0, texts: ['title'], hint: 'The sections, listed automatically' },
     'closing': { name: 'Closing page', group: 'Structure', images: 0, texts: ['title'], chrome: false, hint: 'Logo and contact details' },
     'overview': { name: 'Overview — text & images', group: 'Content', images: 1, texts: ['title', 'body'], hint: 'A text column beside one or two images' },
+    'location': { name: 'Location map', group: 'Content', images: 0, texts: ['title', 'body'], hint: 'The site on a map: the city and a close-up, the places around it' },
     'image-full': { name: 'Full-page image', group: 'Images', images: 1, texts: [], fit: 'fill', chrome: false, hint: 'Edge to edge' },
     'image-fit': { name: 'Image within margins', group: 'Images', images: 1, texts: [], fit: 'fit', hint: 'The whole image, nothing cropped' },
     'image-caption': { name: 'Image, title & caption', group: 'Images', images: 1, texts: ['title', 'caption'], fit: 'fit', hint: 'One image with words under or beside it' },
@@ -199,6 +200,13 @@ export function normalize(doc, presets = []) {
     doc.partner = doc.partner || null;
     doc.watermark = { on: false, text: 'Client review copy', ...obj(doc.watermark) };
     doc.lang = LANG_AT[doc.lang] ? doc.lang : 'en';
+    // where the site is: its pin, its plot's corners ([lat, lng] each, optional) and the places around it
+    const site = obj(doc.site), num = (v) => typeof v === 'number' && Number.isFinite(v);
+    doc.site = {
+        ...(num(site.lat) && num(site.lng) ? { lat: site.lat, lng: site.lng } : {}),
+        plot: arr(site.plot).filter((c) => Array.isArray(c) && num(c[0]) && num(c[1])),
+        places: arr(site.places).map((p) => obj(p)).filter((p) => p.id && num(p.lat) && num(p.lng)),
+    };
     // the revisions issued, as the history page prints them; `snap` is the saved copy of the presentation at that revision
     doc.revisions = arr(doc.revisions).map((r) => obj(r)).filter((r) => r.id);
     doc.pages = arr(doc.pages).map((p) => {
@@ -226,7 +234,8 @@ export function starterPages(doc) {
     const rest = pics.filter((h) => h !== seed.cover);
     const overview = newPage('overview', { title: word(doc, 'overview'), body: typeof seed.body === 'string' ? seed.body : '' });
     if (rest.length) overview.images = rest.slice(0, 2).map((h) => pic(h));
-    return [cover, overview, ...rest.slice(2).map((h) => newPage('image-full', { images: [pic(h)] })), newPage('closing')];
+    const location = doc.site && Number.isFinite(doc.site.lat) ? [newPage('location')] : [];   // the project was pinned on the website's map
+    return [cover, overview, ...location, ...rest.slice(2).map((h) => newPage('image-full', { images: [pic(h)] })), newPage('closing')];
 }
 
 // ── Page size ──
