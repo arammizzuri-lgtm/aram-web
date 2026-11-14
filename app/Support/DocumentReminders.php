@@ -36,6 +36,7 @@ class DocumentReminders
                 SiteSetting::flushCache();
                 RoomDocument::query()->dueForReminder()->with('room.project')->get()->each(function (RoomDocument $d) {
                     $d->forceFill(['reminded_at' => now()])->save();
+                    AutoTasks::documentExpiring($d);
                     StudioMail::send(RoomActivity::expiring($d->room, $d));
                 });
             });

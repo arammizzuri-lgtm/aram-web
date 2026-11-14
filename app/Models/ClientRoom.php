@@ -94,7 +94,12 @@ class ClientRoom extends Model
         return $this->hasMany(RoomPayment::class)->orderBy('sort_order')->orderBy('id');
     }
 
-    /** Changes with a price, newest first. */
+    /** The studio's tasks for this room (admin → Tasks). */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
     /** The documents shelf, the latest first. */
     public function documents(): HasMany
     {

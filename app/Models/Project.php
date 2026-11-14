@@ -238,6 +238,12 @@ class Project extends Model
     }
 
     /** Construction progress, newest first — the private updates included. */
+    /** The studio's tasks for this project, its rooms' included (admin → Tasks). */
+    public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
     public function updates(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ProjectUpdate::class)->orderByDesc('date')->orderByDesc('id');

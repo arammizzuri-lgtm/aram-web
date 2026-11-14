@@ -44,6 +44,7 @@ class ProjectResource extends Resource
     {
         return [
             UpdatesRelationManager::class,
+            RelationManagers\TasksRelationManager::class,
         ];
     }
 

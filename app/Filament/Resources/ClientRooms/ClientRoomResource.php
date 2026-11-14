@@ -65,6 +65,7 @@ class ClientRoomResource extends Resource
             MeetingsRelationManager::class,
             DocumentsRelationManager::class,
             CommentsRelationManager::class,
+            \App\Filament\Resources\Projects\RelationManagers\TasksRelationManager::class,
         ];
     }
 

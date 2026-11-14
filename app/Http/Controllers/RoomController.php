@@ -322,6 +322,9 @@ class RoomController extends Controller
         ]);
         if ($done) {
             $this->tellStudio(RoomActivity::answered($room, $m->refresh()));
+            if ($m->status === RoomMeeting::OBJECTED) {
+                \App\Support\AutoTasks::meetingObjected($m);
+            }
         }
 
         return $back->with('room_flash', 'room_decided');
