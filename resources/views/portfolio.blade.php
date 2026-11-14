@@ -1052,6 +1052,7 @@
                         <p class="contact__map-note">
                             <span class="contact__map-dot" aria-hidden="true"></span>
                             <span {!! bitext('contact_visits') !!}>{{ bival('contact_visits') }}</span>
+                            <a class="contact__map-book" href="{{ site_url('/visit') }}" data-href-en="{{ site_url('/visit', 'en') }}" data-href-ku="{{ site_url('/visit', 'ku') }}"><span {!! bitext('visit_link') !!}>{{ bival('visit_link') }}</span> <span aria-hidden="true">→</span></a>
                         </p>
                     </div>
                 </div>

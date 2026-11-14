@@ -19,6 +19,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SavedController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SketchController;
+use App\Http\Controllers\VisitController;
 use App\Http\Middleware\PrivatePage;
 use App\Http\Middleware\SiteLanguage;
 use App\Http\Middleware\TrackPageView;
@@ -66,6 +67,8 @@ $pages = function (string $lang) {
         Route::get('/estimate', [EstimateController::class, 'index'])->name('estimate');
         // a holiday card with the visitor's name, between the occasion's dates
         Route::get('/card', [CardController::class, 'show'])->name('card');
+        // ask for a studio visit, a site visit or a phone call (Clients → Visits)
+        Route::get('/visit', [VisitController::class, 'show'])->name('visit');
     });
 
     // The estimator's live result, as each answer changes — not a page view.
@@ -75,6 +78,7 @@ $pages = function (string $lang) {
         // the estimate as one printable sheet, to save as a PDF
         Route::get('/estimate/sheet', [EstimateController::class, 'sheet'])
             ->middleware('throttle:60,1')->name('estimate.sheet');
+        Route::post('/visit', [VisitController::class, 'store'])->middleware('throttle:contact')->name('visit.store');
     });
 };
 

@@ -77,7 +77,7 @@ class ManageSiteContent extends Page
         'Everywhere' => ['Navigation & UI', 'Search & sharing', self::GOOGLE, 'Footer', 'Saved & sharing', 'Page not found', 'Loading & waiting'],
         'Home page' => ['Hero', 'The Record (stats band)', 'Map', 'Clients', 'Client quotes', 'Projects gallery', 'Services', 'Process', 'Heritage', 'About', 'Contact', self::MEDIA],
         'Projects' => ['Projects page', 'Project page', 'Project overlay', 'Rooms', 'Journal'],
-        'For clients' => ['Client rooms', 'Client review page', 'Cost estimate', 'Sketch', 'Site boards', 'Holiday cards'],
+        'For clients' => ['Client rooms', 'Book a visit', 'Client review page', 'Cost estimate', 'Sketch', 'Site boards', 'Holiday cards'],
         'Heritage' => ['Kurdistan heritage'],
         'Studio' => ['Architect page', 'Careers', 'Partners'],
     ];

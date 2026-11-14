@@ -31,6 +31,20 @@
 .rm-pin__error { font-size: 14px; color: #ff8a8a; }
 .rm-pin .pp-btn { justify-content: center; }
 
+/* ---- Book a visit (/visit), on the same card ------------------ */
+.rm-visit__f { display: grid; gap: 7px; min-width: 0; }
+.rm-visit__when { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rm-visit :is(input, select, textarea) {
+    width: 100%; min-width: 0; min-height: 46px; padding: 11px 14px; border-radius: 12px;
+    font: 300 15px/1.5 var(--font); letter-spacing: normal; text-transform: none; color: #fff;
+    background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.16); color-scheme: dark;
+}
+.rm-visit textarea { resize: vertical; }
+.rm-visit :is(input, select, textarea):focus { outline: none; border-color: var(--gold); }
+.rm-visit [aria-invalid="true"] { border-color: #ff8a8a; }
+.rm-visit .form-hp { position: absolute; inset-inline-start: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.rm-visit__home { margin-top: 24px; }
+
 /* ---- Studio preview ------------------------------------------ */
 .rm-preview {
     position: fixed; inset: auto 16px 16px; z-index: 30; margin: 0 auto; max-width: 720px;

@@ -778,6 +778,29 @@ class SiteText
                 'review_big'        => ['File too large', 'That file is too large.', 'ئەو فایلە زۆر گەورەیە.'],
             ],
 
+            // Book a visit (/visit): a studio visit, a site visit or a phone call,
+            // asked for on the day and time that suits. The requests are under
+            // Clients → Visits; the WhatsApp messages go out in the visitor's language.
+            'Book a visit' => [
+                'visit_link'        => ['Homepage link, next to "visits by appointment"', 'Book a visit', 'ژوانێک داوا بکە'],
+                'visit_label'       => ['Page label', 'Visits by appointment', 'سەردان بە ژوان'],
+                'visit_title'       => ['Title', 'When suits you?', 'کەی بۆت دەگونجێت؟'],
+                'visit_text'        => ['Under the title', 'Ask for a day and a time. We confirm it on WhatsApp — or suggest another that suits us both.', 'ڕۆژ و کاتێک داوا بکە. لە واتسئاپ پشتڕاستی دەکەینەوە — یان کاتێکی تر پێشنیار دەکەین کە بۆ هەردوولامان بگونجێت.', 'area'],
+                'visit_kind'        => ['Kind — label', 'What kind of visit', 'جۆری سەردان'],
+                'visit_kind_studio' => ['Kind — studio', 'Studio visit', 'سەردانی ستۆدیۆ'],
+                'visit_kind_site'   => ['Kind — site', 'Site visit', 'سەردانی شوێنی کار'],
+                'visit_kind_call'   => ['Kind — phone call', 'Phone call', 'پەیوەندی تەلەفۆنی'],
+                'visit_about'       => ['What it is about — label', 'What is it about?', 'دەربارەی چییە؟'],
+                'visit_about_ph'    => ['What it is about — example', 'e.g. a house on a 300 m² plot in Ankawa', 'بۆ نموونە خانوویەک لەسەر زەوییەکی ٣٠٠ م² لە عەنکاوە'],
+                'visit_day'         => ['Day — label', 'Day', 'ڕۆژ'],
+                'visit_time'        => ['Time — label', 'Time', 'کات'],
+                'visit_send'        => ['Send button', 'Ask for this time', 'ئەم کاتە داوا بکە'],
+                'visit_sent'        => ['After sending', 'Thank you — we have your request and will confirm it on WhatsApp soon.', 'سوپاس — داواکارییەکەت گەیشت و بەم زووانە لە واتسئاپ پشتڕاستی دەکەینەوە.', 'area'],
+                'visit_error'       => ['A field is missing or wrong', 'Please fill in every field — the day can be today or later.', 'تکایە هەموو خانەکان پڕ بکەرەوە — ڕۆژەکە دەبێت ئەمڕۆ یان دواتر بێت.'],
+                'visit_wa_confirmed' => ['WhatsApp — confirmed ({name} {kind} {day} {time})', 'Hello {name}, this is Aram Mizuri Architecture. Confirmed — {kind} on {day} at {time}. See you then.', 'سڵاو {name}، ئارام مزووری تەڵارسازی. پشتڕاستکرایەوە — {kind} لە {day} کاتژمێر {time}. چاوەڕێتین.', 'area'],
+                'visit_wa_suggested' => ['WhatsApp — another time suggested ({name} {kind} {day} {time})', 'Hello {name}, this is Aram Mizuri Architecture. About the {kind} you asked for — could we do {day} at {time} instead? Just reply to let us know.', 'سڵاو {name}، ئارام مزووری تەڵارسازی. سەبارەت بە {kind} کە داوات کردبوو — دەکرێت لە {day} کاتژمێر {time} بیکەین؟ تکایە وەڵاممان بدەرەوە.', 'area'],
+            ],
+
             // The partners and suppliers page (/partners). The partners
             // themselves are under Clients → Partners.
             'Partners' => [
