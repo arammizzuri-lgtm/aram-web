@@ -15,6 +15,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\VisitRequest;
 use App\Support\DocumentReminders;
+use App\Support\QuickTask;
 use App\Support\StudioMail;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -167,6 +168,39 @@ class TasksTest extends TestCase
         $this->assertSame('On site', $labels['site']['name']);
         $this->assertMatchesRegularExpression('/^[a-z0-9]{8}$/', $labels->firstWhere('name', 'Urgent')['key']);
         Livewire::test(Tasks::class)->assertSeeHtml('<span class="tk-chip" style="--c: #2bb3a6">On site</span>');
+    }
+
+    public function test_quick_add_reads_a_task_from_one_line(): void
+    {
+        $room = $this->room();   // Shilan, of Ankawa House
+        $read = function (string $text) {
+            $q = QuickTask::parse($text);
+
+            return [$q['title'], $q['due_at']->format('D j M Y H:i'), $q['labels'], $q['priority'], $q['client_room_id'], $q['project_id']];
+        };
+        // it is Friday 20 Nov 2026, 12:00 in Erbil
+        $this->assertSame(['Call Dara', 'Sat 21 Nov 2026 16:00', ['client'], 'high', null, $this->project->id], $read('Call Dara tomorrow 4pm #client !high @Ankawa'));
+        $this->assertSame(['Send the drawings', 'Fri 20 Nov 2026 17:00', [], 'normal', $room->id, null], $read('send the drawings @shilan fri'));
+        $this->assertSame(['Site visit', 'Mon 23 Nov 2026 09:00', [], 'normal', null, null], $read('site visit on monday at 9'));
+        $this->assertSame('Sat 5 Dec 2026 17:00', $read('pay the engineer 5/12')[1]);
+        $this->assertSame(['Renew the permit', 'Sun 3 Jan 2027 17:00'], array_slice($read('renew the permit by 3 jan'), 0, 2));   // passed this year: next year's
+        $this->assertSame('Thu 26 Nov 2026 17:00', $read('order tiles nov 26th')[1]);
+        $this->assertSame(['Ring the plumber', 'Sat 21 Nov 2026 10:30'], array_slice($read('ring the plumber 10:30'), 0, 2));   // passed today: tomorrow's
+        $this->assertSame(['Order tiles', 'Fri 4 Dec 2026 17:00', ['site']], array_slice($read('Order tiles in 2 weeks #site'), 0, 3));
+        $this->assertSame(['Check the e-mails', 'Sat 21 Nov 2026 17:00'], array_slice($read('check the e-mails'), 0, 2));
+        $this->assertSame(['Fix the sun shading', 'Fri 20 Nov 2026 20:00'], array_slice($read('fix the sun shading tonight'), 0, 2));   // "sun" alone is a word
+        $this->assertSame(['Tidy the library', 'low'], [$read('!low tidy the library')[0], $read('!low tidy the library')[3]]);
+        $this->assertSame(['Ask about #balcony glass', []], [$read('ask about #balcony glass')[0], $read('ask about #balcony glass')[2]]);   // no such label: kept
+
+        // typed on the page: a preview, then Enter adds it; Undo takes it away
+        $page = Livewire::test(Tasks::class)->set('quick', 'Call Dara tomorrow 4pm #client')
+            ->assertSee('Due Sat 21 Nov, 16:00')->assertSee('Enter to add');
+        $page->call('quickAdd')->assertSet('quick', '')->assertNotified('Added “Call Dara” — due Sat 21 Nov, 16:00');
+        $this->assertSame(['Call Dara', '2026-11-21 13:00:00', ['client']], [Task::sole()->title, Task::sole()->getRawOriginal('due_at'), Task::sole()->labels]);
+        $page->dispatch('undo-task', token: session('task_undo')['token']);
+        $this->assertSame(0, Task::count());
+        $page->call('quickAdd', '#client tomorrow')->assertNotified('Write what to do — and a day or time if it has one');
+        $this->assertSame(0, Task::count());
     }
 
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void

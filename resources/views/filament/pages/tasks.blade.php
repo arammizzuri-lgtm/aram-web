@@ -18,6 +18,14 @@
 
         .tk-chip { --c: #9a9a9a; display: inline-flex; align-items: center; gap: 6px; padding: 1px 8px; border-radius: 999px; font-size: .68rem; font-weight: 600; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
         .tk-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; padding-inline-end: 26px; }
+        .tk-quick { position: relative; }
+        .tk-quick > svg { position: absolute; top: 12px; inset-inline-start: 14px; width: 18px; height: 18px; color: #F5C518; pointer-events: none; }
+        .tk-quick input { width: 100%; padding: 10px 14px; padding-inline-start: 42px; border-radius: 12px; font-size: .9rem; color: #f0f0f0; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); }
+        .tk-quick input:focus { outline: none; border-color: rgba(245,197,24,.6); background: rgba(255,255,255,.06); }
+        .tk-quick input::placeholder { color: #777; }
+        .tk-quick__preview, .tk-quick__help { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 7px 4px 0; font-size: .76rem; color: #8d8d8d; }
+        .tk-quick__preview b { font-size: .84rem; font-weight: 600; color: #f0f0f0; }
+        .tk-quick__preview small { margin-inline-start: auto; color: #6f6f6f; }
         .tk-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
         .tk-filter button { padding: 5px 12px; border-radius: 999px; font-size: .78rem; }
         .tk-filter .tk-chip span { font-weight: 500; opacity: .7; font-variant-numeric: tabular-nums; }
@@ -118,6 +126,31 @@
             <button type="button" wire:click="$set('show', 'timeline')" @class(['is-on' => $show === 'timeline'])>Timeline</button>
         </div>
     </div>
+
+    <form class="tk-quick" wire:submit="quickAdd($el.querySelector('input').value)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <input type="text" wire:model.live.debounce.400ms="quick" maxlength="300" autocomplete="off" enterkeyhint="done"
+               aria-label="Quick add a task" aria-describedby="tk-quick-help"
+               placeholder="Quick add — e.g. Call Dara tomorrow 4pm #client !high @Afrin">
+        @if ($preview)
+            <p class="tk-quick__preview" aria-live="polite">
+                <b>{{ $preview['title'] ?: 'What to do?' }}</b>
+                <span class="tk-left tk-left--gray">Due {{ $preview['due_at']->format('D j M, H:i') }}</span>
+                @foreach ($preview['labels'] as $key)
+                    <span class="tk-chip" style="--c: {{ Tasks::LABEL_COLOURS[$labels[$key]['colour'] ?? ''] ?? '#9a9a9a' }}">{{ $labels[$key]['name'] ?? $key }}</span>
+                @endforeach
+                @if ($preview['priority'] !== 'normal')
+                    <span class="tk-tag">{{ Task::PRIORITIES[$preview['priority']] }} priority</span>
+                @endif
+                @if ($preview['place'])
+                    <span class="tk-tag">{{ $preview['place'] }}</span>
+                @endif
+                <small>Enter to add</small>
+            </p>
+        @else
+            <p class="tk-quick__help" id="tk-quick-help">Words for the day and time — today, tonight, tomorrow, fri, in 2 weeks, 5/12, 3 Jan, 4pm, 16:30 — and #label, !high or !low, @client or @project.</p>
+        @endif
+    </form>
 
     @if ($labels->isNotEmpty())
         <div class="tk-filter" role="group" aria-label="Show only one label">

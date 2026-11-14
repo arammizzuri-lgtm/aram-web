@@ -6,6 +6,7 @@ use App\Models\ClientRoom;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Models\Task;
+use App\Support\QuickTask;
 use BackedEnum;
 use Carbon\CarbonInterface;
 use Filament\Actions\Action;
@@ -87,6 +88,29 @@ class Tasks extends Page
     #[Url]
     public string $label = '';
 
+    /** The quick-add line, read as it is typed (App\Support\QuickTask) */
+    public string $quick = '';
+
+    public function quickAdd(?string $text = null): void
+    {
+        $q = QuickTask::parse($text ?? $this->quick);
+        if ($q['title'] === '') {
+            Notification::make()->warning()->title('Write what to do — and a day or time if it has one')->send();
+
+            return;
+        }
+        $task = Task::create([
+            'title' => Str::limit($q['title'], 160, ''),
+            'due_at' => $q['due_at']->copy()->utc(),
+            'priority' => $q['priority'],
+            'labels' => $q['labels'],
+            'client_room_id' => $q['client_room_id'],
+            'project_id' => $q['project_id'],
+        ]);
+        $this->quick = '';
+        $this->offerUndo('Added “'.$task->title.'” — due '.$task->due_at->timezone(Task::TZ)->format('D j M, H:i'), [], $task->id);
+    }
+
     // ---- the sidebar: how many are open; red when one is late
 
     public static function getNavigationBadge(): ?string
@@ -164,8 +188,10 @@ class Tasks extends Page
             if ($undo['made']) {
                 Task::query()->whereKey($undo['made'])->delete();
             }
-            // as it was, row for row: back in place, or back at all if it was deleted
-            Task::query()->upsert([$undo['task']], ['id']);
+            // as it was, row for row: back in place, or back at all if it was deleted (none: it was just added)
+            if ($undo['task']) {
+                Task::query()->upsert([$undo['task']], ['id']);
+            }
         });
         Notification::make()->success()->title('Undone')->send();
     }
@@ -365,6 +391,7 @@ class Tasks extends Page
         $tasks = $this->label === '' ? $all : $all->filter(fn (Task $t) => in_array($this->label, $t->labels ?? [], true));
 
         return [
+            'preview' => trim($this->quick) !== '' ? QuickTask::parse($this->quick) : null,
             'labels' => self::labels(),
             'labelCounts' => $all->where('status', '!=', 'done')->flatMap(fn (Task $t) => $t->labels ?? [])->countBy(),
             'columns' => collect(Task::STATUSES)->map(fn ($label, $status) => $tasks->where('status', $status)
