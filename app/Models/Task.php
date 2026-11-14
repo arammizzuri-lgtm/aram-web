@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * One of the studio's tasks (admin → Tasks). Due at a day and time (Erbil);
@@ -26,8 +27,11 @@ class Task extends Model
 
     protected $fillable = [
         'title', 'notes', 'status', 'priority', 'pinned', 'labels', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
-        'estimate_minutes', 'spent_minutes', 'timer_started_at',
+        'estimate_minutes', 'spent_minutes', 'timer_started_at', 'attachments', 'attachment_names',
     ];
+
+    /** Photos and files on a task: private, opened through short-lived signed links */
+    public const DISK = 'local';
 
     protected $attributes = ['status' => 'todo', 'priority' => 'normal', 'pinned' => false, 'spent_minutes' => 0];
 
@@ -44,6 +48,8 @@ class Task extends Model
         'estimate_minutes' => 'integer',
         'spent_minutes' => 'integer',
         'checklist' => 'array',
+        'attachments' => 'array',
+        'attachment_names' => 'array',
     ];
 
     protected static function booted(): void
@@ -108,7 +114,8 @@ class Task extends Model
         while ($due->isPast()) {
             $due = $step($due);
         }
-        $next = $this->replicate(['status', 'done_at', 'source_type', 'source_id', 'created_at', 'updated_at']);
+        // this time's photos and files stay with this time
+        $next = $this->replicate(['status', 'done_at', 'source_type', 'source_id', 'created_at', 'updated_at', 'attachments', 'attachment_names']);
         $next->status = 'todo';
         $next->due_at = $due;
         $next->starts_on = $this->starts_on ? $due->copy()->subDays((int) $this->starts_on->diffInDays($this->due_at)) : null;
@@ -217,6 +224,19 @@ class Task extends Model
             $this->due_at->lt(now()->addDays(3)) => 'info',
             default => 'gray',
         };
+    }
+
+    /** Its photos and files: name, a signed link for an hour or more, and whether it is a picture. */
+    public function files(): array
+    {
+        // the same link all hour, so a picture is not fetched again each time the board redraws
+        $until = now()->addHours(2)->startOfHour();
+
+        return array_map(fn (string $path) => [
+            'name' => $this->attachment_names[$path] ?? basename($path),
+            'url' => Storage::disk(self::DISK)->temporaryUrl($path, $until),
+            'image' => (bool) preg_match('/\.(jpe?g|png|webp|gif)$/i', $path),
+        ], $this->attachments ?? []);
     }
 
     /** [ticked, all] of its checklist */

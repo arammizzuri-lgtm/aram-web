@@ -50,8 +50,35 @@
             @endforeach
         </details>
     @endif
+    @if ($t->attachments)
+        <div class="tk-files">
+            @foreach (array_slice($t->files(), 0, 4) as $f)
+                <a href="{{ $f['url'] }}" target="_blank" rel="noopener" title="{{ $f['name'] }}" @class(['tk-file', 'tk-file--doc' => ! $f['image']])>
+                    @if ($f['image'])<img src="{{ $f['url'] }}" alt="{{ $f['name'] }}" loading="lazy">@else PDF @endif
+                </a>
+            @endforeach
+            @if (count($t->attachments) > 4)
+                <button type="button" class="tk-file tk-file--doc" wire:click="mountAction('openTask', { task: {{ $t->id }} })">+{{ count($t->attachments) - 4 }}</button>
+            @endif
+        </div>
+    @endif
     <div class="tk-moves">
         @if ($status !== 'done')
+            {{-- the phone's camera, straight onto the task: shrunk in the browser first, as the form does --}}
+            <label class="tk-cam" title="Add a photo" x-bind:class="{ 'is-busy': busy }" x-data="{ busy: false, async add(file) {
+                if (! file) return;
+                this.busy = true;
+                try {
+                    const img = await createImageBitmap(file), s = Math.min(1, 2000 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+                    c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+                    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                    file = new File([await new Promise((r) => c.toBlob(r, 'image/jpeg', .85))], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
+                } catch (e) {}
+                this.$wire.upload('photo', file, () => { this.$wire.attachPhoto({{ $t->id }}); this.busy = false }, () => { this.busy = false });
+            } }">
+                <input type="file" accept="image/*" capture="environment" aria-label="Add a photo" x-on:change="add($event.target.files[0]); $event.target.value = ''">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </label>
             <div class="tk-snooze" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
                 <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="true">Snooze</button>
                 <div class="tk-snooze__menu" x-show="open" x-cloak x-transition.opacity>

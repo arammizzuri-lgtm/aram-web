@@ -19,8 +19,10 @@ use App\Support\QuickTask;
 use App\Support\StudioMail;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -324,6 +326,26 @@ class TasksTest extends TestCase
             ->assertDontSee('Start →');   // to do here goes straight to Done
 
         $page->call('move', $late->id, 'done')->assertSee('3 left for today · 2 done')->assertDontSee('Late drawing');
+    }
+
+    public function test_a_photo_from_a_card_goes_onto_the_task_and_not_onto_its_next_one(): void
+    {
+        Storage::fake(Task::DISK, ['serve' => true]);
+        $task = Task::create(['title' => 'Check the slab', 'due_at' => '2026-11-21 07:00', 'repeat' => 'weekly']);
+        $page = Livewire::test(Tasks::class)
+            ->set('photo', UploadedFile::fake()->image('slab.jpg'))->call('attachPhoto', $task->id)->assertNotified('Added to “Check the slab”');
+        $path = $task->fresh()->attachments[0];
+        $this->assertStringStartsWith('tasks/', $path);
+        Storage::disk(Task::DISK)->assertExists($path);
+        $this->assertSame([$path => 'slab.jpg'], $task->fresh()->attachment_names);
+        $page->assertSeeHtml('alt="slab.jpg"');
+
+        $page->set('photo', UploadedFile::fake()->create('run.exe', 10, 'application/x-msdownload'))->call('attachPhoto', $task->id)
+            ->assertNotified('That could not be added: a photo or PDF, up to 30 MB');
+        $this->assertCount(1, $task->fresh()->attachments);
+
+        $page->call('move', $task->id, 'done');   // this week's photos stay with this week
+        $this->assertNull(Task::query()->where('status', 'todo')->sole()->attachments);
     }
 
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void

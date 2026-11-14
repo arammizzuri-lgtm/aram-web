@@ -86,6 +86,20 @@
         .tk-count--timing span { color: #6fd39b; font-weight: 600; }
         @keyframes tk-blink { 50% { opacity: .25; } }
         @media (prefers-reduced-motion: reduce) { .tk-count--timing i { animation: none; } }
+        .tk-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .tk-file { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+        .tk-file img { width: 100%; height: 100%; object-fit: cover; }
+        .tk-file--doc { font-size: .66rem; font-weight: 700; color: #ff9aa3; }
+        .tk-file:hover { border-color: #F5C518; }
+        .tk-focus .tk-file { width: 64px; height: 64px; }
+        .tk-cam { position: relative; display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; color: #8d8d8d; cursor: pointer; }
+        .tk-cam svg { width: 15px; height: 15px; }
+        .tk-cam input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+        .tk-cam:hover, .tk-cam:focus-within { color: #F5C518; }
+        .tk-cam:focus-within { outline: 2px solid rgba(245,197,24,.6); }
+        .tk-cam.is-busy { opacity: .45; pointer-events: none; }
+        .tk-focus .tk-cam { padding: 9px 12px; }
+        .tk-focus .tk-cam svg { width: 20px; height: 20px; }
         .tk-snooze { position: relative; margin-inline-end: auto; }
         .tk-moves .tk-snooze > button { border-color: transparent; color: #8d8d8d; padding-inline: 4px; }
         .tk-snooze__menu { position: absolute; z-index: 20; bottom: calc(100% + 6px); inset-inline-start: 0; display: grid; min-width: 170px; padding: 5px; border-radius: 10px; background: #232327; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 30px rgba(0,0,0,.45); }

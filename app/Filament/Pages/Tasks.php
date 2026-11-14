@@ -14,6 +14,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -27,6 +28,7 @@ use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -80,6 +82,8 @@ class Tasks extends Page
         ['key' => 'admin', 'name' => 'Admin', 'colour' => 'gray'],
     ];
 
+    public const FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+
     /** For the busy meter: a full day, and a full week (Sunday to Thursday). shortcut: fixed, a setting if the studio's hours differ */
     public const DAY_MINUTES = 8 * 60;
 
@@ -99,6 +103,27 @@ class Tasks extends Page
 
     /** The quick-add line, read as it is typed (App\Support\QuickTask) */
     public string $quick = '';
+
+    /** A photo taken from a card's camera button, on its way onto the task */
+    public $photo = null;
+
+    public function attachPhoto(int $id): void
+    {
+        $task = Task::query()->find($id);
+        if (! $task || Validator::make(['photo' => $this->photo], ['photo' => ['required', 'file', 'mimetypes:'.implode(',', self::FILE_TYPES), 'max:30720']])->fails()) {
+            $this->reset('photo');
+            Notification::make()->danger()->title('That could not be added: a photo or PDF, up to 30 MB')->send();
+
+            return;
+        }
+        $path = $this->photo->store('tasks', Task::DISK);
+        $task->update([
+            'attachments' => [...$task->attachments ?? [], $path],
+            'attachment_names' => [...$task->attachment_names ?? [], $path => $this->photo->getClientOriginalName()],
+        ]);
+        $this->reset('photo');
+        Notification::make()->success()->title('Added to “'.Str::limit($task->title, 40).'”')->send();
+    }
 
     public function quickAdd(?string $text = null): void
     {
@@ -297,6 +322,12 @@ class Tasks extends Page
                     TextInput::make('text')->hiddenLabel()->required()->maxLength(200)->columnSpan(['default' => 11]),
                 ]),
             Textarea::make('notes')->rows(3)->columnSpanFull(),
+            FileUpload::make('attachments')->label('Photos & files — PDF or image, up to 30 MB each')->multiple()->appendFiles()
+                ->disk(Task::DISK)->directory('tasks')->visibility('private')
+                ->acceptedFileTypes(self::FILE_TYPES)->maxSize(30720)->storeFileNamesIn('attachment_names')
+                // a phone photo is shrunk before it is sent; a PDF goes as it is
+                ->imageResizeMode('contain')->imageResizeTargetWidth('2000')->imageResizeTargetHeight('2000')
+                ->panelLayout('grid')->openable()->downloadable()->columnSpanFull(),
         ])];
     }
 
@@ -402,7 +433,7 @@ class Tasks extends Page
         return Action::make('openTask')->modalHeading('Task')->modalWidth('2xl')->modalSubmitActionLabel('Save')
             ->fillForm(fn (array $arguments) => $task($arguments)->only([
                 'title', 'due_at', 'starts_on', 'status', 'priority', 'labels', 'client_room_id', 'project_id', 'repeat', 'checklist', 'notes',
-                'estimate_minutes', 'spent_minutes',
+                'estimate_minutes', 'spent_minutes', 'attachments', 'attachment_names',
             ]))
             ->schema(self::fields())
             ->extraModalFooterActions(fn (array $arguments) => [
