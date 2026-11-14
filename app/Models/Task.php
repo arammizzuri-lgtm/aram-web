@@ -99,6 +99,17 @@ class Task extends Model
         return $next;
     }
 
+    /** Snoozed some days: the same time of day (Erbil), counted from today if it is already late. */
+    public function snoozed(int $days): CarbonInterface
+    {
+        $due = $this->due_at->copy()->timezone(self::TZ);
+        if ($due->isPast()) {
+            $due = now(self::TZ)->setTime($due->hour, $due->minute);
+        }
+
+        return $due->addDays($days);
+    }
+
     public function isLate(): bool
     {
         return $this->status !== 'done' && $this->due_at->isPast();

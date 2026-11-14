@@ -54,6 +54,12 @@
         .tk-moves button { padding: 3px 10px; border-radius: 999px; font-size: .72rem; color: #c8c8c8; border: 1px solid rgba(255,255,255,.12); }
         .tk-moves button:hover { border-color: #F5C518; color: #F5C518; }
         .tk-moves .tk-done { border-color: rgba(46,158,99,.6); color: #6fd39b; }
+        .tk-snooze { position: relative; margin-inline-end: auto; }
+        .tk-moves .tk-snooze > button { border-color: transparent; color: #8d8d8d; padding-inline: 4px; }
+        .tk-snooze__menu { position: absolute; z-index: 20; bottom: calc(100% + 6px); inset-inline-start: 0; display: grid; min-width: 170px; padding: 5px; border-radius: 10px; background: #232327; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+        .tk-moves .tk-snooze__menu button { display: flex; justify-content: space-between; gap: 12px; border: 0; border-radius: 7px; padding: 7px 9px; font-size: .78rem; text-align: start; }
+        .tk-moves .tk-snooze__menu button:hover { background: rgba(255,255,255,.06); }
+        .tk-snooze__menu small { color: #8d8d8d; }
 
         .tl { border-radius: 14px; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.06); padding: 10px 14px 16px; }
         .tl-row { display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr); gap: 12px; align-items: center; min-height: 34px; }
@@ -196,6 +202,18 @@
                                     </details>
                                 @endif
                                 <div class="tk-moves">
+                                    @if ($status !== 'done')
+                                        <div class="tk-snooze" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+                                            <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="true">Snooze</button>
+                                            <div class="tk-snooze__menu" x-show="open" x-cloak x-transition.opacity>
+                                                @foreach (\App\Filament\Pages\Tasks::SNOOZES as $days => $label)
+                                                    <button type="button" wire:click="snooze({{ $t->id }}, {{ $days }})" @click="open = false">
+                                                        {{ $label }} <small>{{ $t->snoozed($days)->format('D j M') }}</small>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                     @if ($status === 'todo')
                                         <button type="button" wire:click="move({{ $t->id }}, 'doing')">Start →</button>
                                     @elseif ($status === 'doing')

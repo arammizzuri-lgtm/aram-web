@@ -90,6 +90,18 @@ class Tasks extends Page
         }
     }
 
+    public const SNOOZES = [1 => '1 day', 3 => '3 days', 7 => '1 week'];
+
+    public function snooze(int $id, int $days): void
+    {
+        $task = Task::query()->open()->find($id);
+        if (! $task || ! isset(self::SNOOZES[$days])) {
+            return;
+        }
+        $task->update(['due_at' => $task->snoozed($days)->utc()]);
+        Notification::make()->success()->title('Snoozed to '.$task->due_at->timezone(Task::TZ)->format('D j M, H:i'))->send();
+    }
+
     public function togglePin(int $id): void
     {
         $task = Task::query()->find($id);

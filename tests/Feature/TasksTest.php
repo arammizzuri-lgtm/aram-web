@@ -102,6 +102,20 @@ class TasksTest extends TestCase
         $this->assertFalse($soon->fresh()->pinned);
     }
 
+    public function test_snooze_keeps_the_time_of_day_and_counts_a_late_task_from_today(): void
+    {
+        $late = Task::create(['title' => 'Late', 'due_at' => '2026-11-18 08:00']);     // 11:00 Erbil, two days ago
+        $later = Task::create(['title' => 'Later', 'due_at' => '2026-11-23 11:00']);
+        $done = Task::create(['title' => 'Done', 'due_at' => '2026-11-18 08:00', 'status' => 'done']);
+
+        Livewire::test(Tasks::class)->assertSee('Snooze')->assertSee('Sat 21 Nov')   // the late one's "1 day", shown before it is chosen
+            ->call('snooze', $late->id, 1)->call('snooze', $later->id, 7)
+            ->call('snooze', $done->id, 1)->call('snooze', $later->id, 30);   // done, or a made-up length: left alone
+
+        $this->assertSame(['2026-11-21 08:00:00', '2026-11-30 11:00:00', '2026-11-18 08:00:00'],
+            [$late->fresh()->getRawOriginal('due_at'), $later->fresh()->getRawOriginal('due_at'), $done->fresh()->getRawOriginal('due_at')]);
+    }
+
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
     {
         $this->assertSame('New house', Tasks::templates()[0]['name']);
