@@ -3,6 +3,7 @@
      a phone, where each card also has its own buttons); a card or a bar opens
      the task. --}}
 @use('App\Models\Task')
+@use('App\Filament\Pages\Tasks')
 <x-filament-panels::page>
     <style>
         .tk-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
@@ -14,6 +15,17 @@
         .tk-switch { display: inline-flex; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.05); }
         .tk-switch button { padding: 6px 16px; border-radius: 999px; font-size: .82rem; color: #b8b8b8; }
         .tk-switch button.is-on { background: #F5C518; color: #111; font-weight: 600; }
+
+        .tk-chip { --c: #9a9a9a; display: inline-flex; align-items: center; gap: 6px; padding: 1px 8px; border-radius: 999px; font-size: .68rem; font-weight: 600; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); }
+        .tk-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; padding-inline-end: 26px; }
+        .tk-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .tk-filter button { padding: 5px 12px; border-radius: 999px; font-size: .78rem; }
+        .tk-filter .tk-chip span { font-weight: 500; opacity: .7; font-variant-numeric: tabular-nums; }
+        .tk-filter .tk-chip.is-on { background: var(--c); color: #111; }
+        .tk-filter__all { color: #b8b8b8; background: rgba(255,255,255,.05); }
+        .tk-filter__all.is-on { background: #e8e8e8; color: #111; font-weight: 600; }
+        .tk-filter .tk-filter__edit { margin-inline-start: auto; color: #8d8d8d; font-size: .74rem; }
+        .tk-filter .tk-filter__edit:hover { color: #F5C518; }
 
         .tk-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
         .tk-col { border-radius: 14px; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.06); padding: 10px; }
@@ -107,6 +119,19 @@
         </div>
     </div>
 
+    @if ($labels->isNotEmpty())
+        <div class="tk-filter" role="group" aria-label="Show only one label">
+            <button type="button" wire:click="$set('label', '')" @class(['tk-filter__all', 'is-on' => $label === ''])>All</button>
+            @foreach ($labels as $key => $l)
+                <button type="button" wire:click="$set('label', @js($label === $key ? '' : (string) $key))" aria-pressed="{{ $label === $key ? 'true' : 'false' }}"
+                        @class(['tk-chip', 'is-on' => $label === $key]) style="--c: {{ Tasks::LABEL_COLOURS[$l['colour']] ?? '#9a9a9a' }}">
+                    {{ $l['name'] }}<span>{{ $labelCounts[$key] ?? 0 }}</span>
+                </button>
+            @endforeach
+            <button type="button" class="tk-filter__edit" wire:click="mountAction('labels')">Edit labels</button>
+        </div>
+    @endif
+
     @if ($show === 'timeline')
         <div class="tl">
             @if ($timeline['groups']->isEmpty())
@@ -165,6 +190,14 @@
                         @forelse ($tasks as $t)
                             @php [$ticked, $all] = $t->steps(); @endphp
                             <article @class(['tk-card', 'tk-card--'.$t->priority, 'tk-card--done' => $status === 'done', 'tk-card--pinned' => $t->pinned && $status !== 'done']) data-id="{{ $t->id }}" wire:key="task-{{ $t->id }}">
+                                @php $chips = collect($t->labels ?? [])->map(fn ($k) => $labels[$k] ?? null)->filter(); @endphp
+                                @if ($chips->isNotEmpty())
+                                    <div class="tk-chips">
+                                        @foreach ($chips as $l)
+                                            <span class="tk-chip" style="--c: {{ Tasks::LABEL_COLOURS[$l['colour']] ?? '#9a9a9a' }}">{{ $l['name'] }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
                                 <button type="button" class="tk-card__title" wire:click="mountAction('openTask', { task: {{ $t->id }} })">{{ $t->title }}</button>
                                 @if ($status !== 'done')
                                     <button type="button" class="tk-pin" wire:click="togglePin({{ $t->id }})" aria-pressed="{{ $t->pinned ? 'true' : 'false' }}"
@@ -206,9 +239,9 @@
                                         <div class="tk-snooze" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
                                             <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="true">Snooze</button>
                                             <div class="tk-snooze__menu" x-show="open" x-cloak x-transition.opacity>
-                                                @foreach (\App\Filament\Pages\Tasks::SNOOZES as $days => $label)
+                                                @foreach (Tasks::SNOOZES as $days => $length)
                                                     <button type="button" wire:click="snooze({{ $t->id }}, {{ $days }})" @click="open = false">
-                                                        {{ $label }} <small>{{ $t->snoozed($days)->format('D j M') }}</small>
+                                                        {{ $length }} <small>{{ $t->snoozed($days)->format('D j M') }}</small>
                                                     </button>
                                                 @endforeach
                                             </div>

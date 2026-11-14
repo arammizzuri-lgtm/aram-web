@@ -25,7 +25,7 @@ class Task extends Model
     public const REPEATS = ['daily' => 'Every day', 'weekly' => 'Every week', 'monthly' => 'Every month'];
 
     protected $fillable = [
-        'title', 'notes', 'status', 'priority', 'pinned', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
+        'title', 'notes', 'status', 'priority', 'pinned', 'labels', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
     ];
 
     protected $attributes = ['status' => 'todo', 'priority' => 'normal', 'pinned' => false];
@@ -35,6 +35,7 @@ class Task extends Model
 
     protected $casts = [
         'pinned' => 'boolean',
+        'labels' => 'array',
         'starts_on' => 'date',
         'due_at' => 'datetime',
         'done_at' => 'datetime',
@@ -51,6 +52,9 @@ class Task extends Model
             if ($t->isDirty('checklist')) {
                 // the admin's repeater keys each step by a random id: keep a plain list
                 $t->checklist = array_values((array) $t->checklist) ?: null;
+            }
+            if ($t->isDirty('labels')) {
+                $t->labels = array_values(array_unique((array) $t->labels)) ?: null;
             }
             if ($t->isDirty('status')) {
                 $t->done_at = $t->status === 'done' ? now() : null;

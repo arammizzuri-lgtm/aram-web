@@ -146,6 +146,29 @@ class TasksTest extends TestCase
         $this->assertNull(session('task_undo'));
     }
 
+    public function test_labels_colour_the_cards_filter_the_page_and_can_be_renamed(): void
+    {
+        $page = Livewire::test(Tasks::class)->callAction('newTask', ['title' => 'Survey the plot', 'due_at' => '2026-11-22 10:00', 'labels' => ['site', 'client']])
+            ->assertHasNoActionErrors();
+        Task::create(['title' => 'Draw the plans', 'due_at' => '2026-11-25 10:00', 'labels' => ['drawing']]);
+        $this->assertSame(['site', 'client'], Task::query()->where('title', 'Survey the plot')->sole()->labels);
+
+        $page->call('$refresh')->assertSee('Survey the plot')->assertSee('Draw the plans')
+            ->assertSeeHtml('<span class="tk-chip" style="--c: #e8833a">Site</span>')
+            ->set('label', 'site')->assertSee('Survey the plot')->assertDontSee('Draw the plans')
+            ->set('show', 'timeline')->assertSee('Survey the plot')->assertDontSee('Draw the plans');
+
+        // renamed, the tasks keep it; a new one gets a key of its own
+        $page->callAction('labels', ['labels' => [
+            ['key' => 'site', 'name' => 'On site', 'colour' => 'teal'],
+            ['key' => null, 'name' => 'Urgent', 'colour' => 'pink'],
+        ]])->assertHasNoActionErrors();
+        $labels = Tasks::labels();
+        $this->assertSame('On site', $labels['site']['name']);
+        $this->assertMatchesRegularExpression('/^[a-z0-9]{8}$/', $labels->firstWhere('name', 'Urgent')['key']);
+        Livewire::test(Tasks::class)->assertSeeHtml('<span class="tk-chip" style="--c: #2bb3a6">On site</span>');
+    }
+
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
     {
         $this->assertSame('New house', Tasks::templates()[0]['name']);

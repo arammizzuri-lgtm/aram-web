@@ -9,9 +9,11 @@ use App\Models\Task;
 use BackedEnum;
 use Carbon\CarbonInterface;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -61,9 +63,29 @@ class Tasks extends Page
         ],
     ]];
 
+    public const LABELS = 'task_labels';
+
+    public const LABEL_COLOURS = [
+        'blue' => '#5aa9e6', 'green' => '#3fbf7f', 'orange' => '#e8833a', 'purple' => '#a585ec',
+        'pink' => '#e86aa6', 'teal' => '#2bb3a6', 'yellow' => '#F5C518', 'gray' => '#9a9a9a',
+    ];
+
+    /** Until the studio sets its own. A label's key stays when it is renamed, so its tasks keep it. */
+    public const STARTER_LABELS = [
+        ['key' => 'drawing', 'name' => 'Drawing', 'colour' => 'blue'],
+        ['key' => 'site', 'name' => 'Site', 'colour' => 'orange'],
+        ['key' => 'permit', 'name' => 'Permit', 'colour' => 'purple'],
+        ['key' => 'client', 'name' => 'Client', 'colour' => 'green'],
+        ['key' => 'admin', 'name' => 'Admin', 'colour' => 'gray'],
+    ];
+
     /** board | timeline */
     #[Url]
     public string $show = 'board';
+
+    /** Only the tasks with this label ('' for all) */
+    #[Url]
+    public string $label = '';
 
     // ---- the sidebar: how many are open; red when one is late
 
@@ -174,6 +196,8 @@ class Tasks extends Page
                 ->colors(['todo' => 'gray', 'doing' => 'warning', 'done' => 'success']),
             ToggleButtons::make('priority')->options(Task::PRIORITIES)->inline()->default('normal')
                 ->colors(['high' => 'danger', 'normal' => 'gray', 'low' => 'info']),
+            ToggleButtons::make('labels')->multiple()->inline()->columnSpanFull()
+                ->options(fn () => self::labels()->map(fn (array $l) => $l['name'])),
             Select::make('client_room_id')->label('Client room')->options(fn () => self::roomOptions())->searchable()->visible($links),
             Select::make('project_id')->label('Project')->options(fn () => self::projectOptions())->searchable()->visible($links)
                 ->helperText('A room\'s task is its project\'s too.'),
@@ -222,7 +246,43 @@ class Tasks extends Page
                         $data['client_room_id'] ?? null, $data['project_id'] ?? null);
                     Notification::make()->success()->title($n.' tasks added')->send();
                 }),
-            Action::make('templates')->label('Templates')->icon(Heroicon::OutlinedAdjustmentsHorizontal)->color('gray')->modalWidth('4xl')
+            ActionGroup::make([$this->templatesAction(), $this->labelsAction()])
+                ->label('Set up')->icon(Heroicon::OutlinedAdjustmentsHorizontal)->button()->color('gray'),
+        ];
+    }
+
+    protected function labelsAction(): Action
+    {
+        return Action::make('labels')->label('Labels')->icon(Heroicon::OutlinedTag)->modalWidth('2xl')->modalSubmitActionLabel('Save')
+            ->modalDescription('Colours to sort tasks by — Drawing, Site, Permit… Renaming one keeps it on its tasks.')
+            ->fillForm(fn () => ['labels' => self::labels()->values()->all()])
+            ->schema([
+                Repeater::make('labels')->hiddenLabel()->addActionLabel('Add a label')->reorderable()->columns(['default' => 2])
+                    ->schema([
+                        Hidden::make('key'),
+                        TextInput::make('name')->required()->maxLength(30)->hiddenLabel()->placeholder('Name'),
+                        Select::make('colour')->hiddenLabel()->required()->default('blue')->native(false)->allowHtml()
+                            ->options(collect(self::LABEL_COLOURS)->map(fn (string $hex, string $name) => '<span style="display:inline-block;width:.7em;height:.7em;margin-inline-end:.45em;border-radius:50%;background:'.$hex.'"></span>'.ucfirst($name))),
+                    ]),
+            ])
+            ->action(function (array $data) {
+                $list = collect($data['labels'] ?? [])->values()
+                    ->map(fn (array $l) => ['key' => $l['key'] ?: Str::lower(Str::random(8)), 'name' => $l['name'], 'colour' => $l['colour']])->all();
+                SiteSetting::put(self::LABELS, json_encode($list, JSON_UNESCAPED_UNICODE), 'tasks');
+                Notification::make()->success()->title('Labels saved')->send();
+            });
+    }
+
+    /** @return Collection<string, array{key: string, name: string, colour: string}> keyed by key */
+    public static function labels(): Collection
+    {
+        return collect(json_decode(setting(self::LABELS), true) ?: self::STARTER_LABELS)->keyBy('key');
+    }
+
+    protected function templatesAction(): Action
+    {
+        return
+            Action::make('templates')->label('Templates')->icon(Heroicon::OutlinedRectangleStack)->modalWidth('4xl')->modalSubmitActionLabel('Save')
                 ->modalDescription('Your usual sets of tasks. "After" and "Takes" are days: after the start day, and how long it has.')
                 ->fillForm(fn () => ['templates' => self::templates()])
                 ->schema([
@@ -244,8 +304,7 @@ class Tasks extends Page
                         ->map(fn (array $t) => ['name' => $t['name'], 'tasks' => array_values($t['tasks'] ?? [])])->all();
                     SiteSetting::put(self::TEMPLATES, json_encode($list, JSON_UNESCAPED_UNICODE), 'tasks');
                     Notification::make()->success()->title('Templates saved')->send();
-                }),
-        ];
+                });
     }
 
     /** A card or a bar opened: edit, or delete. */
@@ -255,7 +314,7 @@ class Tasks extends Page
 
         return Action::make('openTask')->modalHeading('Task')->modalWidth('2xl')->modalSubmitActionLabel('Save')
             ->fillForm(fn (array $arguments) => $task($arguments)->only([
-                'title', 'due_at', 'starts_on', 'status', 'priority', 'client_room_id', 'project_id', 'repeat', 'checklist', 'notes',
+                'title', 'due_at', 'starts_on', 'status', 'priority', 'labels', 'client_room_id', 'project_id', 'repeat', 'checklist', 'notes',
             ]))
             ->schema(self::fields())
             ->extraModalFooterActions(fn (array $arguments) => [
@@ -300,10 +359,14 @@ class Tasks extends Page
 
     protected function getViewData(): array
     {
-        $tasks = Task::query()->with(['project:id,name', 'room.project:id,name'])
+        $all = Task::query()->with(['project:id,name', 'room.project:id,name'])
             ->where(fn ($q) => $q->open()->orWhere('done_at', '>=', now()->subDays(14)))
             ->orderBy('due_at')->get();
+        $tasks = $this->label === '' ? $all : $all->filter(fn (Task $t) => in_array($this->label, $t->labels ?? [], true));
+
         return [
+            'labels' => self::labels(),
+            'labelCounts' => $all->where('status', '!=', 'done')->flatMap(fn (Task $t) => $t->labels ?? [])->countBy(),
             'columns' => collect(Task::STATUSES)->map(fn ($label, $status) => $tasks->where('status', $status)
                 // pinned on top, the rest by when they are due (a stable sort keeps that order)
                 ->when($status === 'done', fn ($c) => $c->sortByDesc('done_at'), fn ($c) => $c->sortByDesc('pinned'))),
