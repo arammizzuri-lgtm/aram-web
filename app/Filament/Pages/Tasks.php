@@ -80,9 +80,13 @@ class Tasks extends Page
         ['key' => 'admin', 'name' => 'Admin', 'colour' => 'gray'],
     ];
 
-    /** board | timeline */
+    /** board | timeline | calendar */
     #[Url]
     public string $show = 'board';
+
+    /** The calendar's month, "2026-11" ('' for this month) */
+    #[Url]
+    public string $month = '';
 
     /** Only the tasks with this label ('' for all) */
     #[Url]
@@ -154,6 +158,23 @@ class Tasks extends Page
         $before = $task->getAttributes();
         $task->update(['due_at' => $task->snoozed($days)->utc()]);
         $this->offerUndo('Snoozed to '.$task->due_at->timezone(Task::TZ)->format('D j M, H:i'), $before);
+    }
+
+    /** Dropped on another day of the calendar: due that day, at the same time. */
+    public function moveToDay(int $id, string $day): void
+    {
+        $task = Task::query()->find($id);
+        if (! $task || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)) {
+            return;
+        }
+        $was = $task->due_at->copy()->timezone(Task::TZ);
+        $to = Carbon::parse($day, Task::TZ)->setTime($was->hour, $was->minute);
+        if ($to->eq($was)) {
+            return;
+        }
+        $before = $task->getAttributes();
+        $task->update(['due_at' => $to->copy()->utc()]);
+        $this->offerUndo('Moved to '.$to->format('D j M'), $before);
     }
 
     public function toggleTimer(int $id): void
@@ -418,6 +439,7 @@ class Tasks extends Page
                 ->when($status === 'done', fn ($c) => $c->sortByDesc('done_at'), fn ($c) => $c->sortByDesc('pinned'))),
             'counts' => self::counts($tasks->where('status', '!=', 'done')),
             'timeline' => $this->show === 'timeline' ? self::timeline($tasks) : null,
+            'calendar' => $this->show === 'calendar' ? $this->calendar() : null,
         ];
     }
 
@@ -432,6 +454,27 @@ class Tasks extends Page
             'today' => $open->filter(fn (Task $t) => ! $t->isLate() && $t->due_at->lte($endOfToday))->count(),
             'week' => $open->filter(fn (Task $t) => $t->due_at->gt($endOfToday) && $t->due_at->lte($endOfToday->copy()->addDays(7)))->count(),
         ];
+    }
+
+    /** The month's weeks, Sunday to Saturday (as the weekly report counts them), each day with the tasks due on it (Erbil days). */
+    public function calendar(): array
+    {
+        $first = Carbon::parse(preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $this->month) ? $this->month.'-01' : 'first day of this month', Task::TZ)->startOfDay();
+        $from = $first->copy()->startOfWeek(CarbonInterface::SUNDAY);
+        $to = $first->copy()->endOfMonth()->endOfWeek(CarbonInterface::SATURDAY);
+        $byDay = Task::query()->with(['project:id,name', 'room.project:id,name'])
+            ->whereBetween('due_at', [$from->copy()->utc(), $to->copy()->utc()])->orderBy('due_at')->get()
+            ->when($this->label !== '', fn ($c) => $c->filter(fn (Task $t) => in_array($this->label, $t->labels ?? [], true)))
+            ->groupBy(fn (Task $t) => $t->due_at->copy()->timezone(Task::TZ)->toDateString());
+        $today = now(Task::TZ)->toDateString();
+
+        $days = [];
+        for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
+            $key = $d->toDateString();
+            $days[] = ['date' => $d->copy(), 'key' => $key, 'in' => $d->month === $first->month, 'today' => $key === $today, 'tasks' => $byDay[$key] ?? collect()];
+        }
+
+        return ['month' => $first, 'prev' => $first->copy()->subMonth()->format('Y-m'), 'next' => $first->copy()->addMonth()->format('Y-m'), 'days' => $days];
     }
 
     /**

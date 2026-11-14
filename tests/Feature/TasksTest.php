@@ -234,6 +234,25 @@ class TasksTest extends TestCase
         $this->assertSame(['0m', '45m', '1h 30m', '6h', '2h 5m'], array_map(Task::hm(...), [0, 45, 90, 360, 125]));
     }
 
+    public function test_the_calendar_shows_the_month_and_a_task_dragged_to_another_day_keeps_its_time(): void
+    {
+        $task = Task::create(['title' => 'Submit the permit', 'due_at' => '2026-11-24 11:30']);   // 14:30 Erbil
+        Task::create(['title' => 'Pour the December slab', 'due_at' => '2026-12-15 09:00']);
+        $page = Livewire::test(Tasks::class)->set('show', 'calendar')
+            ->assertSee('November 2026')->assertSee('14:30')->assertSee('Submit the permit')->assertDontSee('Pour the December slab')
+            ->assertSeeHtml('data-day="2026-11-01"')->assertSeeHtml('data-day="2026-12-05"');   // Sunday 1 Nov to Saturday 5 Dec
+
+        $page->call('moveToDay', $task->id, '2026-11-27')->assertNotified('Moved to Fri 27 Nov');
+        $this->assertSame('2026-11-27 11:30:00', $task->fresh()->getRawOriginal('due_at'));
+        $page->dispatch('undo-task', token: session('task_undo')['token']);
+        $this->assertSame('2026-11-24 11:30:00', $task->fresh()->getRawOriginal('due_at'));
+        $page->call('moveToDay', $task->id, 'soon');
+        $this->assertSame('2026-11-24 11:30:00', $task->fresh()->getRawOriginal('due_at'));
+
+        $page->set('month', '2026-12')->assertSee('December 2026')->assertSee('Pour the December slab')
+            ->set('month', '2026-13')->assertSee('November 2026');   // a made-up month: this one
+    }
+
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
     {
         $this->assertSame('New house', Tasks::templates()[0]['name']);

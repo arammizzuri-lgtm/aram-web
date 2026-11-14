@@ -114,6 +114,40 @@
         .tl-left { position: absolute; top: 5px; font-size: .7rem; line-height: 16px; color: #a0a0a0; white-space: nowrap; }
         .tl-left--danger { color: #ff7a85; font-weight: 600; }
 
+        .cal { border-radius: 14px; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.06); padding: 12px; }
+        .cal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .cal-head h2 { min-width: 9.5em; text-align: center; font-size: 1rem; font-weight: 600; color: #f0f0f0; }
+        .cal-head button { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 10px; border-radius: 9px; font-size: 1.1rem; color: #c8c8c8; background: rgba(255,255,255,.05); }
+        .cal-head button:hover { color: #F5C518; }
+        .cal-head .cal-head__today { margin-inline-start: auto; font-size: .78rem; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+        .cal-wd { padding: 2px 6px; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: #7a7a7a; }
+        .cal-day { min-height: 104px; padding: 6px; border-radius: 9px; background: rgba(255,255,255,.03); display: flex; flex-direction: column; gap: 4px; }
+        .cal-day.is-out { opacity: .45; }
+        .cal-day.is-today { box-shadow: inset 0 0 0 1px rgba(245,197,24,.7); }
+        .cal-day__n { font-size: .78rem; color: #a8a8a8; font-variant-numeric: tabular-nums; }
+        .cal-day__n em { margin-inline-start: 6px; font-style: normal; font-size: .68rem; font-weight: 600; color: #F5C518; }
+        .cal-day__wd, .cal-day__m { display: none; }
+        .cal-list { flex: 1; display: grid; gap: 3px; align-content: start; min-height: 30px; }
+        .cal-task { display: block; width: 100%; overflow: hidden; padding: 3px 6px; border-radius: 6px; text-align: start; white-space: nowrap; text-overflow: ellipsis; font-size: .72rem; line-height: 1.35; color: #e2e2e2; background: rgba(255,255,255,.07); border-inline-start: 3px solid rgba(255,255,255,.25); cursor: grab; }
+        .cal-task b { font-weight: 600; color: #9a9a9a; }
+        .cal-task:hover { color: #F5C518; }
+        .cal-task--danger { border-inline-start-color: #CE1126; background: rgba(206,17,38,.14); }
+        .cal-task--warning { border-inline-start-color: #F5C518; }
+        .cal-task--info { border-inline-start-color: #5aa9e6; }
+        .cal-task.is-done { opacity: .5; text-decoration: line-through; border-inline-start-color: #2e9e63; }
+        .cal-task.sortable-ghost { opacity: .35; }
+
+        @media (max-width: 700px) {
+            /* a phone: the month as a list of the days that have tasks */
+            .cal-grid { grid-template-columns: minmax(0, 1fr); }
+            .cal-wd, .cal-day.is-out, .cal-day.is-empty:not(.is-today) { display: none; }
+            .cal-day { min-height: 0; }
+            .cal-day__wd, .cal-day__m { display: inline; }
+            .cal-task { white-space: normal; font-size: .8rem; padding: 6px 8px; }
+            .cal-head h2 { min-width: 0; flex: 1; }
+        }
+
         @media (max-width: 900px) {
             .tk-board { grid-template-columns: minmax(0, 1fr); }
             .tl-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
@@ -141,6 +175,7 @@
         <div class="tk-switch" role="group" aria-label="View">
             <button type="button" wire:click="$set('show', 'board')" @class(['is-on' => $show === 'board'])>Board</button>
             <button type="button" wire:click="$set('show', 'timeline')" @class(['is-on' => $show === 'timeline'])>Timeline</button>
+            <button type="button" wire:click="$set('show', 'calendar')" @class(['is-on' => $show === 'calendar'])>Calendar</button>
         </div>
     </div>
 
@@ -222,6 +257,40 @@
                     @endforeach
                 @endforeach
             @endif
+        </div>
+    @elseif ($show === 'calendar')
+        {{-- a month: drag a task to another day to move it there, at the same time --}}
+        <div class="cal">
+            <div class="cal-head">
+                <button type="button" wire:click="$set('month', @js($calendar['prev']))" aria-label="Previous month">‹</button>
+                <h2>{{ $calendar['month']->format('F Y') }}</h2>
+                <button type="button" wire:click="$set('month', @js($calendar['next']))" aria-label="Next month">›</button>
+                <button type="button" class="cal-head__today" wire:click="$set('month', '')">This month</button>
+            </div>
+            <div class="cal-grid">
+                @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $wd)
+                    <div class="cal-wd">{{ $wd }}</div>
+                @endforeach
+                @foreach ($calendar['days'] as $day)
+                    <div @class(['cal-day', 'is-out' => ! $day['in'], 'is-today' => $day['today'], 'is-empty' => $day['tasks']->isEmpty()]) wire:key="day-{{ $day['key'] }}">
+                        <p class="cal-day__n"><span class="cal-day__wd">{{ $day['date']->format('D') }}</span> {{ $day['date']->format('j') }}<span class="cal-day__m"> {{ $day['date']->format('M') }}</span>@if ($day['today'])<em>Today</em>@endif</p>
+                        <div class="cal-list" data-day="{{ $day['key'] }}"
+                             x-data x-init="Sortable.create($el, {
+                                 group: 'cal', sort: false, animation: 150, delay: 220, delayOnTouchOnly: true, draggable: '.cal-task',
+                                 onAdd: (e) => { e.item.remove(); $wire.moveToDay(+e.item.dataset.id, e.to.dataset.day) },
+                             })">
+                            @foreach ($day['tasks'] as $t)
+                                <button type="button" data-id="{{ $t->id }}" wire:key="cal-{{ $t->id }}"
+                                        @class(['cal-task', 'cal-task--'.$t->urgency(), 'is-done' => $t->status === 'done'])
+                                        wire:click="mountAction('openTask', { task: {{ $t->id }} })"
+                                        title="{{ $t->title }} — {{ $t->timeLeft() }}{{ ($place = $t->place()) ? ' · '.$place : '' }}">
+                                    <b>{{ $t->due_at->copy()->timezone(Task::TZ)->format('H:i') }}</b> {{ $t->title }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
     @else
         <div class="tk-board">
