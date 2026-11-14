@@ -27,7 +27,7 @@ class Task extends Model
 
     protected $fillable = [
         'title', 'notes', 'status', 'priority', 'pinned', 'labels', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
-        'estimate_minutes', 'spent_minutes', 'timer_started_at', 'attachments', 'attachment_names',
+        'estimate_minutes', 'spent_minutes', 'timer_started_at', 'attachments', 'attachment_names', 'reminder_sent',
     ];
 
     /** Photos and files on a task: private, opened through short-lived signed links */
@@ -68,6 +68,10 @@ class Task extends Model
             }
             if ($t->isDirty('status')) {
                 $t->done_at = $t->status === 'done' ? now() : null;
+            }
+            // moved to another time: the bell rings for it again
+            if ($t->isDirty('due_at')) {
+                $t->reminder_sent = null;
             }
             // done: its timer stops, and the time is kept
             if ($t->status === 'done' && $t->timer_started_at) {

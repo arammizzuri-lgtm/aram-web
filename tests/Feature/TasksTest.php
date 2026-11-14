@@ -17,11 +17,13 @@ use App\Models\VisitRequest;
 use App\Support\DocumentReminders;
 use App\Support\QuickTask;
 use App\Support\StudioMail;
+use App\Support\TaskReminders;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -346,6 +348,34 @@ class TasksTest extends TestCase
 
         $page->call('move', $task->id, 'done');   // this week's photos stay with this week
         $this->assertNull(Task::query()->where('status', 'todo')->sole()->attachments);
+    }
+
+    public function test_the_bell_rings_an_hour_before_a_task_is_due_and_again_when_it_turns_late(): void
+    {
+        // 12:00 in Erbil
+        Queue::fake();   // the host runs no queue worker: nothing may wait for one
+        $user = auth()->user();
+        $task = Task::create(['title' => 'Call Dara', 'due_at' => '2026-11-20 09:40', 'client_room_id' => $this->room()->id]);   // 12:40
+        Task::create(['title' => 'Later on', 'due_at' => '2026-11-20 11:00']);
+        Task::create(['title' => 'Late for days', 'due_at' => '2026-11-17 07:00']);   // red on the board already: no flood of old ones
+        Task::create(['title' => 'Filed', 'due_at' => '2026-11-20 09:30', 'status' => 'done']);
+        $titles = fn () => $user->notifications()->get()->sortBy('created_at')->pluck('data.title')->values()->all();
+
+        $this->assertSame(1, TaskReminders::send());
+        $this->assertSame(0, TaskReminders::send());   // once
+        $this->assertSame(['Due at 12:40: Call Dara'], $titles());
+        $this->assertSame('Within the hour. · Shilan · Ankawa House', $user->notifications()->first()->data['body']);
+
+        $this->travel(45)->minutes();
+        $this->assertSame(1, TaskReminders::send());
+        $this->assertSame(0, TaskReminders::send());
+        $this->assertSame(['Due at 12:40: Call Dara', 'Late: Call Dara'], $titles());
+
+        $task->fresh()->update(['due_at' => now()->addMinutes(30)]);   // snoozed: rings again when it comes round
+        $this->travel(1)->minutes();
+        $this->get(Tasks::getUrl())->assertOk();   // an admin page checks
+        $this->assertCount(3, $titles());
+        Queue::assertNothingPushed();
     }
 
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void

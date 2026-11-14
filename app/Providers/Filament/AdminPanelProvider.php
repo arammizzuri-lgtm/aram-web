@@ -11,6 +11,7 @@ use App\Http\Controllers\TestimonialPhotoController;
 use App\Http\Controllers\PresentationController;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Projects\Pages\ListProjects;
+use App\Http\Middleware\RemindOfTasks;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -105,6 +106,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            // the bell: a task an hour before it is due, and again when it turns late
+            ->databaseNotifications()
+            ->authMiddleware([RemindOfTasks::class], isPersistent: true)
             // Private files, behind the panel login: an applicant's CV, a client
             // room's drawings, receipts, change pictures, meeting files and documents, and the database copies on
             // System → Backups.
