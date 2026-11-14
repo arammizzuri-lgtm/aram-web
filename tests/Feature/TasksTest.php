@@ -15,11 +15,13 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\VisitRequest;
 use App\Mail\MorningTasksMail;
+use App\Mail\WeeklyReportMail;
 use App\Support\DocumentReminders;
 use App\Support\MorningTasks;
 use App\Support\QuickTask;
 use App\Support\StudioMail;
 use App\Support\TaskReminders;
+use App\Support\WeeklyReport;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -414,6 +416,28 @@ class TasksTest extends TestCase
         SiteSetting::flushCache();
         Carbon::setTestNow('2026-11-22 06:00');
         $this->assertFalse(MorningTasks::isDue());
+    }
+
+    public function test_the_sunday_report_lists_the_tasks_done_last_week_with_their_time(): void
+    {
+        $done = function (string $at, string $title, array $more = []) {
+            Carbon::setTestNow($at);   // done then
+            Task::create(['title' => $title, 'due_at' => $at, 'status' => 'done', ...$more]);
+        };
+        $done('2026-11-11 10:00', 'Draw the stair', ['project_id' => $this->project->id, 'estimate_minutes' => 60, 'spent_minutes' => 90]);
+        $done('2026-11-13 10:00', 'Send the invoice');
+        $done('2026-11-16 10:00', 'This week, not last');
+        Task::create(['title' => 'Still open', 'due_at' => '2026-11-12 10:00']);
+
+        Carbon::setTestNow('2026-11-15 06:00');   // Sunday 09:00 in Erbil
+        $report = WeeklyReport::data(...WeeklyReport::lastWeek());
+        $this->assertSame(['Draw the stair', 'Send the invoice'], $report['tasksDone']->pluck('title')->all());
+
+        $html = (new WeeklyReportMail($report))->render();
+        $this->assertStringContainsString('Wed 11 Nov · Ankawa House', $html);
+        $this->assertStringContainsString('1h 30m of 1h', $html);
+        $this->assertStringContainsString('2 done, 1h 30m of work on the timer.', $html);
+        $this->assertStringNotContainsString('Still open', $html);
     }
 
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void

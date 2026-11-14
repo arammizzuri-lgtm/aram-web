@@ -126,6 +126,9 @@ class WeeklyReport
             'projects' => array_slice(Insights::topProjects($start, $end, 5), 0, 5),
             'pages' => $pages,
             'partners' => self::partners($start, $end),
+            // the studio's own work: the tasks closed this week (admin → Tasks)
+            'tasksDone' => \App\Models\Task::query()->where('status', 'done')->whereBetween('done_at', [$start, $end])
+                ->with(['project', 'room.project'])->orderBy('done_at')->get(),
         ];
     }
 

@@ -75,6 +75,22 @@
             <p style="margin:10px 0 0;color:#555;font-size:13px;">The cost estimator was used {{ $r['estimates']['run'] }} {{ $r['estimates']['run'] === 1 ? 'time' : 'times' }}; {{ $r['estimates']['sent'] }} sent their estimate to you.</p>
         @endif
 
+        {{-- the tasks done this week (admin → Tasks) — only in a week some were --}}
+        @if ($r['tasksDone']->isNotEmpty())
+            @php $spent = $r['tasksDone']->sum(fn ($t) => $t->spent()); @endphp
+            <div style="{{ $h2 }}">Tasks done</div>
+            @foreach ($r['tasksDone'] as $t)
+                <div style="{{ $row }}">
+                    <strong>{{ $t->title }}</strong>
+                    <span style="color:#777;"> · {{ $t->done_at->timezone('Asia/Baghdad')->format('D j M') }}{{ $t->place() ? ' · '.$t->place() : '' }}</span>
+                    @if ($t->timeSummary())
+                        <span style="float:right;color:{{ $t->isOverEstimate() ? '#c0392b' : '#555' }};">{{ $t->timeSummary() }}</span>
+                    @endif
+                </div>
+            @endforeach
+            <p style="margin:10px 0 0;color:#555;font-size:13px;">{{ $r['tasksDone']->count() }} done{{ $spent ? ', '.\App\Models\Task::hm($spent).' of work on the timer' : '' }}.</p>
+        @endif
+
         {{-- how they found the site --}}
         @if ($r['sources'])
             <div style="{{ $h2 }}">How visitors found you</div>
