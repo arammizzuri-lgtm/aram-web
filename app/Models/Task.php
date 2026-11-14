@@ -166,6 +166,12 @@ class Task extends Model
         return $this->estimate_minutes && $this->spent() > $this->estimate_minutes;
     }
 
+    /** Minutes of work still to do: the estimate less the time spent — none when done or not estimated. */
+    public function remaining(): int
+    {
+        return $this->status === 'done' || ! $this->estimate_minutes ? 0 : max(0, $this->estimate_minutes - $this->spent());
+    }
+
     /** Snoozed some days: the same time of day (Erbil), counted from today if it is already late. */
     public function snoozed(int $days): CarbonInterface
     {

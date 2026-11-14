@@ -114,6 +114,19 @@
         .tl-left { position: absolute; top: 5px; font-size: .7rem; line-height: 16px; color: #a0a0a0; white-space: nowrap; }
         .tl-left--danger { color: #ff7a85; font-weight: 600; }
 
+        /* the busy meter: up to half a day (or week), up to full, more than fits */
+        .busy-1 { --b: #9c8a3c; } .busy-2 { --b: #F5C518; } .busy-3 { --b: #ff7a85; }
+        .tk-count--busy { border-color: rgba(206,17,38,.55); background: rgba(206,17,38,.12); }
+        .tk-count--busy b { font-size: .82rem; color: #ff7a85; }
+        .tk-count--busy:hover { border-color: #ff7a85; }
+        .tl-heat { position: absolute; bottom: -2px; height: 4px; border-radius: 2px; background: var(--b); }
+        .cal-day__h { float: inline-end; font-size: .7rem; font-weight: 600; color: var(--b); }
+        .cal-busy { display: block; height: 3px; border-radius: 2px; background: rgba(255,255,255,.06); overflow: hidden; }
+        .cal-busy i, .cal-week__bar i { display: block; height: 100%; background: var(--b); }
+        .cal-week { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 6px 6px; font-size: .72rem; color: #8d8d8d; }
+        .cal-week__bar { flex: 0 0 120px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); overflow: hidden; }
+        .cal-week.busy-3 { color: #ff7a85; font-weight: 600; }
+
         .cal { border-radius: 14px; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.06); padding: 12px; }
         .cal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
         .cal-head h2 { min-width: 9.5em; text-align: center; font-size: 1rem; font-weight: 600; color: #f0f0f0; }
@@ -170,6 +183,11 @@
                 <button type="button" class="tk-count tk-count--timing" wire:click="toggleTimer({{ $timing->id }})" title="Stop the timer">
                     <i aria-hidden="true"></i>Timing <b>{{ Str::limit($timing->title, 40) }}</b><span>Stop</span>
                 </button>
+            @endif
+            @if ($busyWeek)
+                <a class="tk-count tk-count--busy" href="{{ Tasks::getUrl(['show' => 'calendar', 'month' => $busyWeek['from']->format('Y-m')]) }}">
+                    <b>Busy week</b> {{ $busyWeek['from']->format('j M') }} – {{ $busyWeek['to']->format('j M') }}: {{ Task::hm($busyWeek['minutes']) }} of work, more than a {{ Task::hm(Tasks::WEEK_MINUTES) }} week
+                </a>
             @endif
         </div>
         <div class="tk-switch" role="group" aria-label="View">
@@ -228,6 +246,9 @@
                         @foreach ($timeline['ticks'] as $tick)
                             <span class="tl-tick" style="left: {{ $tick['left'] }}%">{{ $tick['label'] }}</span>
                         @endforeach
+                        @foreach ($timeline['heat'] as $h)
+                            <span class="tl-heat busy-{{ $h['level'] }}" style="left: {{ $h['left'] }}%; width: {{ $h['width'] }}%" title="{{ $h['title'] }}"></span>
+                        @endforeach
                         <span class="tl-now" style="left: {{ $timeline['today'] }}%"></span>
                     </div>
                 </div>
@@ -273,7 +294,12 @@
                 @endforeach
                 @foreach ($calendar['days'] as $day)
                     <div @class(['cal-day', 'is-out' => ! $day['in'], 'is-today' => $day['today'], 'is-empty' => $day['tasks']->isEmpty()]) wire:key="day-{{ $day['key'] }}">
-                        <p class="cal-day__n"><span class="cal-day__wd">{{ $day['date']->format('D') }}</span> {{ $day['date']->format('j') }}<span class="cal-day__m"> {{ $day['date']->format('M') }}</span>@if ($day['today'])<em>Today</em>@endif</p>
+                        @php $dayLevel = $day['busy'] ? 'busy-'.Tasks::busyLevel($day['busy'], Tasks::DAY_MINUTES) : '' @endphp
+                        <p class="cal-day__n"><span class="cal-day__wd">{{ $day['date']->format('D') }}</span> {{ $day['date']->format('j') }}<span class="cal-day__m"> {{ $day['date']->format('M') }}</span>@if ($day['today'])<em>Today</em>@endif
+                            @if ($day['busy'])<b class="cal-day__h {{ $dayLevel }}" title="{{ Task::hm($day['busy']) }} of work; a full day is {{ Task::hm(Tasks::DAY_MINUTES) }}">{{ Task::hm($day['busy']) }}</b>@endif</p>
+                        @if ($day['busy'])
+                            <span class="cal-busy {{ $dayLevel }}" aria-hidden="true"><i style="width: {{ min(100, round($day['busy'] / Tasks::DAY_MINUTES * 100)) }}%"></i></span>
+                        @endif
                         <div class="cal-list" data-day="{{ $day['key'] }}"
                              x-data x-init="Sortable.create($el, {
                                  group: 'cal', sort: false, animation: 150, delay: 220, delayOnTouchOnly: true, draggable: '.cal-task',
@@ -289,6 +315,13 @@
                             @endforeach
                         </div>
                     </div>
+                    @if ($loop->iteration % 7 === 0 && ($weekBusy = $calendar['weeks'][intdiv($loop->index, 7)]))
+                        @php $weekLevel = Tasks::busyLevel($weekBusy, Tasks::WEEK_MINUTES) @endphp
+                        <div class="cal-week busy-{{ $weekLevel }}">
+                            <span class="cal-week__bar" aria-hidden="true"><i style="width: {{ min(100, round($weekBusy / Tasks::WEEK_MINUTES * 100)) }}%"></i></span>
+                            Week of {{ $calendar['days'][$loop->index - 6]['date']->format('j M') }}: {{ Task::hm($weekBusy) }} of work{{ $weekLevel === 3 ? ', more than a '.Task::hm(Tasks::WEEK_MINUTES).' week' : ' of '.Task::hm(Tasks::WEEK_MINUTES) }}
+                        </div>
+                    @endif
                 @endforeach
             </div>
         </div>

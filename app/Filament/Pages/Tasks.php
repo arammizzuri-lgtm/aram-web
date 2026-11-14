@@ -80,6 +80,11 @@ class Tasks extends Page
         ['key' => 'admin', 'name' => 'Admin', 'colour' => 'gray'],
     ];
 
+    /** For the busy meter: a full day, and a full week (Sunday to Thursday). shortcut: fixed, a setting if the studio's hours differ */
+    public const DAY_MINUTES = 8 * 60;
+
+    public const WEEK_MINUTES = 40 * 60;
+
     /** board | timeline | calendar */
     #[Url]
     public string $show = 'board';
@@ -428,6 +433,8 @@ class Tasks extends Page
             ->where(fn ($q) => $q->open()->orWhere('done_at', '>=', now()->subDays(14)))
             ->orderBy('due_at')->get();
         $tasks = $this->label === '' ? $all : $all->filter(fn (Task $t) => in_array($this->label, $t->labels ?? [], true));
+        // how full the days are counts all the work, whatever label is shown
+        $busy = self::busy($all);
 
         return [
             'preview' => trim($this->quick) !== '' ? QuickTask::parse($this->quick) : null,
@@ -438,9 +445,41 @@ class Tasks extends Page
                 // pinned on top, the rest by when they are due (a stable sort keeps that order)
                 ->when($status === 'done', fn ($c) => $c->sortByDesc('done_at'), fn ($c) => $c->sortByDesc('pinned'))),
             'counts' => self::counts($tasks->where('status', '!=', 'done')),
-            'timeline' => $this->show === 'timeline' ? self::timeline($tasks) : null,
-            'calendar' => $this->show === 'calendar' ? $this->calendar() : null,
+            'busyWeek' => self::busyWeek($busy),
+            'timeline' => $this->show === 'timeline' ? self::timeline($tasks, $busy) : null,
+            'calendar' => $this->show === 'calendar' ? $this->calendar($busy) : null,
         ];
+    }
+
+    /** Work still to do (from the estimates), in minutes by Erbil day: the day it is due, or today when it is late. */
+    public static function busy(Collection $tasks): Collection
+    {
+        $today = now(Task::TZ)->toDateString();
+
+        return $tasks->filter(fn (Task $t) => $t->remaining() > 0)
+            ->groupBy(fn (Task $t) => max($today, $t->due_at->copy()->timezone(Task::TZ)->toDateString()))
+            ->map(fn (Collection $g) => $g->sum(fn (Task $t) => $t->remaining()));
+    }
+
+    /** 1 up to half full · 2 up to full · 3 more than fits */
+    public static function busyLevel(int $minutes, int $full): int
+    {
+        return $minutes > $full ? 3 : ($minutes > $full / 2 ? 2 : 1);
+    }
+
+    /** The first of this week and the five after (Sunday to Saturday) with more work than a week holds: [from, to, minutes], or null. */
+    public static function busyWeek(Collection $busy): ?array
+    {
+        $sunday = now(Task::TZ)->startOfWeek(CarbonInterface::SUNDAY);
+        for ($w = 0; $w < 6; $w++, $sunday->addWeek()) {
+            $saturday = $sunday->copy()->addDays(6);
+            $minutes = $busy->filter(fn ($m, $day) => $day >= $sunday->toDateString() && $day <= $saturday->toDateString())->sum();
+            if ($minutes > self::WEEK_MINUTES) {
+                return ['from' => $sunday->copy(), 'to' => $saturday, 'minutes' => $minutes];
+            }
+        }
+
+        return null;
     }
 
     /** Of the open tasks: how many, how many late, due later today, and due in the 7 days after (Erbil days). */
@@ -457,7 +496,7 @@ class Tasks extends Page
     }
 
     /** The month's weeks, Sunday to Saturday (as the weekly report counts them), each day with the tasks due on it (Erbil days). */
-    public function calendar(): array
+    public function calendar(Collection $busy): array
     {
         $first = Carbon::parse(preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $this->month) ? $this->month.'-01' : 'first day of this month', Task::TZ)->startOfDay();
         $from = $first->copy()->startOfWeek(CarbonInterface::SUNDAY);
@@ -471,17 +510,18 @@ class Tasks extends Page
         $days = [];
         for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
             $key = $d->toDateString();
-            $days[] = ['date' => $d->copy(), 'key' => $key, 'in' => $d->month === $first->month, 'today' => $key === $today, 'tasks' => $byDay[$key] ?? collect()];
+            $days[] = ['date' => $d->copy(), 'key' => $key, 'in' => $d->month === $first->month, 'today' => $key === $today, 'tasks' => $byDay[$key] ?? collect(), 'busy' => $busy[$key] ?? 0];
         }
+        $weeks = array_map(fn (array $week) => array_sum(array_column($week, 'busy')), array_chunk($days, 7));
 
-        return ['month' => $first, 'prev' => $first->copy()->subMonth()->format('Y-m'), 'next' => $first->copy()->addMonth()->format('Y-m'), 'days' => $days];
+        return ['month' => $first, 'prev' => $first->copy()->subMonth()->format('Y-m'), 'next' => $first->copy()->addMonth()->format('Y-m'), 'days' => $days, 'weeks' => $weeks];
     }
 
     /**
      * Bars on a span from a week ago to a little after the last due day (at
      * most four months), grouped by project, each placed in percent.
      */
-    public static function timeline(Collection $tasks): array
+    public static function timeline(Collection $tasks, ?Collection $busy = null): array
     {
         $from = now(Task::TZ)->startOfDay()->subDays(7);
         $last = $tasks->where('status', '!=', 'done')->max('due_at') ?? now();
@@ -503,6 +543,14 @@ class Tasks extends Page
             $ticks[] = ['left' => $at($d), 'label' => $d->format('j M')];
         }
 
-        return ['groups' => $groups, 'ticks' => $ticks, 'today' => $at(now())];
+        // the busy meter: a strip under the dates, each day as full as its work
+        $heat = collect($busy)->map(function (int $minutes, string $day) use ($at) {
+            $d = Carbon::parse($day, Task::TZ);
+
+            return ['left' => $at($d), 'width' => $at($d->copy()->addDay()) - $at($d), 'level' => self::busyLevel($minutes, self::DAY_MINUTES),
+                'title' => $d->format('D j M').': '.Task::hm($minutes).' of work'];
+        })->filter(fn (array $h) => $h['width'] > 0)->values();
+
+        return ['groups' => $groups, 'ticks' => $ticks, 'today' => $at(now()), 'heat' => $heat];
     }
 }

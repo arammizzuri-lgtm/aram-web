@@ -253,6 +253,33 @@ class TasksTest extends TestCase
             ->set('month', '2026-13')->assertSee('November 2026');   // a made-up month: this one
     }
 
+    public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void
+    {
+        // Fri 20 Nov, 12:00 in Erbil; the week is Sun 15 – Sat 21 Nov
+        Task::create(['title' => 'Sections', 'due_at' => '2026-11-21 07:00', 'estimate_minutes' => 360, 'spent_minutes' => 60]);
+        Task::create(['title' => 'Elevations', 'due_at' => '2026-11-21 12:00', 'estimate_minutes' => 240]);
+        $late = Task::create(['title' => 'Site survey', 'due_at' => '2026-11-18 07:00', 'estimate_minutes' => 1800]);   // late: today's work
+        Task::create(['title' => 'Call back', 'due_at' => '2026-11-20 15:00', 'estimate_minutes' => 120]);
+        Task::create(['title' => 'Filed', 'due_at' => '2026-11-21 07:00', 'estimate_minutes' => 600, 'status' => 'done']);
+        Task::create(['title' => 'No guess', 'due_at' => '2026-11-21 07:00']);
+        Task::create(['title' => 'Next week', 'due_at' => '2026-11-25 07:00', 'estimate_minutes' => 60]);
+
+        $busy = Tasks::busy(Task::all());
+        $this->assertSame(['2026-11-20' => 1920, '2026-11-21' => 540, '2026-11-25' => 60], $busy->sortKeys()->all());
+        $week = Tasks::busyWeek($busy);
+        $this->assertSame(['2026-11-15', 2460], [$week['from']->toDateString(), $week['minutes']]);
+
+        $page = Livewire::test(Tasks::class)->assertSee('15 Nov – 21 Nov: 41h of work, more than a 40h week')
+            ->set('label', 'client')->assertSee('Busy week')   // all the work counts, whatever is shown
+            ->set('label', '')->set('show', 'calendar')
+            ->assertSeeHtml('cal-day__h busy-3')->assertSee('32h')->assertSee('9h')
+            ->assertSee('Week of 15 Nov: 41h of work, more than a 40h week')->assertSee('Week of 22 Nov: 1h of work of 40h')
+            ->set('show', 'timeline')->assertSeeHtml('tl-heat busy-3')->assertSee('Sat 21 Nov: 9h of work');
+
+        $late->update(['status' => 'done']);
+        $page->set('show', 'board')->assertDontSee('Busy week');
+    }
+
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
     {
         $this->assertSame('New house', Tasks::templates()[0]['name']);
