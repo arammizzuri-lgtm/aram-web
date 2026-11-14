@@ -203,6 +203,37 @@ class TasksTest extends TestCase
         $this->assertSame(0, Task::count());
     }
 
+    public function test_the_timer_counts_time_one_task_at_a_time_against_its_estimate(): void
+    {
+        $page = Livewire::test(Tasks::class)->callAction('newTask', ['title' => 'Concept design', 'due_at' => '2026-11-27 17:00',
+            'project_id' => $this->project->id, 'estimate_minutes' => 1.5])->assertHasNoActionErrors();
+        $a = Task::sole();
+        $b = Task::create(['title' => 'Call the engineer', 'due_at' => '2026-11-21 17:00', 'project_id' => $this->project->id]);
+        $this->assertSame([90, 0], [$a->estimate_minutes, $a->spent_minutes]);   // written in hours
+
+        // started: begun; another started: the first one stops with its time
+        $page->call('toggleTimer', $a->id);
+        $this->assertSame('doing', $a->fresh()->status);
+        $this->travel(50)->minutes();
+        $page->call('toggleTimer', $b->id)->assertSee('Timing')->assertSee('Call the engineer');
+        $this->assertSame([50, null], [$a->fresh()->spent_minutes, $a->fresh()->timer_started_at]);
+        $this->travel(20)->minutes();
+        $page->call('toggleTimer', $b->id);
+        $this->assertSame(20, $b->fresh()->spent_minutes);
+
+        // over the estimate, and done stops a running timer
+        $page->call('toggleTimer', $a->id);
+        $this->travel(55)->minutes();
+        $this->assertTrue($a->fresh()->isOverEstimate());
+        $page->call('move', $a->id, 'done')->assertSee('Took 1h 45m of 1h 30m');
+        $this->assertSame([105, null], [$a->fresh()->spent_minutes, $a->fresh()->timer_started_at]);
+
+        // the project's tab: each task's time, and the totals
+        Livewire::test(TasksRelationManager::class, ['ownerRecord' => $this->project, 'pageClass' => EditProject::class])
+            ->assertSee('1h 45m')->assertSee('20m')->assertSee('2h 5m')->assertSee('1h 30m');
+        $this->assertSame(['0m', '45m', '1h 30m', '6h', '2h 5m'], array_map(Task::hm(...), [0, 45, 90, 360, 125]));
+    }
+
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
     {
         $this->assertSame('New house', Tasks::templates()[0]['name']);

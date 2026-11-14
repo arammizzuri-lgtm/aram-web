@@ -74,6 +74,18 @@
         .tk-moves button { padding: 3px 10px; border-radius: 999px; font-size: .72rem; color: #c8c8c8; border: 1px solid rgba(255,255,255,.12); }
         .tk-moves button:hover { border-color: #F5C518; color: #F5C518; }
         .tk-moves .tk-done { border-color: rgba(46,158,99,.6); color: #6fd39b; }
+        .tk-moves .tk-timer { display: inline-flex; align-items: center; gap: 5px; color: #b8b8b8; font-variant-numeric: tabular-nums; }
+        .tk-timer svg { width: 10px; height: 10px; }
+        .tk-timer small { color: #7d7d7d; font-size: .7rem; }
+        .tk-moves .tk-timer.is-on { border-color: rgba(46,158,99,.7); background: rgba(46,158,99,.14); color: #6fd39b; }
+        .tk-moves .tk-timer.is-over, .tk-moves .tk-timer.is-over small { color: #ff7a85; }
+        .tk-tag--over { color: #ff7a85; }
+        .tk-count--timing { display: inline-flex; align-items: center; gap: 6px; border-color: rgba(46,158,99,.55); background: rgba(46,158,99,.1); }
+        .tk-count--timing i { width: 8px; height: 8px; border-radius: 50%; background: #3fbf7f; animation: tk-blink 1.4s ease-in-out infinite; }
+        .tk-count--timing b { font-size: .82rem; margin: 0; }
+        .tk-count--timing span { color: #6fd39b; font-weight: 600; }
+        @keyframes tk-blink { 50% { opacity: .25; } }
+        @media (prefers-reduced-motion: reduce) { .tk-count--timing i { animation: none; } }
         .tk-snooze { position: relative; margin-inline-end: auto; }
         .tk-moves .tk-snooze > button { border-color: transparent; color: #8d8d8d; padding-inline: 4px; }
         .tk-snooze__menu { position: absolute; z-index: 20; bottom: calc(100% + 6px); inset-inline-start: 0; display: grid; min-width: 170px; padding: 5px; border-radius: 10px; background: #232327; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
@@ -120,6 +132,11 @@
             <span @class(['tk-count', 'tk-count--late' => $counts['late']])><b>{{ $counts['late'] }}</b>late</span>
             <span class="tk-count"><b>{{ $counts['today'] }}</b>due today</span>
             <span class="tk-count"><b>{{ $counts['week'] }}</b>in the next 7 days</span>
+            @if ($timing)
+                <button type="button" class="tk-count tk-count--timing" wire:click="toggleTimer({{ $timing->id }})" title="Stop the timer">
+                    <i aria-hidden="true"></i>Timing <b>{{ Str::limit($timing->title, 40) }}</b><span>Stop</span>
+                </button>
+            @endif
         </div>
         <div class="tk-switch" role="group" aria-label="View">
             <button type="button" wire:click="$set('show', 'board')" @class(['is-on' => $show === 'board'])>Board</button>
@@ -252,6 +269,9 @@
                                     @if ($t->source_type)
                                         <span class="tk-tag" title="Made by the website; it closes itself once answered">⚡ From the site</span>
                                     @endif
+                                    @if ($status === 'done' && ($took = $t->timeSummary()))
+                                        <span @class(['tk-tag', 'tk-tag--over' => $t->isOverEstimate()])>Took {{ $took }}</span>
+                                    @endif
                                 </div>
                                 @if ($all)
                                     <details class="tk-steps" wire:ignore.self>
@@ -279,6 +299,28 @@
                                                 @endforeach
                                             </div>
                                         </div>
+                                        @php $running = $t->timer_started_at !== null; @endphp
+                                        {{-- the timer: ticks in the browser from the seconds already spent --}}
+                                        <button type="button" wire:click="toggleTimer({{ $t->id }})" wire:key="timer-{{ $t->id }}-{{ $t->timer_started_at?->timestamp ?? 0 }}"
+                                                @class(['tk-timer', 'is-on' => $running, 'is-over' => $t->isOverEstimate()])
+                                                title="{{ $running ? 'Stop the timer' : 'Start the timer' }}" aria-label="{{ $running ? 'Stop the timer' : 'Start the timer' }}"
+                                                @if ($running)
+                                                    x-data="{ t: '', i: null,
+                                                        init() { const b = {{ $t->spent_minutes * 60 + (int) $t->timer_started_at->diffInSeconds(now()) }}, r = Date.now();
+                                                            const tick = () => { const x = b + Math.floor((Date.now() - r) / 1000);
+                                                                this.t = Math.floor(x / 3600) + ':' + String(Math.floor(x % 3600 / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0') };
+                                                            tick(); this.i = setInterval(tick, 1000) },
+                                                        destroy() { clearInterval(this.i) } }"
+                                                @endif>
+                                            @if ($running)
+                                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                                                <span x-text="t">{{ Task::hm($t->spent()) }}</span>
+                                            @else
+                                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5z"/></svg>
+                                                @if ($t->spent())<span>{{ Task::hm($t->spent()) }}</span>@endif
+                                            @endif
+                                            @if ($t->estimate_minutes)<small>/ {{ Task::hm($t->estimate_minutes) }}</small>@endif
+                                        </button>
                                     @endif
                                     @if ($status === 'todo')
                                         <button type="button" wire:click="move({{ $t->id }}, 'doing')">Start →</button>

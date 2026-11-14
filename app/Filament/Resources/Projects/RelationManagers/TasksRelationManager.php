@@ -10,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -42,6 +43,14 @@ class TasksRelationManager extends RelationManager
                     ->color(fn (string $state) => ['doing' => 'warning', 'done' => 'success'][$state] ?? 'gray'),
                 TextColumn::make('due_at')->label('Due')->dateTime('D j M, H:i', Task::TZ)->sortable()
                     ->description(fn (Task $r) => $r->timeLeft())->color(fn (Task $r) => $r->urgency()),
+                // what the work took, against what was thought: for pricing the next one
+                TextColumn::make('estimate_minutes')->label('Estimate')->placeholder('—')
+                    ->formatStateUsing(fn (int $state) => Task::hm($state))
+                    ->summarize(Sum::make()->label('Estimated')->formatStateUsing(fn ($state) => Task::hm((int) $state))),
+                TextColumn::make('spent_minutes')->label('Time spent')
+                    ->formatStateUsing(fn (Task $record) => $record->spent() ? Task::hm($record->spent()) : '—')
+                    ->color(fn (Task $record) => $record->isOverEstimate() ? 'danger' : null)
+                    ->summarize(Sum::make()->label('Spent')->formatStateUsing(fn ($state) => Task::hm((int) $state))),
             ])
             ->headerActions([
                 CreateAction::make()->label('Add a task'),

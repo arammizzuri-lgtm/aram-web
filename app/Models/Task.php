@@ -26,9 +26,10 @@ class Task extends Model
 
     protected $fillable = [
         'title', 'notes', 'status', 'priority', 'pinned', 'labels', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
+        'estimate_minutes', 'spent_minutes', 'timer_started_at',
     ];
 
-    protected $attributes = ['status' => 'todo', 'priority' => 'normal', 'pinned' => false];
+    protected $attributes = ['status' => 'todo', 'priority' => 'normal', 'pinned' => false, 'spent_minutes' => 0];
 
     /** The id of the next one this save made (a repeating task, done) — for Undo to take back. */
     public ?int $madeNext = null;
@@ -39,6 +40,9 @@ class Task extends Model
         'starts_on' => 'date',
         'due_at' => 'datetime',
         'done_at' => 'datetime',
+        'timer_started_at' => 'datetime',
+        'estimate_minutes' => 'integer',
+        'spent_minutes' => 'integer',
         'checklist' => 'array',
     ];
 
@@ -58,6 +62,11 @@ class Task extends Model
             }
             if ($t->isDirty('status')) {
                 $t->done_at = $t->status === 'done' ? now() : null;
+            }
+            // done: its timer stops, and the time is kept
+            if ($t->status === 'done' && $t->timer_started_at) {
+                $t->spent_minutes = $t->spent();
+                $t->timer_started_at = null;
             }
             // done: the next one of a repeating task, and this one stops repeating
             if ($t->isDirty('status') && $t->status === 'done' && $t->repeat) {
@@ -104,8 +113,57 @@ class Task extends Model
         $next->due_at = $due;
         $next->starts_on = $this->starts_on ? $due->copy()->subDays((int) $this->starts_on->diffInDays($this->due_at)) : null;
         $next->checklist = collect($this->checklist ?? [])->map(fn ($s) => ['text' => $s['text'] ?? '', 'done' => false])->all() ?: null;
+        $next->spent_minutes = 0;
+        $next->timer_started_at = null;
 
         return $next;
+    }
+
+    // ---- time: the estimate, the time spent, and one timer running at a time
+
+    /** Minutes spent, with the running timer's. */
+    public function spent(): int
+    {
+        return $this->spent_minutes + ($this->timer_started_at ? (int) round($this->timer_started_at->diffInSeconds(now()) / 60) : 0);
+    }
+
+    /** Starts its timer — stopping any other — and a task still to do is begun. */
+    public function startTimer(): void
+    {
+        static::query()->whereNotNull('timer_started_at')->whereKeyNot($this->id)->get()->each->stopTimer();
+        $this->update(['timer_started_at' => now(), 'status' => $this->status === 'todo' ? 'doing' : $this->status]);
+    }
+
+    public function stopTimer(): void
+    {
+        if ($this->timer_started_at) {
+            $this->update(['spent_minutes' => $this->spent(), 'timer_started_at' => null]);
+        }
+    }
+
+    /** 90 → "1h 30m", 45 → "45m", 360 → "6h" */
+    public static function hm(int $minutes): string
+    {
+        $h = intdiv($minutes, 60);
+        $m = $minutes % 60;
+
+        return trim(($h ? $h.'h ' : '').($m || ! $h ? $m.'m' : ''));
+    }
+
+    /** "1h 24m of 6h", "45m", or null when nothing is known yet */
+    public function timeSummary(): ?string
+    {
+        $spent = $this->spent();
+        if (! $spent && ! $this->estimate_minutes) {
+            return null;
+        }
+
+        return self::hm($spent).($this->estimate_minutes ? ' of '.self::hm($this->estimate_minutes) : '');
+    }
+
+    public function isOverEstimate(): bool
+    {
+        return $this->estimate_minutes && $this->spent() > $this->estimate_minutes;
     }
 
     /** Snoozed some days: the same time of day (Erbil), counted from today if it is already late. */

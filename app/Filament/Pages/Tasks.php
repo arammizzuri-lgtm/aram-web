@@ -156,6 +156,14 @@ class Tasks extends Page
         $this->offerUndo('Snoozed to '.$task->due_at->timezone(Task::TZ)->format('D j M, H:i'), $before);
     }
 
+    public function toggleTimer(int $id): void
+    {
+        $task = Task::query()->open()->find($id);
+        if ($task) {
+            $task->timer_started_at ? $task->stopTimer() : $task->startTimer();
+        }
+    }
+
     public function togglePin(int $id): void
     {
         $task = Task::query()->find($id);
@@ -229,6 +237,15 @@ class Tasks extends Page
                 ->helperText('A room\'s task is its project\'s too.'),
             Select::make('repeat')->options(Task::REPEATS)->placeholder('Does not repeat')
                 ->helperText('Done, the next one appears by itself.'),
+            // kept in minutes, written in hours
+            TextInput::make('estimate_minutes')->label('Estimate')->numeric()->minValue(0)->step(0.25)->suffix('hours')
+                ->helperText('How long you think it takes.')
+                ->formatStateUsing(fn ($state) => $state ? round($state / 60, 2) : null)
+                ->dehydrateStateUsing(fn ($state) => filled($state) ? (int) round($state * 60) : null),
+            TextInput::make('spent_minutes')->label('Time spent')->numeric()->minValue(0)->step(0.25)->suffix('hours')
+                ->helperText('The timer adds to it — or write it in.')
+                ->formatStateUsing(fn ($state) => $state ? round($state / 60, 2) : null)
+                ->dehydrateStateUsing(fn ($state) => (int) round(((float) $state) * 60)),
             Repeater::make('checklist')->label('Checklist')->columnSpanFull()->addActionLabel('Add a step')
                 ->defaultItems(0)->reorderable()->columns(['default' => 12])
                 ->schema([
@@ -341,6 +358,7 @@ class Tasks extends Page
         return Action::make('openTask')->modalHeading('Task')->modalWidth('2xl')->modalSubmitActionLabel('Save')
             ->fillForm(fn (array $arguments) => $task($arguments)->only([
                 'title', 'due_at', 'starts_on', 'status', 'priority', 'labels', 'client_room_id', 'project_id', 'repeat', 'checklist', 'notes',
+                'estimate_minutes', 'spent_minutes',
             ]))
             ->schema(self::fields())
             ->extraModalFooterActions(fn (array $arguments) => [
@@ -392,6 +410,7 @@ class Tasks extends Page
 
         return [
             'preview' => trim($this->quick) !== '' ? QuickTask::parse($this->quick) : null,
+            'timing' => $all->first(fn (Task $t) => $t->timer_started_at !== null),
             'labels' => self::labels(),
             'labelCounts' => $all->where('status', '!=', 'done')->flatMap(fn (Task $t) => $t->labels ?? [])->countBy(),
             'columns' => collect(Task::STATUSES)->map(fn ($label, $status) => $tasks->where('status', $status)
