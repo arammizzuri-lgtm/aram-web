@@ -111,6 +111,10 @@
         .tl-bar--info { background: rgba(90,169,230,.65); }
         .tl-bar--done { background: rgba(46,158,99,.45); }
         .tl-fill { position: absolute; inset: 0 auto 0 0; background: rgba(255,255,255,.28); }
+        .tl-bar.is-draggable { cursor: grab; touch-action: pan-y; }
+        .tl-bar.is-draggable:active { cursor: grabbing; }
+        .tl-end { position: absolute; inset: 0 0 0 auto; width: 8px; max-width: 40%; cursor: ew-resize; }
+        .tl-bar:hover .tl-end { background: rgba(255,255,255,.35); }
         .tl-left { position: absolute; top: 5px; font-size: .7rem; line-height: 16px; color: #a0a0a0; white-space: nowrap; }
         .tl-left--danger { color: #ff7a85; font-weight: 600; }
 
@@ -236,7 +240,38 @@
     @endif
 
     @if ($show === 'timeline')
-        <div class="tl">
+        {{-- drag a bar to move the task, its start with it, or its end to change only when it is due; in whole days --}}
+        <div class="tl" x-data="{
+            moved: false,
+            grab(e, endOnly) {
+                if (e.button !== 0) return;
+                const bar = e.target.closest('.tl-bar'), w = bar.parentElement.getBoundingClientRect().width, x0 = e.clientX;
+                const left = parseFloat(bar.style.left), width = parseFloat(bar.style.width), days = {{ $timeline['days'] ?? 1 }};
+                const said = bar.parentElement.querySelector('.tl-left'), was = said.textContent;
+                let n = 0;
+                this.moved = false;
+                bar.setPointerCapture(e.pointerId);
+                const move = (ev) => {
+                    this.moved ||= Math.abs(ev.clientX - x0) > 4;
+                    if (! this.moved) return;
+                    n = Math.round((ev.clientX - x0) / w * days);
+                    const d = n / days * 100;
+                    endOnly ? bar.style.width = Math.max(1.2, width + d) + '%' : bar.style.left = (left + d) + '%';
+                    const due = new Date(bar.dataset.due + 'T12:00');
+                    due.setDate(due.getDate() + n);
+                    said.textContent = (endOnly ? 'Due ' : 'To ') + due.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+                };
+                const up = () => {
+                    bar.removeEventListener('pointermove', move);
+                    bar.removeEventListener('pointerup', up);
+                    bar.removeEventListener('pointercancel', up);
+                    if (n) { this.$wire.shiftOnTimeline(+bar.dataset.id, n, endOnly) } else { bar.style.left = left + '%'; bar.style.width = width + '%'; said.textContent = was }
+                };
+                bar.addEventListener('pointermove', move);
+                bar.addEventListener('pointerup', up);
+                bar.addEventListener('pointercancel', up);
+            },
+        }">
             @if ($timeline['groups']->isEmpty())
                 <p class="tk-empty">Nothing on the timeline yet — add a task, or start from a template.</p>
             @else
@@ -265,12 +300,21 @@
                             <button type="button" class="tl-name" wire:click="{{ $open }}" title="{{ $t->title }}">{{ $t->title }}</button>
                             <div class="tl-track">
                                 <span class="tl-now" style="left: {{ $timeline['today'] }}%"></span>
-                                <button type="button" @class(['tl-bar', 'tl-bar--'.$t->urgency(), 'tl-bar--done' => $t->status === 'done'])
-                                        style="left: {{ $row['left'] }}%; width: {{ $row['width'] }}%"
-                                        wire:click="{{ $open }}" aria-label="{{ $t->title }}"
-                                        title="{{ $t->startsAt()->timezone(Task::TZ)->format('j M') }} → {{ $t->due_at->timezone(Task::TZ)->format('D j M, H:i') }}">
-                                    @if ($all)<span class="tl-fill" style="width: {{ round($ticked / $all * 100) }}%"></span>@endif
-                                </button>
+                                @if ($t->status === 'done')
+                                    <button type="button" class="tl-bar tl-bar--done" style="left: {{ $row['left'] }}%; width: {{ $row['width'] }}%"
+                                            wire:click="{{ $open }}" aria-label="{{ $t->title }}"
+                                            title="{{ $t->startsAt()->timezone(Task::TZ)->format('j M') }} → {{ $t->due_at->copy()->timezone(Task::TZ)->format('D j M, H:i') }}">
+                                        @if ($all)<span class="tl-fill" style="width: {{ round($ticked / $all * 100) }}%"></span>@endif
+                                    </button>
+                                @else
+                                    <button type="button" class="tl-bar tl-bar--{{ $t->urgency() }} is-draggable" style="left: {{ $row['left'] }}%; width: {{ $row['width'] }}%"
+                                            data-id="{{ $t->id }}" data-due="{{ $t->due_at->copy()->timezone(Task::TZ)->toDateString() }}"
+                                            x-on:pointerdown="grab($event, false)" x-on:click="moved ? moved = false : $wire.{{ $open }}" aria-label="{{ $t->title }}"
+                                            title="{{ $t->startsAt()->timezone(Task::TZ)->format('j M') }} → {{ $t->due_at->copy()->timezone(Task::TZ)->format('D j M, H:i') }} · drag to move, or drag its end">
+                                        @if ($all)<span class="tl-fill" style="width: {{ round($ticked / $all * 100) }}%"></span>@endif
+                                        <span class="tl-end" x-on:pointerdown.stop="grab($event, true)" aria-hidden="true"></span>
+                                    </button>
+                                @endif
                                 <span @class(['tl-left', 'tl-left--danger' => $t->isLate()])
                                       style="{{ $end > 72 ? 'right: calc('.(100 - $row['left']).'% + 6px)' : 'left: calc('.$end.'% + 6px)' }}">{{ $t->timeLeft() }}</span>
                             </div>

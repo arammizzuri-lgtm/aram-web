@@ -253,6 +253,32 @@ class TasksTest extends TestCase
             ->set('month', '2026-13')->assertSee('November 2026');   // a made-up month: this one
     }
 
+    public function test_a_bar_dragged_on_the_timeline_moves_the_task_or_only_its_end(): void
+    {
+        $a = Task::create(['title' => 'Permit set', 'starts_on' => '2026-11-20', 'due_at' => '2026-11-24 11:30']);   // 14:30 Erbil
+        $b = Task::create(['title' => 'Renders', 'due_at' => '2026-11-30 07:00']);   // made today: its bar starts now
+        $done = Task::create(['title' => 'Filed', 'due_at' => '2026-11-24 11:30', 'status' => 'done']);
+        $page = Livewire::test(Tasks::class)->set('show', 'timeline')->assertSeeHtml('data-due="2026-11-24"');
+        $when = fn (Task $t) => [$t->fresh()->starts_on?->toDateString(), $t->fresh()->getRawOriginal('due_at')];
+
+        $page->call('shiftOnTimeline', $a->id, 3)->assertNotified('Moved to Fri 27 Nov');
+        $this->assertSame(['2026-11-23', '2026-11-27 11:30:00'], $when($a));
+        $page->dispatch('undo-task', token: session('task_undo')['token']);
+        $this->assertSame(['2026-11-20', '2026-11-24 11:30:00'], $when($a));
+
+        $page->call('shiftOnTimeline', $b->id, -2);
+        $this->assertSame(['2026-11-18', '2026-11-28 07:00:00'], $when($b));   // the start it showed moves with it
+
+        $page->call('shiftOnTimeline', $a->id, 2, true)->assertNotified('Due Thu 26 Nov');
+        $this->assertSame(['2026-11-20', '2026-11-26 11:30:00'], $when($a));
+        $page->call('shiftOnTimeline', $a->id, -12, true);   // back past its start: the start comes too
+        $this->assertSame(['2026-11-14', '2026-11-14 11:30:00'], $when($a));
+
+        $page->call('shiftOnTimeline', $done->id, 3)->call('shiftOnTimeline', $b->id, 0);
+        $this->assertSame([null, '2026-11-24 11:30:00'], $when($done));
+        $this->assertSame(['2026-11-18', '2026-11-28 07:00:00'], $when($b));
+    }
+
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void
     {
         // Fri 20 Nov, 12:00 in Erbil; the week is Sun 15 – Sat 21 Nov

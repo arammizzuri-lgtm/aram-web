@@ -182,6 +182,24 @@ class Tasks extends Page
         $this->offerUndo('Moved to '.$to->format('D j M'), $before);
     }
 
+    /** The timeline: a bar dragged some days on, its start with it — or only its end, for a longer or shorter task. */
+    public function shiftOnTimeline(int $id, int $days, bool $endOnly = false): void
+    {
+        $task = Task::query()->open()->find($id);
+        if (! $task || $days === 0 || abs($days) > 366) {
+            return;
+        }
+        $before = $task->getAttributes();
+        $due = $task->due_at->copy()->timezone(Task::TZ)->addDays($days);
+        $start = $endOnly ? $task->starts_on : $task->startsAt()->copy()->timezone(Task::TZ)->addDays($days)->startOfDay();
+        $task->update([
+            'due_at' => $due->copy()->utc(),
+            // an end dragged back past the start takes the start with it
+            'starts_on' => $start ? min($start->toDateString(), $due->toDateString()) : null,
+        ]);
+        $this->offerUndo(($endOnly ? 'Due ' : 'Moved to ').$due->format('D j M'), $before);
+    }
+
     public function toggleTimer(int $id): void
     {
         $task = Task::query()->open()->find($id);
@@ -551,6 +569,6 @@ class Tasks extends Page
                 'title' => $d->format('D j M').': '.Task::hm($minutes).' of work'];
         })->filter(fn (array $h) => $h['width'] > 0)->values();
 
-        return ['groups' => $groups, 'ticks' => $ticks, 'today' => $at(now()), 'heat' => $heat];
+        return ['groups' => $groups, 'ticks' => $ticks, 'today' => $at(now()), 'heat' => $heat, 'days' => $span / 86400];
     }
 }
