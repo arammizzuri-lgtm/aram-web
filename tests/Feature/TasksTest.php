@@ -279,6 +279,33 @@ class TasksTest extends TestCase
         $this->assertSame(['2026-11-18', '2026-11-28 07:00:00'], $when($b));
     }
 
+    public function test_shift_the_rest_moves_a_late_step_and_the_later_tasks_of_its_project(): void
+    {
+        $in = ['project_id' => $this->project->id];
+        $late = Task::create($in + ['title' => 'Concept', 'due_at' => '2026-11-18 07:00']);   // 2 days and a bit late
+        $next = Task::create($in + ['title' => 'Review', 'starts_on' => '2026-11-21', 'due_at' => '2026-11-25 14:00']);
+        $room = Task::create(['client_room_id' => $this->room()->id, 'title' => 'Meet Shilan', 'due_at' => '2026-11-28 08:00']);
+        $earlier = Task::create($in + ['title' => 'Survey', 'due_at' => '2026-11-10 07:00']);
+        $done = Task::create($in + ['title' => 'Brief', 'due_at' => '2026-11-30 07:00', 'status' => 'done']);
+        $other = Task::create(['title' => 'Studio tax', 'due_at' => '2026-11-25 14:00']);
+        $due = fn (Task $t) => $t->fresh()->getRawOriginal('due_at');
+        $shift = fn (Task $t) => [TestAction::make('openTask')->arguments(['task' => $t->id]), TestAction::make('shiftRest')];
+
+        $page = Livewire::test(Tasks::class)
+            ->callAction($shift($late))->assertNotified('Moved 3 tasks 3 days later');   // as many days as it is late
+        $this->assertSame(['2026-11-21 07:00:00', '2026-11-28 14:00:00', '2026-12-01 08:00:00'], [$due($late), $due($next), $due($room)]);
+        $this->assertSame('2026-11-24', $next->fresh()->starts_on->toDateString());
+        $this->assertSame(['2026-11-10 07:00:00', '2026-11-30 07:00:00', '2026-11-25 14:00:00'], [$due($earlier), $due($done), $due($other)]);
+
+        $page->dispatch('undo-task', token: session('task_undo')['token']);
+        $this->assertSame(['2026-11-18 07:00:00', '2026-11-25 14:00:00', '2026-11-28 08:00:00'], [$due($late), $due($next), $due($room)]);
+
+        $page->callAction($shift($next), ['days' => -1])->assertNotified('Moved 2 tasks 1 day sooner');
+        $this->assertSame(['2026-11-24 14:00:00', '2026-11-27 08:00:00'], [$due($next), $due($room)]);
+        $page->callAction($shift($next), ['days' => 0])->assertHasFormErrors(['days']);
+        Livewire::test(Tasks::class)->assertActionHidden($shift($other));   // no project: nothing to shift with it
+    }
+
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void
     {
         // Fri 20 Nov, 12:00 in Erbil; the week is Sun 15 – Sat 21 Nov

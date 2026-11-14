@@ -216,11 +216,11 @@ class Tasks extends Page
 
     // ---- undo: the last move, snooze or delete, for as long as its message shows
 
-    /** @param  array  $before  the task's row as it was (raw, as stored) */
+    /** @param  array  $before  the task's row as it was (raw, as stored), or a list of rows */
     private function offerUndo(string $title, array $before, ?int $made = null): void
     {
         $token = Str::random(16);
-        session()->put('task_undo', ['token' => $token, 'task' => $before, 'made' => $made]);
+        session()->put('task_undo', ['token' => $token, 'tasks' => array_is_list($before) ? $before : [$before], 'made' => $made]);
         Notification::make()->success()->title($title)->duration(8000)
             ->actions([Action::make('undo')->label('Undo')->link()->dispatch('undo-task', ['token' => $token])->close()])
             ->send();
@@ -241,8 +241,8 @@ class Tasks extends Page
                 Task::query()->whereKey($undo['made'])->delete();
             }
             // as it was, row for row: back in place, or back at all if it was deleted (none: it was just added)
-            if ($undo['task']) {
-                Task::query()->upsert([$undo['task']], ['id']);
+            if ($undo['tasks'] ?? null) {
+                Task::query()->upsert($undo['tasks'], ['id']);
             }
         });
         Notification::make()->success()->title('Undone')->send();
@@ -406,6 +406,24 @@ class Tasks extends Page
             ]))
             ->schema(self::fields())
             ->extraModalFooterActions(fn (array $arguments) => [
+                Action::make('shiftRest')->label('Shift the rest')->color('gray')->link()
+                    ->visible(fn () => ($t = $task($arguments))->project_id && $t->status !== 'done')
+                    ->modalHeading(fn () => 'Shift the rest of '.$task($arguments)->project?->name)
+                    ->modalDescription(function () use ($task, $arguments) {
+                        $t = $task($arguments);
+                        $n = self::laterTasks($t)->count() - 1;
+
+                        return $n ? "“{$t->title}” and the {$n} open ".Str::plural('task', $n).' due after it move by the same number of days.'
+                            : "Nothing is due after “{$t->title}”: only it moves.";
+                    })
+                    ->modalSubmitActionLabel('Shift')->cancelParentActions()
+                    ->fillForm(fn () => ['days' => ($t = $task($arguments))->isLate() ? (int) ceil($t->due_at->diffInDays(now())) : 1])
+                    ->schema([TextInput::make('days')->label('Days')->integer()->required()->minValue(-365)->maxValue(365)->notIn([0])
+                        ->helperText('Less than 0 brings them sooner. Each keeps its time of day.')])
+                    ->action(function (array $data) use ($task, $arguments) {
+                        $before = self::shiftRest($task($arguments), (int) $data['days']);
+                        $this->offerUndo('Moved '.count($before).' '.Str::plural('task', count($before)).' '.Str::plural('day', abs((int) $data['days']), true).' '.($data['days'] > 0 ? 'later' : 'sooner'), $before);
+                    }),
                 Action::make('deleteTask')->label('Delete')->color('danger')->link()
                     ->requiresConfirmation()->modalHeading('Delete this task?')->cancelParentActions()
                     ->action(function () use ($task, $arguments) {
@@ -419,6 +437,25 @@ class Tasks extends Page
                 $task($arguments)->update($data);
                 Notification::make()->success()->title('Saved')->send();
             });
+    }
+
+    /** It and the open tasks of its project due at or after it */
+    public static function laterTasks(Task $task): Collection
+    {
+        return Task::query()->open()->where('project_id', $task->project_id)->where('due_at', '>=', $task->due_at)->get();
+    }
+
+    /** A step running late: it and every later open task of its project move the same number of days. @return array their rows as they were */
+    public static function shiftRest(Task $task, int $days): array
+    {
+        $tasks = self::laterTasks($task);
+        $before = $tasks->map->getAttributes()->all();
+        DB::transaction(fn () => $tasks->each(fn (Task $t) => $t->update([
+            'due_at' => $t->due_at->copy()->addDays($days),
+            'starts_on' => $t->starts_on?->copy()->addDays($days),
+        ])));
+
+        return $before;
     }
 
     /** @return int how many tasks it added */
