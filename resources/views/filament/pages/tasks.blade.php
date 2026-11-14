@@ -118,6 +118,17 @@
         .tl-left { position: absolute; top: 5px; font-size: .7rem; line-height: 16px; color: #a0a0a0; white-space: nowrap; }
         .tl-left--danger { color: #ff7a85; font-weight: 600; }
 
+        /* Today: one calm column, big enough for a thumb on site */
+        .tk-focus { display: grid; gap: 12px; width: 100%; max-width: 640px; margin-inline: auto; }
+        .tk-focus__head h2 { font-size: 1.35rem; font-weight: 600; color: #f2f2f2; }
+        .tk-focus__head p { margin-top: 2px; font-size: .85rem; color: #8d8d8d; }
+        .tk-focus .tk-card { padding: 16px 18px 14px 20px; cursor: default; }
+        .tk-focus .tk-card__title { font-size: 1.15rem; }
+        .tk-focus .tk-card__meta, .tk-focus .tk-steps { font-size: .85rem; }
+        .tk-focus .tk-steps label { padding: 7px 0; }
+        .tk-focus .tk-moves { margin-top: 12px; }
+        .tk-focus .tk-moves button { padding: 9px 16px; font-size: .85rem; }
+
         /* the busy meter: up to half a day (or week), up to full, more than fits */
         .busy-1 { --b: #9c8a3c; } .busy-2 { --b: #F5C518; } .busy-3 { --b: #ff7a85; }
         .tk-count--busy { border-color: rgba(206,17,38,.55); background: rgba(206,17,38,.12); }
@@ -178,6 +189,8 @@
     </style>
 
     <div class="tk-bar">
+        {{-- Today is calm: no counts, no labels, no help — only today's cards --}}
+        @unless ($show === 'today')
         <div class="tk-counts">
             <span class="tk-count"><b>{{ $counts['open'] }}</b>open</span>
             <span @class(['tk-count', 'tk-count--late' => $counts['late']])><b>{{ $counts['late'] }}</b>late</span>
@@ -194,7 +207,9 @@
                 </a>
             @endif
         </div>
+        @endunless
         <div class="tk-switch" role="group" aria-label="View">
+            <button type="button" wire:click="$set('show', 'today')" @class(['is-on' => $show === 'today'])>Today</button>
             <button type="button" wire:click="$set('show', 'board')" @class(['is-on' => $show === 'board'])>Board</button>
             <button type="button" wire:click="$set('show', 'timeline')" @class(['is-on' => $show === 'timeline'])>Timeline</button>
             <button type="button" wire:click="$set('show', 'calendar')" @class(['is-on' => $show === 'calendar'])>Calendar</button>
@@ -221,12 +236,12 @@
                 @endif
                 <small>Enter to add</small>
             </p>
-        @else
+        @elseif ($show !== 'today')
             <p class="tk-quick__help" id="tk-quick-help">Words for the day and time — today, tonight, tomorrow, fri, in 2 weeks, 5/12, 3 Jan, 4pm, 16:30 — and #label, !high or !low, @client or @project.</p>
         @endif
     </form>
 
-    @if ($labels->isNotEmpty())
+    @if ($labels->isNotEmpty() && $show !== 'today')
         <div class="tk-filter" role="group" aria-label="Show only one label">
             <button type="button" wire:click="$set('label', '')" @class(['tk-filter__all', 'is-on' => $label === ''])>All</button>
             @foreach ($labels as $key => $l)
@@ -369,6 +384,18 @@
                 @endforeach
             </div>
         </div>
+    @elseif ($show === 'today')
+        <section class="tk-focus">
+            <header class="tk-focus__head">
+                <h2>{{ now(Task::TZ)->format('l j F') }}</h2>
+                <p>{{ $focus['tasks']->count() ?: 'Nothing' }} left for today{{ $focus['done'] ? ' · '.$focus['done'].' done' : '' }}</p>
+            </header>
+            @forelse ($focus['tasks'] as $t)
+                @include('filament.pages.task-card', ['focus' => true])
+            @empty
+                <p class="tk-empty">All clear. Enjoy the rest of the day.</p>
+            @endforelse
+        </section>
     @else
         <div class="tk-board">
             @foreach ($columns as $status => $tasks)
@@ -384,100 +411,7 @@
                              onAdd: (e) => { e.item.remove(); $wire.move(+e.item.dataset.id, e.to.dataset.status) },
                          })">
                         @forelse ($tasks as $t)
-                            @php [$ticked, $all] = $t->steps(); @endphp
-                            <article @class(['tk-card', 'tk-card--'.$t->priority, 'tk-card--done' => $status === 'done', 'tk-card--pinned' => $t->pinned && $status !== 'done']) data-id="{{ $t->id }}" wire:key="task-{{ $t->id }}">
-                                @php $chips = collect($t->labels ?? [])->map(fn ($k) => $labels[$k] ?? null)->filter(); @endphp
-                                @if ($chips->isNotEmpty())
-                                    <div class="tk-chips">
-                                        @foreach ($chips as $l)
-                                            <span class="tk-chip" style="--c: {{ Tasks::LABEL_COLOURS[$l['colour']] ?? '#9a9a9a' }}">{{ $l['name'] }}</span>
-                                        @endforeach
-                                    </div>
-                                @endif
-                                <button type="button" class="tk-card__title" wire:click="mountAction('openTask', { task: {{ $t->id }} })">{{ $t->title }}</button>
-                                @if ($status !== 'done')
-                                    <button type="button" class="tk-pin" wire:click="togglePin({{ $t->id }})" aria-pressed="{{ $t->pinned ? 'true' : 'false' }}"
-                                            title="{{ $t->pinned ? 'Unpin' : 'Pin to the top' }}" aria-label="{{ $t->pinned ? 'Unpin' : 'Pin to the top' }}">
-                                        <svg viewBox="0 0 24 24" fill="{{ $t->pinned ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2v.8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9a2 2 0 0 1-1.1-1.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
-                                    </button>
-                                @endif
-                                @if ($place = $t->place())
-                                    <p class="tk-card__place">{{ $place }}</p>
-                                @endif
-                                <div class="tk-card__meta">
-                                    <span class="tk-left tk-left--{{ $t->urgency() }}">{{ $t->timeLeft() }}</span>
-                                    @if ($status !== 'done')
-                                        <span>{{ $t->due_at->timezone(Task::TZ)->format('D j M, H:i') }}</span>
-                                    @endif
-                                    @if ($t->repeat)
-                                        <span class="tk-tag" title="Repeats">↻ {{ Task::REPEATS[$t->repeat] }}</span>
-                                    @endif
-                                    @if ($t->source_type)
-                                        <span class="tk-tag" title="Made by the website; it closes itself once answered">⚡ From the site</span>
-                                    @endif
-                                    @if ($status === 'done' && ($took = $t->timeSummary()))
-                                        <span @class(['tk-tag', 'tk-tag--over' => $t->isOverEstimate()])>Took {{ $took }}</span>
-                                    @endif
-                                </div>
-                                @if ($all)
-                                    <details class="tk-steps" wire:ignore.self>
-                                        <summary>
-                                            <span>☑ {{ $ticked }}/{{ $all }}</span>
-                                            <span class="tk-meter"><span style="width: {{ round($ticked / $all * 100) }}%"></span></span>
-                                        </summary>
-                                        @foreach (array_values($t->checklist) as $i => $step)
-                                            <label wire:key="step-{{ $t->id }}-{{ $i }}">
-                                                <input type="checkbox" @checked($step['done'] ?? false) wire:click="toggleStep({{ $t->id }}, {{ $i }})">
-                                                <span @class(['is-done' => $step['done'] ?? false])>{{ $step['text'] ?? '' }}</span>
-                                            </label>
-                                        @endforeach
-                                    </details>
-                                @endif
-                                <div class="tk-moves">
-                                    @if ($status !== 'done')
-                                        <div class="tk-snooze" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
-                                            <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="true">Snooze</button>
-                                            <div class="tk-snooze__menu" x-show="open" x-cloak x-transition.opacity>
-                                                @foreach (Tasks::SNOOZES as $days => $length)
-                                                    <button type="button" wire:click="snooze({{ $t->id }}, {{ $days }})" @click="open = false">
-                                                        {{ $length }} <small>{{ $t->snoozed($days)->format('D j M') }}</small>
-                                                    </button>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                        @php $running = $t->timer_started_at !== null; @endphp
-                                        {{-- the timer: ticks in the browser from the seconds already spent --}}
-                                        <button type="button" wire:click="toggleTimer({{ $t->id }})" wire:key="timer-{{ $t->id }}-{{ $t->timer_started_at?->timestamp ?? 0 }}"
-                                                @class(['tk-timer', 'is-on' => $running, 'is-over' => $t->isOverEstimate()])
-                                                title="{{ $running ? 'Stop the timer' : 'Start the timer' }}" aria-label="{{ $running ? 'Stop the timer' : 'Start the timer' }}"
-                                                @if ($running)
-                                                    x-data="{ t: '', i: null,
-                                                        init() { const b = {{ $t->spent_minutes * 60 + (int) $t->timer_started_at->diffInSeconds(now()) }}, r = Date.now();
-                                                            const tick = () => { const x = b + Math.floor((Date.now() - r) / 1000);
-                                                                this.t = Math.floor(x / 3600) + ':' + String(Math.floor(x % 3600 / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0') };
-                                                            tick(); this.i = setInterval(tick, 1000) },
-                                                        destroy() { clearInterval(this.i) } }"
-                                                @endif>
-                                            @if ($running)
-                                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-                                                <span x-text="t">{{ Task::hm($t->spent()) }}</span>
-                                            @else
-                                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5z"/></svg>
-                                                @if ($t->spent())<span>{{ Task::hm($t->spent()) }}</span>@endif
-                                            @endif
-                                            @if ($t->estimate_minutes)<small>/ {{ Task::hm($t->estimate_minutes) }}</small>@endif
-                                        </button>
-                                    @endif
-                                    @if ($status === 'todo')
-                                        <button type="button" wire:click="move({{ $t->id }}, 'doing')">Start →</button>
-                                    @elseif ($status === 'doing')
-                                        <button type="button" wire:click="move({{ $t->id }}, 'todo')">← To do</button>
-                                        <button type="button" class="tk-done" wire:click="move({{ $t->id }}, 'done')">Done ✓</button>
-                                    @else
-                                        <button type="button" wire:click="move({{ $t->id }}, 'todo')">Reopen</button>
-                                    @endif
-                                </div>
-                            </article>
+                            @include('filament.pages.task-card')
                         @empty
                             <p class="tk-empty">{{ $status === 'done' ? 'Done tasks stay here for two weeks.' : 'Nothing here — drag a card in.' }}</p>
                         @endforelse

@@ -306,6 +306,26 @@ class TasksTest extends TestCase
         Livewire::test(Tasks::class)->assertActionHidden($shift($other));   // no project: nothing to shift with it
     }
 
+    public function test_today_shows_only_what_is_late_due_by_tonight_pinned_or_timed(): void
+    {
+        // Fri 20 Nov, 12:00 in Erbil
+        $late = Task::create(['title' => 'Late drawing', 'due_at' => '2026-11-18 07:00']);
+        Task::create(['title' => 'Call the mayor', 'due_at' => '2026-11-20 18:00', 'labels' => ['client']]);   // 21:00
+        Task::create(['title' => 'After midnight', 'due_at' => '2026-11-20 21:30']);   // 00:30 tomorrow
+        Task::create(['title' => 'Pinned plan', 'due_at' => '2026-12-01 07:00', 'pinned' => true]);
+        Task::create(['title' => 'Being timed', 'due_at' => '2026-12-02 07:00', 'timer_started_at' => now()->subMinutes(5), 'status' => 'doing']);
+        Task::create(['title' => 'Filed today', 'due_at' => '2026-11-20 07:00', 'status' => 'done']);
+        Task::whereKey(Task::create(['title' => 'Filed yesterday', 'due_at' => '2026-11-19 07:00', 'status' => 'done'])->id)->update(['done_at' => '2026-11-19 10:00']);
+
+        $page = Livewire::test(Tasks::class)->set('label', 'drawing')->set('show', 'today')
+            ->assertSee('Friday 20 November')->assertSee('4 left for today · 1 done')
+            ->assertSee('Late drawing')->assertSee('Call the mayor')->assertSee('Pinned plan')->assertSee('Being timed')
+            ->assertDontSee('After midnight')->assertDontSee('Filed today')->assertDontSee('in the next 7 days')
+            ->assertDontSee('Start →');   // to do here goes straight to Done
+
+        $page->call('move', $late->id, 'done')->assertSee('3 left for today · 2 done')->assertDontSee('Late drawing');
+    }
+
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void
     {
         // Fri 20 Nov, 12:00 in Erbil; the week is Sun 15 – Sat 21 Nov

@@ -501,8 +501,21 @@ class Tasks extends Page
                 ->when($status === 'done', fn ($c) => $c->sortByDesc('done_at'), fn ($c) => $c->sortByDesc('pinned'))),
             'counts' => self::counts($tasks->where('status', '!=', 'done')),
             'busyWeek' => self::busyWeek($busy),
+            'focus' => $this->show === 'today' ? self::focus($all) : null,
             'timeline' => $this->show === 'timeline' ? self::timeline($tasks, $busy) : null,
             'calendar' => $this->show === 'calendar' ? $this->calendar($busy) : null,
+        ];
+    }
+
+    /** Today, calmly (every label): what is late, due by tonight, pinned or being timed — and how many were done today (Erbil). */
+    public static function focus(Collection $all): array
+    {
+        $tonight = now(Task::TZ)->endOfDay();
+
+        return [
+            'tasks' => $all->where('status', '!=', 'done')
+                ->filter(fn (Task $t) => $t->due_at->lte($tonight) || $t->pinned || $t->timer_started_at)->values(),
+            'done' => $all->where('status', 'done')->filter(fn (Task $t) => $t->done_at?->gte($tonight->copy()->startOfDay()))->count(),
         ];
     }
 
