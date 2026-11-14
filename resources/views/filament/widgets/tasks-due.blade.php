@@ -10,6 +10,7 @@
         .aram-tasks__list { margin-top: .8rem; display: grid; gap: .35rem; }
         .aram-tasks__item { display: flex; align-items: center; gap: .7rem; padding: .5rem .2rem; border-top: 1px solid rgba(255,255,255,.05); text-decoration: none; }
         .aram-tasks__title { flex: 1; min-width: 0; font-size: .86rem; color: #e2e2e2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .aram-tasks__pin { display: inline-block; width: 13px; height: 13px; margin-inline-end: .4rem; vertical-align: -1px; color: #F5C518; }
         .aram-tasks__title small { margin-inline-start: .4rem; color: #858585; }
         .aram-tasks__item:hover .aram-tasks__title { color: #f5c518; }
         .aram-tasks__left { flex: none; padding: 2px 8px; border-radius: 999px; font-size: .72rem; font-weight: 600; background: rgba(255,255,255,.07); color: #b5b5b5; }
@@ -34,7 +35,7 @@
             <div class="aram-tasks__list">
                 @foreach ($next as $t)
                     <a href="{{ $url }}" class="aram-tasks__item">
-                        <span class="aram-tasks__title">{{ $t->title }}@if ($place = $t->place())<small>{{ $place }}</small>@endif</span>
+                        <span class="aram-tasks__title">@if ($t->pinned)<svg class="aram-tasks__pin" viewBox="0 0 24 24" aria-label="Pinned" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2v.8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9a2 2 0 0 1-1.1-1.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>@endif{{ $t->title }}@if ($place = $t->place())<small>{{ $place }}</small>@endif</span>
                         <span class="aram-tasks__left aram-tasks__left--{{ $t->urgency() }}">{{ $t->timeLeft() }}</span>
                     </a>
                 @endforeach

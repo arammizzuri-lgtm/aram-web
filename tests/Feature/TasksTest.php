@@ -87,6 +87,21 @@ class TasksTest extends TestCase
         $this->assertSame(['Site visit', 'doing'], [$next->fresh()->title, $next->fresh()->status]);
     }
 
+    public function test_a_pinned_task_stays_on_top_of_its_column_and_of_the_dashboard_card(): void
+    {
+        $soon = Task::create(['title' => 'Ring the plumber', 'due_at' => '2026-11-21 09:00']);
+        $later = Task::create(['title' => 'Order the tiles', 'due_at' => '2026-12-20 09:00']);
+        $page = Livewire::test(Tasks::class)->assertSeeInOrder(['Ring the plumber', 'Order the tiles']);
+
+        $page->call('togglePin', $later->id)->assertSeeInOrder(['Order the tiles', 'Ring the plumber'])->assertSee('Unpin');
+        $this->assertTrue($later->fresh()->pinned);
+        Livewire::test(TasksDue::class)->assertSeeInOrder(['Order the tiles', 'Ring the plumber']);
+
+        $page->call('togglePin', $later->id)->assertSeeInOrder(['Ring the plumber', 'Order the tiles']);
+        $this->assertFalse($later->fresh()->pinned);
+        $this->assertFalse($soon->fresh()->pinned);
+    }
+
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
     {
         $this->assertSame('New house', Tasks::templates()[0]['name']);

@@ -27,7 +27,11 @@
         .tk-card--low::before { background: #5aa9e6; }
         .tk-card.sortable-ghost { opacity: .35; }
         .tk-card--done { opacity: .62; }
-        .tk-card__title { display: block; width: 100%; text-align: start; font-size: .9rem; line-height: 1.35; font-weight: 500; color: #f0f0f0; }
+        .tk-card--pinned { border-color: rgba(245,197,24,.4); }
+        .tk-pin { position: absolute; top: 8px; inset-inline-end: 8px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: #5f5f5f; }
+        .tk-pin svg { width: 15px; height: 15px; }
+        .tk-pin:hover, .tk-card--pinned .tk-pin { color: #F5C518; }
+        .tk-card__title { display: block; width: 100%; padding-inline-end: 26px; text-align: start; font-size: .9rem; line-height: 1.35; font-weight: 500; color: #f0f0f0; }
         .tk-card__title:hover { color: #F5C518; }
         .tk-card--done .tk-card__title { text-decoration: line-through; text-decoration-color: rgba(255,255,255,.35); }
         .tk-card__place { margin-top: 3px; font-size: .74rem; color: #8d8d8d; }
@@ -154,8 +158,14 @@
                          })">
                         @forelse ($tasks as $t)
                             @php [$ticked, $all] = $t->steps(); @endphp
-                            <article @class(['tk-card', 'tk-card--'.$t->priority, 'tk-card--done' => $status === 'done']) data-id="{{ $t->id }}" wire:key="task-{{ $t->id }}">
+                            <article @class(['tk-card', 'tk-card--'.$t->priority, 'tk-card--done' => $status === 'done', 'tk-card--pinned' => $t->pinned && $status !== 'done']) data-id="{{ $t->id }}" wire:key="task-{{ $t->id }}">
                                 <button type="button" class="tk-card__title" wire:click="mountAction('openTask', { task: {{ $t->id }} })">{{ $t->title }}</button>
+                                @if ($status !== 'done')
+                                    <button type="button" class="tk-pin" wire:click="togglePin({{ $t->id }})" aria-pressed="{{ $t->pinned ? 'true' : 'false' }}"
+                                            title="{{ $t->pinned ? 'Unpin' : 'Pin to the top' }}" aria-label="{{ $t->pinned ? 'Unpin' : 'Pin to the top' }}">
+                                        <svg viewBox="0 0 24 24" fill="{{ $t->pinned ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2v.8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9a2 2 0 0 1-1.1-1.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+                                    </button>
+                                @endif
                                 @if ($place = $t->place())
                                     <p class="tk-card__place">{{ $place }}</p>
                                 @endif

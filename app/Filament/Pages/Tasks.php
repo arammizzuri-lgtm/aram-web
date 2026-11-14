@@ -90,6 +90,12 @@ class Tasks extends Page
         }
     }
 
+    public function togglePin(int $id): void
+    {
+        $task = Task::query()->find($id);
+        $task?->update(['pinned' => ! $task->pinned]);
+    }
+
     public function toggleStep(int $id, int $step): void
     {
         $task = Task::query()->find($id);
@@ -245,7 +251,8 @@ class Tasks extends Page
             ->orderBy('due_at')->get();
         return [
             'columns' => collect(Task::STATUSES)->map(fn ($label, $status) => $tasks->where('status', $status)
-                ->when($status === 'done', fn ($c) => $c->sortByDesc('done_at'))),
+                // pinned on top, the rest by when they are due (a stable sort keeps that order)
+                ->when($status === 'done', fn ($c) => $c->sortByDesc('done_at'), fn ($c) => $c->sortByDesc('pinned'))),
             'counts' => self::counts($tasks->where('status', '!=', 'done')),
             'timeline' => $this->show === 'timeline' ? self::timeline($tasks) : null,
         ];

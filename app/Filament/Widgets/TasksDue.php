@@ -19,6 +19,6 @@ class TasksDue extends Widget
     {
         $open = Task::query()->open()->with(['project:id,name', 'room.project:id,name'])->orderBy('due_at')->get();
 
-        return ['counts' => Tasks::counts($open), 'next' => $open->take(5), 'url' => Tasks::getUrl()];
+        return ['counts' => Tasks::counts($open), 'next' => $open->sortByDesc('pinned')->take(5), 'url' => Tasks::getUrl()];
     }
 }

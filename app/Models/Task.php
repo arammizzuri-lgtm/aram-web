@@ -25,12 +25,13 @@ class Task extends Model
     public const REPEATS = ['daily' => 'Every day', 'weekly' => 'Every week', 'monthly' => 'Every month'];
 
     protected $fillable = [
-        'title', 'notes', 'status', 'priority', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
+        'title', 'notes', 'status', 'priority', 'pinned', 'project_id', 'client_room_id', 'starts_on', 'due_at', 'repeat', 'checklist',
     ];
 
-    protected $attributes = ['status' => 'todo', 'priority' => 'normal'];
+    protected $attributes = ['status' => 'todo', 'priority' => 'normal', 'pinned' => false];
 
     protected $casts = [
+        'pinned' => 'boolean',
         'starts_on' => 'date',
         'due_at' => 'datetime',
         'done_at' => 'datetime',
