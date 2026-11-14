@@ -53,6 +53,10 @@ class TrackPageView
                 if (DocumentReminders::isDue()) {
                     \Illuminate\Support\defer(fn () => DocumentReminders::sendIfDue());
                 }
+                // and the morning e-mail of the day's tasks
+                if (\App\Support\MorningTasks::isDue()) {
+                    \Illuminate\Support\defer(fn () => \App\Support\MorningTasks::sendIfDue());
+                }
 
                 if ($source !== TrafficSource::INTERNAL && $request->hasSession()
                     && ! $request->session()->has(self::SESSION_KEY)) {

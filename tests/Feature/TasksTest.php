@@ -14,7 +14,9 @@ use App\Models\SiteSetting;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\VisitRequest;
+use App\Mail\MorningTasksMail;
 use App\Support\DocumentReminders;
+use App\Support\MorningTasks;
 use App\Support\QuickTask;
 use App\Support\StudioMail;
 use App\Support\TaskReminders;
@@ -376,6 +378,42 @@ class TasksTest extends TestCase
         $this->get(Tasks::getUrl())->assertOk();   // an admin page checks
         $this->assertCount(3, $titles());
         Queue::assertNothingPushed();
+    }
+
+    public function test_the_morning_email_lists_what_is_late_and_due_today_once_a_day(): void
+    {
+        Task::create(['title' => 'Send the invoice', 'due_at' => '2026-11-19 10:00']);   // late
+        Task::create(['title' => 'Call the plasterer', 'due_at' => '2026-11-20 15:00', 'project_id' => $this->project->id, 'estimate_minutes' => 90]);
+        Task::create(['title' => 'Order the tiles', 'due_at' => '2026-11-21 09:00']);   // tomorrow
+        Task::create(['title' => 'Already done', 'due_at' => '2026-11-20 10:00', 'status' => 'done']);
+
+        Carbon::setTestNow('2026-11-20 04:59');   // 07:59 in Erbil
+        $this->assertFalse(MorningTasks::isDue());
+        Carbon::setTestNow('2026-11-20 05:00');
+        $this->assertTrue(MorningTasks::isDue());
+        MorningTasks::sendIfDue();
+        MorningTasks::sendIfDue();
+
+        Mail::assertSent(MorningTasksMail::class, 1);
+        $mail = Mail::sent(MorningTasksMail::class)->first();
+        $this->assertSame([['Send the invoice'], ['Call the plasterer']], [$mail->late->pluck('title')->all(), $mail->today->pluck('title')->all()]);
+        $this->assertSame('Your tasks — 1 due today, 1 late (Fri 20 Nov)', $mail->envelope()->subject);
+        $html = $mail->render();
+        $this->assertStringContainsString('at 18:00', $html);
+        $this->assertStringContainsString('Ankawa House · 1h 30m left to do', $html);
+        $this->assertStringNotContainsString('Order the tiles', $html);
+
+        // a day with nothing late or due: marked, and nothing sent
+        Task::query()->update(['status' => 'done']);
+        Carbon::setTestNow('2026-11-21 06:00');
+        MorningTasks::sendIfDue();
+        Mail::assertSent(MorningTasksMail::class, 1);
+        $this->assertFalse(MorningTasks::isDue());
+
+        SiteSetting::put(MorningTasks::ENABLED, '0', 'alerts');
+        SiteSetting::flushCache();
+        Carbon::setTestNow('2026-11-22 06:00');
+        $this->assertFalse(MorningTasks::isDue());
     }
 
     public function test_the_busy_meter_adds_up_the_work_left_by_day_and_warns_of_a_full_week(): void

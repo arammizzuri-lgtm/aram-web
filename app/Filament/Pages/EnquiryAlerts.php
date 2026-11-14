@@ -53,6 +53,7 @@ class EnquiryAlerts extends Page
         $this->form->fill([
             'enabled' => StudioMail::enabled(),
             'weekly' => \App\Support\WeeklyReport::enabled(),
+            'morning' => \App\Support\MorningTasks::enabled(),
             'to' => setting(StudioMail::TO),
             'host' => setting(StudioMail::HOST),
             'port' => setting(StudioMail::PORT) ?: '465',
@@ -73,6 +74,9 @@ class EnquiryAlerts extends Page
                     Toggle::make('enabled')->label('E-mail me when an enquiry arrives')->default(true),
                     Toggle::make('weekly')->label('Weekly report — every Sunday morning, last week on the website')
                         ->helperText('Visitors and how they found you, the projects viewed most, WhatsApp taps and every enquiry, compared with the week before. Sent to the same addresses.')
+                        ->default(true),
+                    Toggle::make('morning')->label('Morning tasks — every day from 08:00, what is late and what is due today')
+                        ->helperText('From admin → Tasks, with the time each needs. None on a day with nothing to do.')
                         ->default(true),
                     TextInput::make('to')
                         ->label('Send alerts to')
@@ -117,6 +121,7 @@ class EnquiryAlerts extends Page
 
         SiteSetting::put(StudioMail::ENABLED, ! empty($state['enabled']) ? '1' : '0', 'alerts');
         SiteSetting::put(\App\Support\WeeklyReport::ENABLED, ! empty($state['weekly']) ? '1' : '0', 'alerts');
+        SiteSetting::put(\App\Support\MorningTasks::ENABLED, ! empty($state['morning']) ? '1' : '0', 'alerts');
         foreach (['to' => StudioMail::TO, 'host' => StudioMail::HOST, 'port' => StudioMail::PORT,
             'username' => StudioMail::USERNAME, 'from' => StudioMail::FROM] as $field => $key) {
             SiteSetting::put($key, trim((string) ($state[$field] ?? '')), 'alerts');
