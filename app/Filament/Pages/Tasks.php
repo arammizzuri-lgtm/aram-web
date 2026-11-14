@@ -23,6 +23,9 @@ use Filament\Schemas\Components\Grid;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 
 /**
@@ -85,9 +88,13 @@ class Tasks extends Page
 
     public function move(int $id, string $status): void
     {
-        if (isset(Task::STATUSES[$status])) {
-            Task::query()->find($id)?->update(['status' => $status]);
+        $task = Task::query()->find($id);
+        if (! $task || ! isset(Task::STATUSES[$status]) || $task->status === $status) {
+            return;
         }
+        $before = $task->getAttributes();
+        $task->update(['status' => $status]);
+        $this->offerUndo('Moved to '.Task::STATUSES[$status].($task->madeNext ? ' — the next one is in To do' : ''), $before, $task->madeNext);
     }
 
     public const SNOOZES = [1 => '1 day', 3 => '3 days', 7 => '1 week'];
@@ -98,14 +105,47 @@ class Tasks extends Page
         if (! $task || ! isset(self::SNOOZES[$days])) {
             return;
         }
+        $before = $task->getAttributes();
         $task->update(['due_at' => $task->snoozed($days)->utc()]);
-        Notification::make()->success()->title('Snoozed to '.$task->due_at->timezone(Task::TZ)->format('D j M, H:i'))->send();
+        $this->offerUndo('Snoozed to '.$task->due_at->timezone(Task::TZ)->format('D j M, H:i'), $before);
     }
 
     public function togglePin(int $id): void
     {
         $task = Task::query()->find($id);
         $task?->update(['pinned' => ! $task->pinned]);
+    }
+
+    // ---- undo: the last move, snooze or delete, for as long as its message shows
+
+    /** @param  array  $before  the task's row as it was (raw, as stored) */
+    private function offerUndo(string $title, array $before, ?int $made = null): void
+    {
+        $token = Str::random(16);
+        session()->put('task_undo', ['token' => $token, 'task' => $before, 'made' => $made]);
+        Notification::make()->success()->title($title)->duration(8000)
+            ->actions([Action::make('undo')->label('Undo')->link()->dispatch('undo-task', ['token' => $token])->close()])
+            ->send();
+    }
+
+    #[On('undo-task')]
+    public function undo(string $token): void
+    {
+        $undo = session('task_undo');
+        if (($undo['token'] ?? null) !== $token) {
+            Notification::make()->warning()->title('That can no longer be undone')->send();
+
+            return;
+        }
+        session()->forget('task_undo');
+        DB::transaction(function () use ($undo) {
+            if ($undo['made']) {
+                Task::query()->whereKey($undo['made'])->delete();
+            }
+            // as it was, row for row: back in place, or back at all if it was deleted
+            Task::query()->upsert([$undo['task']], ['id']);
+        });
+        Notification::make()->success()->title('Undone')->send();
     }
 
     public function toggleStep(int $id, int $step): void
@@ -222,8 +262,10 @@ class Tasks extends Page
                 Action::make('deleteTask')->label('Delete')->color('danger')->link()
                     ->requiresConfirmation()->modalHeading('Delete this task?')->cancelParentActions()
                     ->action(function () use ($task, $arguments) {
-                        $task($arguments)->delete();
-                        Notification::make()->success()->title('Task deleted')->send();
+                        $t = $task($arguments);
+                        $before = $t->getAttributes();
+                        $t->delete();
+                        $this->offerUndo('Task deleted', $before);
                     }),
             ])
             ->action(function (array $data, array $arguments) use ($task) {

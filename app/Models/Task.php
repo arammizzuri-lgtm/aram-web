@@ -30,6 +30,9 @@ class Task extends Model
 
     protected $attributes = ['status' => 'todo', 'priority' => 'normal', 'pinned' => false];
 
+    /** The id of the next one this save made (a repeating task, done) — for Undo to take back. */
+    public ?int $madeNext = null;
+
     protected $casts = [
         'pinned' => 'boolean',
         'starts_on' => 'date',
@@ -54,7 +57,9 @@ class Task extends Model
             }
             // done: the next one of a repeating task, and this one stops repeating
             if ($t->isDirty('status') && $t->status === 'done' && $t->repeat) {
-                $t->next()->save();
+                $next = $t->next();
+                $next->save();
+                $t->madeNext = $next->id;
                 $t->repeat = null;
             }
         });

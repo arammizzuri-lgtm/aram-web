@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Models\VisitRequest;
 use App\Support\DocumentReminders;
 use App\Support\StudioMail;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -114,6 +115,35 @@ class TasksTest extends TestCase
 
         $this->assertSame(['2026-11-21 08:00:00', '2026-11-30 11:00:00', '2026-11-18 08:00:00'],
             [$late->fresh()->getRawOriginal('due_at'), $later->fresh()->getRawOriginal('due_at'), $done->fresh()->getRawOriginal('due_at')]);
+    }
+
+    public function test_undo_takes_back_the_last_move_snooze_or_delete(): void
+    {
+        $undo = fn ($page) => $page->dispatch('undo-task', token: session('task_undo')['token']);
+        $task = Task::create(['title' => 'Weekly check', 'due_at' => '2026-11-22 10:00', 'repeat' => 'weekly', 'pinned' => true,
+            'checklist' => [['text' => 'Photos', 'done' => true]]]);
+        $page = Livewire::test(Tasks::class);
+
+        // done: the next one appears; undone, it goes again and this one is as it was
+        $page->call('move', $task->id, 'done')->assertNotified('Moved to Done — the next one is in To do');
+        $this->assertSame(2, Task::count());
+        $undo($page)->assertNotified('Undone');
+        $this->assertSame([1, 'todo', 'weekly', null, true], [Task::count(), $task->fresh()->status, $task->fresh()->repeat, $task->fresh()->done_at, $task->fresh()->pinned]);
+
+        // snoozed, and back
+        $page->call('snooze', $task->id, 7);
+        $undo($page);
+        $this->assertSame('2026-11-22 10:00:00', $task->fresh()->getRawOriginal('due_at'));
+
+        // deleted, and back with the same id and its checklist
+        $page->callAction([TestAction::make('openTask')->arguments(['task' => $task->id]), TestAction::make('deleteTask')])->assertNotified('Task deleted');
+        $this->assertNull(Task::find($task->id));
+        $undo($page);
+        $this->assertSame([['text' => 'Photos', 'done' => true]], Task::findOrFail($task->id)->checklist);
+
+        // only once, and only the last
+        $page->dispatch('undo-task', token: 'made-up')->assertNotified('That can no longer be undone');
+        $this->assertNull(session('task_undo'));
     }
 
     public function test_templates_add_their_tasks_counted_from_a_day_and_can_be_changed(): void
