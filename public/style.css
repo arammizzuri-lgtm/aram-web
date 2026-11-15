@@ -3948,7 +3948,8 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
    map, against the contact cards): a smaller one, at the end of the
    section's label row, as a sheet's reference sits in its corner */
 @media (max-width: 768px) {
-    .contact__info, .services__head, .process__aside { position: relative; }
+    /* top: auto, or the aside's sticky top: 130px shifts it down over the timeline */
+    .contact__info, .services__head, .process__aside { position: relative; top: auto; }
     .proj-map__label, [dir="rtl"] .proj-map__label { left: 20px; right: 20px; }
     .sheet-ref { position: absolute; top: -17px; inset-inline-end: 0; margin: 0; padding: 4px; }
     .sheet-ref__mark { width: 40px; height: 40px; background-color: rgba(6,6,6,.55); }
