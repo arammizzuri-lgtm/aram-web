@@ -32,6 +32,10 @@ class SheetPagesTest extends TestCase
         $this->get('/contact')->assertSee('id="contactForm"', false)
             ->assertSee('<a class="sheet-next__link sheet-next__link--next" href="'.url('/').'" rel="next">', false);
         $this->get('/process')->assertSee('<a class="sheet-next__link sheet-next__link--prev" href="'.url('/services').'" rel="prev">', false);
+
+        // a sent message is stamped, in the page's language (script.js fills in the day and the sheet)
+        $this->get('/contact')->assertSee('<span class="form-stamp__word" dir="auto" data-en="Received" data-ku="وەرگیرا">Received</span>', false);
+        $this->get('/ar/contact')->assertSee('>وارد</span>', false);
     }
 
     public function test_the_map_lists_its_projects_place_by_place_and_finds_them_on_the_map(): void

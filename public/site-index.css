@@ -233,3 +233,37 @@ html.has-index { overflow: hidden; }
     .sx__cell--wa { grid-column: 1 / -1; border-inline-start: 0; }
     .sx__wa { width: 100%; justify-content: center; }
 }
+
+/* ── The command line (site-index.js): CAD's, at the foot of the screen ──
+   A dark strip with "Command:" and the caret; what matches what is typed
+   listed above it, the chosen one in the selection's blue. */
+.cmd {
+    position: fixed; z-index: 2000; left: 50%; bottom: 22px; width: min(620px, calc(100% - 32px));
+    transform: translate(-50%, 14px); opacity: 0; visibility: hidden;
+    transition: opacity .18s, transform .22s cubic-bezier(.2,.8,.2,1), visibility .18s;
+    font: 13px/1.4 Consolas, 'SFMono-Regular', Menlo, 'Courier New', monospace; color: #dfe3e8;
+}
+.cmd.is-open { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.cmd__list {
+    list-style: none; margin: 0 0 6px; padding: 4px 0; max-height: min(320px, 50vh); overflow-y: auto;
+    background: #25292f; border: 1px solid rgba(255,255,255,.1); box-shadow: 0 14px 40px rgba(0,0,0,.45);
+}
+.cmd__list li { display: grid; grid-template-columns: 11ch 6ch minmax(0, 1fr); gap: 12px; padding: 4px 12px; }
+.cmd__list li[aria-selected="true"] { background: #2b5f9e; color: #fff; }
+.cmd__list b { font-weight: 600; }
+.cmd__code { color: #f5c518; }
+.cmd__list li[aria-selected="true"] .cmd__code { color: #ffe27a; }
+.cmd__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #9aa4af; font-family: 'Inter', 'Vazirmatn', sans-serif; font-size: 12px; }
+.cmd__list li[aria-selected="true"] .cmd__label { color: #d6e4f5; }
+.cmd__note { margin: 0; padding: 3px 12px; min-height: 0; background: #1c1f24; color: #9aa4af; }
+.cmd__note:empty { display: none; }
+.cmd__line {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: #16191d; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.cmd__prompt { color: #9aa4af; }
+.cmd__in {
+    flex: 1; min-width: 0; padding: 0; border: 0; outline: 0; background: none;
+    font: inherit; color: #fff; text-transform: uppercase; caret-color: #f5c518;
+}
+@media (prefers-reduced-motion: reduce) { .cmd { transition: none; } }

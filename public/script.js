@@ -1273,6 +1273,23 @@ function imgVariant(proj, size, i) {
         if (!key) hideTimer = setTimeout(() => { success.hidden = true; }, 6000);
     }
 
+    // Sent: the stamp comes down on the form, with the day and the contact
+    // sheet's number from the index; the next thing typed lifts it.
+    const stampEl = document.getElementById('formStamp');
+    function stamp() {
+        if (!stampEl) return;
+        const d = new Date(), two = n => String(n).padStart(2, '0');
+        const code = document.querySelector('#siteIndex [data-sheet="contact"] .sx__code');
+        stampEl.querySelector('.form-stamp__row').textContent =
+            two(d.getDate()) + '.' + two(d.getMonth() + 1) + '.' + d.getFullYear() + (code ? '  ·  ' + code.textContent.trim() : '');
+        stampEl.style.setProperty('--a', (-11 + Math.random() * 6).toFixed(1) + 'deg');
+        stampEl.hidden = false;
+        stampEl.classList.remove('is-down');
+        void stampEl.offsetWidth;   // so it lands again on a second message
+        stampEl.classList.add('is-down');
+    }
+    if (stampEl) form.addEventListener('input', () => { stampEl.hidden = true; });
+
     /* ---- "About" a project ---- */
     function setAbout(proj) {
         if (!aboutEl || !proj || !proj.slug) return;
@@ -1395,6 +1412,7 @@ function imgVariant(proj, size, i) {
             if (window.siteSaved) window.siteSaved.enquirySent();
             if (more) more.open = false;
             report(null);
+            stamp();
         })
         .catch(err => {
             report(err && /^form_/.test(err.message) ? err.message : 'form_failed');

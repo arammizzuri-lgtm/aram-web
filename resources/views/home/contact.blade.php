@@ -178,6 +178,13 @@
                 <p class="form-success" id="formSuccess" hidden {!! bitext('form_success') !!}>
                     {{ bival('form_success') }}
                 </p>
+                {{-- A sent message is stamped, as the post room stamps a letter: the
+                     day and the contact sheet's number filled in (script.js) --}}
+                <div class="form-stamp" id="formStamp" aria-hidden="true" hidden>
+                    <span class="form-stamp__top">Aram Mizuri</span>
+                    <span class="form-stamp__word" {!! bitext('form_stamp') !!}>{{ bival('form_stamp') }}</span>
+                    <span class="form-stamp__row" dir="ltr"></span>
+                </div>
             </form>
         </div>
     </section>

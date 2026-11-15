@@ -89,3 +89,32 @@
 /* a short row of cards leaves no room above the panel for it */
 @media (max-height: 640px) { .pgc .dim { display: none; } }
 @media (prefers-reduced-motion: reduce) { .dim i, .dim b { transition: none; } }
+
+/* ---- The stamp on a sent message (home/contact, script.js) -----------
+   A post room's rubber stamp in the house's gold: a double rule, the
+   word between two lines, the day and the contact sheet's number; it
+   comes down from above at a slight slant, its ink a little patchy. */
+.form-stamp {
+    position: absolute; z-index: 5; top: 30%; inset-inline-end: 8%;
+    display: grid; justify-items: center; gap: 7px; padding: 11px 20px 10px;
+    border: 4px double currentColor; border-radius: 9px;
+    color: #F5C518; pointer-events: none; text-transform: uppercase; white-space: nowrap;
+    font: 600 9.5px/1 'Inter', sans-serif; letter-spacing: .32em;
+    transform: rotate(var(--a, -8deg)); opacity: .9;
+    -webkit-mask: var(--ink) 0 0 / 150px 150px; mask: var(--ink) 0 0 / 150px 150px;
+    --ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -5 3.5'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.form-stamp[hidden] { display: none; }
+.form-stamp__word {
+    padding: 7px 4px 6px; border-block: 1.5px solid currentColor;
+    font-size: 28px; font-weight: 700; letter-spacing: .12em;
+}
+[dir="rtl"] .form-stamp__word { font-family: 'Vazirmatn', sans-serif; letter-spacing: 0; font-size: 30px; }
+.form-stamp__row { letter-spacing: .18em; font-variant-numeric: tabular-nums; white-space: pre; }
+.form-stamp.is-down { animation: formStamp .42s cubic-bezier(.3,1.5,.5,1) both; }
+@keyframes formStamp {
+    from { opacity: 0; transform: rotate(var(--a, -8deg)) scale(1.8); }
+    55%  { opacity: .9; }
+    to   { opacity: .9; transform: rotate(var(--a, -8deg)) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .form-stamp.is-down { animation: none; } }

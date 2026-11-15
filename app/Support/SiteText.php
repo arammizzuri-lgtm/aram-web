@@ -200,6 +200,7 @@ class SiteText
                 'form_message'       => ['Form — message label', 'Tell us about your project', 'دەربارەی پڕۆژەکەت پێمان بڵێ'],
                 'form_send'          => ['Form — send button', 'Send Message', 'ناردنی نامە'],
                 'form_success'       => ['Form — success message', "✓ Message received — we'll be in touch soon.", '✓ نامەکەت گەیشت — بەم زووانە پەیوەندیت پێوە دەکەین.', 'area'],
+                'form_stamp'         => ['Form — the stamp on a sent message', 'Received', 'وەرگیرا'],
             ],
 
             'Project overlay' => [

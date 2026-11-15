@@ -182,6 +182,7 @@ class SiteTextAr
             'form_message'       => 'حدّثنا عن مشروعك',
             'form_send'          => 'أرسل الرسالة',
             'form_success'       => '✓ وصلت رسالتك — سنتواصل معك قريباً.',
+            'form_stamp'         => 'وارد',
 
             // Project overlay
             'overlay_back'     => 'العودة إلى المشاريع',

@@ -209,6 +209,9 @@ class ProjectPagesTest extends TestCase
         // the one before, every project, the one after — in that order, each named with its sheet number
         $this->assertMatchesRegularExpression('#<nav class="pj-nav"[^>]*>.*?pj-nav__item--prev.*?<b>\d+</b>.*?class="pj-nav__all" href="[^"]*/projects">.*?pj-nav__item--next.*?<b>\d+</b>.*?</nav>#s', $html);
         $this->assertSame(2, substr_count($html, 'class="pj-nav__item '));
+        // marked as the way back and on, for the ← → keys (site-index.js)
+        $this->assertMatchesRegularExpression('#class="pj-nav__item pj-nav__item--prev" href="[^"]+" rel="prev">#', $html);
+        $this->assertMatchesRegularExpression('#class="pj-nav__item pj-nav__item--next" href="[^"]+" rel="next">#', $html);
 
         // with only two projects the other one is said once, as the next
         Project::where('name', 'Torre Mizuri — Madrid')->delete();

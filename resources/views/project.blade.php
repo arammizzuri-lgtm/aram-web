@@ -659,7 +659,7 @@
                             <span>{{ bival('pj_label') }}</span>
                         </a>
                     @elseif ($p = $pager[$dir] ?? null)
-                        <a class="pj-nav__item pj-nav__item--{{ $dir }}" href="{{ $p->pageUrl($lang) }}">
+                        <a class="pj-nav__item pj-nav__item--{{ $dir }}" href="{{ $p->pageUrl($lang) }}" rel="{{ $dir }}">
                             <span class="pj-nav__pic">
                                 <img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}">
                                 <i class="pj-crop pj-crop--ts" aria-hidden="true"></i><i class="pj-crop pj-crop--te" aria-hidden="true"></i>
