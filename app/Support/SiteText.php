@@ -42,6 +42,8 @@ class SiteText
                 'nav_studio'     => ['Menu — title block: studio', 'Studio', 'ستۆدیۆ'],
                 'nav_place'      => ['Menu — title block: place', 'Erbil · Kurdistan', 'هەولێر · کوردستان'],
                 'nav_language'   => ['Menu — title block: language', 'Language', 'زمان'],
+                'sheet_prev' => ['Own pages (map, services, process, contact) — the sheet before', 'Previous sheet', 'پەڕەی پێشوو'],
+                'sheet_next' => ['Own pages — the next sheet', 'Next sheet', 'پەڕەی دواتر'],
                 'ui_scroll'      => ['Scroll hint', 'Scroll', 'بۆ خوارەوە'],
                 'ui_clock_city'  => ['Hero clock — city', 'Erbil', 'هەولێر'],
                 'stat_projects'  => ['Stat label — Projects', 'Projects', 'پرۆژە'],
@@ -81,6 +83,9 @@ class SiteText
                 'map_grow_stop'    => ['…while it plays', 'Stop', 'ڕاگرتن'],
                 'map_grow_again'   => ['…once it has played', 'Watch again', 'دووبارە ببینە'],
                 'map_grow_beyond'  => ['…a project far away lands ({place} = where)', 'And beyond: {place}', 'و دوورتر: {place}'],
+                'map_intro' => ['Map page — introduction', 'Every project the studio has designed, pinned where it stands — across the Kurdistan Region and beyond. Press play to watch the practice grow, year by year.', 'هەموو ئەو پرۆژانەی ستۆدیۆکە دیزاینی کردوون، لەو شوێنەی لێی وەستاون — لە سەرانسەری هەرێمی کوردستان و دوورتریش. دوگمەی پەخش دابگرە و ببینە ستۆدیۆکە ساڵ بە ساڵ چۆن گەشەی کردووە.', 'area'],
+                'map_places' => ['Map page — the list of places, title', 'Place by place', 'شوێن بە شوێن'],
+                'map_places_hint' => ['Map page — under the list\'s title', 'Choose a project to find it on the map.', 'پرۆژەیەک هەڵبژێرە بۆ ئەوەی لەسەر نەخشەکە بیدۆزیتەوە.'],
             ],
 
             'Clients' => [
@@ -118,6 +123,7 @@ class SiteText
                 'services_see'   => ['Card — link to its projects ({n} = how many)', 'See {n} projects', 'بینینی {n} پرۆژە'],
                 'services_see_one' => ['Card — link to its only project', 'See the project', 'بینینی پرۆژەکە'],
                 'services_ask'   => ['Card — link to the contact form (no projects to show yet)', 'Ask us about it', 'پرسیارمان لێ بکە'],
+                'services_intro' => ['Services page — introduction', 'From the first sketch to the last piece of furniture: one studio for the building, its façade, its interiors, and the people who build it.', 'لە یەکەم وێنەی دەستییەوە تا دوایین پارچەی مۆبیلیا: یەک ستۆدیۆ بۆ بیناکە، ڕووکارەکەی، ناوەوەکەی و ئەو کەسانەی بنیاتی دەنێن.', 'area'],
             ],
 
             'Process' => [
@@ -136,6 +142,14 @@ class SiteText
                 'process_phase4'      => ['Phase 4 kicker', 'Phase 04', 'قۆناغی ٠٤'],
                 'process_step4_title' => ['Step 4 — title', 'Build & Deliver', 'بنیاتنان و گەیاندن'],
                 'process_step4_desc'  => ['Step 4 — description', 'On-site construction oversight and quality assurance — building relationships with Kurdistan\'s finest local firms and craftspeople.', 'چاودێریی بنیاتنان لە شوێن و دڵنیایی جۆرایەتی — دروستکردنی پەیوەندی لەگەڵ باشترین کۆمپانیا و پیشەوەرە خۆماڵییەکانی کوردستان.', 'area'],
+                'process_intro' => ['Process page — introduction', 'Four phases take a project from a first conversation to the day it is handed over — the same care for a family house as for a restaurant.', 'چوار قۆناغ پرۆژەیەک لە یەکەم گفتوگۆوە دەگەیەننە ئەو ڕۆژەی ڕادەست دەکرێت — هەمان بایەخ بۆ خانووی خێزانێک وەک بۆ چێشتخانەیەک.', 'area'],
+                'process_room_label' => ['Process page — the client\'s room: label', 'Your private room', 'ژووری تایبەتی خۆت'],
+                'process_room_title' => ['Process page — the client\'s room: title', 'Follow your project, step by step', 'پرۆژەکەت هەنگاو بە هەنگاو ببینە'],
+                'process_room_text' => ['Process page — the client\'s room: text', 'Every client has a page of their own, opened with a PIN — the whole project in one place, on the phone, at any hour.', 'هەر کڕیارێک پەڕەیەکی تایبەتی خۆی هەیە کە بە ژمارەیەکی نهێنی دەکرێتەوە — هەموو پرۆژەکە لە یەک شوێندا، لەسەر مۆبایل، لە هەر کاتێکدا.', 'area'],
+                'process_room_1' => ['Process page — the client\'s room: 1', 'Drawings to approve — or to comment on, right on the sheet', 'نەخشە بۆ پەسەندکردن — یان بۆ تێبینی، ڕاستەوخۆ لەسەر پەڕەکە'],
+                'process_room_2' => ['Process page — the client\'s room: 2', 'Photos from site as the work goes on', 'وێنەی شوێنی کار، هاوکات لەگەڵ کارەکە'],
+                'process_room_3' => ['Process page — the client\'s room: 3', 'Payments and receipts, always up to date', 'پارەدان و پسوولەکان، هەمیشە نوێ'],
+                'process_room_4' => ['Process page — the client\'s room: 4', 'Meetings, choices and documents in one place', 'کۆبوونەوە، هەڵبژاردن و بەڵگەنامەکان لە یەک شوێندا'],
             ],
 
             'Heritage' => [
@@ -157,6 +171,8 @@ class SiteText
             'Contact' => [
                 'contact_label'      => ['Section label', 'Get in Touch', 'پەیوەندیمان پێوە بکە'],
                 'contact_title'      => ['Heading (allows <br>)', "Let's Build<br>Together", 'با پێکەوە<br>بنیات بنێین', 'area'],
+                'contact_intro' => ['Contact page — introduction', 'Tell us about your plot, your home or your business. Write, call, or come and see us at the studio in Erbil — whichever suits you.', 'دەربارەی زەوییەکەت، ماڵەکەت یان کارەکەت پێمان بڵێ. بنووسە، پەیوەندی بکە، یان وەرە بۆ ستۆدیۆکەمان لە هەولێر — هەرکامیان بۆت گونجاوە.', 'area'],
+                'contact_more' => ['Contact page — other ways to start: title', 'Other ways to start', 'ڕێگای تری دەستپێکردن'],
                 'contact_email_lbl'  => ['Email — label', 'Email', 'ئیمەیڵ'],
                 'contact_phone_lbl'  => ['Phone 01 — label', 'Phone 01', 'تەلەفۆن ٠١'],
                 'contact_phone2_lbl' => ['Phone 02 — label', 'Phone 02', 'تەلەفۆن ٠٢'],

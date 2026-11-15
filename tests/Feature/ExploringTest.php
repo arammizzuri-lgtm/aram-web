@@ -54,7 +54,7 @@ class ExploringTest extends TestCase
 
         // the bar: the Index, Contact and the three languages, this one marked
         $this->assertStringContainsString('aria-controls="siteIndex"', $html);
-        $this->assertStringContainsString('<a href="#contact" class="nav__link nav__contact"', $html);
+        $this->assertStringContainsString('<a href="'.url('/contact').'" class="nav__link nav__contact"', $html);
         $this->assertMatchesRegularExpression('#<span class="lsw__item is-on" aria-current="true" lang="en" aria-label="English">EN</span>#', $html);
         $this->assertStringContainsString('<a class="lsw__item" href="'.url('/ku').'" hreflang="ku"', $html);
         $this->assertStringContainsString('site-index.js', $html);
@@ -74,7 +74,7 @@ class ExploringTest extends TestCase
         $html = $this->get('/projects/stone-house')->assertOk()
             ->assertSee('site-index.js')
             ->assertSee('<a class="sx__link" href="'.url('/projects').'" data-sheet="projects" aria-current="page">', false)
-            ->assertSee('<a class="bar-contact" href="'.url('/').'#contact">Contact</a>', false)
+            ->assertSee('<a class="bar-contact" href="'.url('/contact').'">Contact</a>', false)
             ->assertSee('<a class="sx__link" href="'.url('/estimate').'" data-sheet="estimate">', false)
             ->getContent();
 
@@ -170,7 +170,7 @@ class ExploringTest extends TestCase
         $this->assertMatchesRegularExpression($card(url('/projects?type=interior-design'), 'See 2 projects'), $html);
         $this->assertMatchesRegularExpression($card(url('/projects?status=under-construction'), 'See the project'), $html);
         // Tendering and the furniture have nothing to show: they ask
-        $this->assertSame(3, preg_match_all('#<a class="service[^"]*" href="\#contact"#', $html));
+        $this->assertSame(3, preg_match_all('#<a class="service[^"]*" href="'.preg_quote(url('/contact'), '#').'"#', $html));
         $this->assertStringContainsString('data-ku="بینینی 2 پرۆژە"', $html);
     }
 

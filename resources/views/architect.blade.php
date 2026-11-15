@@ -128,7 +128,7 @@
                     <p class="ar-hero__member"><svg class="ar-hero__shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.6 12.2l2.3 2.3 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>{{ bival('arch_membership') }}</span></p>
                 @endif
                 <div class="ar-hero__actions">
-                    <a class="pp-btn" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                    <a class="pp-btn" href="{{ site_url('/contact') }}">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
                     <a class="ar-hero__more" href="#profile">{{ bival('arch_story_title') }} <span aria-hidden="true">↓</span></a>
                 </div>
             </div>
@@ -236,7 +236,7 @@
 
         <section class="ar-cta">
             <p class="ar-cta__name">{{ bival('arch_name') }}</p>
-            <a class="pp-btn" href="{{ site_url('/') }}#contact">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+            <a class="pp-btn" href="{{ site_url('/contact') }}">{{ bival('arch_cta') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
         </section>
     </main>
 

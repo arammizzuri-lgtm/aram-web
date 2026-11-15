@@ -1291,7 +1291,7 @@ function imgVariant(proj, size, i) {
     const clearBtn = document.getElementById('formAboutClear');
     if (clearBtn) clearBtn.addEventListener('click', clearAbout);
 
-    // Arrived from a project's own page: /?project=slug#contact
+    // Arrived from a project's own page: /contact?project=slug#contact
     const params = new URLSearchParams(location.search);
     const fromSlug = params.get('project');
     if (fromSlug) {
@@ -2501,8 +2501,13 @@ function projCoords(proj) {
     // overlay steps back, and the page moves down to the form.
     const enquireBtn = document.getElementById('overlayEnquire');
     enquireBtn && enquireBtn.addEventListener('click', e => {
-        e.preventDefault();
         const proj = PROJECT_DATA[currentProjIdx];
+        // no form on this page (the map's, the process's): the contact page, about this project
+        if (!document.getElementById('contactForm')) {
+            if (proj && proj.slug) { e.preventDefault(); location.href = enquireBtn.href + '?project=' + encodeURIComponent(proj.slug) + '#contact'; }
+            return;
+        }
+        e.preventDefault();
         if (proj && typeof window.setEnquiryAbout === 'function') window.setEnquiryAbout(proj);
         closeOverlay();
         setTimeout(() => {

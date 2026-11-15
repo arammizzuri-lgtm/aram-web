@@ -244,7 +244,7 @@
                 {{-- the last bay: a blank sheet, numbered next, for the visitor's own project --}}
                 <li class="px-sheet px-sheet--yours" data-w="1" data-h="1" data-yours>
                     {{-- …which, with JavaScript, is a sheet to draw on (sketch.js) --}}
-                    <a class="px-sheet__link" href="{{ site_url('/') }}#contact" data-disc="{{ bival('pj_disc_start') }}" data-sketch-open="send">
+                    <a class="px-sheet__link" href="{{ site_url('/contact') }}" data-disc="{{ bival('pj_disc_start') }}" data-sketch-open="send">
                         <span class="px-yours">
                             <span class="px-yours__num"><small>{{ bival('pj_sheet') }}</small><b>{{ $nextSheet }}</b></span>
                             <span class="px-yours__title">{{ bival('pj_yours_title') }}</span>
@@ -271,11 +271,11 @@
             <h2 class="pp-cta__title">{{ bival('pp_cta_title') }}</h2>
             <p class="pp-cta__text">{{ bival('pp_cta_text') }}</p>
             <div class="pp-cta__actions">
-                <a class="pp-btn" href="{{ site_url('/') }}#contact">
+                <a class="pp-btn" href="{{ site_url('/contact') }}">
                     <span>{{ bival('pp_cta_button') }}</span>
                     <span class="pp-arrow" aria-hidden="true">→</span>
                 </a>
-                <a class="pp-btn pp-btn--line" href="{{ site_url('/') }}#contact" data-sketch-open="send">
+                <a class="pp-btn pp-btn--line" href="{{ site_url('/contact') }}" data-sketch-open="send">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4.2-1 10-10a2.1 2.1 0 0 0-3-3l-10 10z"/><path d="M13.5 7.5l3 3"/></svg>
                     <span>{{ bival('sk_cta') }}</span>
                 </a>

@@ -14,7 +14,7 @@
         'host' => preg_replace('/^www\./', '', (string) parse_url(url('/'), PHP_URL_HOST)),
         'store' => route('sketch.store'),
         'show' => url('/sketches/TOKEN'),
-        'home' => site_url('/'),
+        'home' => site_url('/contact'),
         'wa' => whatsapp_url(),
     ];
 @endphp

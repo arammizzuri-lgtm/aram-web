@@ -286,7 +286,7 @@
             <p class="hr-end__by">{{ bival('landmarks_by') }}</p>
             <h2 class="hr-end__title">{{ bival('landmarks_cta') }}</h2>
             <div class="hr-end__actions">
-                <a class="pp-btn" href="{{ site_url('/') }}#contact">{{ bival('landmarks_cta_btn') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                <a class="pp-btn" href="{{ site_url('/contact') }}">{{ bival('landmarks_cta_btn') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
                 <a class="pp-btn pp-btn--line" href="{{ site_url('/projects') }}">{{ bival('nf_all') }}</a>
             </div>
         </section>

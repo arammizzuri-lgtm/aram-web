@@ -38,7 +38,7 @@
             </a>
         @endunless
         @if ($topMenu)
-            <a class="bar-contact" href="{{ site_url('/') }}#contact">{{ bival('nav_contact') }}</a>
+            <a class="bar-contact" href="{{ site_url('/contact') }}">{{ bival('nav_contact') }}</a>
         @endif
         @include('partials.lang-switch', ['urls' => $langUrls ?? null, 'class' => 'lsw--bar'])
         @if ($topMenu)

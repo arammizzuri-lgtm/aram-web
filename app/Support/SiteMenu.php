@@ -25,21 +25,20 @@ class SiteMenu
     {
         $route = $markHere ? preg_replace('/^(ku|ar)\./', '', request()->route()?->getName() ?? '') : '';
         $here = fn (string ...$names) => in_array($route, $names, true);
-        $home = fn (string $section) => site_url('/').'#'.$section;
 
         $sheets = array_values(array_filter([
             ['home', bival('careers_home'), site_url('/'), $here('home')],
             ['projects', bival('nav_projects'), site_url('/projects'), $here('projects', 'project')],
-            ['map', bival('nav_map'), $home('map'), false],
+            ['map', bival('nav_map'), site_url('/map'), $here('map')],
             // About is the architect's own page, not the homepage's section
             ['about', bival('nav_about'), site_url(Architect::PATH), $here('architect')],
-            ['services', bival('nav_services'), $home('services'), false],
-            ['process', bival('nav_process'), $home('process'), false],
+            ['services', bival('nav_services'), site_url('/services'), $here('services')],
+            ['process', bival('nav_process'), site_url('/process'), $here('process')],
             CostEstimate::enabled() ? ['estimate', bival('est_nav'), site_url('/estimate'), $here('estimate')] : null,
             ['journal', bival('journal_nav'), site_url('/journal'), $here('journal', 'journal.post')],
             Partner::anyPublished() ? ['partners', bival('partners_nav'), site_url('/partners'), $here('partners')] : null,
             ['careers', bival('careers_link'), site_url('/careers'), $here('careers')],
-            ['contact', bival('nav_contact'), $home('contact'), false],
+            ['contact', bival('nav_contact'), site_url('/contact'), $here('contact')],
         ]));
 
         return array_map(fn ($s, $i) => [

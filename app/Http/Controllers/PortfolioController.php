@@ -24,8 +24,41 @@ class PortfolioController extends Controller
         $quotes = Testimonial::publishedOrdered()->with(['client', 'project'])->get();
         $categories = Category::ordered()->get();
         $stats = $this->portfolioStats($projects);
+        $payload = $this->payload($projects, $stats);
 
-        $payload = [
+        // a holiday card on offer (Newroz, Eid…): the band under the hero
+        $greeting = rescue(fn () => Greeting::current(), null, false);
+
+        // Kurdistan's architectural heritage: the strip of landmarks near the foot of the page
+        $heritage = rescue(fn () => Landmark::publishedOrdered()->get(), collect(), false);
+
+        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'payload', 'stats', 'greeting', 'heritage'));
+    }
+
+    /**
+     * A sheet of the site's index with a page of its own — /map, /services,
+     * /process and /contact (and /ku, /ar): the homepage's section, whole,
+     * under a title block, with what the page adds (views/sheet). The same
+     * script runs it as on the homepage, so it gets the same payload.
+     */
+    public function sheet(string $sheet)
+    {
+        $projects = Project::publishedOrdered()->withCount('publicUpdates')->get();
+        $stats = $this->portfolioStats($projects);
+        $payload = $this->payload($projects, $stats);
+
+        return view('sheet', compact('sheet', 'projects', 'stats', 'payload'));
+    }
+
+    /**
+     * window.__SITE__ for script.js: the projects and the words it needs.
+     *
+     * @param  \Illuminate\Support\Collection<int, Project>  $projects
+     * @return array<string, mixed>
+     */
+    private function payload($projects, array $stats): array
+    {
+        return [
             'projects' => $projects->map(fn (Project $p) => [
                 'num' => $p->num,
                 // the overlay puts /projects/{slug} in the address bar
@@ -102,14 +135,6 @@ class PortfolioController extends Controller
             // versioned so a new file is not hidden behind a year-long cache.
             'outlineUrl' => asset('kurdistan-data.js').'?v='.filemtime(public_path('kurdistan-data.js')),
         ];
-
-        // a holiday card on offer (Newroz, Eid…): the band under the hero
-        $greeting = rescue(fn () => Greeting::current(), null, false);
-
-        // Kurdistan's architectural heritage: the strip of landmarks near the foot of the page
-        $heritage = rescue(fn () => Landmark::publishedOrdered()->get(), collect(), false);
-
-        return view('portfolio', compact('projects', 'clients', 'quotes', 'categories', 'payload', 'stats', 'greeting', 'heritage'));
     }
 
     /**

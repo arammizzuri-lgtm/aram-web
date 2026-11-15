@@ -73,7 +73,7 @@ class SavedAndSharingTest extends TestCase
             ->assertSee('<meta property="og:title" content="Mountain Villa · Erbil Tower — Aram Mizuri Architecture">', false)
             ->assertSee('<meta property="og:url" content="'.url('/saved?p=mountain-villa.erbil-tower').'">', false)
             ->assertSee('Ask the studio about these')
-            ->assertSee('href="'.url('/').'?saved=mountain-villa.erbil-tower#contact"', false)
+            ->assertSee('href="'.url('/contact').'?saved=mountain-villa.erbil-tower#contact"', false)
             ->assertSee('https://wa.me/?text='.rawurlencode('A few projects by Aram Mizuri Architecture I like: '.url('/saved?p=mountain-villa.erbil-tower')), false)
             // what the address asked for — the visitor's own list may hold one
             // since unpublished, and is still theirs

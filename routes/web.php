@@ -46,6 +46,10 @@ $pages = function (string $lang) {
             ->name('project');
         // the architect himself, as a person (App\Support\Architect)
         Route::get('/aram-mizuri', [ArchitectController::class, 'show'])->name('architect');
+        // the homepage's map, services, process and contact, each a page of its own (views/sheet)
+        foreach (['map', 'services', 'process', 'contact'] as $sheet) {
+            Route::get('/'.$sheet, [PortfolioController::class, 'sheet'])->defaults('sheet', $sheet)->name($sheet);
+        }
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
         // the build journal: construction updates published as posts
         Route::get('/journal', [JournalController::class, 'index'])->name('journal');

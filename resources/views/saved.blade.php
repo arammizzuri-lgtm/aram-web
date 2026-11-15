@@ -118,7 +118,7 @@
                  attached), to family on WhatsApp, or anywhere else. On the
                  visitor's own list these follow the hearts (saved.js). --}}
             <div class="sv-actions">
-                <a class="pp-btn" href="{{ site_url('/') }}?saved={{ implode('.', $slugs) }}#contact" data-saved-ask data-base="{{ site_url('/') }}">
+                <a class="pp-btn" href="{{ site_url('/contact') }}?saved={{ implode('.', $slugs) }}#contact" data-saved-ask data-base="{{ site_url('/contact') }}">
                     <span>{{ bival('saved_ask') }}</span>
                     <span class="pp-arrow" aria-hidden="true">→</span>
                 </a>

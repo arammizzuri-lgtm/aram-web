@@ -117,7 +117,11 @@ class SeoController extends Controller
         $out[] = '- Studio: Erbil, Kurdistan Region, Iraq';
         $out[] = '- Email: '.setting('contact_email_new', 'Info@arammizuri.com');
         $out[] = '- Website: '.site_url('/', 'en').' (English), '.site_url('/', 'ku').' (Kurdish), '.site_url('/', 'ar').' (Arabic)';
+        $out[] = '- [Contact page — write, call or book a visit]('.site_url('/contact', 'en').')';
         $out[] = '- [Every project]('.site_url('/projects', 'en').')';
+        $out[] = '- [Map — every project where it stands]('.site_url('/map', 'en').')';
+        $out[] = '- [Services — architecture, exteriors, interiors, construction, tendering, furniture]('.site_url('/services', 'en').')';
+        $out[] = '- [How we work — the four phases of a project]('.site_url('/process', 'en').')';
         $out[] = '- [Build journal — projects as they are built]('.site_url('/journal', 'en').')';
         if (\App\Models\Partner::anyPublished()) {
             $out[] = '- [Partners & suppliers the studio builds with]('.site_url('/partners', 'en').')';
@@ -163,6 +167,10 @@ class SeoController extends Controller
         $this->page($xml, '/projects', $homeModified);
         $portrait = Architect::portrait();
         $this->page($xml, Architect::PATH, $homeModified, $portrait ? [$portrait] : []);
+        // the homepage's sections, each on a page of its own
+        foreach (['/map', '/services', '/process', '/contact'] as $path) {
+            $this->page($xml, $path, $homeModified);
+        }
 
         foreach ($projects as $project) {
             $this->page($xml, '/projects/'.$project->slug, $project->updated_at, $project->orderedVariantUrls('lg'));

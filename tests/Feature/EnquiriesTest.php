@@ -153,7 +153,7 @@ class EnquiriesTest extends TestCase
         // a project's page opens the chat already naming the project
         $this->get('/projects/'.$project->slug)
             ->assertSee(rawurlencode('Mountain Villa'), false)
-            ->assertSee(url('/').'?project='.$project->slug.'#contact', false);
+            ->assertSee(url('/contact').'?project='.$project->slug.'#contact', false);
         $this->get('/ku/projects/'.$project->slug)->assertSee(rawurlencode('ڤیلای شاخ'), false);
     }
 

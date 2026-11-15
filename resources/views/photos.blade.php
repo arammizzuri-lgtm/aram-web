@@ -97,7 +97,7 @@
             <h2 class="pp-cta__title">{{ bival('pp_cta_title') }}</h2>
             <p class="pp-cta__text">{{ bival('pp_cta_text') }}</p>
             <div class="pp-cta__actions">
-                <a class="pp-btn" href="{{ site_url('/') }}#contact"><span>{{ bival('pp_cta_button') }}</span><span class="pp-arrow" aria-hidden="true">→</span></a>
+                <a class="pp-btn" href="{{ site_url('/contact') }}"><span>{{ bival('pp_cta_button') }}</span><span class="pp-arrow" aria-hidden="true">→</span></a>
             </div>
         </section>
     </main>

@@ -599,7 +599,7 @@
             @endphp
             <div class="pp-cta__actions">
                 {{-- the form on the homepage, told which project this was about --}}
-                <a class="pp-btn" href="{{ site_url('/') }}?project={{ $project->slug }}#contact">
+                <a class="pp-btn" href="{{ site_url('/contact') }}?project={{ $project->slug }}#contact">
                     <span>{{ bival('pp_cta_button') }}</span>
                     <span class="pp-arrow" aria-hidden="true">→</span>
                 </a>
