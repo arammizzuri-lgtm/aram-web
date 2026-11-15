@@ -20,6 +20,7 @@ use App\Support\DocumentReminders;
 use App\Support\MorningTasks;
 use App\Support\QuickTask;
 use App\Support\StudioMail;
+use App\Support\TaskCalendar;
 use App\Support\TaskReminders;
 use App\Support\WeeklyReport;
 use Filament\Actions\Testing\TestAction;
@@ -416,6 +417,37 @@ class TasksTest extends TestCase
         SiteSetting::flushCache();
         Carbon::setTestNow('2026-11-22 06:00');
         $this->assertFalse(MorningTasks::isDue());
+    }
+
+    public function test_the_phone_calendar_feed_lists_open_tasks_behind_a_secret_address(): void
+    {
+        Task::create(['title' => 'Pour the slab, level 2; check rebar', 'due_at' => '2026-11-21 06:00', 'project_id' => $this->project->id,
+            'pinned' => true, 'notes' => "Bring the plans\nand the level"]);
+        Task::create(['title' => 'Already done', 'due_at' => '2026-11-21 07:00', 'status' => 'done']);
+        $kurdish = trim(str_repeat('ئەندازیار ', 12));
+        Task::create(['title' => $kurdish, 'due_at' => '2026-11-22 07:00']);
+
+        $this->get('/calendar/nothing-yet.ics')->assertNotFound();   // no address made yet
+        Livewire::test(Tasks::class)->mountAction('phoneCalendar')->assertMountedActionModalSee(TaskCalendar::url());
+        $url = TaskCalendar::url();
+
+        auth()->logout();   // a calendar app cannot log in
+        $ics = $this->get($url)->assertOk()->assertHeader('Content-Type', 'text/calendar; charset=utf-8')->getContent();
+        foreach (explode("\r\n", rtrim($ics)) as $line) {
+            $this->assertTrue(strlen($line) <= 75 && mb_check_encoding($line, 'UTF-8'), $line);   // folded, never through a letter
+        }
+        $flat = str_replace("\r\n ", '', $ics);
+        $this->assertStringContainsString("DTSTART:20261121T060000Z\r\n", $flat);
+        $this->assertStringContainsString("SUMMARY:📌 Pour the slab\\, level 2\\; check rebar\r\n", $flat);
+        $this->assertStringContainsString('DESCRIPTION:Ankawa House\nBring the plans\nand the level\nhttp', $flat);
+        $this->assertStringContainsString('SUMMARY:'.$kurdish."\r\n", $flat);
+        $this->assertStringNotContainsString('Already done', $flat);
+
+        // a new address shuts the old out
+        $this->actingAs(User::first());
+        Livewire::test(Tasks::class)->callAction([TestAction::make('phoneCalendar'), TestAction::make('renewCalendar')]);
+        $this->get($url)->assertNotFound();
+        $this->get(TaskCalendar::url())->assertOk();
     }
 
     public function test_the_sunday_report_lists_the_tasks_done_last_week_with_their_time(): void

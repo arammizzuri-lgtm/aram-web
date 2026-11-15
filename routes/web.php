@@ -135,6 +135,15 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/llms.txt', [SeoController::class, 'llms'])->name('llms');
 
+// the admin's tasks for a phone's calendar, which cannot log in: the secret in the address is the key (App\Support\TaskCalendar)
+Route::get('/calendar/{token}.ics', function (string $token) {
+    abort_unless(\App\Support\TaskCalendar::allows($token), 404);
+
+    return response(\App\Support\TaskCalendar::ics(), 200, [
+        'Content-Type' => 'text/calendar; charset=utf-8', 'Cache-Control' => 'private, no-store', 'X-Robots-Tag' => 'noindex',
+    ]);
+})->middleware('throttle:30,1')->name('tasks.calendar');
+
 Route::post('/contact', [ContactController::class, 'store'])
     ->middleware('throttle:contact')
     ->name('contact.store');

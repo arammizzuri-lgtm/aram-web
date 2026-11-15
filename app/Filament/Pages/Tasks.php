@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Models\Task;
 use App\Support\QuickTask;
+use App\Support\TaskCalendar;
 use BackedEnum;
 use Carbon\CarbonInterface;
 use Filament\Actions\Action;
@@ -364,9 +365,27 @@ class Tasks extends Page
                         $data['client_room_id'] ?? null, $data['project_id'] ?? null);
                     Notification::make()->success()->title($n.' tasks added')->send();
                 }),
-            ActionGroup::make([$this->templatesAction(), $this->labelsAction()])
+            ActionGroup::make([$this->templatesAction(), $this->labelsAction(), $this->phoneCalendarAction()])
                 ->label('Set up')->icon(Heroicon::OutlinedAdjustmentsHorizontal)->button()->color('gray'),
         ];
+    }
+
+    protected function phoneCalendarAction(): Action
+    {
+        return Action::make('phoneCalendar')->label('Phone calendar')->icon(Heroicon::OutlinedDevicePhoneMobile)
+            ->modalHeading('Your tasks in your phone\'s calendar')
+            ->modalDescription('Subscribe once: every open task shows at its due time, with a reminder an hour before, and keeps itself up to date.')
+            ->modalContent(fn () => view('filament.pages.task-calendar-feed', ['url' => TaskCalendar::url()]))
+            ->modalSubmitAction(false)->modalCancelActionLabel('Close')
+            ->extraModalFooterActions([
+                Action::make('renewCalendar')->label('Make a new address')->color('danger')->link()
+                    ->requiresConfirmation()
+                    ->modalDescription('The old address stops working, so a calendar subscribed to it stops updating. Subscribe again with the new one.')
+                    ->action(function () {
+                        TaskCalendar::renew();
+                        Notification::make()->success()->title('A new calendar address')->body('Subscribe again on your phone.')->send();
+                    }),
+            ]);
     }
 
     protected function labelsAction(): Action
