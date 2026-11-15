@@ -169,4 +169,29 @@
             iframe.focus();
         });
     });
+
+    /* ---- The sheet's index -------------------------------
+       Down the margin once the opening has gone by, and gone again over the
+       footer; the part crossing the middle of the screen lit. Every group of
+       plates lights the one "photographs" line (data-toc="plates"). */
+    (function initToc() {
+        const toc = document.querySelector('.pj-toc');
+        if (!toc || !('IntersectionObserver' in window)) return;
+        const links = toc.querySelectorAll('.pj-toc__link');
+        const open = document.querySelector('.pj-open'), foot = document.querySelector('.pp-foot');
+        let past = false, atFoot = false;
+        const show = () => toc.classList.toggle('is-shown', past && !atFoot);
+        if (open) new IntersectionObserver(([e]) => { past = !e.isIntersecting && e.boundingClientRect.top < 0; show(); }).observe(open);
+        if (foot) new IntersectionObserver(([e]) => { atFoot = e.isIntersecting; show(); }).observe(foot);
+        const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            const key = '#' + (e.target.dataset.toc || e.target.id);
+            links.forEach((a) => {
+                const on = a.hash === key;
+                a.classList.toggle('is-on', on);
+                if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+            });
+        }), { rootMargin: '-45% 0px -54% 0px' });
+        document.querySelectorAll('main [data-toc]').forEach((el) => io.observe(el));
+    })();
 })();

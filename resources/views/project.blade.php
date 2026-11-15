@@ -123,6 +123,19 @@
     @if ($hasMap)
         <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
     @endif
+    {{-- Printed, the page is a drawing sheet (project-paper.css): A3 across, and in
+         the margins of every page the studio, where it came from, the sheet's number
+         and name, the day it was printed and the page of how many. --}}
+    @php $cssText = fn (string $s) => '"'.addcslashes(str_replace(['<', '>', "\r", "\n"], ' ', $s), '"\\').'"'; @endphp
+    <style media="print">
+        @page {
+            @top-left { content: {!! $cssText(mb_strtoupper($brand)) !!}; font: 500 7pt Inter, Vazirmatn, sans-serif; letter-spacing: .28em; color: #111; }
+            @top-right { content: {!! $cssText(preg_replace('#^https?://(www\.)?#', '', site_url($path))) !!}; font: 7pt Inter, sans-serif; letter-spacing: .08em; color: #777; }
+            @bottom-left { content: {!! $cssText(bival('pj_sheet').' '.$project->num.'  —  '.$name) !!}; font: 8pt Inter, Vazirmatn, sans-serif; color: #111; }
+            @bottom-center { content: {!! $cssText(now()->format('d.m.Y')) !!}; font: 7pt Inter, sans-serif; letter-spacing: .12em; color: #777; }
+            @bottom-right { content: counter(page) " / " counter(pages); font: 500 8pt Inter, sans-serif; letter-spacing: .12em; color: #8A6500; }
+        }
+    </style>
 </head>
 <body class="pp pp--paper">
 
@@ -225,8 +238,13 @@
 
         {{-- The story, set large; beside it the architect's own words, his
              voice, and what it is built of. --}}
-        @php $hasSide = filled($narrative) || $voice || $materials->isNotEmpty(); @endphp
-        <section class="pj-story{{ $hasSide ? '' : ' pj-story--solo' }}">
+        @php
+            $hasSide = filled($narrative) || $voice || $materials->isNotEmpty();
+            // the sheet's index down the margin (pj-toc, at the foot of main): each part
+            // adds itself as it is drawn — [its id, its name], in the order of the page
+            $toc = [['story', bival('pj_project')]];
+        @endphp
+        <section class="pj-story{{ $hasSide ? '' : ' pj-story--solo' }}" id="story" data-toc>
             <div class="pj-story__main">
                 @if (filled($desc))
                     <p class="pp-desc" dir="auto">{{ $desc }}</p>
@@ -329,7 +347,8 @@
              code of its own; project.js only moves the dividing line. Held
              left-to-right in both languages, so "render" is always the left. --}}
         @if ($compare)
-            <section class="pp-compare" id="render-vs-built">
+            @php $toc[] = ['render-vs-built', bival('pp_compare')]; @endphp
+            <section class="pp-compare" id="render-vs-built" data-toc>
                 <h2 class="pp-label">{{ bival('pp_compare') }}</h2>
                 <div class="pp-compare__frame" dir="ltr" style="--pos: 50%">
                     <img class="pp-compare__img" src="{{ $compare['after'] }}" alt="{{ $name }} — {{ bival('pp_built') }}" loading="lazy" decoding="async">
@@ -403,7 +422,12 @@
             <div class="pj-flow">
                 @foreach ($flow as [$what, $item])
                     @if ($what === 'plates')
-                        <section class="pj-plates" aria-label="{{ $name }}">
+                        {{-- in the index once, as all the photographs; every group of them lights it --}}
+                        @php $firstPlates = ! isset($firstPlates); @endphp
+                        @if ($firstPlates)
+                            @php $toc[] = ['plates', str_replace('{n}', (string) count($images), bival('pp_photos_all'))]; @endphp
+                        @endif
+                        <section class="pj-plates" aria-label="{{ $name }}" @if ($firstPlates) id="plates" @endif data-toc="plates">
                             @foreach ($rowsOf($item) as [$kind, $ids])
                                 <div class="pj-row pj-row--{{ $kind }}">
                                     @foreach ($ids as $i)
@@ -425,7 +449,8 @@
                             @case('text')
                                 @php $heading = $bt($d, 'heading'); $body = \App\Models\Landmark::rich($bt($d, 'body')); @endphp
                                 @if ($body !== '' || filled($heading))
-                                    <section class="pj-chapter">
+                                    @if (filled($heading)) @php $toc[] = ['chapter-'.($chapter + 1), $heading]; @endphp @endif
+                                    <section class="pj-chapter" @if (filled($heading)) id="chapter-{{ $chapter + 1 }}" data-toc @endif>
                                         <div class="pj-chapter__side">
                                             <span class="pj-chapter__n" aria-hidden="true">{{ sprintf('%02d', ++$chapter) }}</span>
                                             @if (filled($heading))<h2 class="pj-chapter__title"{{ text_dir($heading) }}>{{ $heading }}</h2>@endif
@@ -447,7 +472,8 @@
                             @case('figures')
                                 @php $items = array_filter((array) ($d['items'] ?? []), fn ($f) => filled($f['value'] ?? null)); @endphp
                                 @if ($items)
-                                    <section class="pj-chapter">
+                                    @if (filled($bt($d, 'heading'))) @php $toc[] = ['chapter-'.($chapter + 1), $bt($d, 'heading')]; @endphp @endif
+                                    <section class="pj-chapter" @if (filled($bt($d, 'heading'))) id="chapter-{{ $chapter + 1 }}" data-toc @endif>
                                         <div class="pj-chapter__side">
                                             <span class="pj-chapter__n" aria-hidden="true">{{ sprintf('%02d', ++$chapter) }}</span>
                                             @if (filled($bt($d, 'heading')))<h2 class="pj-chapter__title"{{ text_dir($bt($d, 'heading')) }}>{{ $bt($d, 'heading') }}</h2>@endif
@@ -489,7 +515,8 @@
              (and everything it loads from YouTube, Vimeo…) arrives only when
              the visitor presses it — project.js swaps the poster for it. --}}
         @if ($media)
-            <section class="pp-media" id="film">
+            @php $toc[] = ['film', bival('pp_film')]; @endphp
+            <section class="pp-media" id="film" data-toc>
                 <h2 class="pp-label">{{ bival('pp_film') }}</h2>
                 <div class="pp-media__grid{{ count($media) === 1 ? ' pp-media__grid--one' : '' }}">
                     @foreach ($media as $m)
@@ -519,7 +546,8 @@
              of each visit. The photos open in the same viewer as the gallery,
              as a set of their own (data-images). --}}
         @if ($updates->isNotEmpty())
-            <section class="pp-progress" id="progress">
+            @php $toc[] = ['progress', bival('pp_progress')]; @endphp
+            <section class="pp-progress" id="progress" data-toc>
                 <h2 class="pp-label">{{ bival('pp_progress') }}</h2>
                 <ol class="pp-timeline">
                     @foreach ($updates as $u)
@@ -551,7 +579,8 @@
         @endif
 
         @if ($quotes->isNotEmpty())
-            <section class="pp-quotes">
+            @php $toc[] = ['voices', bival('quotes_label')]; @endphp
+            <section class="pp-quotes" id="voices" data-toc>
                 <h2 class="pp-label">{{ bival('quotes_label') }}</h2>
                 @foreach ($quotes as $q)
                     <figure class="pp-quote-card{{ $q->hasMedia() ? ' has-cv' : '' }}">
@@ -569,7 +598,8 @@
         @endif
 
         @if ($hasMap)
-            <section class="pp-map">
+            @php $toc[] = ['place', bival('pp_on_map')]; @endphp
+            <section class="pp-map" id="place" data-toc>
                 <h2 class="pp-label">{{ bival('pp_on_map') }}</h2>
                 <div class="pp-map__frame">
                     <div class="pp-map__canvas" id="ppMap" data-lat="{{ $project->lat }}" data-lng="{{ $project->lng }}" data-tiles="{{ $tiles }}"></div>
@@ -583,7 +613,8 @@
             </section>
         @endif
 
-        <section class="pp-cta">
+        @php $toc[] = ['enquire', bival('contact_label')]; @endphp
+        <section class="pp-cta" id="enquire" data-toc>
             <p class="pp-label">{{ bival('contact_label') }}</p>
             <h2 class="pp-cta__title">{{ bival('pp_cta_title') }}</h2>
             <p class="pp-cta__text">{{ bival('pp_cta_text') }}</p>
@@ -667,6 +698,19 @@
                     @endforeach
                 </div>
             </section>
+        @endif
+
+        {{-- The sheet's index: down the margin of a wide screen once the opening has
+             gone by, the part being read lit in gold, every name shown on hover (project.js) --}}
+        @if (count($toc) >= 3)
+            <nav class="pj-toc" aria-label="{{ bival('pp_toc') }}">
+                <p class="pj-toc__head">{{ bival('pp_toc') }}</p>
+                <ol class="pj-toc__list">
+                    @foreach ($toc as [$id, $label])
+                        <li><a class="pj-toc__link" href="#{{ $id }}"><span class="pj-toc__n" dir="ltr">{{ sprintf('%02d', $loop->iteration) }}</span><span class="pj-toc__tick" aria-hidden="true"></span><span class="pj-toc__label" dir="auto">{{ $label }}</span></a></li>
+                    @endforeach
+                </ol>
+            </nav>
         @endif
     </main>
 

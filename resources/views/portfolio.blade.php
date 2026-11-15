@@ -366,6 +366,7 @@
                         <div class="pgc__status pgc__status--{{ $project->statusClass() }}"
                              data-en="{{ $project->statusBadge() }}" data-ku="{{ $project->statusLabel($pgcSecond) }}">{{ site_lang() === 'en' ? $project->statusBadge() : $project->statusLabel($pgcSecond) }}</div>
                         <div class="pgc__info">
+                            @include('partials.dim')
                             <div class="pgc__num">{{ $project->num }}</div>
                             <h3 class="pgc__name" dir="auto" data-en="{{ $project->name }}" data-ku="{{ rtl_slot($project->name, $project->name_ku ?: $project->name, $project->name_ar) }}">{{ bi($project->name, $project->name_ku, $project->name_ar) }}</h3>
                             <p class="pgc__meta" data-en="{{ $project->metaLabel() }}" data-ku="{{ $project->metaLabelIn($pgcSecond) }}">{{ site_lang() === 'en' ? $project->metaLabel() : $project->metaLabelIn($pgcSecond) }}</p>

@@ -57,3 +57,35 @@
 @media (prefers-reduced-motion: reduce) {
     .is-pop .icon-heart, .is-bump { animation: none; }
 }
+
+/* ---- A dimension line along a project's picture (partials/dim) ------
+   Pointed at, the line runs out from its middle to a tick at each end and
+   its figure appears: on a homepage card just above the panel that rises
+   with the name, on a sheet of /projects across the top of its picture. */
+.dim {
+    position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px;
+    pointer-events: none; white-space: nowrap;
+    font: 500 9.5px/1 'Inter', sans-serif; letter-spacing: .16em;
+}
+.dim i { position: relative; flex: 1; height: 1px; background: currentColor; transform: scaleX(0); transition: transform .6s cubic-bezier(.16,1,.3,1) .12s; }
+.dim i:first-child { transform-origin: right; }
+.dim i:last-child { transform-origin: left; }
+/* the ticks: the short slash a dimension ends on, and the line it is taken from */
+.dim i::before, .dim i::after { content: ''; position: absolute; background: currentColor; }
+.dim i::before { top: -5px; width: 1px; height: 11px; transform: rotate(45deg); }
+.dim i::after { top: -8px; width: 1px; height: 17px; opacity: .5; }
+.dim i:first-child::before, .dim i:first-child::after { left: 0; }
+.dim i:last-child::before, .dim i:last-child::after { right: 0; }
+.dim b { font-weight: 500; opacity: 0; transform: translateY(3px); transition: opacity .3s .4s, transform .3s .4s; }
+.pgc:hover .dim i, .px-sheet__link:hover .dim i, .px-sheet__link:focus-visible .dim i { transform: none; }
+.pgc:hover .dim b, .px-sheet__link:hover .dim b, .px-sheet__link:focus-visible .dim b { opacity: 1; transform: none; }
+
+.pgc .dim { left: 22px; right: 22px; bottom: calc(100% + 14px); color: rgba(255,255,255,.92); filter: drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
+/* on a sheet, across the top of its picture, level with the heart; the status pill there steps aside */
+.px-sheet .dim { top: 29px; left: 22px; right: 70px; color: rgba(255,255,255,.92); filter: drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
+[dir="rtl"] .px-sheet .dim { left: 70px; right: 22px; }   /* physical sides: the line itself is dir=ltr */
+.px-sheet__status { transition: opacity .3s; }
+.px-sheet__link:hover .px-sheet__status, .px-sheet__link:focus-visible .px-sheet__status { opacity: 0; }
+/* a short row of cards leaves no room above the panel for it */
+@media (max-height: 640px) { .pgc .dim { display: none; } }
+@media (prefers-reduced-motion: reduce) { .dim i, .dim b { transition: none; } }

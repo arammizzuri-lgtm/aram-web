@@ -244,6 +244,7 @@ class SiteText
                 'pp_film'         => ['Film & tours — heading', 'Film & 360° tours', 'ڤیدیۆ و گەشتی ٣٦٠°'],
                 'pp_play'         => ['Film — play button', 'Play the film', 'ڤیدیۆکە لێبدە'],
                 'pp_tour'         => ['360° tour — start button', 'Start the 360° tour', 'گەشتی ٣٦٠° دەستپێبکە'],
+                'pp_toc'          => ['The index down the margin of a project page', 'On this sheet', 'لەم پەڕەیەدا'],
             ],
 
             // The heart on every project, the "Saved" list it builds (/saved)

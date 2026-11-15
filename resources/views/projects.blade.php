@@ -216,6 +216,7 @@
                         <a class="px-sheet__link" href="{{ $p->pageUrl($lang) }}" data-disc="{{ bival('pj_disc_view') }}">
                             <span class="px-sheet__frame">
                                 <span class="px-sheet__pic"><img src="{{ $p->coverThumbUrl() }}" alt="" loading="lazy" decoding="async" style="object-position: {{ $p->coverPosition() }}"></span>
+                                @include('partials.dim', ['project' => $p])
                                 {{-- on the wall's smaller sheets the status rides on the picture --}}
                                 <span class="px-sheet__status px-st--{{ $p->statusClass() }}" aria-hidden="true">{{ $p->statusLabel($lang) }}</span>
                             </span>

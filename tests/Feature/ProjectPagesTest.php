@@ -250,6 +250,12 @@ class ProjectPagesTest extends TestCase
         $this->assertMatchesRegularExpression('#class="pj-chapter__n" aria-hidden="true">01</span>\s*<h2 class="pj-chapter__title">The brief#', $html);
         $this->assertMatchesRegularExpression('#class="pj-chapter__n" aria-hidden="true">02</span>\s*<h2 class="pj-chapter__title">In numbers#', $html);
         $this->assertStringContainsString('<figure class="pj-sheet" data-images=', $html);
+        // the index down the margin names each part, in order, and points at it
+        $this->assertMatchesRegularExpression('#<nav class="pj-toc" aria-label="On this sheet">.*?href="\#story".*?href="\#chapter-1".*?>The brief</span>.*?href="\#plates".*?href="\#chapter-2".*?>In numbers</span>.*?</nav>#s', $html);
+        foreach (['story', 'chapter-1', 'plates', 'chapter-2'] as $anchor) {
+            $this->assertMatchesRegularExpression('#id="'.$anchor.'"\s+data-toc#', $html);
+        }
+        $this->assertSame(1, substr_count($html, 'id="plates"'));   // later runs of plates light the same entry
 
         // in Kurdish, the Kurdish words — the English where none were written
         $this->get('/ku/projects/mountain-villa-shaqlawa')->assertOk()->assertSee('داواکاری')->assertSee('خانوویەک بۆ سێ نەوە.')->assertSee('Shade first.');
@@ -258,6 +264,27 @@ class ProjectPagesTest extends TestCase
         $admin = User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']);
         $this->actingAs($admin)->get(ProjectResource::getUrl('edit', ['record' => Project::first()]))->assertOk()
             ->assertSee('More on the page')->assertSee('Add a section')->assertSee('Text · The brief');
+    }
+
+    public function test_printed_the_page_is_a_titled_sheet_and_cards_carry_a_dimension(): void
+    {
+        $this->project(['name' => 'Villa "Nur" </style>', 'area' => '420 m²']);
+        $this->project(['name' => 'Old House', 'area' => null, 'year' => '2019']);
+        $this->project(['name' => 'Bare', 'area' => null, 'year' => null]);
+
+        // the title block printed in the page's margins, the name kept inside its CSS string
+        $html = $this->get('/projects/villa-nur-style')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#<style media="print">\s*@page \{.*?@bottom-left \{ content: "[^"]*Villa \\\\"Nur\\\\"  /style ?"#s', $html);
+        $this->assertStringNotContainsString('Villa "Nur" </style>', $html);
+
+        // the area along a card's picture, or the year when no area is given
+        $dim = fn (string $t) => '<span class="dim" dir="ltr" aria-hidden="true"><i></i><b>'.$t.'</b><i></i></span>';
+        foreach (['/', '/projects'] as $path) {
+            $page = $this->get($path)->assertOk()->getContent();
+            $this->assertStringContainsString($dim('420 m²'), $page);
+            $this->assertStringContainsString($dim('2019'), $page);
+            $this->assertSame(2, substr_count($page, '<span class="dim"'), $path);
+        }
     }
 
     public function test_robots_txt_points_at_the_sitemap(): void

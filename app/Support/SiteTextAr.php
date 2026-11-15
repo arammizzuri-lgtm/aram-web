@@ -222,6 +222,7 @@ class SiteTextAr
             'pp_film'           => 'فيلم وجولات ٣٦٠°',
             'pp_play'           => 'شغّل الفيلم',
             'pp_tour'           => 'ابدأ جولة ٣٦٠°',
+            'pp_toc'            => 'في هذه اللوحة',
 
             // Saved & sharing
             'saved_nav'          => 'المحفوظة',

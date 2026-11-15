@@ -389,3 +389,55 @@
     .pj-row, .pj-row--duo, .pj-row--duo-rev { display: flex; flex-direction: column; gap: 40px; }
     .pj-row .pj-plate, .pj-row--inset .pj-plate, .pj-row--solo .pj-plate { width: 100%; flex: none; }
 }
+
+/* ---- The sheet's index, down the margin (project.js) ---------------- */
+.pj-toc {
+    position: fixed; z-index: 40; top: 50%; inset-inline-start: clamp(14px, 1.4vw, 28px);
+    transform: translateY(-50%);
+    opacity: 0; visibility: hidden; transition: opacity .4s, visibility .4s;
+}
+.pj-toc.is-shown { opacity: 1; visibility: visible; }
+.pj-toc__head {
+    margin: 0 0 10px; font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint);
+    opacity: 0; transition: opacity .3s;
+}
+.pj-toc__list { list-style: none; margin: 0; padding: 0; }
+.pj-toc__link {
+    display: flex; align-items: center; gap: 9px; padding: 5px 0;
+    color: var(--faint); text-decoration: none; font-size: 10px; letter-spacing: .12em;
+}
+.pj-toc__n { min-width: 2ch; font-variant-numeric: tabular-nums; }
+/* a fixed width, the line grown inside it, so the names stay in one column */
+.pj-toc__tick { width: 30px; height: 1px; background: currentColor; transform: scaleX(.4); transform-origin: left; transition: transform .35s var(--ease-out); }
+[dir="rtl"] .pj-toc__tick { transform-origin: right; }
+.pj-toc__label {
+    max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    padding: 3px 8px; background: #fff; color: var(--ink); font-size: 12px; letter-spacing: .02em;
+    opacity: 0; transform: translateX(-6px); transition: opacity .3s, transform .3s var(--ease-out);
+}
+[dir="rtl"] .pj-toc__label { transform: translateX(6px); }
+[dir="rtl"] .pj-toc__head { letter-spacing: 0; text-transform: none; font-size: 12px; }
+.pj-toc__link:hover, .pj-toc__link.is-on { color: var(--gold); }
+.pj-toc__link.is-on .pj-toc__tick { transform: none; }
+.pj-toc:hover .pj-toc__label, .pj-toc:focus-within .pj-toc__label,
+.pj-toc:hover .pj-toc__head, .pj-toc:focus-within .pj-toc__head { opacity: 1; transform: none; }
+/* with room in the margin, the part being read keeps its name beside it */
+@media (min-width: 1760px) { .pj-toc__link.is-on .pj-toc__label { opacity: 1; transform: none; } }
+@media (max-width: 1199px) { .pj-toc { display: none; } }
+[data-toc] { scroll-margin-top: 84px; }
+
+/* ---- Printed: a drawing sheet, A3 across ----------------------------
+   The opening alone on the first sheet, then the story and the plates, none
+   cut across a page; the screen's bars, buttons, map and films left off. The
+   title block in the margins of every sheet is in the page's own <style>. */
+@media print {
+    @page { size: A3 landscape; margin: 16mm 14mm; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pp-top, .pp-foot, .wa-fab, .pp-lightbox, .pp-actions, .pj-title__photos, .pj-toc, .pp-media, .pp-map,
+    .pp-cta, .pj-nav, .pp-more, .pp-voice, .pp-compare__range, .pp-compare__handle, .pp-compare__hint, .pp-step__journal { display: none !important; }
+    .pj-open { padding: 0; break-after: page; }
+    .pj-frame { min-height: 0; height: 262mm; }
+    .pj-story, .pj-flow, .pp-compare, .pp-progress, .pp-quotes { max-width: none; padding-inline: 0; }
+    .pj-row, .pj-chapter, .pj-statement, .pj-sheet, .pp-step, .pp-quote-card, .pp-compare__frame { break-inside: avoid; }
+    .pj-plate .pp-shot__open, .pj-chapter, .pj-statement, .pj-sheet { animation: none !important; }
+}
