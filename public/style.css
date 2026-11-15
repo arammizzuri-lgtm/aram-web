@@ -2612,12 +2612,12 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 10px; padding: 24px 52px;
-    opacity: .28;
+    opacity: .72;    /* was .28: on a phone, with no hover, they read as dark */
     transition: opacity .35s var(--ease);
     border-right: 1px solid rgba(255,255,255,.06);
     min-width: 190px; cursor: none;
 }
-.client-logo:hover { opacity: .88; }
+.client-logo:hover { opacity: 1; }
 .client-logo__mark { width: 48px; height: 48px; }
 /* uploaded logo, auto-converted to a faithful white monochrome: shown as an
    image so its internal detail survives, height-normalised so every client
@@ -2638,7 +2638,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .client-logo__sub {
     font-size: 9px; letter-spacing: .1em;
     text-transform: uppercase;
-    color: rgba(255,255,255,.3); white-space: nowrap;
+    color: rgba(255,255,255,.6); white-space: nowrap;
 }
 .clients__hint {
     margin: 14px 0 0;
@@ -2646,6 +2646,8 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
     color: rgba(245,197,24,.75);    /* was .55: 4.2:1 at 9.5px */
 }
 .client-logo:hover .client-logo__name { color: var(--gold); }
+/* a phone shows two logos at once: 140px fades would darken half of each */
+@media (max-width: 768px) { .clients__track-wrap::before, .clients__track-wrap::after { width: 48px; } }
 
 /* ---- Clients modal — the liquid-glass roster ------------ */
 .clients-modal {
@@ -3942,3 +3944,15 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 [dir="rtl"] .sheet-ref__arrow { transform: scaleX(-1); }
 [dir="rtl"] .sheet-ref:hover .sheet-ref__arrow, [dir="rtl"] .sheet-ref:focus-visible .sheet-ref__arrow { transform: scaleX(-1) translateX(3px); }
 [dir="rtl"] .sheet-ref__text { letter-spacing: 0; text-transform: none; font-size: 13px; }
+/* on a phone the bubble under the title was big and in the way (over the
+   map, against the contact cards): a smaller one, at the end of the
+   section's label row, as a sheet's reference sits in its corner */
+@media (max-width: 768px) {
+    .contact__info, .services__head, .process__aside { position: relative; }
+    .proj-map__label, [dir="rtl"] .proj-map__label { left: 20px; right: 20px; }
+    .sheet-ref { position: absolute; top: -17px; inset-inline-end: 0; margin: 0; padding: 4px; }
+    .sheet-ref__mark { width: 40px; height: 40px; background-color: rgba(6,6,6,.55); }
+    .sheet-ref__arrow { font-size: 11px; padding-bottom: 2px; }
+    .sheet-ref__code { padding-top: 4px; font-size: 7.5px; }
+    .sheet-ref__text { display: none; }
+}
