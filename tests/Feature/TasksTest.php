@@ -450,6 +450,20 @@ class TasksTest extends TestCase
         $this->get(TaskCalendar::url())->assertOk();
     }
 
+    public function test_the_admin_can_go_on_a_phone_home_screen_and_opens_on_today(): void
+    {
+        $this->get(Tasks::getUrl())->assertOk()
+            ->assertSee('rel="manifest" href="'.url('studio-aks-panel/app.webmanifest').'"', false)
+            ->assertSee('<link rel="apple-touch-icon" href="'.asset('studio-icon-180.png').'">', false);
+
+        auth()->logout();   // a phone fetches it without the login
+        $app = $this->get('/studio-aks-panel/app.webmanifest')->assertOk()->assertHeader('Content-Type', 'application/manifest+json');
+        $this->assertSame(['tasks?show=today', './', 'standalone'], [$app->json('start_url'), $app->json('scope'), $app->json('display')]);
+        foreach ($app->json('icons') as $icon) {
+            $this->assertFileExists(public_path(basename($icon['src'])));
+        }
+    }
+
     public function test_clearing_today_celebrates_once_and_the_streak_counts_days_with_nothing_late(): void
     {
         Carbon::setTestNow('2026-11-14 09:00');   // the first task: the streak counts from here

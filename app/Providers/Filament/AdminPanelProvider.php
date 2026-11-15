@@ -27,6 +27,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\HtmlString;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -92,6 +93,29 @@ class AdminPanelProvider extends PanelProvider
                 fn () => view('filament.tables.projects-drag'),
                 scopes: ListProjects::class,
             )
+            // added to a phone's home screen, the admin opens like an app — on Today, full screen, dark
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString(
+                '<link rel="manifest" href="'.route('filament.studio-aks-panel.app-manifest').'">'
+                .'<meta name="theme-color" content="#0b0b0b">'
+                .'<meta name="apple-mobile-web-app-capable" content="yes">'
+                .'<meta name="apple-mobile-web-app-status-bar-style" content="black">'
+                .'<meta name="apple-mobile-web-app-title" content="Studio Tasks">'
+                .'<link rel="apple-touch-icon" href="'.asset('studio-icon-180.png').'">'
+            ))
+            // the phone fetches it without logging in; its addresses are relative, so a www/no-www host still matches
+            ->routes(fn () => Route::get('app.webmanifest', fn () => response()->json([
+                'name' => 'Aram Mizuri Studio',
+                'short_name' => 'Studio Tasks',
+                'start_url' => 'tasks?show=today',
+                'scope' => './',
+                'display' => 'standalone',
+                'background_color' => '#0b0b0b',
+                'theme_color' => '#0b0b0b',
+                'icons' => [
+                    ['src' => asset('studio-icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png'],
+                    ['src' => asset('studio-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
+                ],
+            ], 200, ['Content-Type' => 'application/manifest+json']))->name('app-manifest'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
