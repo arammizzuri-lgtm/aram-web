@@ -108,6 +108,9 @@ class Tasks extends Page
     /** A photo taken from a card's camera button, on its way onto the task */
     public $photo = null;
 
+    /** Whether today was all clear at the last render (null before the first) — to celebrate the moment it turns so */
+    public ?bool $wasCleared = null;
+
     public function attachPhoto(int $id): void
     {
         $task = Task::query()->find($id);
@@ -540,8 +543,11 @@ class Tasks extends Page
         $tasks = $this->label === '' ? $all : $all->filter(fn (Task $t) => in_array($this->label, $t->labels ?? [], true));
         // how full the days are counts all the work, whatever label is shown
         $busy = self::busy($all);
+        $streak = Task::streak();
+        $this->celebrate($all, $streak);
 
         return [
+            'streak' => $streak,
             'preview' => trim($this->quick) !== '' ? QuickTask::parse($this->quick) : null,
             'timing' => $all->first(fn (Task $t) => $t->timer_started_at !== null),
             'labels' => self::labels(),
@@ -555,6 +561,21 @@ class Tasks extends Page
             'timeline' => $this->show === 'timeline' ? self::timeline($tasks, $busy) : null,
             'calendar' => $this->show === 'calendar' ? $this->calendar($busy) : null,
         ];
+    }
+
+    /** A small celebration the moment the last task due today is done — not on opening a page already clear. */
+    private function celebrate(Collection $all, int $streak): void
+    {
+        $tonight = now(Task::TZ)->endOfDay();
+        $doneToday = $all->filter(fn (Task $t) => $t->done_at?->gte($tonight->copy()->startOfDay()))->count();
+        $cleared = $doneToday > 0 && ! $all->contains(fn (Task $t) => $t->status !== 'done' && $t->due_at->lte($tonight));
+        if ($cleared && $this->wasCleared === false) {
+            $this->dispatch('tasks-cleared');
+            Notification::make()->success()->title('All clear for today 🎉')
+                ->body(collect([$doneToday.' done', $streak > 1 ? '🔥 '.$streak.' days in a row with nothing late' : null])->filter()->join(' · '))
+                ->send();
+        }
+        $this->wasCleared = $cleared;
     }
 
     /** Today, calmly (every label): what is late, due by tonight, pinned or being timed — and how many were done today (Erbil). */

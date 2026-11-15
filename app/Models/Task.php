@@ -199,6 +199,32 @@ class Task extends Model
         return $this->status !== 'done' && $this->due_at->isPast();
     }
 
+    /**
+     * Days in a row, up to now, that ended with nothing late (Erbil days), counted since the first task.
+     * shortcut: a task snoozed or deleted while late no longer counts against its day; keep a log if that matters.
+     */
+    public static function streak(): int
+    {
+        $first = static::query()->min('created_at');
+        if (! $first) {
+            return 0;
+        }
+        $since = \Illuminate\Support\Carbon::parse($first)->timezone(self::TZ)->startOfDay();
+        // only a task that was ever late can spoil a day: open and past due, or done after it was due
+        $late = static::query()->where('due_at', '<', now())
+            ->where(fn ($q) => $q->whereNull('done_at')->orWhereColumn('done_at', '>', 'due_at'))->get(['due_at', 'done_at']);
+        $days = 0;
+        $end = now();
+        $day = now(self::TZ)->startOfDay();
+        while ($day->gte($since) && ! $late->contains(fn (Task $t) => $t->due_at->lt($end) && (! $t->done_at || $t->done_at->gt($end)))) {
+            $days++;
+            $end = $day->copy();   // the midnight that ended the day before
+            $day->subDay();
+        }
+
+        return $days;
+    }
+
     /** "3 days left", "Due in 5 hours", "2 days late"… */
     public function timeLeft(): string
     {

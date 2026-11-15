@@ -450,6 +450,28 @@ class TasksTest extends TestCase
         $this->get(TaskCalendar::url())->assertOk();
     }
 
+    public function test_clearing_today_celebrates_once_and_the_streak_counts_days_with_nothing_late(): void
+    {
+        Carbon::setTestNow('2026-11-14 09:00');   // the first task: the streak counts from here
+        $spoiler = Task::create(['title' => 'Late over a night', 'due_at' => '2026-11-16 08:00']);
+        Carbon::setTestNow('2026-11-17 10:00');
+        $spoiler->update(['status' => 'done']);   // still late when Mon 16 Nov ended (Erbil)
+        Carbon::setTestNow('2026-11-20 09:00');   // Friday, 12:00 in Erbil
+        $later = Task::create(['title' => 'Call the plasterer', 'due_at' => '2026-11-20 15:00']);
+        $late = Task::create(['title' => 'Send the invoice', 'due_at' => '2026-11-20 06:00']);
+        $this->assertSame(0, Task::streak());
+
+        $page = Livewire::test(Tasks::class)->set('show', 'today')->assertSee('2 left for today');
+        $page->call('move', $late->id, 'done')->assertNotDispatched('tasks-cleared');
+        $this->assertSame(4, Task::streak());   // Tue 17 to today
+
+        $page->call('move', $later->id, 'done')->assertDispatched('tasks-cleared')->assertNotified('All clear for today 🎉')
+            ->assertSee('🔥 4 days in a row with nothing late');
+        $page->call('togglePin', $later->id)->assertNotDispatched('tasks-cleared');   // once, not on every redraw
+        Livewire::test(Tasks::class)->assertNotDispatched('tasks-cleared')   // nor on opening a page already clear
+            ->assertSeeHtml('<b>4</b>days in a row with nothing late');
+    }
+
     public function test_the_sunday_report_lists_the_tasks_done_last_week_with_their_time(): void
     {
         $done = function (string $at, string $title, array $more = []) {

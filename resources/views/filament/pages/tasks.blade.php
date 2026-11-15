@@ -86,6 +86,12 @@
         .tk-count--timing span { color: #6fd39b; font-weight: 600; }
         @keyframes tk-blink { 50% { opacity: .25; } }
         @media (prefers-reduced-motion: reduce) { .tk-count--timing i { animation: none; } }
+        .tk-count--streak { border-color: rgba(245,197,24,.4); background: rgba(245,197,24,.07); }
+        .tk-count--streak b { color: #F5C518; margin-inline-start: 2px; }
+        /* today cleared: a burst in the flag's colours, falling once */
+        .tk-confetti { position: fixed; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; }
+        .tk-confetti i { position: absolute; top: -14px; width: 8px; height: 13px; border-radius: 2px; animation: tk-fall 2.6s cubic-bezier(.25,.6,.45,1) forwards; }
+        @keyframes tk-fall { to { transform: translate(var(--x), 105vh) rotate(var(--r)); } }
         .tk-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .tk-file { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
         .tk-file img { width: 100%; height: 100%; object-fit: cover; }
@@ -202,6 +208,20 @@
         }
     </style>
 
+    {{-- the last task due today, done: confetti (none for those who ask for less motion) --}}
+    <div aria-hidden="true" x-data x-on:tasks-cleared.window="
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const box = document.createElement('div');
+        box.className = 'tk-confetti';
+        for (let i = 0; i < 80; i++) {
+            const bit = document.createElement('i');
+            bit.style.cssText = `left:${Math.random() * 100}%;background:${['#F5C518', '#CE1126', '#007A3D', '#ffffff'][i % 4]};animation-delay:${Math.random() * .5}s;--x:${(Math.random() - .5) * 220}px;--r:${Math.random() * 900 - 450}deg`;
+            box.append(bit);
+        }
+        document.body.append(box);
+        setTimeout(() => box.remove(), 3500);
+    "></div>
+
     <div class="tk-bar">
         {{-- Today is calm: no counts, no labels, no help — only today's cards --}}
         @unless ($show === 'today')
@@ -210,6 +230,9 @@
             <span @class(['tk-count', 'tk-count--late' => $counts['late']])><b>{{ $counts['late'] }}</b>late</span>
             <span class="tk-count"><b>{{ $counts['today'] }}</b>due today</span>
             <span class="tk-count"><b>{{ $counts['week'] }}</b>in the next 7 days</span>
+            @if ($streak > 1)
+                <span class="tk-count tk-count--streak">🔥 <b>{{ $streak }}</b>days in a row with nothing late</span>
+            @endif
             @if ($timing)
                 <button type="button" class="tk-count tk-count--timing" wire:click="toggleTimer({{ $timing->id }})" title="Stop the timer">
                     <i aria-hidden="true"></i>Timing <b>{{ Str::limit($timing->title, 40) }}</b><span>Stop</span>
@@ -402,7 +425,7 @@
         <section class="tk-focus">
             <header class="tk-focus__head">
                 <h2>{{ now(Task::TZ)->format('l j F') }}</h2>
-                <p>{{ $focus['tasks']->count() ?: 'Nothing' }} left for today{{ $focus['done'] ? ' · '.$focus['done'].' done' : '' }}</p>
+                <p>{{ $focus['tasks']->count() ?: 'Nothing' }} left for today{{ $focus['done'] ? ' · '.$focus['done'].' done' : '' }}{{ $streak > 1 ? ' · 🔥 '.$streak.' days in a row with nothing late' : '' }}</p>
             </header>
             @forelse ($focus['tasks'] as $t)
                 @include('filament.pages.task-card', ['focus' => true])
