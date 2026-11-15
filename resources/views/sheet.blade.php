@@ -308,6 +308,7 @@
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ $v('script.js') }}" defer></script>
     <script src="{{ $v('site-index.js') }}" defer></script>
+    <script src="{{ $v('sheet-plan.js') }}" defer></script>
     @if ($sheet === 'map')
         <script src="{{ $v('map-growth.js') }}" defer></script>
         <script>

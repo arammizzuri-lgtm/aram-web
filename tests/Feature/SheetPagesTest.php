@@ -65,7 +65,9 @@ class SheetPagesTest extends TestCase
         }
         $this->get('/ku')->assertSee('<a class="sheet-ref" href="'.url('/ku/map').'"', false);
 
-        // a page of its own has the drawing behind its title, and no link to itself
-        $this->get('/process')->assertSee('class="sheet-plan"', false)->assertDontSee('class="sheet-ref"', false);
+        // a page of its own has the drawing behind its title — a house of the
+        // Erbil Citadel, lit by the sun now (sheet-plan.js) — and no link to itself
+        $this->get('/process')->assertSee('class="sheet-plan"', false)->assertSee('CITADEL HOUSE, HAWLÊR', false)
+            ->assertSee('/sheet-plan.js?v=', false)->assertDontSee('class="sheet-ref"', false);
     }
 }
