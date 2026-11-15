@@ -665,6 +665,7 @@
     <script>window.__SITE__ = {!! json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) !!};</script>
     <script src="{{ asset('script.js') }}?v={{ filemtime(public_path('script.js')) }}" defer></script>
     <script src="{{ asset('site-index.js') }}?v={{ filemtime(public_path('site-index.js')) }}" defer></script>
+    <script src="{{ asset('cad.js') }}?v={{ filemtime(public_path('cad.js')) }}" defer></script>
     <script src="{{ asset('map-growth.js') }}?v={{ filemtime(public_path('map-growth.js')) }}" defer></script>
     @include('partials.sketch-assets')
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>

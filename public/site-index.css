@@ -267,3 +267,17 @@ html.has-index { overflow: hidden; }
     font: inherit; color: #fff; text-transform: uppercase; caret-color: #f5c518;
 }
 @media (prefers-reduced-motion: reduce) { .cmd { transition: none; } }
+
+/* ── CAD by hand (cad.js): the selection box and the measure ───────────
+   Drawn on the screen over everything; a window solid blue, a crossing
+   dashed green, as CAD draws them; what a box caught dashed in blue. */
+.cad-layer { position: fixed; inset: 0; z-index: 1900; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.cad-box, .cad-dim { display: none; }
+.cad-layer.is-box .cad-box, .cad-layer.is-dist .cad-dim { display: inline; }
+.cad-box { fill: rgba(56,128,255,.14); stroke: #4d8fff; stroke-width: 1; shape-rendering: crispEdges; }
+.cad-box.is-crossing { fill: rgba(64,190,96,.14); stroke: #4cc46a; stroke-dasharray: 6 4; }
+.cad-dim__l, .cad-dim__t { fill: none; stroke: #F5C518; stroke-width: 1.2; }
+.cad-dim__bg { fill: rgba(16,16,16,.88); }
+.cad-dim__x { fill: #F5C518; font: 11.5px Consolas, 'SFMono-Regular', Menlo, monospace; letter-spacing: .03em; direction: ltr; unicode-bidi: isolate; }
+.is-cad, .is-cad * { -webkit-user-select: none !important; user-select: none !important; }
+.cad-picked { outline: 1.5px dashed #4d8fff !important; outline-offset: -2px !important; }

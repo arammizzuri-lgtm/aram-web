@@ -33,7 +33,7 @@
     var lit = svg.querySelectorAll('.p-sunlit');
     var ray = svg.querySelector('.p-sunray'), dot = svg.querySelector('.p-sundot');
     var note = svg.querySelector('.p-sunnote');
-    var clock, SP = '  ';   // SVG text folds plain spaces into one
+    var clock, SP = '\u2002\u2002';   // SVG text folds plain spaces into one
     try { clock = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Baghdad', hour: '2-digit', minute: '2-digit', hour12: false }); } catch (err) {}
 
     function light() {

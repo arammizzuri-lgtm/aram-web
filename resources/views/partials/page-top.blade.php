@@ -50,3 +50,4 @@
     @include('partials.site-index', ['sheets' => $topMenu, 'markHere' => $markHere ?? true, 'langUrls' => $langUrls ?? null])
 @endif
 <script src="{{ asset('site-index.js') }}?v={{ filemtime(public_path('site-index.js')) }}" defer></script>
+<script src="{{ asset('cad.js') }}?v={{ filemtime(public_path('cad.js')) }}" defer></script>

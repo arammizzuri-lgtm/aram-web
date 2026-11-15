@@ -73,5 +73,10 @@ class SheetPagesTest extends TestCase
         // Erbil Citadel, lit by the sun now (sheet-plan.js) — and no link to itself
         $this->get('/process')->assertSee('class="sheet-plan"', false)->assertSee('CITADEL HOUSE, HAWLÊR', false)
             ->assertSee('/sheet-plan.js?v=', false)->assertDontSee('class="sheet-ref"', false);
+
+        // the selection box and the measure (cad.js) wherever the index is: home, the sheets, the other pages
+        foreach (['/', '/process', '/projects', '/ar/careers'] as $path) {
+            $this->get($path)->assertOk()->assertSee('/cad.js?v=', false);
+        }
     }
 }
