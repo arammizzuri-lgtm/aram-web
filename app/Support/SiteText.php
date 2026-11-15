@@ -44,6 +44,7 @@ class SiteText
                 'nav_language'   => ['Menu — title block: language', 'Language', 'زمان'],
                 'sheet_prev' => ['Own pages (map, services, process, contact) — the sheet before', 'Previous sheet', 'پەڕەی پێشوو'],
                 'sheet_next' => ['Own pages — the next sheet', 'Next sheet', 'پەڕەی دواتر'],
+                'sheet_full' => ['Homepage — under each section\'s title, the link to its own page', 'See the full sheet', 'هەموو پەڕەکە ببینە'],
                 'ui_scroll'      => ['Scroll hint', 'Scroll', 'بۆ خوارەوە'],
                 'ui_clock_city'  => ['Hero clock — city', 'Erbil', 'هەولێر'],
                 'stat_projects'  => ['Stat label — Projects', 'Projects', 'پرۆژە'],

@@ -113,7 +113,8 @@
     <div class="cursor-follower" id="cursorFollower"></div>
 
 @include('home.nav')
-    @include('partials.site-index', ['sheets' => \App\Support\SiteMenu::items()])
+    @php $menu = \App\Support\SiteMenu::items(); @endphp
+    @include('partials.site-index', ['sheets' => $menu])
 
     {{-- The page's own content, between the menu and the footer — the
          landmark screen readers (and AI agents) jump to. --}}

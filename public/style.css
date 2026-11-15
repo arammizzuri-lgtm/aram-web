@@ -3919,3 +3919,26 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
     .hp-partners__wall li { width: 50%; }
     .hp-partners__tile { height: 100px; }
 }
+
+/* ---- A section's own page (home/sheet-ref): under its title, a drawing's
+   reference bubble, the arrow above the line and the sheet below ---- */
+.sheet-ref {
+    display: inline-flex; align-items: center; gap: 14px; margin-top: 22px;
+    color: var(--gold); cursor: none; pointer-events: auto; /* the map's label lets clicks through; this must not */
+}
+.sheet-ref__mark {
+    position: relative; flex: none; width: 50px; height: 50px; border-radius: 50%;
+    display: grid; grid-template-rows: 1fr 1fr; justify-items: center;
+    border: 1px solid rgba(245,197,24,.55); transition: background-color .35s, border-color .35s;
+}
+.sheet-ref__mark::before { content: ''; position: absolute; inset-inline: 0; top: 50%; height: 1px; background: rgba(245,197,24,.55); }
+.sheet-ref__arrow { align-self: end; padding-bottom: 3px; font-size: 13px; line-height: 1; transition: transform .35s; }
+.sheet-ref__code { align-self: start; padding-top: 5px; font-size: 8.5px; letter-spacing: .06em; line-height: 1; }
+.sheet-ref__text { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: rgba(229,226,220,.75); transition: color .35s; }
+.sheet-ref:hover .sheet-ref__mark, .sheet-ref:focus-visible .sheet-ref__mark { background-color: rgba(245,197,24,.1); border-color: var(--gold); }
+.sheet-ref:hover .sheet-ref__arrow, .sheet-ref:focus-visible .sheet-ref__arrow { transform: translateX(3px); }
+.sheet-ref:hover .sheet-ref__text, .sheet-ref:focus-visible .sheet-ref__text { color: #fff; }
+.sheet-ref:focus-visible { outline: 2px solid var(--gold); outline-offset: 6px; border-radius: 40px; }
+[dir="rtl"] .sheet-ref__arrow { transform: scaleX(-1); }
+[dir="rtl"] .sheet-ref:hover .sheet-ref__arrow, [dir="rtl"] .sheet-ref:focus-visible .sheet-ref__arrow { transform: scaleX(-1) translateX(3px); }
+[dir="rtl"] .sheet-ref__text { letter-spacing: 0; text-transform: none; font-size: 13px; }

@@ -12,6 +12,7 @@
         <div class="proj-map__label">
             <p class="section-label" {!! bitext('map_label') !!}>{{ bival('map_label') }}</p>
             <h2 class="proj-map__title" {!! bitext('map_title') !!}>{!! bival('map_title') !!}</h2>
+            @include('home.sheet-ref', ['key' => 'map'])
         </div>
         @endunless
 

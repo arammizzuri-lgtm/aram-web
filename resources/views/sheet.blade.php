@@ -76,7 +76,7 @@
             <div class="sheet-hero__bg" aria-hidden="true">
                 <span class="sheet-hero__aurora"></span>
                 <span class="sheet-hero__grid"></span>
-                <span class="sheet-hero__ghost" dir="ltr">{{ $me['code'] }}</span>
+                @include('partials.sheet-plan')
             </div>
             <div class="sheet-hero__inner">
                 <p class="sheet-hero__kicker">
@@ -167,9 +167,20 @@
             @case('services')
                 {{-- Each service a chapter: its number, what it is, and the work
                      that shows it — or, with none to show yet, its line drawing. --}}
+                @php $services = Services::all(); @endphp
                 <section class="svc" aria-label="{{ bival('services_title') }}">
+                    <div class="svc__wrap">
+                    {{-- the chapters' index, alongside on a wide screen; the one being read lit (below) --}}
+                    <nav class="svc-toc" aria-label="{{ bival('services_title') }}">
+                        <p class="svc-toc__head"><span>{{ bival('services_title') }}</span><span dir="ltr">{{ str_pad((string) count($services), 2, '0', STR_PAD_LEFT) }}</span></p>
+                        <ol class="svc-toc__list">
+                            @foreach ($services as $i => $s)
+                                <li><a class="svc-toc__link" href="#service-{{ $i + 1 }}"><span class="svc-toc__n" dir="ltr">0{{ $i + 1 }}</span><span dir="auto">{{ slot($s['en'], $s['ku']) }}</span></a></li>
+                            @endforeach
+                        </ol>
+                    </nav>
                     <ol class="svc__list">
-                        @foreach (Services::all() as $i => $s)
+                        @foreach ($services as $i => $s)
                             @php
                                 $go = Services::link($s, $projects);
                                 $work = Services::projects($s, $projects)->take(3);
@@ -202,6 +213,7 @@
                             </li>
                         @endforeach
                     </ol>
+                    </div>
                 </section>
                 @break
 
@@ -315,6 +327,25 @@
                 if (window.siteProjectMap) fly();
                 else document.addEventListener('projectmapready', fly, { once: true });
             });
+        </script>
+    @elseif ($sheet === 'services')
+        <script>
+            // the index lights the chapter that crosses the middle of the screen
+            (function () {
+                var links = document.querySelectorAll('.svc-toc__link');
+                if (!links.length || !('IntersectionObserver' in window)) return;
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (e) {
+                        if (!e.isIntersecting) return;
+                        links.forEach(function (a) {
+                            var on = a.hash === '#' + e.target.id;
+                            a.classList.toggle('is-on', on);
+                            if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+                        });
+                    });
+                }, { rootMargin: '-45% 0px -54% 0px' });
+                document.querySelectorAll('.svc-ch').forEach(function (ch) { io.observe(ch); });
+            })();
         </script>
     @endif
     @include('partials.sketch-assets')

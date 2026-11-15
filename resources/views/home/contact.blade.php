@@ -11,6 +11,7 @@
                 @unless (isset($sheet))
                 <p class="section-label" {!! bitext('contact_label') !!}>{{ bival('contact_label') }}</p>
                 <h2 class="contact__title" {!! bitext('contact_title') !!}>{!! bival('contact_title') !!}</h2>
+                @include('home.sheet-ref', ['key' => 'contact'])
                 @endunless
 
                 <div class="contact__methods">

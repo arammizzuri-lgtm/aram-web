@@ -53,5 +53,19 @@ class SheetPagesTest extends TestCase
         // no projects at all: every service asks rather than links to an empty list
         $html = $this->get('/services')->assertOk()->getContent();
         $this->assertSame(7, substr_count($html, 'class="svc-ch__go" href="'.url('/contact').'"'));
+        // and the chapters' index beside them, one link to each
+        $this->assertSame(7, preg_match_all('#<a class="svc-toc__link" href="\#service-\d">#', $html));
+    }
+
+    public function test_the_homepage_sections_lead_to_their_own_pages(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+        foreach (['map' => 'A-02', 'services' => 'A-04', 'process' => 'A-05', 'contact' => 'A-09'] as $sheet => $code) {
+            $this->assertMatchesRegularExpression('#<a class="sheet-ref" href="'.preg_quote(url('/'.$sheet), '#').'" aria-label="[^"]+ — See the full sheet">\s*<span class="sheet-ref__mark" aria-hidden="true"><span class="sheet-ref__arrow">→</span><span class="sheet-ref__code" dir="ltr">'.$code.'</span>#', $html, $sheet);
+        }
+        $this->get('/ku')->assertSee('<a class="sheet-ref" href="'.url('/ku/map').'"', false);
+
+        // a page of its own has the drawing behind its title, and no link to itself
+        $this->get('/process')->assertSee('class="sheet-plan"', false)->assertDontSee('class="sheet-ref"', false);
     }
 }

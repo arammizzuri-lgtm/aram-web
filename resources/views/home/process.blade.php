@@ -13,6 +13,7 @@
                 @unless (isset($sheet))
                 <p class="section-label" {!! bitext('process_label') !!}>{{ bival('process_label') }}</p>
                 <h2 class="process__title" {!! bitext('process_title') !!}>{{ bival('process_title') }}</h2>
+                @include('home.sheet-ref', ['key' => 'process'])
                 @endunless
 
                 <div class="process__meter">

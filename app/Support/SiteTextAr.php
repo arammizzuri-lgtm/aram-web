@@ -42,6 +42,7 @@ class SiteTextAr
             'nav_language'   => 'اللغة',
             'sheet_prev' => 'اللوحة السابقة',
             'sheet_next' => 'اللوحة التالية',
+            'sheet_full' => 'شاهد اللوحة كاملة',
             'ui_scroll'      => 'مرّر للأسفل',
             'ui_clock_city'  => 'أربيل',
             'stat_projects'  => 'مشروع',

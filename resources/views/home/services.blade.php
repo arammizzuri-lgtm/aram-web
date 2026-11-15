@@ -4,6 +4,7 @@
             <div class="services__head">
                 <p class="section-label section-label--center" {!! bitext('services_label') !!}>{{ bival('services_label') }}</p>
                 <h2 class="services__title" {!! bitext('services_title') !!}>{{ bival('services_title') }}</h2>
+                @include('home.sheet-ref', ['key' => 'services'])
             </div>
             <div class="services__grid">
                 @foreach (\App\Support\Services::all() as $i => $s)
