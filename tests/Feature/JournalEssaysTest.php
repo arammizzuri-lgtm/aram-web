@@ -30,9 +30,10 @@ class JournalEssaysTest extends TestCase
 
         foreach (['' => 'The houses of the Citadel, in plan', '/ku' => 'خانووەکانی قەڵا، لە نەخشەدا', '/ar' => 'بيوت القلعة، في المسقط'] as $lang => $title) {
             $html = $this->get($lang.'/journal/citadel-house-plans')->assertOk()->assertSee($title)->getContent();
-            // eight plates: seven houses with eleven floor plans between them, and the block: twelve plans
+            // eight plates: seven houses with eleven floor plans between them, and the block: twelve plans,
+            // and a long and a cross section (or courtyard elevation) for three of the houses: eighteen drawings
             $this->assertSame(8, substr_count($html, '<article class="ja-plate"'), $lang);
-            $this->assertSame(12, substr_count($html, '<path class="ja-plan__wall"'), $lang);
+            $this->assertSame(18, substr_count($html, '<svg class="ja-dwg"'), $lang);
             $this->assertStringContainsString('<span class="ja-plate__code" dir="ltr">CH-08</span>', $html);
             // every plate names what it was drawn from, and the sources close the page
             $this->assertStringContainsString('https://doi.org/10.1016/j.asej.2024.103003', $html);

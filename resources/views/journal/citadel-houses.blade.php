@@ -1,12 +1,12 @@
-{{-- The journal's essay on the houses of Erbil Citadel: seven houses and one block, their walls traced from
-     the published surveys (resources/journal/citadel-plans.php) and redrawn in one hand, with what the
+{{-- The journal's essay on the houses of Erbil Citadel: seven houses and one block, redrawn in one hand from
+     the published surveys (resources/journal/citadel-drawings.json: plans, sections, elevations), with what the
      nomination file says about how such a house was planned and built. Every fact has its source below.
      Texts are written here in the three languages: $t(English, Kurdish, Arabic). --}}
 @php
     /** @var array $article */
     $lang = site_lang();
     $t = fn (string $en, string $ku, string $ar) => bi($en, $ku, $ar);
-    $plans = require resource_path('journal/citadel-plans.php');
+    $dwgs = json_decode(file_get_contents(resource_path('journal/citadel-drawings.json')), true);
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $headline = $t(...$article['title']);
     $title = $headline.' — '.$brand;
@@ -37,6 +37,11 @@
         'b' => $t('Basement (sirdab)', 'ژێرزەمین (سەرداب)', 'السرداب'),
         'f' => $t('First floor', 'نهۆمی یەکەم', 'الطابق الأول'),
     ];
+    $view = [
+        'el' => $t('Courtyard elevation', 'ڕووکاری حەوشە', 'واجهة الفناء'),
+        'sec' => $t('Long section', 'بڕگەی درێژ', 'مقطع طولي'),
+        'cross' => $t('Cross section', 'بڕگەی پانی', 'مقطع عرضي'),
+    ];
 
     $plates = [
         [
@@ -48,9 +53,7 @@
                 [$t('Size', 'قەبارە', 'القياس'), $noScale],
                 [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $src['nom'].', fig. 2.50'],
             ],
-            'plans' => [['key' => 'h192', 'level' => $level['g'],
-                'tags' => [[.268, .666, '1'], [.517, .68, '1'], [.45, .343, '2'], [.63, .13, '3'], [.752, .345, '4'], [.826, .26, '5']],
-                'doors' => [[.63, .035, 180]]]],
+            'plans' => [['key' => 'h192', 'level' => $level['g']]],
             'legend' => [
                 ['1', $t('The main wing: two rooms, each with its own door', 'باڵی سەرەکی: دوو ژوور، هەر یەکەی بە دەرگای خۆی', 'الجناح الرئيسي: غرفتان، لكلٍّ منهما بابها')],
                 ['2', $L['court']], ['3', $L['entry']],
@@ -76,10 +79,7 @@
                 [$t('Storeys', 'نهۆم', 'الطوابق'), $t('One', 'یەک', 'واحد')],
                 [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $src['annex'].', annex 9'],
             ],
-            'plans' => [['key' => 'h318', 'level' => $level['g'], 'scale' => [70, 5],
-                'tags' => [[.16, .29, '3'], [.4, .29, '2'], [.707, .29, '1'], [.5, .545, '4'], [.33, .75, '5'], [.567, .86, '6'], [.873, .6, '7'], [.36, .845, '7'], [.853, .681, '8'], [.68, .82, '9'], [.813, .8, '10']],
-                'cols' => [[.169, .616, 13], [.395, .616, 13], [.652, .616, 13]],
-                'doors' => [[.567, .985, 0]]]],
+            'plans' => [['key' => 'h318', 'level' => $level['g']]],
             'legend' => [
                 ['1–3', $t('The three rooms, each with its own door to the portico', 'سێ ژوورەکە، هەر یەکەی بە دەرگای خۆی بۆ تارمەکە', 'الغرف الثلاث، لكلٍّ منها بابها على الطارمة')],
                 ['4', $t('Portico (tarma) on three columns', 'تارمە لەسەر سێ کۆڵەکە', 'الطارمة على ثلاثة أعمدة')],
@@ -107,8 +107,7 @@
                 [$t('Brickwork', 'خشتکاری', 'البناء بالطابوق'), $t('Irregular bond', 'ڕیزبەندی ناڕێک', 'رباط غير منتظم')],
                 [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $src['annex'].', annex 10'],
             ],
-            'plans' => [['key' => 'h305', 'level' => $level['g'].' · '.$t('as existing', 'وەک ئێستا', 'كما هو قائم'), 'scale' => [33.5, 5],
-                'tags' => [[.523, .404, '1'], [.234, .485, '2'], [.726, .357, '3'], [.429, .694, '4'], [.421, .829, '5'], [.832, .391, '6'], [.779, .558, '6'], [.726, .73, '6'], [.655, .869, '6'], [.549, .558, '7'], [.368, .253, '7'], [.577, .234, '8'], [.174, .629, '9']]]],
+            'plans' => [['key' => 'h305', 'level' => $level['g'].' · '.$t('as existing', 'وەک ئێستا', 'كما هو قائم')]],
             'legend' => [
                 ['1', $L['court']], ['2', $t('Entrance', 'دەروازە', 'المدخل')],
                 ['3', $t('East arcade', 'ڕیزە کەوانەی ڕۆژهەڵات', 'الرواق الشرقي')], ['4', $t('South arcade', 'ڕیزە کەوانەی باشوور', 'الرواق الجنوبي')],
@@ -138,10 +137,10 @@
                 [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $src['asej'].', table 4 (C1)'],
             ],
             'plans' => [
-                ['key' => 'rashid-g', 'level' => $level['g'], 'scale' => [43.1, 5],
-                    'tags' => [[.5, .68, '1'], [.527, .46, '2'], [.5, .345, '3']], 'basin' => [.527, .529, .062, .03]],
-                ['key' => 'rashid-b', 'level' => $level['b'], 'scale' => [44.6, 5], 'tags' => [[.5, .31, '4']]],
+                ['key' => 'rashid-g', 'level' => $level['g']],
+                ['key' => 'rashid-b', 'level' => $level['b']],
             ],
+            'secs' => [['key' => 'rashid-el', 'level' => $view['el']], ['key' => 'rashid-sec', 'level' => $view['sec']]],
             'legend' => [
                 ['1', $L['court']], ['2', $t('Basin', 'حەوز', 'الحوض')],
                 ['3', $t('Portico before the main rooms, reached by steps at either end', 'تارمە لەبەردەم ژوورە سەرەکییەکان، بە پلە لە هەردوو سەرەوە دەچیتە سەری', 'طارمة أمام الغرف الرئيسية، يُصعد إليها بدرجات عند طرفيها')],
@@ -167,9 +166,10 @@
                 [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $src['asej'].', table 4 (C2)'],
             ],
             'plans' => [
-                ['key' => 'salim-g', 'level' => $level['g'], 'scale' => [56.5, 5], 'tags' => [[.53, .61, '1'], [.4, .2, '2'], [.66, .23, '2']]],
-                ['key' => 'salim-b', 'level' => $level['b'], 'scale' => [54.7, 5]],
+                ['key' => 'salim-g', 'level' => $level['g']],
+                ['key' => 'salim-b', 'level' => $level['b']],
             ],
+            'secs' => [['key' => 'salim-long', 'level' => $view['sec']], ['key' => 'salim-cross', 'level' => $view['cross']]],
             'legend' => [
                 ['1', $L['court']],
                 ['2', $t('The two large rooms at the head of the plot', 'دوو ژوورە گەورەکەی سەری پارچە زەوییەکە', 'الغرفتان الكبيرتان في رأس القطعة')],
@@ -195,9 +195,10 @@
             ],
             'plans' => [
                 ['key' => 'salih-b', 'level' => $level['b']],
-                ['key' => 'salih-g', 'level' => $level['g'], 'tags' => [[.23, .13, '1'], [.47, .13, '1'], [.7, .13, '1'], [.5, .3, '2'], [.585, .56, '3'], [.285, .56, '4'], [.9, .56, '4'], [.11, .42, '5']]],
+                ['key' => 'salih-g', 'level' => $level['g']],
                 ['key' => 'salih-f', 'level' => $level['f']],
             ],
+            'secs' => [['key' => 'salih-long', 'level' => $view['sec']], ['key' => 'salih-cross', 'level' => $view['cross']]],
             'legend' => [
                 ['1', $t('The main range: three rooms', 'باڵی سەرەکی: سێ ژوور', 'الجناح الرئيسي: ثلاث غرف')],
                 ['2', $t('Arcade before the main range', 'ڕیزە کەوانە لەبەردەم باڵی سەرەکی', 'الرواق أمام الجناح الرئيسي')],
@@ -224,9 +225,7 @@
                 [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $src['mdpi'].', fig. 8b'],
                 [$t('Note', 'تێبینی', 'ملاحظة'), $t('A diagram of spaces, not a wall survey: the solid shows everything the study did not map as a room.', 'هێڵکارییەکی بۆشاییەکانە، نەک ڕووپێوی دیوار: بەشە پڕەکە هەموو ئەوە پیشان دەدات کە توێژینەوەکە وەک ژوور نەیکێشاوە.', 'مخطط للفراغات لا مسحٌ للجدران: الجزء المصمت يمثل كل ما لم تُدرجه الدراسة غرفةً.')],
             ],
-            'plans' => [['key' => 'hashim', 'level' => $level['g'], 'wide' => true,
-                'tags' => [[.133, .625, '1'], [.49, .56, '2'], [.235, .534, '3'], [.3, .325, '3'], [.42, .17, '3'], [.779, .7, '3'], [.786, .865, '3']],
-                'doors' => [[-.02, .655, 90]]]],
+            'plans' => [['key' => 'hashim', 'level' => $level['g'], 'wide' => true]],
             'legend' => [
                 ['1', $t('Entrance passage: you turn before you see the court', 'ڕاڕەوی دەروازە: پێش بینینی حەوشە دەسووڕێیتەوە', 'ممر المدخل: تنعطف قبل أن ترى الفناء')],
                 ['2', $L['court']],
@@ -334,7 +333,7 @@
 
         <section class="ja-plates">
             <h2 class="ja-h">{{ $t('The plates', 'تابلۆکان', 'اللوحات') }}</h2>
-            <p class="ja-plates__key">{{ $t('Walls in white, as traced from the survey. Gold marks what we added: numbers, columns, entrances and scale.', 'دیوارەکان بە سپی، وەک لە ڕووپێوەکەوە هەڵگیراونەتەوە. زێڕین ئەوە پیشان دەدات کە ئێمە زیادمان کردووە: ژمارە، کۆڵەکە، دەروازە و پێوەر.', 'الجدران بالأبيض كما نُقلت عن المسح. والذهبي يدلّ على ما أضفناه: الأرقام والأعمدة والمداخل والمقياس.') }}</p>
+            <p class="ja-plates__key">{{ $t('Every plan, section and elevation here is redrawn by us from the published surveys: walls, doors with their swings, windows, stairs and fixtures, at one scale per house. Areas are measured off the drawings and are approximate. Where a survey gives no scale or north, we draw none.', 'هەموو نەخشە و بڕگە و ڕووکارێک لێرەدا لە ڕووپێوە بڵاوکراوەکانەوە لەلایەن ئێمەوە دووبارە کێشراوەتەوە: دیوار، دەرگا لەگەڵ ڕێڕەوی کرانەوەیان، پەنجەرە، پەیژە و کەلوپەل، بە یەک پێوەر بۆ هەر خانوویەک. ڕووبەرەکان لەسەر نەخشەکان پێوراون و نزیکەیین. لە شوێنێک ڕووپێوەکە پێوەر یان باکووری نەدابێت، ئێمەش نایکێشین.', 'كلّ مسقط ومقطع وواجهة هنا أعدنا رسمه عن المسوح المنشورة: الجدران والأبواب بمسار فتحها والنوافذ والدرج والتجهيزات، بمقياس واحد لكلّ بيت. المساحات مقيسة على الرسوم وتقريبية. وحيث لا يعطي المسح مقياسًا أو اتجاه الشمال لا نرسمهما.') }}</p>
 
             @foreach ($plates as $i => $plate)
                 <article class="ja-plate" id="plate-{{ $i + 1 }}">
@@ -344,14 +343,25 @@
                         <p class="ja-plate__type">{{ $plate['type'] }}</p>
                     </header>
                     <div class="ja-plate__sheet ja-plate__sheet--{{ count($plate['plans']) }}">
+                        @php $widest = max(array_map(fn ($p) => $dwgs[$p['key']]['vb'][2], $plate['plans'])); @endphp
                         @foreach ($plate['plans'] as $p)
                             <figure class="ja-plate__fig{{ ! empty($p['wide']) ? ' ja-plate__fig--wide' : '' }}">
-                                @include('journal.plan', ['plan' => $plans[$p['key']], 'name' => $plate['name'].' — '.$p['level'], 'tags' => $p['tags'] ?? [],
-                                    'cols' => $p['cols'] ?? [], 'doors' => $p['doors'] ?? [], 'scale' => $p['scale'] ?? null, 'basin' => $p['basin'] ?? null])
+                                @include('journal.drawing', ['dwg' => $dwgs[$p['key']], 'id' => 'dw-'.$p['key'], 'name' => $plate['name'].' — '.$p['level'], 'rel' => $dwgs[$p['key']]['vb'][2] / $widest])
                                 <figcaption>{{ $p['level'] }}</figcaption>
                             </figure>
                         @endforeach
                     </div>
+                    @if (! empty($plate['secs']))
+                        {{-- sections and elevations redrawn from the same survey; columns as wide as the drawings, so all are at one scale --}}
+                        <div class="ja-plate__sheet ja-plate__sheet--sec" style="--cols: {{ implode(' ', array_map(fn ($p) => round($dwgs[$p['key']]['vb'][2]).'fr', $plate['secs'])) }}">
+                            @foreach ($plate['secs'] as $p)
+                                <figure class="ja-plate__fig">
+                                    @include('journal.drawing', ['dwg' => $dwgs[$p['key']], 'id' => 'dw-'.$p['key'], 'name' => $plate['name'].' — '.$p['level']])
+                                    <figcaption>{{ $p['level'] }}</figcaption>
+                                </figure>
+                            @endforeach
+                        </div>
+                    @endif
                     <div class="ja-plate__body">
                         <div class="ja-plate__text">
                             @foreach ($plate['text'] as $para)
@@ -382,9 +392,7 @@
                 </header>
                 <div class="ja-plate__sheet ja-plate__sheet--1">
                     <figure class="ja-plate__fig ja-plate__fig--wide">
-                        @include('journal.plan', ['plan' => $plans['b45'], 'name' => $t('Block 45', 'بلۆکی ٤٥', 'البلوك ٤٥'), 'tags' => [
-                            [.306, .175, '45/6'], [.5, .137, '45/7'], [.641, .095, '45/8'], [.775, .224, '45/9'], [.105, .295, '45/5'], [.312, .339, '45/4'], [.735, .372, '45/10'],
-                            [.376, .601, '45/3'], [.853, .546, '45/11'], [.629, .667, '45/13'], [.824, .672, '45/12'], [.506, .781, '45/2'], [.582, .907, '45/1']]])
+                        @include('journal.drawing', ['dwg' => $dwgs['b45'], 'id' => 'dw-b45', 'name' => $t('Block 45', 'بلۆکی ٤٥', 'البلوك ٤٥')])
                         <figcaption>{{ $level['g'] }}</figcaption>
                     </figure>
                 </div>
@@ -474,5 +482,6 @@
 
     @include('partials.page-foot')
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
+    <script src="{{ asset('journal-drawing.js') }}?v={{ filemtime(public_path('journal-drawing.js')) }}" defer></script>
 </body>
 </html>

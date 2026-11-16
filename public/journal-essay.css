@@ -76,22 +76,13 @@
 }
 .ja-plate__sheet--2 { grid-template-columns: 1fr 1fr; }
 .ja-plate__sheet--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ja-plate__sheet--sec { grid-template-columns: var(--cols); align-items: end; }
+.ja-plate__sheet--sec .ja-plate__fig { justify-content: flex-end; }
+.ja-plate__sheet--sec .ja-dwg { max-width: none; max-height: none; }
 .ja-plate__fig { margin: 0; padding: clamp(16px, 3vw, 36px); display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 14px; }
 .ja-plate__fig + .ja-plate__fig { border-inline-start: 1px solid var(--line); }
 .ja-plate__fig figcaption { font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--faint); }
 [dir="rtl"] .ja-plate__fig figcaption { letter-spacing: 0; font-size: 13px; }
-.ja-plan { display: block; width: 100%; max-width: 560px; height: auto; max-height: 78vh; }
-.ja-plate__sheet--2 .ja-plan, .ja-plate__sheet--3 .ja-plan { max-width: 440px; }
-.ja-plate__fig--wide .ja-plan { max-width: 860px; }
-.ja-plan__wall { fill: #E9E6E0; }
-.ja-plan__line { fill: none; stroke: var(--gold); stroke-width: 2.5; }
-.ja-plan__col { fill: #0d0d0d; stroke: var(--gold); stroke-width: 4; }
-.ja-plan__door { fill: var(--gold); }
-.ja-plan__tag circle { fill: #0d0d0d; stroke: var(--gold); stroke-width: 2.5; }
-.ja-plan__tag text { fill: var(--gold); font-size: 24px; font-weight: 500; font-family: Inter, system-ui, sans-serif; }
-.ja-plan__tag text.is-long { font-size: 17px; }
-.ja-plan__scale path { fill: none; stroke: var(--gold); stroke-width: 2.5; }
-.ja-plan__scale text { fill: var(--muted); font-size: 22px; font-family: Inter, system-ui, sans-serif; }
 
 .ja-plate__body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
 .ja-plate__text { padding: clamp(18px, 2.6vw, 32px); }
@@ -132,7 +123,7 @@
     .ja-types { grid-template-columns: 1fr 1fr; }
     .ja-plate__head { grid-template-columns: auto 1fr; }
     .ja-plate__type { grid-column: 1 / -1; }
-    .ja-plate__sheet--2, .ja-plate__sheet--3 { grid-template-columns: 1fr; }
+    .ja-plate__sheet--2, .ja-plate__sheet--3, .ja-plate__sheet--sec { grid-template-columns: 1fr; }
     .ja-plate__fig + .ja-plate__fig { border-inline-start: 0; border-top: 1px solid var(--line); }
     .ja-plate__body { grid-template-columns: 1fr; }
     .ja-facts { border-inline-start: 0; border-top: 1px solid var(--line); }
@@ -146,10 +137,72 @@
 @media print {
     .ja-plate { break-inside: avoid; background: none; border-color: #999; }
     .ja-plate__sheet { background: none; }
-    .ja-plan__wall, .ja-d__wall { fill: #222; }
-    .ja-plan__tag circle, .ja-plan__col { fill: #fff; }
+    .ja-d__wall { fill: #222; }
 }
 
 /* house numbers and measures stay in Latin figures, whatever the page's language */
 .ja-facts dd[dir="ltr"], .ja-legend__n, .ja-plate__code { font-family: Inter, system-ui, sans-serif; }
 [dir="rtl"] .ja-facts dd[dir="ltr"] { text-align: right; }
+
+/* ---- the drawings (journal/drawing), drawn as the sheet's plan is ----------
+   --u is one screen pixel in the drawing's own units (cm), so lines keep their weight at any size */
+.ja-dwg { display: block; width: 100%; height: auto; max-height: 92vh; overflow: visible; fill: none; stroke: rgba(245,197,24,.5); stroke-width: var(--u); stroke-linecap: round; stroke-linejoin: round; }
+.ja-plate__fig .ja-dwg { max-width: 900px; }
+.ja-plate__sheet--2 .ja-dwg, .ja-plate__sheet--3 .ja-dwg { max-width: none; max-height: none; }
+.ja-dwg .d-axis { stroke: rgba(255,255,255,.14); stroke-width: calc(var(--u) * .8); stroke-dasharray: calc(var(--u) * 16) calc(var(--u) * 5) calc(var(--u) * 2) calc(var(--u) * 5); }
+.ja-dwg .d-poche { fill: rgba(245,197,24,.085); stroke: none; }
+.ja-dwg .d-wall { stroke: rgba(245,197,24,.88); stroke-width: calc(var(--u) * 1.25); }
+.ja-dwg .d-ctx { stroke: rgba(245,197,24,.28); }
+.ja-dwg .d-fix, .ja-dwg .d-stair { stroke: rgba(245,197,24,.48); stroke-width: calc(var(--u) * .85); }
+.ja-dwg .d-over { stroke: rgba(245,197,24,.38); stroke-width: calc(var(--u) * .85); stroke-dasharray: calc(var(--u) * 5) calc(var(--u) * 3.5); }
+.ja-dwg .d-open { stroke: rgba(245,197,24,.55); stroke-width: calc(var(--u) * .85); }
+.ja-dwg .d-leaf { stroke: rgba(245,197,24,.95); stroke-width: calc(var(--u) * 1.5); }
+.ja-dwg .d-glass { stroke: rgba(229,226,220,.72); stroke-width: calc(var(--u) * .8); transition: stroke .8s; }
+.ja-dwg .d-arrow { stroke: rgba(245,197,24,.8); stroke-width: calc(var(--u) * .95); }
+.ja-dwg .d-dim { stroke: rgba(245,197,24,.45); stroke-width: calc(var(--u) * .8); }
+.ja-dwg .d-bubble, .ja-dwg .d-north { stroke: rgba(245,197,24,.72); }
+.ja-dwg .d-scale { stroke: rgba(229,226,220,.5); }
+.ja-dwg .d-hatch { stroke: rgba(245,197,24,.17); stroke-width: calc(var(--u) * .7); }
+.ja-dwg .d-light { fill: rgba(245,197,24,.06); stroke: none; }
+.ja-dwg defs path, .ja-dwg .d-shade { stroke: none; }
+.ja-dwg text { stroke: none; direction: ltr; unicode-bidi: isolate; fill: rgba(245,197,24,.62); font-family: Inter, system-ui, sans-serif; letter-spacing: .08em; }
+.ja-dwg .p-tag { font-size: 1.1em; fill: rgba(245,197,24,.85); }
+.ja-dwg .p-room { font-size: .78em; letter-spacing: .22em; fill: rgba(229,226,220,.66); }
+.ja-dwg .p-note, .ja-dwg .p-dim { font-size: .74em; fill: rgba(245,197,24,.72); }
+.ja-dwg .d-title { font-size: .8em; letter-spacing: .3em; fill: rgba(229,226,220,.42); }
+.ja-dwg .d-sunnote { font-size: .72em; letter-spacing: .2em; fill: rgba(229,226,220,.4); }
+[dir="rtl"] .ja-dwg .p-room, [dir="rtl"] .ja-dwg .d-title { letter-spacing: 0; font-family: inherit; font-size: .9em; }
+/* sun and shade on the court (journal-drawing.js), as on the sheet's plan */
+.ja-dwg .d-sun, .ja-dwg .d-sunmark { opacity: 0; transition: opacity 1.2s; }
+.ja-dwg.has-sun .d-sun, .ja-dwg.has-sun .d-sunmark { opacity: 1; }
+.ja-dwg .d-sun.is-still { opacity: .8; }
+.ja-dwg .d-sunlit { transition: transform 2s cubic-bezier(.2,.7,.2,1); }
+.ja-dwg .d-sunray { stroke: rgba(245,197,24,.4); }
+.ja-dwg .d-sundot { fill: rgba(245,197,24,.9); stroke: none; }
+.ja-dwg.is-night .d-sunmark { opacity: 0; }
+.ja-dwg.is-night .d-glass { stroke: rgba(255,214,102,.95); }
+/* drawn line by line as it comes into view: each line one dash as long as itself */
+.ja-dwg.is-pending .dl, .ja-dwg.is-drawn .dl { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.ja-dwg.is-drawn .dl { animation: jaDraw 1.9s cubic-bezier(.2,.7,.2,1) var(--d, .1s) forwards; }
+.ja-dwg .d-wall { --d: .1s; } .ja-dwg .d-fix, .ja-dwg .d-stair { --d: .7s; } .ja-dwg .d-open, .ja-dwg .d-leaf, .ja-dwg .d-glass { --d: 1s; }
+.ja-dwg .d-arrow, .ja-dwg .d-dim, .ja-dwg .d-bubble, .ja-dwg .d-north, .ja-dwg .d-scale { --d: 1.3s; }
+.ja-dwg.is-pending .d-poche, .ja-dwg.is-pending .d-text, .ja-dwg.is-pending .d-over, .ja-dwg.is-pending .d-axis { opacity: 0; }
+.ja-dwg.is-drawn .d-poche { animation: jaFade 1.2s .9s both; }
+.ja-dwg.is-drawn .d-axis { animation: jaFade 1.2s both; }
+.ja-dwg.is-drawn .d-over { animation: jaFade 1s 1.4s both; }
+.ja-dwg.is-drawn .d-text { animation: jaFade 1.2s 1.8s both; }
+@keyframes jaDraw { to { stroke-dashoffset: 0; } }
+@keyframes jaFade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ja-dwg .dl { animation: none !important; stroke-dasharray: none !important; } .ja-dwg * { animation: none !important; } .ja-dwg .d-sunlit { transition: none; } }
+@media (max-width: 600px) {
+    /* a drawing stays legible: it keeps a working width and scrolls sideways */
+    .ja-plate__fig { overflow-x: auto; align-items: flex-start; }
+    .ja-dwg { min-width: 560px; max-height: none; }
+}
+@media print {
+    .ja-dwg { stroke: #333; }
+    .ja-dwg .d-poche { fill: #ddd; }
+    .ja-dwg text { fill: #222; }
+    .ja-dwg .dl { stroke-dasharray: none !important; animation: none !important; }
+    .ja-dwg .d-sun, .ja-dwg .d-sunmark { display: none; }
+}
