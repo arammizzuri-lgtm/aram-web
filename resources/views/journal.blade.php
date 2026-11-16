@@ -10,7 +10,6 @@
     $entries = $posts->map(fn ($p) => ['date' => $p->date, 'post' => $p])
         ->concat($articles->map(fn ($a) => ['date' => \Illuminate\Support\Carbon::parse($a['date']), 'article' => $a]))
         ->sortByDesc(fn ($e) => $e['date']->getTimestamp())->values();
-    $plans = $articles->isNotEmpty() ? require resource_path('journal/citadel-plans.php') : [];
     $schema = ['@context' => 'https://schema.org', '@type' => 'Blog', 'name' => bival('journal_label'), 'url' => site_url('/journal'),
         'inLanguage' => $lang, 'publisher' => ['@id' => url('/').'#studio'],
         'blogPost' => $entries->take(20)->map(fn ($e) => isset($e['post'])
@@ -60,13 +59,11 @@
                                 <span class="jr-card__read">{{ bival('journal_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
                             </a>
                         @else
-                            {{-- an essay: its cover is one of its own drawings --}}
-                            @php $article = $entry['article']; $plan = $plans[$article['cover']] ?? null; @endphp
+                            {{-- an essay: its cover is a sheet of its own drawings --}}
+                            @php $article = $entry['article']; @endphp
                             <a class="jr-card" href="{{ \App\Support\Articles::url($article) }}">
                                 <span class="jr-card__img jr-card__img--plan">
-                                    @if ($plan)
-                                        <svg viewBox="-60 -60 {{ $plan['w'] + 120 }} {{ $plan['h'] + 120 }}" aria-hidden="true"><path fill-rule="evenodd" d="{{ $plan['d'] }}"/></svg>
-                                    @endif
+                                    @include('journal.cover', ['keys' => $article['cover']])
                                 </span>
                                 <span class="jr-card__meta">
                                     <time datetime="{{ $entry['date']->toDateString() }}">{{ site_date($entry['date'], $lang) }}</time>

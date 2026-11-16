@@ -20,15 +20,16 @@ class JournalEssaysTest extends TestCase
         $article = Articles::find('citadel-house-plans');
         $this->assertNotNull($article);
 
-        // on the journal, with no build entry published, the essay is the lead card, its cover a plan
+        // on the journal, with no build entry published, the essay is the lead card, its cover a sheet of its drawings
         $this->get('/journal')->assertOk()
             ->assertDontSee('The first entries are on their way.')
             ->assertSee('<a class="jr-card" href="'.url('/journal/citadel-house-plans').'">', false)
             ->assertSee('<span class="jr-card__img jr-card__img--plan">', false)
-            ->assertSee('The houses of the Citadel, in plan');
+            ->assertSee('<svg class="jr-cover"', false)->assertSee('12 PLANS · 5 SECTIONS · 1 ELEVATION')
+            ->assertSee('The houses of the Citadel, in plan, section and elevation');
         $this->get('/ku/journal')->assertOk()->assertSee('href="'.url('/ku/journal/citadel-house-plans').'"', false);
 
-        foreach (['' => 'The houses of the Citadel, in plan', '/ku' => 'خانووەکانی قەڵا، لە نەخشەدا', '/ar' => 'بيوت القلعة، في المسقط'] as $lang => $title) {
+        foreach (['' => 'The houses of the Citadel, in plan, section and elevation', '/ku' => 'خانووەکانی قەڵا، لە نەخشە و بڕگە و ڕووکاردا', '/ar' => 'بيوت القلعة، مسقطًا ومقطعًا وواجهة'] as $lang => $title) {
             $html = $this->get($lang.'/journal/citadel-house-plans')->assertOk()->assertSee($title)->getContent();
             // eight plates: seven houses with eleven floor plans between them, and the block: twelve plans,
             // and a long and a cross section (or courtyard elevation) for three of the houses: eighteen drawings
@@ -45,16 +46,20 @@ class JournalEssaysTest extends TestCase
         $this->get('/sitemap.xml')->assertOk()->assertSee(url('/ar/journal/citadel-house-plans'), false);
     }
 
-    public function test_every_plan_an_essay_draws_has_its_walls(): void
+    public function test_every_drawing_an_essay_shows_has_its_walls(): void
     {
-        $plans = require resource_path('journal/citadel-plans.php');
-        $this->assertCount(12, $plans);
-        foreach ($plans as $key => $plan) {
-            $this->assertMatchesRegularExpression('/^M[\d. LMZ-]+Z$/', $plan['d'], $key);
-            $this->assertGreaterThan(500, $plan['h'], $key);
+        $dwgs = json_decode(file_get_contents(resource_path('journal/citadel-drawings.json')), true);
+        $this->assertCount(18, $dwgs);
+        foreach ($dwgs as $key => $dwg) {
+            $this->assertStringStartsWith('M', $dwg['d']['wall'], $key);
+            // the box round what is built, which the journal card frames by
+            $this->assertCount(4, $dwg['bb'], $key);
+            $this->assertGreaterThan(0, $dwg['bb'][2] * $dwg['bb'][3], $key);
         }
         foreach (Articles::all() as $article) {
-            $this->assertArrayHasKey($article['cover'], $plans);
+            foreach ($article['cover'] as $key) {
+                $this->assertArrayHasKey($key, $dwgs);
+            }
             $this->assertTrue(view()->exists($article['view']));
         }
     }

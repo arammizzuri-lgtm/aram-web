@@ -10,7 +10,7 @@ namespace App\Support;
  */
 class Articles
 {
-    /** @return list<array{slug: string, view: string, date: string, kind: array, title: array, summary: array, cover: string}> */
+    /** @return list<array{slug: string, view: string, date: string, kind: array, title: array, summary: array, cover: array{string, string}}> */
     public static function all(): array
     {
         return [
@@ -19,13 +19,13 @@ class Articles
                 'view' => 'journal.citadel-houses',
                 'date' => '2026-11-15',
                 'kind' => ['Essay', 'وتار', 'مقال'],
-                'title' => ['The houses of the Citadel, in plan', 'خانووەکانی قەڵا، لە نەخشەدا', 'بيوت القلعة، في المسقط'],
+                'title' => ['The houses of the Citadel, in plan, section and elevation', 'خانووەکانی قەڵا، لە نەخشە و بڕگە و ڕووکاردا', 'بيوت القلعة، مسقطًا ومقطعًا وواجهة'],
                 'summary' => [
-                    'Seven houses and one whole block of Erbil Citadel, redrawn from the published surveys: twelve plans, and what they show about how a house was planned and built here.',
-                    'حەوت خانوو و یەک بلۆکی تەواوی قەڵای هەولێر، لە ڕووپێوە بڵاوکراوەکانەوە دووبارە کێشراونەتەوە: دوازدە نەخشە، و ئەوەی دەیڵێن دەربارەی چۆنیەتی نەخشەدانان و دروستکردنی خانوو لێرە.',
-                    'سبعة بيوت وبلوك كامل من قلعة أربيل، أُعيد رسمها عن المسوحات المنشورة: اثنا عشر مسقطاً، وما تكشفه عن طريقة تخطيط البيت وبنائه هنا.',
+                    'Seven houses and one whole block of Erbil Citadel, redrawn from the published surveys: twelve plans, six sections and elevations, and what they show about how a house was planned and built here.',
+                    'حەوت خانوو و یەک بلۆکی تەواوی قەڵای هەولێر، لە ڕووپێوە بڵاوکراوەکانەوە دووبارە کێشراونەتەوە: دوازدە نەخشە و شەش بڕگە و ڕووکار، و ئەوەی دەیڵێن دەربارەی چۆنیەتی نەخشەدانان و دروستکردنی خانوو لێرە.',
+                    'سبعة بيوت وبلوك كامل من قلعة أربيل، أُعيد رسمها عن المسوحات المنشورة: اثنا عشر مسقطاً وستة مقاطع وواجهات، وما تكشفه عن طريقة تخطيط البيت وبنائه هنا.',
                 ],
-                'cover' => 'h318',   // a plan from resources/journal/citadel-plans.php
+                'cover' => ['salih-g', 'salih-cross'],   // a plan and a section from resources/journal/citadel-drawings.json
             ],
         ];
     }
