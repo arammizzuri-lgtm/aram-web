@@ -44,10 +44,16 @@
 .ja-types strong { font-size: 14px; font-weight: 400; color: #fff; }
 .ja-types span { font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--muted); }
 [dir="rtl"] .ja-types span { font-size: 14px; line-height: 1.8; }
-.ja-d__wall { fill: rgba(229,226,220,.9); }
-.ja-d__gap { stroke: #111; stroke-width: 11; fill: none; }           /* a door: the wall cut through */
-.ja-d__dash { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 4; fill: none; }
-.ja-d__col { fill: var(--gold); }
+/* the four diagrams (journal/type): drawn like the plans; a door or window cuts the wall in the panel's colour,
+   and the court's shade swings across it as a day's would */
+.ja-types .ja-dwg { min-width: 0; max-height: none; }
+.ja-type .t-cut { fill: var(--panel); stroke: none; }
+.ja-type .t-court { stroke: none; }
+.ja-type .t-pave { stroke: rgba(229,226,220,.09); stroke-width: .5; }
+.ja-type .d-hatch { stroke: rgba(245,197,24,.42); stroke-width: .7; }
+.ja-type .d-light { fill: rgba(255,236,170,.05); }
+.ja-type .t-lit { animation: jaDay 18s ease-in-out infinite alternate; }
+@keyframes jaDay { 0% { transform: translate(-11px, -8px); } 50% { transform: translate(0, -5px); } 100% { transform: translate(11px, -8px); } }
 
 .ja-terms, .ja-build { margin-top: 36px; border-top: 1px solid var(--line); }
 .ja-terms > div, .ja-build > div { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--line); }
@@ -137,7 +143,6 @@
 @media print {
     .ja-plate { break-inside: avoid; background: none; border-color: #999; }
     .ja-plate__sheet { background: none; }
-    .ja-d__wall { fill: #222; }
 }
 
 /* house numbers and measures stay in Latin figures, whatever the page's language */
