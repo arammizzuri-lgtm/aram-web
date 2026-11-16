@@ -1,14 +1,23 @@
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\ProjectUpdate> $posts */
+    /** @var \Illuminate\Support\Collection<int, array> $articles  the essays (App\Support\Articles) */
     $lang = site_lang();
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('journal_label').' — '.$brand;
     $description = \Illuminate\Support\Str::limit(bival('journal_intro'), 160);
     $cover = fn ($post) => $post->imageUrls('thumb')[0] ?? $post->project?->coverThumbUrl();
+    // the build entries and the essays, as one list, newest first
+    $entries = $posts->map(fn ($p) => ['date' => $p->date, 'post' => $p])
+        ->concat($articles->map(fn ($a) => ['date' => \Illuminate\Support\Carbon::parse($a['date']), 'article' => $a]))
+        ->sortByDesc(fn ($e) => $e['date']->getTimestamp())->values();
+    $plans = $articles->isNotEmpty() ? require resource_path('journal/citadel-plans.php') : [];
     $schema = ['@context' => 'https://schema.org', '@type' => 'Blog', 'name' => bival('journal_label'), 'url' => site_url('/journal'),
         'inLanguage' => $lang, 'publisher' => ['@id' => url('/').'#studio'],
-        'blogPost' => $posts->take(20)->map(fn ($p) => ['@type' => 'BlogPosting', 'headline' => $p->title($lang) ?: $p->project->tr('name'),
-            'url' => $p->journalUrl(), 'datePublished' => $p->date->toDateString()])->values()->all()];
+        'blogPost' => $entries->take(20)->map(fn ($e) => isset($e['post'])
+            ? ['@type' => 'BlogPosting', 'headline' => $e['post']->title($lang) ?: $e['post']->project->tr('name'),
+                'url' => $e['post']->journalUrl(), 'datePublished' => $e['date']->toDateString()]
+            : ['@type' => 'Article', 'headline' => bi(...$e['article']['title']),
+                'url' => \App\Support\Articles::url($e['article']), 'datePublished' => $e['date']->toDateString()])->values()->all()];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
@@ -25,29 +34,49 @@
             <p class="jr-hero__intro">{{ bival('journal_intro') }}</p>
         </header>
 
-        @if ($posts->isEmpty())
+        @if ($entries->isEmpty())
             <p class="jr-empty">{{ bival('journal_empty') }}</p>
         @else
             {{-- newest first; the first entry set large --}}
             <ol class="jr-list">
-                @foreach ($posts as $i => $post)
+                @foreach ($entries as $i => $entry)
                     <li class="jr-item{{ $i === 0 ? ' jr-item--lead' : '' }}">
-                        <a class="jr-card" href="{{ $post->journalUrl() }}">
-                            <span class="jr-card__img">
-                                @if ($src = $cover($post))
-                                    <img src="{{ $src }}" alt="" loading="{{ $i < 3 ? 'eager' : 'lazy' }}" decoding="async">
+                        @isset($entry['post'])
+                            @php $post = $entry['post']; @endphp
+                            <a class="jr-card" href="{{ $post->journalUrl() }}">
+                                <span class="jr-card__img">
+                                    @if ($src = $cover($post))
+                                        <img src="{{ $src }}" alt="" loading="{{ $i < 3 ? 'eager' : 'lazy' }}" decoding="async">
+                                    @endif
+                                </span>
+                                <span class="jr-card__meta">
+                                    <time datetime="{{ $post->date->toDateString() }}">{{ site_date($post->date, $lang) }}</time>
+                                    <span class="jr-card__project"><bdi>{{ $post->project->tr('name') }}</bdi></span>
+                                </span>
+                                <span class="jr-card__title" dir="auto">{{ $post->title($lang) ?: $post->project->tr('name') }}</span>
+                                @if (filled($post->note($lang)))
+                                    <span class="jr-card__note" dir="auto">{{ \Illuminate\Support\Str::limit($post->note($lang), 160) }}</span>
                                 @endif
-                            </span>
-                            <span class="jr-card__meta">
-                                <time datetime="{{ $post->date->toDateString() }}">{{ site_date($post->date, $lang) }}</time>
-                                <span class="jr-card__project"><bdi>{{ $post->project->tr('name') }}</bdi></span>
-                            </span>
-                            <span class="jr-card__title" dir="auto">{{ $post->title($lang) ?: $post->project->tr('name') }}</span>
-                            @if (filled($post->note($lang)))
-                                <span class="jr-card__note" dir="auto">{{ \Illuminate\Support\Str::limit($post->note($lang), 160) }}</span>
-                            @endif
-                            <span class="jr-card__read">{{ bival('journal_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
-                        </a>
+                                <span class="jr-card__read">{{ bival('journal_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
+                            </a>
+                        @else
+                            {{-- an essay: its cover is one of its own drawings --}}
+                            @php $article = $entry['article']; $plan = $plans[$article['cover']] ?? null; @endphp
+                            <a class="jr-card" href="{{ \App\Support\Articles::url($article) }}">
+                                <span class="jr-card__img jr-card__img--plan">
+                                    @if ($plan)
+                                        <svg viewBox="-60 -60 {{ $plan['w'] + 120 }} {{ $plan['h'] + 120 }}" aria-hidden="true"><path fill-rule="evenodd" d="{{ $plan['d'] }}"/></svg>
+                                    @endif
+                                </span>
+                                <span class="jr-card__meta">
+                                    <time datetime="{{ $entry['date']->toDateString() }}">{{ site_date($entry['date'], $lang) }}</time>
+                                    <span class="jr-card__project">{{ bi(...$article['kind']) }}</span>
+                                </span>
+                                <span class="jr-card__title">{{ bi(...$article['title']) }}</span>
+                                <span class="jr-card__note">{{ bi(...$article['summary']) }}</span>
+                                <span class="jr-card__read">{{ bival('journal_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
+                            </a>
+                        @endisset
                     </li>
                 @endforeach
             </ol>

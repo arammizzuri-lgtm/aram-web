@@ -122,7 +122,10 @@ class SeoController extends Controller
         $out[] = '- [Map — every project where it stands]('.site_url('/map', 'en').')';
         $out[] = '- [Services — architecture, exteriors, interiors, construction, tendering, furniture]('.site_url('/services', 'en').')';
         $out[] = '- [How we work — the four phases of a project]('.site_url('/process', 'en').')';
-        $out[] = '- [Build journal — projects as they are built]('.site_url('/journal', 'en').')';
+        $out[] = '- [Journal — projects as they are built, and essays on architecture]('.site_url('/journal', 'en').')';
+        foreach (\App\Support\Articles::all() as $article) {
+            $out[] = '- ['.$article['title'][0].']('.\App\Support\Articles::url($article, 'en').') — '.$article['summary'][0];
+        }
         if (\App\Models\Partner::anyPublished()) {
             $out[] = '- [Partners & suppliers the studio builds with]('.site_url('/partners', 'en').')';
         }
@@ -181,6 +184,9 @@ class SeoController extends Controller
         $this->page($xml, '/journal', $posts->max('updated_at'));
         foreach ($posts as $post) {
             $this->page($xml, '/journal/'.$post->slug, $post->updated_at, $post->imageUrls('lg'));
+        }
+        foreach (\App\Support\Articles::all() as $article) {
+            $this->page($xml, '/journal/'.$article['slug'], \Illuminate\Support\Carbon::parse($article['date']));
         }
         $landmarks = \App\Models\Landmark::publishedOrdered()->get();
         $this->page($xml, \App\Models\Landmark::PATH, $landmarks->max('updated_at'));

@@ -657,12 +657,12 @@ class SiteText
                 'arch_other_names'     => ['Other spellings of his name, one per line — not shown, read by search engines', "Aram Mizzuri\nAram Mizouri\nآرام مزوري", '', 'area'],
             ],
 
-            // The build journal (/journal).
+            // The journal (/journal): the build entries and the essays.
             'Journal' => [
                 'journal_nav'     => ['Journal — menu and footer link', 'Journal', 'ڕۆژنامە'],
-                'journal_label'   => ['Journal — page label', 'Build journal', 'ڕۆژنامەی بیناسازی'],
-                'journal_title'   => ['Journal — title', 'From the site', 'لە شوێنی کارەوە'],
-                'journal_intro'   => ['Journal — introduction', 'Our projects as they are built — the site step by step, from the first foundations to the handover of the keys.', 'پرۆژەکانمان لە کاتی دروستکردندا — شوێنی کار هەنگاو بە هەنگاو، لە یەکەم بناغەوە تا ڕادەستکردنی کلیلەکان.', 'area'],
+                'journal_label'   => ['Journal — page label', 'Journal', 'ڕۆژنامە'],
+                'journal_title'   => ['Journal — title', 'On site and on paper', 'لە شوێنی کار و لەسەر کاغەز'],
+                'journal_intro'   => ['Journal — introduction', 'Our projects as they are built, step by step. And essays on architecture: the old houses of Kurdistan, how they were planned, and what they still teach.', 'پرۆژەکانمان لە کاتی دروستکردندا، هەنگاو بە هەنگاو. و وتار لەسەر تەلارسازی: خانووە کۆنەکانی کوردستان، چۆن نەخشەیان بۆ دانراوە، و ئەوەی هێشتا فێرمان دەکەن.'],
                 'journal_empty'   => ['Journal — no entries yet', 'The first entries are on their way.', 'یەکەم بابەتەکان بەڕێوەن.'],
                 'journal_read'    => ['Journal — read an entry', 'Read', 'بخوێنەوە'],
                 'journal_all'     => ['Journal — back to every entry', 'All entries', 'هەموو بابەتەکان'],

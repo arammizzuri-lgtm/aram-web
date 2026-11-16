@@ -83,3 +83,8 @@
     .jr-photos--2, .jr-photos--3 { grid-template-columns: 1fr; }
     .jr-build__step a { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* an essay's card: its cover is one of its own drawings, white on the dark panel */
+.jr-card__img--plan { display: grid; place-items: center; border: 1px solid var(--line); }
+.jr-card__img--plan svg { width: 100%; height: 100%; padding: 6%; fill: #E9E6E0; transition: transform 1.1s var(--ease-out); }
+.jr-card:hover .jr-card__img--plan svg { transform: scale(1.04); }
