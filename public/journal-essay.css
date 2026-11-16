@@ -140,10 +140,6 @@
 }
 
 /* printed: the plates as sheets, ink on paper */
-@media print {
-    .ja-plate { break-inside: avoid; background: none; border-color: #999; }
-    .ja-plate__sheet { background: none; }
-}
 
 /* house numbers and measures stay in Latin figures, whatever the page's language */
 .ja-facts dd[dir="ltr"], .ja-legend__n, .ja-plate__code { font-family: Inter, system-ui, sans-serif; }
@@ -204,10 +200,66 @@
     .ja-plate__fig { overflow-x: auto; align-items: flex-start; }
     .ja-dwg { min-width: 560px; max-height: none; }
 }
+/* ---- an essay written in the admin (journal/essay): its cover, then the heritage pages' sections ---- */
+.je-cover { margin-top: clamp(32px, 5vh, 52px); }
+.je-cover img { display: block; width: 100%; height: auto; max-height: 80vh; object-fit: cover; border-radius: 4px; }
+.ja .lm-body { max-width: none; padding: 0; }
+
+/* ---- on paper: black line on white, every line drawn at once -------------- */
+.ja-print { margin-top: 24px; }
+.ja-plate__foot { display: none; }
+@page plate { size: A3 landscape; margin: 10mm; }
 @media print {
-    .ja-dwg { stroke: #333; }
-    .ja-dwg .d-poche { fill: #ddd; }
-    .ja-dwg text { fill: #222; }
+    .ja-print { display: none; }
+    .ja-plate { break-inside: avoid; background: none; border-color: #999; }
+    .ja-plate__sheet { background: none; }
+    .ja-plate__name, .ja-plate__text p, .ja-facts dd, .ja-legend li { color: #111; }
+    .ja-plate__type, .ja-plate__fig figcaption, .ja-facts dt { color: #555; }
+    .ja-plate__code, .ja-legend__n { color: #111; border-color: #111; }
+    .ja-dwg { max-height: none; }
     .ja-dwg .dl { stroke-dasharray: none !important; animation: none !important; }
+    .ja-dwg .d-poche, .ja-dwg .d-text, .ja-dwg .d-over, .ja-dwg .d-axis { opacity: 1 !important; animation: none !important; }
     .ja-dwg .d-sun, .ja-dwg .d-sunmark { display: none; }
+    .ja-dwg, .ja-dwg .d-wall, .ja-dwg .d-leaf, .ja-dwg .d-open, .ja-dwg .d-fix, .ja-dwg .d-stair, .ja-dwg .d-arrow,
+    .ja-dwg .d-dim, .ja-dwg .d-bubble, .ja-dwg .d-north, .ja-dwg .d-scale { stroke: #1a1a1a; }
+    .ja-dwg .d-over { stroke: #555; }
+    .ja-dwg .d-glass { stroke: #777; }
+    .ja-dwg .d-ctx, .ja-dwg .d-axis { stroke: #aaa; }
+    .ja-dwg .d-hatch { stroke: #bbb; }
+    .ja-dwg .d-poche { fill: #dcdcdc; }
+    .ja-dwg .d-light { fill: none; }
+    .ja-dwg text, .ja-dwg .p-tag, .ja-dwg .p-room, .ja-dwg .p-note, .ja-dwg .p-dim, .ja-dwg .d-title { fill: #222; }
+    .ja-type .t-cut { fill: #fff; }
+    .ja-type .t-pave { stroke: #e2e2e2; }
+
+    /* "Print the plates" (journal-drawing.js sets html.ja-printing): the plates alone, one to an A3 sheet,
+       drawings on the left, the text down the right, a title strip along the foot */
+    html.ja-printing body > :not(main), html.ja-printing .ja > :not(.ja-plates), html.ja-printing .ja-plates > :not(.ja-plate) { display: none !important; }
+    html.ja-printing body, html.ja-printing .ja, html.ja-printing .ja-plates { margin: 0; padding: 0; max-width: none; background: none; }
+    html.ja-printing .ja-plate { page: plate; break-before: page; margin: 0; height: 276mm; border: .3mm solid #222; border-radius: 0; overflow: hidden;
+        display: grid; grid-template: "head head" auto "dwg side" minmax(0, 1fr) "sec side" auto "foot foot" auto / minmax(0, 1fr) 92mm; }
+    html.ja-printing .ja-plate:has(.ja-plate__sheet--sec) { grid-template-rows: auto minmax(0, 1.3fr) minmax(0, 1fr) auto; }
+    html.ja-printing .ja-plate:first-of-type { break-before: auto; }
+    html.ja-printing .ja-plate__head { grid-area: head; padding: 4mm 6mm; border-color: #222; }
+    html.ja-printing .ja-plate__name { font-size: 17pt; }
+    /* the media queries see the default paper, not the A3 sheet: keep the wide layout */
+    html.ja-printing .ja-plate__head { grid-template-columns: auto 1fr auto; }
+    html.ja-printing .ja-plate__type { grid-column: auto; }
+    html.ja-printing .ja-plate__sheet--2 { grid-template-columns: 1fr 1fr; }
+    html.ja-printing .ja-plate__sheet--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    html.ja-printing .ja-plate__sheet--sec { grid-template-columns: var(--cols); }
+    html.ja-printing .ja-plate__fig + .ja-plate__fig { border-top: 0; border-inline-start: .2mm solid #999; }
+    html.ja-printing .ja-plate__sheet { grid-area: dwg; min-height: 0; }
+    html.ja-printing .ja-plate__sheet--sec { grid-area: sec; min-height: 0; border-top: .2mm solid #999; }
+    html.ja-printing .ja-plate__fig { height: 100%; min-height: 0; padding: 5mm; gap: 2mm; }
+    html.ja-printing .ja-plate__sheet .ja-dwg { flex: 0 1 auto; min-height: 0; min-width: 0; max-height: 100%; }
+    html.ja-printing .ja-plate__body { grid-area: side; display: block; border-inline-start: .3mm solid #222; overflow: hidden; }
+    html.ja-printing .ja-plate__text { padding: 5mm; }
+    html.ja-printing .ja-plate__text p, html.ja-printing .ja-legend li, html.ja-printing .ja-facts dd { font-size: 8.5pt; line-height: 1.55; }
+    html.ja-printing .ja-legend { margin-top: 4mm; gap: 1.5mm; }
+    html.ja-printing .ja-legend li { grid-template-columns: 9mm 1fr; }
+    html.ja-printing .ja-facts { border-inline-start: 0; border-top: .2mm solid #999; }
+    html.ja-printing .ja-facts > div { padding: 2.5mm 5mm; border-color: #ccc; }
+    html.ja-printing .ja-plate__foot { grid-area: foot; display: flex; justify-content: space-between; gap: 6mm; padding: 2.5mm 6mm; border-top: .3mm solid #222;
+        font-size: 7.5pt; letter-spacing: .08em; color: #333; }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\HeritageImage;
+use App\Models\Concerns\HasPageSections;
 use App\Support\SiteText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  */
 class Landmark extends Model
 {
+    use HasPageSections;   // the photographs in its sections: measured, resized, listed
     use SoftDeletes;   // deleted goes to the trash first
 
     public const PATH = '/kurdistan-heritage';
@@ -134,11 +135,7 @@ class Landmark extends Model
             if (! array_key_exists($l->hero_style, self::HERO_STYLES)) {
                 $l->hero_style = 'editorial';
             }
-            $l->measureImages();
         });
-
-        // the three sizes of every photograph, built once, after the save
-        static::saved(fn (self $l) => HeritageImage::buildVariants($l->imageFiles()));
     }
 
     public function scopePublishedOrdered($query)
@@ -262,99 +259,9 @@ class Landmark extends Model
         return $out;
     }
 
-    public function hasSection(string $type): bool
+    protected function coverAltField(): string
     {
-        return collect($this->sections())->contains('type', $type);
-    }
-
-    /**
-     * Every photograph on the page in order, the cover first: each with its
-     * file, size, alt, caption and credit as the image partial wants them.
-     *
-     * @return array<int, array>
-     */
-    public function images(): array
-    {
-        $images = [];
-        if ($this->image) {
-            $images[] = ['file' => $this->image, 'w' => null, 'h' => null, 'alt_en' => $this->name_en, 'alt_ku' => $this->name_ku, 'alt_ar' => $this->name_ar,
-                'credit' => $this->image_credit, 'source' => $this->image_source];
-        }
-        foreach ($this->sections() as ['type' => $type, 'data' => $d]) {
-            foreach (self::imagesIn($type, $d) as $img) {
-                $images[] = $img;
-            }
-        }
-
-        return $images;
-    }
-
-    /** The image arrays inside one block, by its kind. */
-    private static function imagesIn(string $type, array $d): array
-    {
-        return match ($type) {
-            'image', 'annotated' => filled($d['file'] ?? null) ? [$d] : [],
-            'gallery' => array_values(array_filter((array) ($d['images'] ?? []), fn ($i) => filled($i['file'] ?? null))),
-            'compare' => array_values(array_filter([$d['before'] ?? null, $d['after'] ?? null], fn ($i) => filled($i['file'] ?? null))),
-            default => [],
-        };
-    }
-
-    /** Every photograph's file reference, cover included (for the resizer). */
-    public function imageFiles(): array
-    {
-        return array_values(array_unique(array_filter(array_map(fn ($i) => $i['file'] ?? null, $this->images()))));
-    }
-
-    /**
-     * Before a save: the width and height of any photograph that does not
-     * carry them yet, read from the file, so the page can reserve the right
-     * space before the picture arrives.
-     */
-    private function measureImages(): void
-    {
-        $sections = $this->sections;
-        if (! is_array($sections)) {
-            return;
-        }
-        $measure = function (array $img): array {
-            if (filled($img['file'] ?? null) && (empty($img['w']) || empty($img['h']) || ($img['_file'] ?? null) !== $img['file'])) {
-                if ($dims = HeritageImage::dimensions($img['file'])) {
-                    [$img['w'], $img['h']] = $dims;
-                }
-            }
-            unset($img['_file']);
-
-            return $img;
-        };
-        foreach ($sections as &$block) {
-            $type = $block['type'] ?? '';
-            $d = &$block['data'];
-            if (! is_array($d)) {
-                continue;
-            }
-            if (in_array($type, ['image', 'annotated'], true)) {
-                $d = $measure($d);
-            } elseif ($type === 'gallery' && is_array($d['images'] ?? null)) {
-                $d['images'] = array_map($measure, $d['images']);
-            } elseif ($type === 'compare') {
-                foreach (['before', 'after'] as $k) {
-                    if (is_array($d[$k] ?? null)) {
-                        $d[$k] = $measure($d[$k]);
-                    }
-                }
-            }
-        }
-        unset($block, $d);
-        $this->sections = $sections;
-    }
-
-    /* ── Images ──────────────────────────────────────────────────────── */
-
-    /** The cover photograph at a size: lg (default), md or sm. */
-    public function imageUrl(string $size = 'lg'): ?string
-    {
-        return HeritageImage::url($this->image, $size);
+        return 'name';
     }
 
     /* ── Addresses ───────────────────────────────────────────────────── */

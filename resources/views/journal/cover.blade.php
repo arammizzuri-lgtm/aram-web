@@ -1,10 +1,11 @@
 {{-- An essay's card cover on /journal: one drawing sheet with a plan and a section from the essay itself
-     (resources/journal/citadel-drawings.json, framed by each drawing's 'bb', the box round what is built),
+     (its drawings file, framed by each drawing's 'bb', the box round what is built),
      a 5 m bar to the section's scale and a title block. Gold line on the dark panel, as the essay draws.
-     $keys = [plan, section]. --}}
+     $article: one of App\Support\Articles, its 'cover' [plan, section] and its 'sheet', the title block's words. --}}
 @php
-    $dwgs = json_decode(file_get_contents(resource_path('journal/citadel-drawings.json')), true);
-    [$plan, $sec] = [$dwgs[$keys[0]], $dwgs[$keys[1]]];
+    $dwgs = \App\Support\Articles::drawings($article);
+    [$plan, $sec] = [$dwgs[$article['cover'][0]], $dwgs[$article['cover'][1]]];
+    $sheet = $article['sheet'];
     $rtl = site_rtl();
     // the section across the top right, 770 wide; the plan fills the left within 620 x 860
     $ss = 770 / $sec['bb'][2];
@@ -45,10 +46,10 @@
 
     {{-- the title block --}}
     <g @if ($rtl) direction="rtl" @endif>
-        <text class="c-kicker{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="640">{{ bi('ERBIL CITADEL', 'قەڵای هەولێر', 'قلعة أربيل') }}</text>
-        <text class="c-title" x="{{ $tx }}" y="722">{{ bi('Plans, sections', 'نەخشە، بڕگە', 'مساقط ومقاطع') }}</text>
-        <text class="c-title" x="{{ $tx }}" y="786">{{ bi('and elevations', 'و ڕووکار', 'وواجهات') }}</text>
-        <text class="c-note{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="870">{{ bi('12 PLANS · 5 SECTIONS · 1 ELEVATION', '12 نەخشە · 5 بڕگە · 1 ڕووکار', '12 مسقطًا · 5 مقاطع · 1 واجهة') }}</text>
+        <text class="c-kicker{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="640">{{ bi(...$sheet['kicker']) }}</text>
+        <text class="c-title" x="{{ $tx }}" y="722">{{ bi(...$sheet['title'][0]) }}</text>
+        <text class="c-title" x="{{ $tx }}" y="786">{{ bi(...$sheet['title'][1]) }}</text>
+        <text class="c-note{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="870">{{ bi(...$sheet['note']) }}</text>
     </g>
-    <text class="c-code" x="{{ $rtl ? 760 : 1530 }}" y="930" text-anchor="{{ $rtl ? 'start' : 'end' }}" direction="ltr">CH-01 — CH-08</text>
+    <text class="c-code" x="{{ $rtl ? 760 : 1530 }}" y="930" text-anchor="{{ $rtl ? 'start' : 'end' }}" direction="ltr">{{ $sheet['code'] }}</text>
 </svg>

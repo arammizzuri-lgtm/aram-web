@@ -6,6 +6,13 @@
      north point, as on the sheet's plan (sheet-plan.js).
    ========================================================= */
 (function () {
+    // "Print the plates": the plates alone, one to an A3 sheet (journal-essay.css, html.ja-printing)
+    var root = document.documentElement;
+    document.querySelectorAll('[data-print-plates]').forEach(function (b) {
+        b.addEventListener('click', function () { root.classList.add('ja-printing'); window.print(); });
+    });
+    window.addEventListener('afterprint', function () { root.classList.remove('ja-printing'); });
+
     var svgs = document.querySelectorAll('.ja-dwg');
     if (!svgs.length) return;
 

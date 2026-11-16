@@ -1,8 +1,7 @@
-{{-- One redrawn plan, section or elevation of the journal's Citadel houses, drawn the way the sheet's
+{{-- One plan, section or elevation of a journal essay's plates, drawn the way the sheet's
      plan is (partials/sheet-plan): walls in double line, doors swinging, windows, stairs with their
      arrows, rooms named with their areas, the axes and their dimensions, a north point and a scale.
-     $dwg comes from resources/journal/citadel-drawings.json (all in cm; built from the published
-     surveys); $id keeps its defs apart; $name is for readers who cannot see it; $rel (0–1) is its width against
+     $dwg comes from the essay's drawings file (Articles::drawings; all in cm); $id keeps its defs apart; $name is for readers who cannot see it; $rel (0–1) is its width against
      the widest drawing on its plate, so the floors of one house share a scale.
      Lines draw themselves as the drawing comes into view, and the court is lit by the sun over Erbil
      now (journal-drawing.js). --}}
@@ -19,6 +18,8 @@
         'stair' => bi('STAIR', 'پەیژە', 'درج'), 'alley' => bi('KOLAN · ALLEY', 'کۆڵان', 'الزقاق'), 'void' => bi('OPEN TO BELOW', 'بۆشایی بۆ خوارەوە', 'فراغ إلى الأسفل'),
         'up' => bi('UP', 'سەر', 'صعود'), 'dn' => bi('DN', 'خوار', 'نزول'), 'roof' => bi('ROOF', 'سەربان', 'سطح'), 'gallery' => bi('GALLERY', 'باڵەخانە', 'رواق علوي'),
         'yard' => bi('YARD', 'حەوشە', 'الحوش'), 'basin' => bi('BASIN', 'حەوز', 'حوض'), 'entry' => bi('ENTRY', 'دەروازە', 'المدخل'),
+        'shop' => bi('SHOP', 'دوکان', 'دكان'), 'passage' => bi('PASSAGE', 'ڕاڕەو', 'الممر'), 'lane' => bi('BAZAAR LANE', 'کۆڵانی بازاڕ', 'زقاق السوق'),
+        'cellar' => bi('CELLAR', 'ژێرزەمین', 'قبو'),
     ];
     $lit = $dwg['court'] && $dwg['north'] !== null;   // a court whose north we know gets the sun; one without, plain paving
     $say = fn (string $v) => str_starts_with($v, '@') ? ($words[substr($v, 1)] ?? substr($v, 1)) : $v;

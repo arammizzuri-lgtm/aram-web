@@ -188,10 +188,13 @@ class LandmarkForm
 
     /* ── The kinds of section ────────────────────────────────────────── */
 
-    /** @return array<int, Block> */
-    private static function blocks(): array
+    /**
+     * @param  list<string>|null  $only  the kinds to offer (an essay offers those of AppModelsEssay::BLOCKS)
+     * @return array<int, Block>
+     */
+    public static function blocks(?array $only = null): array
     {
-        return [
+        $blocks = [
             Block::make('text')->label(fn (?array $state) => filled($state['heading_en'] ?? null) ? 'Text · '.$state['heading_en'] : (filled($state['body_en'] ?? null) ? 'Text · '.self::words($state['body_en']) : 'Text'))
                 ->icon(Heroicon::OutlinedBars3BottomLeft)->schema([
                     Select::make('layout')->label('Layout')->default('standard')->native(false)->options([
@@ -379,5 +382,7 @@ class LandmarkForm
                         ->reorderable()->collapsible()->collapsed()->defaultItems(0)->addActionLabel('Add a source'),
                 ]),
         ];
+
+        return $only === null ? $blocks : array_values(array_filter($blocks, fn (Block $b) => in_array($b->getName(), $only, true)));
     }
 }

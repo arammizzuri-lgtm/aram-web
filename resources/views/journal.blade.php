@@ -1,6 +1,7 @@
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\ProjectUpdate> $posts */
-    /** @var \Illuminate\Support\Collection<int, array> $articles  the essays (App\Support\Articles) */
+    /** @var \Illuminate\Support\Collection<int, array> $articles  the essays in code (App\Support\Articles) */
+    /** @var \Illuminate\Support\Collection<int, \App\Models\Essay> $essays  the essays written in the admin */
     $lang = site_lang();
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('journal_label').' — '.$brand;
@@ -9,14 +10,18 @@
     // the build entries and the essays, as one list, newest first
     $entries = $posts->map(fn ($p) => ['date' => $p->date, 'post' => $p])
         ->concat($articles->map(fn ($a) => ['date' => \Illuminate\Support\Carbon::parse($a['date']), 'article' => $a]))
+        ->concat($essays->map(fn ($e) => ['date' => $e->date, 'essay' => $e]))
         ->sortByDesc(fn ($e) => $e['date']->getTimestamp())->values();
     $schema = ['@context' => 'https://schema.org', '@type' => 'Blog', 'name' => bival('journal_label'), 'url' => site_url('/journal'),
         'inLanguage' => $lang, 'publisher' => ['@id' => url('/').'#studio'],
-        'blogPost' => $entries->take(20)->map(fn ($e) => isset($e['post'])
-            ? ['@type' => 'BlogPosting', 'headline' => $e['post']->title($lang) ?: $e['post']->project->tr('name'),
-                'url' => $e['post']->journalUrl(), 'datePublished' => $e['date']->toDateString()]
-            : ['@type' => 'Article', 'headline' => bi(...$e['article']['title']),
-                'url' => \App\Support\Articles::url($e['article']), 'datePublished' => $e['date']->toDateString()])->values()->all()];
+        'blogPost' => $entries->take(20)->map(fn ($e) => match (true) {
+            isset($e['post']) => ['@type' => 'BlogPosting', 'headline' => $e['post']->title($lang) ?: $e['post']->project->tr('name'),
+                'url' => $e['post']->journalUrl(), 'datePublished' => $e['date']->toDateString()],
+            isset($e['essay']) => ['@type' => 'Article', 'headline' => $e['essay']->tr('title'),
+                'url' => $e['essay']->url(), 'datePublished' => $e['date']->toDateString()],
+            default => ['@type' => 'Article', 'headline' => bi(...$e['article']['title']),
+                'url' => \App\Support\Articles::url($e['article']), 'datePublished' => $e['date']->toDateString()],
+        })->values()->all()];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
@@ -58,12 +63,31 @@
                                 @endif
                                 <span class="jr-card__read">{{ bival('journal_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
                             </a>
+                        @elseif (isset($entry['essay']))
+                            {{-- an essay written in the admin: its cover photograph --}}
+                            @php $essay = $entry['essay']; @endphp
+                            <a class="jr-card" href="{{ $essay->url() }}">
+                                <span class="jr-card__img">
+                                    @if ($src = $essay->imageUrl('md'))
+                                        <img src="{{ $src }}" alt="" loading="{{ $i < 3 ? 'eager' : 'lazy' }}" decoding="async">
+                                    @endif
+                                </span>
+                                <span class="jr-card__meta">
+                                    <time datetime="{{ $essay->date->toDateString() }}">{{ site_date($essay->date, $lang) }}</time>
+                                    <span class="jr-card__project">{{ bi('Essay', 'وتار', 'مقال') }}</span>
+                                </span>
+                                <span class="jr-card__title"{{ text_dir($essay->tr('title')) }}>{{ $essay->tr('title') }}</span>
+                                @if (filled($essay->tr('summary')))
+                                    <span class="jr-card__note"{{ text_dir($essay->tr('summary')) }}>{{ \Illuminate\Support\Str::limit($essay->tr('summary'), 160) }}</span>
+                                @endif
+                                <span class="jr-card__read">{{ bival('journal_read') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
+                            </a>
                         @else
-                            {{-- an essay: its cover is a sheet of its own drawings --}}
+                            {{-- an essay in code: its cover is a sheet of its own drawings --}}
                             @php $article = $entry['article']; @endphp
                             <a class="jr-card" href="{{ \App\Support\Articles::url($article) }}">
                                 <span class="jr-card__img jr-card__img--plan">
-                                    @include('journal.cover', ['keys' => $article['cover']])
+                                    @include('journal.cover', ['article' => $article])
                                 </span>
                                 <span class="jr-card__meta">
                                     <time datetime="{{ $entry['date']->toDateString() }}">{{ site_date($entry['date'], $lang) }}</time>

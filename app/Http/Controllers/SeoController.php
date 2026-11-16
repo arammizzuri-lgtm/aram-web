@@ -126,6 +126,9 @@ class SeoController extends Controller
         foreach (\App\Support\Articles::all() as $article) {
             $out[] = '- ['.$article['title'][0].']('.\App\Support\Articles::url($article, 'en').') — '.$article['summary'][0];
         }
+        foreach (\App\Models\Essay::published()->orderByDesc('date')->get() as $essay) {
+            $out[] = '- ['.$essay->title_en.']('.$essay->url('en').')'.(filled($essay->summary_en) ? ' — '.$essay->summary_en : '');
+        }
         if (\App\Models\Partner::anyPublished()) {
             $out[] = '- [Partners & suppliers the studio builds with]('.site_url('/partners', 'en').')';
         }
@@ -187,6 +190,9 @@ class SeoController extends Controller
         }
         foreach (\App\Support\Articles::all() as $article) {
             $this->page($xml, '/journal/'.$article['slug'], \Illuminate\Support\Carbon::parse($article['date']));
+        }
+        foreach (\App\Models\Essay::published()->get() as $essay) {
+            $this->page($xml, '/journal/'.$essay->slug, $essay->updated_at, $essay->imageUrl() ? [url($essay->imageUrl())] : []);
         }
         $landmarks = \App\Models\Landmark::publishedOrdered()->get();
         $this->page($xml, \App\Models\Landmark::PATH, $landmarks->max('updated_at'));

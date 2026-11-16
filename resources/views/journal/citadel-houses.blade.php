@@ -6,7 +6,7 @@
     /** @var array $article */
     $lang = site_lang();
     $t = fn (string $en, string $ku, string $ar) => bi($en, $ku, $ar);
-    $dwgs = json_decode(file_get_contents(resource_path('journal/citadel-drawings.json')), true);
+    $dwgs = \App\Support\Articles::drawings($article);
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $headline = $t(...$article['title']);
     $title = $headline.' — '.$brand;
@@ -245,7 +245,7 @@
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
 <head>
-    @include('partials.page-head', ['path' => $path, 'css' => 'journal.css', 'type' => 'article'])
+    @include('partials.page-head', ['path' => $path, 'css' => 'journal.css', 'type' => 'article', 'image' => \App\Support\Articles::image($article, $lang)])
     <link rel="stylesheet" href="{{ asset('journal-essay.css') }}?v={{ filemtime(public_path('journal-essay.css')) }}">
 </head>
 <body class="pp pp--journal">
@@ -344,6 +344,7 @@
         <section class="ja-plates">
             <h2 class="ja-h">{{ $t('The plates', 'تابلۆکان', 'اللوحات') }}</h2>
             <p class="ja-plates__key">{{ $t('Every plan, section and elevation here is redrawn by us from the published surveys: walls, doors with their swings, windows, stairs and fixtures, at one scale per house. Areas are measured off the drawings and are approximate. Where a survey gives no scale or north, we draw none.', 'هەموو نەخشە و بڕگە و ڕووکارێک لێرەدا لە ڕووپێوە بڵاوکراوەکانەوە لەلایەن ئێمەوە دووبارە کێشراوەتەوە: دیوار، دەرگا لەگەڵ ڕێڕەوی کرانەوەیان، پەنجەرە، پەیژە و کەلوپەل، بە یەک پێوەر بۆ هەر خانوویەک. ڕووبەرەکان لەسەر نەخشەکان پێوراون و نزیکەیین. لە شوێنێک ڕووپێوەکە پێوەر یان باکووری نەدابێت، ئێمەش نایکێشین.', 'كلّ مسقط ومقطع وواجهة هنا أعدنا رسمه عن المسوح المنشورة: الجدران والأبواب بمسار فتحها والنوافذ والدرج والتجهيزات، بمقياس واحد لكلّ بيت. المساحات مقيسة على الرسوم وتقريبية. وحيث لا يعطي المسح مقياسًا أو اتجاه الشمال لا نرسمهما.') }}</p>
+            <button type="button" class="pp-btn pp-btn--line ja-print" data-print-plates>{{ $t('Print the plates (A3, or save as PDF)', 'چاپی تابلۆکان (A3، یان پاشەکەوت وەک PDF)', 'اطبع اللوحات (A3، أو احفظها PDF)') }}</button>
 
             @foreach ($plates as $i => $plate)
                 <article class="ja-plate" id="plate-{{ $i + 1 }}">
@@ -390,6 +391,7 @@
                             @endforeach
                         </dl>
                     </div>
+                    <p class="ja-plate__foot"><span>Aram Mizuri Architecture — {{ $headline }}</span><span dir="ltr">{{ site_url($path) }} · {{ $i + 1 }} / {{ count($plates) + 1 }}</span></p>
                 </article>
             @endforeach
 
@@ -424,6 +426,7 @@
                         <div><dt>{{ $t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن') }}</dt><dd>{{ $src['nom'] }}, fig. 2.49</dd></div>
                     </dl>
                 </div>
+                <p class="ja-plate__foot"><span>Aram Mizuri Architecture — {{ $headline }}</span><span dir="ltr">{{ site_url($path) }} · {{ count($plates) + 1 }} / {{ count($plates) + 1 }}</span></p>
             </article>
         </section>
 
