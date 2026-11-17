@@ -118,12 +118,16 @@ class Landmark extends Model
 
     protected $casts = [
         'is_published' => 'boolean', 'unesco' => 'boolean', 'lat' => 'float', 'lng' => 'float', 'sort_order' => 'integer',
-        'sections' => 'array', 'materials' => 'array', 'year_from' => 'integer', 'year_to' => 'integer', 'unesco_year' => 'integer', 'unesco_ref' => 'integer',
+        'sections' => 'array', 'materials' => 'array', 'old_slugs' => 'array', 'year_from' => 'integer', 'year_to' => 'integer', 'unesco_year' => 'integer', 'unesco_ref' => 'integer',
     ];
 
     protected static function booted(): void
     {
         static::saving(function (self $l) {
+            // only lower case, letters, figures and dashes: the page answers no other address
+            if (filled($l->slug)) {
+                $l->slug = Str::slug($l->slug);
+            }
             if (blank($l->slug)) {
                 $base = Str::slug($l->name_en) ?: 'landmark';
                 $slug = $base;
@@ -132,6 +136,11 @@ class Landmark extends Model
                     $slug = $base.'-'.$i;
                 }
                 $l->slug = $slug;
+            }
+            // a new address: the old one is kept, so its links lead on here (HeritageController::show)
+            $was = $l->getOriginal('slug');
+            if ($l->exists && filled($was) && $was !== $l->slug) {
+                $l->old_slugs = array_values(array_diff(array_unique([...($l->old_slugs ?? []), $was]), [$l->slug]));
             }
             if (! array_key_exists($l->hero_style, self::HERO_STYLES)) {
                 $l->hero_style = 'editorial';
@@ -282,9 +291,15 @@ class Landmark extends Model
      */
     public function shareImage(?string $lang = null): ?string
     {
-        $file = 'images/heritage/og/'.$this->slug.'-'.($lang ?? site_lang()).'.jpg';
+        // made under the address the page had then
+        foreach ([$this->slug, ...($this->old_slugs ?? [])] as $slug) {
+            $file = 'images/heritage/og/'.$slug.'-'.($lang ?? site_lang()).'.jpg';
+            if (is_file(public_path($file))) {
+                return asset($file).'?v='.filemtime(public_path($file));
+            }
+        }
 
-        return is_file(public_path($file)) ? asset($file).'?v='.filemtime(public_path($file)) : null;
+        return null;
     }
 
     /** A signed link that shows the page even while it is unpublished — for the admin's Preview. */
@@ -296,6 +311,12 @@ class Landmark extends Model
     }
 
     /* ── Relations between landmarks ─────────────────────────────────── */
+
+    /** Whether this is the landmark at that address, now or before it was renamed. */
+    public function answersTo(string $slug): bool
+    {
+        return $this->slug === $slug || in_array($slug, $this->old_slugs ?? [], true);
+    }
 
     /**
      * Other landmarks to go on to: the ones the page names in a "related"
@@ -314,7 +335,7 @@ class Landmark extends Model
                 }
             }
         }
-        $picked = collect($slugs ?? [])->map(fn ($s) => $all->firstWhere('slug', $s))->filter()->values();
+        $picked = collect($slugs ?? [])->map(fn ($s) => $all->first(fn ($l) => $l->answersTo($s)))->filter()->values();
         if ($picked->count() >= $n) {
             return $picked->take($n);
         }

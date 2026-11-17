@@ -566,9 +566,10 @@
         // shortcut: the seven are picked here by hand, upgrade to a "featured" switch in the admin if the studio wants to choose
         $doorSlugs = ['gobekli-tepe', 'erbil-citadel', 'mount-nemrut', 'taq-e-bostan', 'amed-city-walls', 'mudhafaria-minaret', 'ishak-pasha-palace'];
         $withPhoto = $heritage->filter(fn ($l) => filled($l->image));
-        $doors = $withPhoto->whereIn('slug', $doorSlugs);
-        // any of the seven unpublished or renamed: the oldest of the others stand in
-        $doors = $doors->concat($withPhoto->whereNotIn('slug', $doorSlugs)->sortBy('year_from')->take(7 - $doors->count()))->sortBy('year_from')->values();
+        $isDoor = fn ($l) => collect($doorSlugs)->contains(fn ($s) => $l->answersTo($s));
+        $doors = $withPhoto->filter($isDoor);
+        // any of the seven unpublished: the oldest of the others stand in
+        $doors = $doors->concat($withPhoto->reject($isDoor)->sortBy('year_from')->take(7 - $doors->count()))->sortBy('year_from')->values();
         $open = max(0, (int) $doors->search(fn ($l) => $l->slug === 'erbil-citadel'));
         // the page's second language: Kurdish, or Arabic on /ar (see rtl_slot)
         $hl2 = site_lang() === 'ar' ? 'ar' : 'ku';

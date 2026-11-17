@@ -34,7 +34,14 @@ class HeritageController extends Controller
 
         if ($i === false) {
             $draft = Landmark::where('slug', $slug)->first();
-            abort_unless($draft && $request->hasValidSignature(), 404);
+            if (! $draft) {
+                // a page renamed in the admin: its old address leads on to the new one
+                $moved = $all->first(fn ($l) => $l->answersTo($slug));
+                abort_unless($moved, 404);
+
+                return redirect($moved->url(), 301);
+            }
+            abort_unless($request->hasValidSignature(), 404);
 
             return response()->view('landmark', ['landmark' => $draft, 'prev' => null, 'next' => null, 'preview' => true])
                 ->header('X-Robots-Tag', 'noindex, nofollow');

@@ -63,6 +63,29 @@ class HeritageTest extends TestCase
         $this->get('/ar/kurdistan-heritage')->assertOk()->assertSee('قلعة أربيل');
     }
 
+    public function test_a_renamed_address_is_kept_in_lower_case_and_the_old_one_leads_on_to_it(): void
+    {
+        $l = Landmark::where('slug', 'gobekli-tepe')->sole();
+        $l->update(['slug' => 'Gire-Mirazan']);
+        $this->assertSame('gire-mirazan', $l->slug);
+        $this->assertSame(['gobekli-tepe'], $l->fresh()->old_slugs);
+
+        $this->get('/kurdistan-heritage/gire-mirazan')->assertOk()
+            ->assertSee('images/heritage/og/gobekli-tepe-en.jpg', false);   // its share picture, made under the old address
+        $this->get('/kurdistan-heritage/gobekli-tepe')->assertRedirect(url('/kurdistan-heritage/gire-mirazan'))->assertStatus(301);
+        $this->get('/ku/kurdistan-heritage/gobekli-tepe')->assertRedirect(url('/ku/kurdistan-heritage/gire-mirazan'));
+        $this->get('/kurdistan-heritage/no-such-place')->assertNotFound();
+
+        // named by its old address elsewhere: Shanidar's related landmarks, the homepage's seven
+        $this->get('/kurdistan-heritage/shanidar-cave')->assertOk()->assertSee('href="'.url('/kurdistan-heritage/gire-mirazan').'"', false);
+        $this->get('/')->assertOk()->assertSee(url('/kurdistan-heritage/gire-mirazan'), false);
+
+        // named back: the address is its own again, and no longer an old one
+        $l->update(['slug' => 'gobekli-tepe']);
+        $this->assertSame(['gire-mirazan'], $l->fresh()->old_slugs);
+        $this->get('/kurdistan-heritage/gobekli-tepe')->assertOk();
+    }
+
     public function test_every_seeded_landmark_page_renders_in_every_language(): void
     {
         $this->assertSame(21, Landmark::count());
