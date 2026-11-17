@@ -22,7 +22,7 @@ return new class extends Migration
 
         foreach (DB::table('landmarks')->get(['id', 'slug']) as $l) {
             $slug = Str::slug((string) $l->slug);
-            if ($slug !== $l->slug && $slug !== '' && ! DB::table('landmarks')->where('slug', $slug)->exists()) {
+            if ($slug !== $l->slug && $slug !== '' && ! DB::table('landmarks')->where('slug', $slug)->where('id', '!=', $l->id)->exists()) {
                 DB::table('landmarks')->where('id', $l->id)->update(['slug' => $slug]);
             }
         }
