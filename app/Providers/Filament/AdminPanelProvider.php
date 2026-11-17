@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Http\Controllers\ApplicationCvController;
+use App\Http\Controllers\DrawingScanController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\RoomFileController;
@@ -147,6 +148,7 @@ class AdminPanelProvider extends PanelProvider
                 Route::get('rooms/meetings/{meeting}', [RoomFileController::class, 'meeting'])->name('room-meeting');
                 Route::get('rooms/documents/{document}', [RoomFileController::class, 'document'])->name('room-document');
                 Route::get('testimonials/{testimonial}/photo', TestimonialPhotoController::class)->name('testimonial-photo');
+                Route::get('drawings/{drawing}/scan', DrawingScanController::class)->name('drawing-scan');
                 Route::get('projects/{project}/board', [BoardController::class, 'poster'])->name('project-board');
 
                 // Project presentations: the editor, its saves and uploads, and the private files.

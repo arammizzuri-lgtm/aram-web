@@ -46,6 +46,7 @@
     @if ($d['ctx'])<path class="d-ctx dl" pathLength="1" d="{{ $d['ctx'] }}"/>@endif
     <path class="d-poche" fill-rule="evenodd" d="{{ $d['wall'] }}"/>
     <path class="d-wall dl" pathLength="1" d="{{ $d['wall'] }}"/>
+    @if ($d['cut'] ?? '')<path class="d-cut" d="{{ $d['cut'] }}"/>@endif{{-- openings added in the admin's tracer, cut through the wall --}}
     @if ($d['over'])<path class="d-over" d="{{ $d['over'] }}"/>@endif
     @foreach (['fix', 'stair', 'open', 'leaf', 'glass', 'arrow', 'dim', 'bubble', 'north', 'scale'] as $g)
         @if ($d[$g] ?? '')<path class="d-{{ $g }} dl" pathLength="1" d="{{ $d[$g] }}"/>@endif

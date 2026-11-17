@@ -238,6 +238,7 @@ html[dir="rtl"] .jg-word__ku, html[dir="rtl"] .jg-word__lat { text-align: right;
 .ja-dwg .d-axis { stroke: rgba(255,255,255,.14); stroke-width: calc(var(--u) * .8); stroke-dasharray: calc(var(--u) * 16) calc(var(--u) * 5) calc(var(--u) * 2) calc(var(--u) * 5); }
 .ja-dwg .d-poche { fill: rgba(245,197,24,.085); stroke: none; }
 .ja-dwg .d-wall { stroke: rgba(245,197,24,.88); stroke-width: calc(var(--u) * 1.25); }
+.ja-dwg .d-cut { fill: #0d0d0d; stroke: none; }   /* an opening added in the tracer: the plate's own ground over the wall */
 .ja-dwg .d-ctx { stroke: rgba(245,197,24,.28); }
 .ja-dwg .d-fix, .ja-dwg .d-stair { stroke: rgba(245,197,24,.48); stroke-width: calc(var(--u) * .85); }
 .ja-dwg .d-over { stroke: rgba(245,197,24,.38); stroke-width: calc(var(--u) * .85); stroke-dasharray: calc(var(--u) * 5) calc(var(--u) * 3.5); }
@@ -317,6 +318,7 @@ html[dir="rtl"] .jg-word__ku, html[dir="rtl"] .jg-word__lat { text-align: right;
     .ja-dwg .d-hatch { stroke: #bbb; }
     .ja-dwg .d-poche { fill: #000; fill-opacity: .14; }   /* #dcdcdc on paper, but a site plan's buildings show through the Citadel's */
     .ja-dwg .d-light { fill: none; }
+    .ja-dwg .d-cut { fill: #fff; }
     .ja-dwg text, .ja-dwg .p-tag, .ja-dwg .p-room, .ja-dwg .p-note, .ja-dwg .p-dim, .ja-dwg .d-title { fill: #222; }
     .ja-type .t-cut { fill: #fff; }
     .ja-type .t-pave { stroke: #e2e2e2; }

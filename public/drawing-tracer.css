@@ -1,0 +1,43 @@
+/* the drawing tracer (public/drawing-tracer.js) */
+.dt { display: grid; gap: 8px; }
+.dt-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.dt-tools { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.dt-btn { padding: 4px 10px; font-size: 13px; border: 1px solid rgba(127,127,127,.35); border-radius: 6px; background: transparent; cursor: pointer; }
+.dt-btn.is-on { background: #f5c518; color: #111; border-color: #f5c518; }
+.dt-btn:disabled { opacity: .4; cursor: default; }
+.dt-del { color: #dc2626; border-color: rgba(220,38,38,.4); }
+.dt-opt { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+.dt-opt input[type=number] { width: 70px; }
+.dt input[type=number], .dt input[type=text], .dt select { padding: 3px 6px; font-size: 13px; border: 1px solid rgba(127,127,127,.35); border-radius: 6px; background: transparent; color: inherit; }
+.dt select option { color: #111; }
+.dt-hint { font-size: 13px; opacity: .75; margin: 0; min-height: 1.4em; }
+.dt-main { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 10px; }
+@media (max-width: 900px) { .dt-main { grid-template-columns: 1fr; } }
+.dt-svg { width: 100%; height: 72vh; min-height: 420px; background: #111; border-radius: 6px; touch-action: none; user-select: none; cursor: crosshair; }
+.dt-svg.is-select { cursor: default; }
+.dt-side { display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+.dt-panel { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid rgba(127,127,127,.3); border-radius: 6px; }
+.dt-field { display: flex; flex-direction: column; gap: 3px; }
+.dt-note { color: #b45309; }
+.dt-keys { opacity: .6; font-size: 12px; }
+.dt-sw { display: inline-block; width: 18px; height: 0; vertical-align: middle; border-top: 2px dashed rgba(255,90,90,.8); }
+.dt-sw--ref { border-top: 2px solid rgba(120,200,255,.7); }
+.dt-svg .dt-ref { fill: none; stroke: rgba(120,200,255,.45); pointer-events: none; }
+.dt-svg .dt-orig { fill: none; stroke: rgba(255,90,90,.6); stroke-dasharray: 6 4; pointer-events: none; }
+.dt-svg .dt-poche { fill: rgba(245,197,24,.16); pointer-events: none; }
+.dt-svg .dt-wall { fill: none; stroke: #f5c518; pointer-events: none; }
+.dt-svg .dt-wall.is-sel { stroke: #fff; }
+.dt-svg .dt-hit { fill: none; stroke: transparent; cursor: pointer; }
+.dt-svg .dt-line { fill: none; stroke: rgba(245,197,24,.7); pointer-events: none; }
+.dt-svg .dt-over { stroke-dasharray: 8 5; }
+.dt-svg .dt-ctx { stroke: rgba(245,197,24,.35); }
+.dt-svg .dt-line.is-sel { stroke: #fff; }
+.dt-svg .dt-open { fill: rgba(17,17,17,.75); stroke: #7dd3fc; cursor: pointer; }
+.dt-svg .dt-open.is-sel { stroke: #fff; }
+.dt-svg .dt-leaf { stroke: #7dd3fc; pointer-events: none; }
+.dt-svg .dt-room { fill: #e5e2dc; text-anchor: middle; font-family: Inter, system-ui, sans-serif; letter-spacing: .1em; pointer-events: none; }
+.dt-svg .dt-room.is-sel { fill: #f5c518; }
+.dt-svg .dt-h { fill: #111; stroke: #f5c518; cursor: move; }
+.dt-svg .dt-h.is-on { fill: #f5c518; }
+.dt-svg .dt-draft { fill: none; stroke: #4ade80; pointer-events: none; }
+.dt-svg .dt-dp { fill: #4ade80; pointer-events: none; }

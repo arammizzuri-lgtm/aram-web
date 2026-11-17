@@ -81,8 +81,14 @@ class Articles
         return is_file(public_path($file)) ? asset($file).'?v='.filemtime(public_path($file)) : null;
     }
 
-    /** The essay's drawings, by key (all in cm): built by a script from its specs, see the file's essay view */
+    /** The essay's drawings, by key (all in cm), with the walls corrected in the admin (Portfolio → Drawings) where one is live */
     public static function drawings(array $article): array
+    {
+        return \App\Models\Drawing::corrected(self::raw($article));
+    }
+
+    /** The essay's drawings as its file has them: built by a script from its specs, see the file's essay view */
+    public static function raw(array $article): array
     {
         static $read = [];
 

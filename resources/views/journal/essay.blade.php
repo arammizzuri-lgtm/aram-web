@@ -89,5 +89,6 @@
 
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     <script src="{{ asset('landmark.js') }}?v={{ filemtime(public_path('landmark.js')) }}" defer></script>
+    <script src="{{ asset('journal-drawing.js') }}?v={{ filemtime(public_path('journal-drawing.js')) }}" defer></script>
 </body>
 </html>

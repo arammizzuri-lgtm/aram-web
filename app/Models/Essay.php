@@ -20,7 +20,7 @@ class Essay extends Model
     use HasPageSections;   // its photographs: measured, resized, listed
 
     /** The kinds of section an essay can have: the landmarks', less the ones about a place. */
-    public const BLOCKS = ['text', 'statement', 'image', 'gallery', 'stats', 'facts', 'timeline', 'quote', 'annotated', 'compare', 'sources'];
+    public const BLOCKS = ['text', 'statement', 'image', 'gallery', 'stats', 'facts', 'timeline', 'quote', 'annotated', 'compare', 'drawing', 'sources'];
 
     protected $fillable = ['slug', 'date', 'title_en', 'title_ku', 'title_ar', 'summary_en', 'summary_ku', 'summary_ar',
         'image', 'image_credit', 'image_source', 'sections', 'is_published'];

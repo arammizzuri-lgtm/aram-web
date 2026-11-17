@@ -60,5 +60,12 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::HEAD_END,
             fn (): string => view('filament.callout-picker-assets')->render(),
         );
+
+        // The drawing tracer (Portfolio → Drawings): its script registers before Alpine starts.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => '<link rel="stylesheet" href="'.asset('drawing-tracer.css').'?v='.filemtime(public_path('drawing-tracer.css')).'">'
+                .'<script src="'.asset('drawing-tracer.js').'?v='.filemtime(public_path('drawing-tracer.js')).'"></script>',
+        );
     }
 }

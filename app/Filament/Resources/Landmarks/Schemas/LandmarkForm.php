@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Landmarks\Schemas;
 
 use App\Filament\Forms\Components\MapPicker;
+use App\Models\Drawing;
 use App\Models\Landmark;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
@@ -103,7 +104,7 @@ class LandmarkForm
                         ->description('Sections, in the order they are read. Add the kinds this landmark\'s story needs, drag to reorder, duplicate or remove. Text: a blank line between paragraphs, "- " for a list, "> " for a quotation, "## " for a small heading, **bold**, *italic*.')
                         ->schema([
                             Builder::make('sections')->label('')
-                                ->blocks(self::blocks())
+                                ->blocks(self::blocks(Landmark::BLOCKS))
                                 ->collapsible()->collapsed(fn (?array $state) => filled($state))
                                 ->cloneable()->reorderableWithButtons()->blockNumbers(false)
                                 ->blockPickerColumns(2)->blockPickerWidth('2xl')
@@ -371,6 +372,14 @@ class LandmarkForm
                     Select::make('slugs')->label('Landmarks')->multiple()->native(false)
                         ->options(fn () => Landmark::query()->orderBy('sort_order')->pluck('name_en', 'slug')->all())
                         ->helperText('Left empty, the page picks landmarks of the same age and part of Kurdistan.'),
+                ]),
+
+            Block::make('drawing')->label(fn (?array $state) => 'Drawing'.(filled($state['drawing'] ?? null) ? ' · '.(Drawing::options()[$state['drawing']] ?? $state['drawing']) : ''))
+                ->icon(Heroicon::OutlinedPencilSquare)->schema([
+                    Select::make('drawing')->label('Drawing')->required()->native(false)->searchable()
+                        ->options(fn () => Drawing::options())
+                        ->helperText('One of the essays’ plans, sections and elevations, or a plan traced in Portfolio → Drawings. Drawn as the essays’ plates are, in three languages.'),
+                    self::tri('caption', 'Caption'),
                 ]),
 
             Block::make('sources')->label(fn (?array $state) => 'Sources · '.count($state['items'] ?? []))
