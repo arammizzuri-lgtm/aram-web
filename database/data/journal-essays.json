@@ -1,0 +1,2467 @@
+[
+    {
+        "slug": "citadel-house-plans",
+        "date": "2026-11-15",
+        "is_published": true,
+        "title_en": "The houses of the Citadel, in plan, section and elevation",
+        "title_ku": "خانووەکانی قەڵا، لە نەخشە و بڕگە و ڕووکاردا",
+        "title_ar": "بيوت القلعة، مسقطًا ومقطعًا وواجهة",
+        "summary_en": "Seven houses and one whole block of Erbil Citadel, redrawn from the published surveys: twelve plans, six sections and elevations, and what they show about how a house was planned and built here.",
+        "summary_ku": "حەوت خانوو و یەک بلۆکی تەواوی قەڵای هەولێر، لە ڕووپێوە بڵاوکراوەکانەوە دووبارە کێشراونەتەوە: دوازدە نەخشە و شەش بڕگە و ڕووکار، و ئەوەی دەیڵێن دەربارەی چۆنیەتی نەخشەدانان و دروستکردنی خانوو لێرە.",
+        "summary_ar": "سبعة بيوت وبلوك كامل من قلعة أربيل، أُعيد رسمها عن المسوحات المنشورة: اثنا عشر مسقطاً وستة مقاطع وواجهات، وما تكشفه عن طريقة تخطيط البيت وبنائه هنا.",
+        "extras": {
+            "about": "Erbil Citadel",
+            "cover_plan": "code:salih-g",
+            "cover_section": "code:salih-cross",
+            "kicker_en": "ERBIL CITADEL",
+            "kicker_ku": "قەڵای هەولێر",
+            "kicker_ar": "قلعة أربيل",
+            "line1_en": "Plans, sections",
+            "line1_ku": "نەخشە، بڕگە",
+            "line1_ar": "مساقط ومقاطع",
+            "line2_en": "and elevations",
+            "line2_ku": "و ڕووکار",
+            "line2_ar": "وواجهات",
+            "note_en": "12 PLANS · 5 SECTIONS · 1 ELEVATION",
+            "note_ku": "12 نەخشە · 5 بڕگە · 1 ڕووکار",
+            "note_ar": "12 مسقطًا · 5 مقاطع · 1 واجهة",
+            "code": "CH-01 — CH-08",
+            "link_url": "/kurdistan-heritage",
+            "link_en": "Kurdistan’s architectural heritage",
+            "link_ku": "میراتی تەلارسازیی کوردستان",
+            "link_ar": "التراث المعماري لكوردستان"
+        },
+        "sections": [
+            {
+                "type": "count",
+                "data": {
+                    "items": [
+                        {
+                            "label_en": "Houses",
+                            "value": "7",
+                            "label_ku": "خانوو",
+                            "label_ar": "بيوت"
+                        },
+                        {
+                            "label_en": "Plans",
+                            "value": "12",
+                            "label_ku": "نەخشە",
+                            "label_ar": "مساقط"
+                        },
+                        {
+                            "label_en": "One block of",
+                            "value": "13",
+                            "label_ku": "یەک بلۆک لە",
+                            "label_ar": "بلوك واحد من"
+                        },
+                        {
+                            "label_en": "Built",
+                            "value": "c. 1750–1930",
+                            "label_ku": "دروستکراو",
+                            "label_ar": "بُنيت"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "A town of courtyards",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "Erbil Citadel is a town standing on its own past. People have lived on the same spot for thousands of years, and what they left behind is the mound itself, some thirty metres high, with houses on its flat top. The inventory begun there in 2008 with UNESCO counted 588 buildings and plots. Of these, 320 are graded historic houses and eleven are grand mansions. Almost every one of them has a courtyard.\n\nMost of what you can see was built between the middle of the nineteenth century and the first half of the twentieth. The oldest houses may go back to the middle of the eighteenth, when the town had to be rebuilt after Nader Shah’s siege of 1743. No house belongs to a single moment: neighbours share their walls, and each side has been rebuilt again and again.",
+                                "text_ku": "قەڵای هەولێر شارێکە لەسەر ڕابردووی خۆی وەستاوە. خەڵک هەزاران ساڵە لە هەمان شوێن ژیاون، و ئەوەی بەجێیان هێشتووە خودی گردەکەیە، نزیکەی سی مەتر بەرز، و خانوو لەسەر ڕووە تەختەکەی. ئەو تۆمارکردنەی لە ٢٠٠٨ لەگەڵ یونسکۆ دەستی پێکرد ٥٨٨ بینا و پارچە زەویی ژمارد. لەمانە ٣٢٠ خانووی مێژوویی پلەبەندکراون و یازدەیان کۆشکی گەورەن. نزیکەی هەموویان حەوشەیان هەیە.\n\nزۆربەی ئەوەی دەیبینیت لە نێوان ناوەڕاستی سەدەی نۆزدە و نیوەی یەکەمی سەدەی بیستدا دروست کراوە. کۆنترین خانووەکان لەوانەیە بگەڕێنەوە بۆ ناوەڕاستی سەدەی هەژدە، کاتێک شارەکە دوای گەمارۆی نادر شا لە ١٧٤٣ دەبوو دووبارە بنیات بنرێتەوە. هیچ خانوویەک هی یەک ساتە نییە: دراوسێکان دیواریان هاوبەشە، و هەر لایەک جار لە دوای جار دووبارە دروست کراوەتەوە.",
+                                "text_ar": "قلعة أربيل مدينة تقوم على ماضيها. سكن الناس الموضع نفسه آلاف السنين، وما خلّفوه هو التل نفسه، بارتفاع نحو ثلاثين متراً، وعلى سطحه المستوي البيوت. الجرد الذي بدأ هناك عام ٢٠٠٨ مع اليونسكو أحصى ٥٨٨ مبنى وقطعة. منها ٣٢٠ بيتاً تاريخياً مصنّفاً وأحد عشر قصراً كبيراً. ويكاد لا يخلو بيت منها من فناء.\n\nمعظم ما تراه بُني بين منتصف القرن التاسع عشر والنصف الأول من القرن العشرين. وقد تعود أقدم البيوت إلى منتصف القرن الثامن عشر، حين وجب إعادة بناء المدينة بعد حصار نادر شاه عام ١٧٤٣. ولا ينتمي بيتٌ إلى لحظة واحدة: الجيران يتقاسمون الجدران، وكل جانب أُعيد بناؤه مرة بعد مرة."
+                            }
+                        },
+                        {
+                            "type": "note",
+                            "data": {
+                                "text_en": "A word on the drawings. These plans were not measured by us. They were surveyed by the High Commission for Erbil Citadel Revitalization and its consultants, and by researchers who published them. We traced the walls from those published drawings and redrew them in one hand, so the houses can be read side by side. Each plate names its source.",
+                                "text_ku": "وشەیەک دەربارەی نەخشەکان. ئەم نەخشانە ئێمە نەمانپێواون. دەستەی باڵای زیندووکردنەوەی قەڵای هەولێر و ڕاوێژکارەکانی، و ئەو توێژەرانەی بڵاویان کردوونەتەوە، ڕووپێویان کردوون. ئێمە دیوارەکانمان لەو نەخشە بڵاوکراوانەوە هەڵگرتووەتەوە و بە یەک دەست دووبارە کێشاومانەتەوە، تا خانووەکان شان بە شانی یەک بخوێنرێنەوە. هەر تابلۆیەک سەرچاوەکەی ناو دەبات.",
+                                "text_ar": "كلمة عن الرسومات. هذه المخططات لم نقِسها نحن. مسحتها الهيئة العليا لإحياء قلعة أربيل ومستشاروها، والباحثون الذين نشروها. نحن نقلنا الجدران عن تلك الرسومات المنشورة وأعدنا رسمها بيد واحدة، لتُقرأ البيوت جنباً إلى جنب. وكل لوحة تذكر مصدرها."
+                            }
+                        }
+                    ],
+                    "heading_ku": "شارێک لە حەوشە",
+                    "heading_ar": "مدينة من الأفنية"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "One idea, many houses",
+                    "parts": [
+                        {
+                            "type": "quote",
+                            "data": {
+                                "text_en": "“The most common plan, for houses of whatever date, features a main wing with two or three rooms entered by separate doors.”",
+                                "cite_en": "Nomination of Erbil Citadel to the World Heritage List",
+                                "text_ku": "«باوترین نەخشە، بۆ خانووی هەر سەردەمێک، باڵێکی سەرەکیی هەیە لە دوو یان سێ ژوور کە بە دەرگای جیا دەچیتە ناویان.»",
+                                "cite_ku": "پاڵاوتنی قەڵای هەولێر بۆ لیستی میراتی جیهانی",
+                                "text_ar": "«المخطط الأكثر شيوعاً، للبيوت من أي تاريخ كانت، جناحٌ رئيسي من غرفتين أو ثلاث يُدخل إليها من أبواب منفصلة.»",
+                                "cite_ar": "ترشيح قلعة أربيل لقائمة التراث العالمي"
+                            }
+                        },
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "That one sentence explains almost every plan below. The rooms do not lead into each other. Each has its own door, and every door opens to the same open space. A family could add a room without disturbing the ones it already had, and the courtyard did the work of a corridor, a living room and a garden.",
+                                "text_ku": "ئەو یەک ڕستەیە نزیکەی هەموو نەخشەکانی خوارەوە ڕوون دەکاتەوە. ژوورەکان ناچنە ناو یەکتر. هەر یەکەیان دەرگای خۆی هەیە، و هەموو دەرگاکان بەسەر هەمان بۆشایی کراوەدا دەکرێنەوە. خێزان دەیتوانی ژوورێک زیاد بکات بێ ئەوەی دەست لە ژوورەکانی پێشووی بدات، و حەوشەکە کاری ڕاڕەو و ژووری دانیشتن و باخچەی دەکرد.",
+                                "text_ar": "هذه الجملة الواحدة تفسّر تقريباً كل مخطط في الأسفل. الغرف لا تفضي إحداها إلى الأخرى. لكلٍّ بابها، وكل الأبواب تنفتح على الفراغ المفتوح نفسه. تستطيع الأسرة أن تضيف غرفة دون أن تمسّ ما لديها، والفناء يقوم مقام الممر وغرفة الجلوس والحديقة."
+                            }
+                        },
+                        {
+                            "type": "diagrams",
+                            "data": {
+                                "items": [
+                                    {
+                                        "tp": {
+                                            "holes": [
+                                                [
+                                                    22,
+                                                    20,
+                                                    75,
+                                                    40
+                                                ],
+                                                [
+                                                    103,
+                                                    20,
+                                                    75,
+                                                    40
+                                                ],
+                                                [
+                                                    22,
+                                                    66,
+                                                    156,
+                                                    64
+                                                ]
+                                            ],
+                                            "court": [
+                                                22,
+                                                66,
+                                                156,
+                                                64
+                                            ],
+                                            "doors": [
+                                                [
+                                                    52,
+                                                    60,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    127,
+                                                    60,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    94,
+                                                    130,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ]
+                                            ],
+                                            "wins": [
+                                                [
+                                                    30,
+                                                    60,
+                                                    14,
+                                                    "h"
+                                                ],
+                                                [
+                                                    158,
+                                                    60,
+                                                    14,
+                                                    "h"
+                                                ]
+                                            ],
+                                            "words": [
+                                                [
+                                                    59.5,
+                                                    43,
+                                                    "room"
+                                                ],
+                                                [
+                                                    140.5,
+                                                    43,
+                                                    "room"
+                                                ],
+                                                [
+                                                    100,
+                                                    101,
+                                                    "court"
+                                                ]
+                                            ]
+                                        },
+                                        "title_en": "Two rooms",
+                                        "text_en": "The plan in its simplest form.",
+                                        "title_ku": "دوو ژوور",
+                                        "text_ku": "نەخشەکە لە سادەترین شێوەیدا.",
+                                        "title_ar": "غرفتان",
+                                        "text_ar": "المخطط في أبسط صوره."
+                                    },
+                                    {
+                                        "tp": {
+                                            "holes": [
+                                                [
+                                                    22,
+                                                    20,
+                                                    48,
+                                                    36
+                                                ],
+                                                [
+                                                    76,
+                                                    20,
+                                                    48,
+                                                    36
+                                                ],
+                                                [
+                                                    130,
+                                                    20,
+                                                    48,
+                                                    36
+                                                ],
+                                                [
+                                                    22,
+                                                    62,
+                                                    156,
+                                                    68
+                                                ]
+                                            ],
+                                            "court": [
+                                                22,
+                                                86,
+                                                156,
+                                                44
+                                            ],
+                                            "doors": [
+                                                [
+                                                    40,
+                                                    56,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    94,
+                                                    56,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    148,
+                                                    56,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    94,
+                                                    130,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ]
+                                            ],
+                                            "wins": [
+                                                [
+                                                    26,
+                                                    56,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    56,
+                                                    56,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    80,
+                                                    56,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    110,
+                                                    56,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    134,
+                                                    56,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    164,
+                                                    56,
+                                                    10,
+                                                    "h"
+                                                ]
+                                            ],
+                                            "cols": [
+                                                [
+                                                    49,
+                                                    86
+                                                ],
+                                                [
+                                                    73,
+                                                    86
+                                                ],
+                                                [
+                                                    127,
+                                                    86
+                                                ],
+                                                [
+                                                    151,
+                                                    86
+                                                ]
+                                            ],
+                                            "over": "M22 86H178",
+                                            "words": [
+                                                [
+                                                    100,
+                                                    77,
+                                                    "tarma"
+                                                ],
+                                                [
+                                                    100,
+                                                    112,
+                                                    "court"
+                                                ]
+                                            ]
+                                        },
+                                        "title_en": "Three rooms and a tarma",
+                                        "text_en": "Once rooms had large windows, the front needed shade.",
+                                        "title_ku": "سێ ژوور و تارمەیەک",
+                                        "text_ku": "کە ژوورەکان پەنجەرەی گەورەیان بوو، ڕووکارەکە پێویستی بە سێبەر بوو.",
+                                        "title_ar": "ثلاث غرف وطارمة",
+                                        "text_ar": "حين صارت للغرف نوافذ كبيرة احتاجت الواجهة إلى الظل."
+                                    },
+                                    {
+                                        "tp": {
+                                            "holes": [
+                                                [
+                                                    22,
+                                                    20,
+                                                    56,
+                                                    40
+                                                ],
+                                                [
+                                                    122,
+                                                    20,
+                                                    56,
+                                                    40
+                                                ],
+                                                [
+                                                    [
+                                                        22,
+                                                        66
+                                                    ],
+                                                    [
+                                                        84,
+                                                        66
+                                                    ],
+                                                    [
+                                                        84,
+                                                        20
+                                                    ],
+                                                    [
+                                                        116,
+                                                        20
+                                                    ],
+                                                    [
+                                                        116,
+                                                        66
+                                                    ],
+                                                    [
+                                                        178,
+                                                        66
+                                                    ],
+                                                    [
+                                                        178,
+                                                        130
+                                                    ],
+                                                    [
+                                                        22,
+                                                        130
+                                                    ]
+                                                ]
+                                            ],
+                                            "court": [
+                                                22,
+                                                66,
+                                                156,
+                                                64
+                                            ],
+                                            "doors": [
+                                                [
+                                                    44,
+                                                    60,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    144,
+                                                    60,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    94,
+                                                    130,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ]
+                                            ],
+                                            "wins": [
+                                                [
+                                                    28,
+                                                    60,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    162,
+                                                    60,
+                                                    10,
+                                                    "h"
+                                                ]
+                                            ],
+                                            "over": "M84 66H116M84 58Q100 46 116 58",
+                                            "words": [
+                                                [
+                                                    100,
+                                                    39,
+                                                    "iwan"
+                                                ],
+                                                [
+                                                    100,
+                                                    101,
+                                                    "court"
+                                                ]
+                                            ]
+                                        },
+                                        "title_en": "An iwan between two rooms",
+                                        "text_en": "The larger early houses: a room with no front wall.",
+                                        "title_ku": "ئەیوانێک لە نێوان دوو ژوور",
+                                        "text_ku": "خانووە گەورە کۆنەکان: ژوورێک بێ دیواری پێشەوە.",
+                                        "title_ar": "إيوان بين غرفتين",
+                                        "text_ar": "البيوت الكبيرة المبكرة: غرفة بلا جدار أمامي."
+                                    },
+                                    {
+                                        "tp": {
+                                            "holes": [
+                                                [
+                                                    22,
+                                                    20,
+                                                    48,
+                                                    32
+                                                ],
+                                                [
+                                                    76,
+                                                    20,
+                                                    48,
+                                                    32
+                                                ],
+                                                [
+                                                    130,
+                                                    20,
+                                                    48,
+                                                    32
+                                                ],
+                                                [
+                                                    22,
+                                                    58,
+                                                    34,
+                                                    72
+                                                ],
+                                                [
+                                                    144,
+                                                    58,
+                                                    34,
+                                                    72
+                                                ],
+                                                [
+                                                    62,
+                                                    58,
+                                                    76,
+                                                    72
+                                                ]
+                                            ],
+                                            "court": [
+                                                62,
+                                                74,
+                                                76,
+                                                56
+                                            ],
+                                            "doors": [
+                                                [
+                                                    40,
+                                                    52,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    94,
+                                                    52,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    148,
+                                                    52,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ],
+                                                [
+                                                    56,
+                                                    92,
+                                                    12,
+                                                    "v",
+                                                    -1
+                                                ],
+                                                [
+                                                    138,
+                                                    92,
+                                                    12,
+                                                    "v",
+                                                    1
+                                                ],
+                                                [
+                                                    94,
+                                                    130,
+                                                    12,
+                                                    "h",
+                                                    -1
+                                                ]
+                                            ],
+                                            "wins": [
+                                                [
+                                                    26,
+                                                    52,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    56,
+                                                    52,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    80,
+                                                    52,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    110,
+                                                    52,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    134,
+                                                    52,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    164,
+                                                    52,
+                                                    10,
+                                                    "h"
+                                                ],
+                                                [
+                                                    56,
+                                                    70,
+                                                    12,
+                                                    "v"
+                                                ],
+                                                [
+                                                    56,
+                                                    112,
+                                                    12,
+                                                    "v"
+                                                ],
+                                                [
+                                                    138,
+                                                    70,
+                                                    12,
+                                                    "v"
+                                                ],
+                                                [
+                                                    138,
+                                                    112,
+                                                    12,
+                                                    "v"
+                                                ]
+                                            ],
+                                            "cols": [
+                                                [
+                                                    81,
+                                                    74
+                                                ],
+                                                [
+                                                    100,
+                                                    74
+                                                ],
+                                                [
+                                                    119,
+                                                    74
+                                                ]
+                                            ],
+                                            "over": "M62 74H138",
+                                            "words": [
+                                                [
+                                                    100,
+                                                    66.5,
+                                                    "arcade"
+                                                ],
+                                                [
+                                                    100,
+                                                    106,
+                                                    "court"
+                                                ]
+                                            ]
+                                        },
+                                        "title_en": "A main range with wings",
+                                        "text_en": "The late-Ottoman mansion.",
+                                        "title_ku": "باڵێکی سەرەکی لەگەڵ دوو باڵ",
+                                        "text_ku": "کۆشکی کۆتایی عوسمانی.",
+                                        "title_ar": "جناح رئيسي بجناحين",
+                                        "text_ar": "القصر العثماني المتأخر."
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "caption",
+                            "data": {
+                                "text_en": "Diagrams, not surveys: the same idea at four sizes.",
+                                "text_ku": "هێڵکاری، نەک ڕووپێو: هەمان بیرۆکە بە چوار قەبارە.",
+                                "text_ar": "رسوم توضيحية لا مسوحات: الفكرة نفسها بأربعة أحجام."
+                            }
+                        },
+                        {
+                            "type": "list",
+                            "data": {
+                                "style": "terms",
+                                "items": [
+                                    {
+                                        "term_en": "Iwan",
+                                        "text_en": "A room without a front wall. The larger early houses have two rooms on either side of one.",
+                                        "anchor": "iwan",
+                                        "term_ku": "ئەیوان",
+                                        "text_ku": "ژوورێک بێ دیواری پێشەوە. خانووە گەورە کۆنەکان دوو ژووریان لە هەردوو لای یەکێکیان هەیە.",
+                                        "term_ar": "الإيوان",
+                                        "text_ar": "غرفة بلا جدار أمامي. في البيوت الكبيرة المبكرة غرفتان على جانبيه."
+                                    },
+                                    {
+                                        "term_en": "Tarma",
+                                        "text_en": "A portico along the front of the rooms. Early houses had only small vents and stayed dark, so their fronts needed no shade. When large windows came in the late-Ottoman period, the tarma became essential: on timber columns with carved capitals, on arcades of Mosul alabaster, and later on iron columns.",
+                                        "anchor": "tarma",
+                                        "term_ku": "تارمە",
+                                        "text_ku": "ڕاڕەوێکی سەرداپۆشراو بە درێژایی پێشەوەی ژوورەکان. خانووە کۆنەکان تەنها کونی هەواگۆڕکێی بچووکیان هەبوو و تاریک بوون، بۆیە ڕووکاریان پێویستی بە سێبەر نەبوو. کاتێک پەنجەرەی گەورە لە کۆتایی سەردەمی عوسمانیدا هات، تارمە پێویست بوو: لەسەر کۆڵەکەی دار بە سەرکۆڵەکەی هەڵکۆڵراو، لەسەر ڕیزە کەوانەی مەڕمەڕی مووسڵ، و دواتر لەسەر کۆڵەکەی ئاسن.",
+                                        "term_ar": "الطارمة",
+                                        "text_ar": "رواق مسقوف على امتداد واجهة الغرف. لم يكن للبيوت المبكرة سوى فتحات تهوية صغيرة وكانت معتمة، فلم تحتج واجهاتها إلى الظل. وحين جاءت النوافذ الكبيرة في أواخر العهد العثماني صارت الطارمة ضرورة: على أعمدة خشبية بتيجان منحوتة، أو على عقود من مرمر الموصل، ثم على أعمدة حديدية."
+                                    },
+                                    {
+                                        "term_en": "Sirdab",
+                                        "text_en": "A basement. Commonest in the houses on the rim, which stand on the slope and get one almost for free. Inside the town only the later houses have them, and sometimes only under the tarma.",
+                                        "anchor": "sirdab",
+                                        "term_ku": "سەرداب",
+                                        "text_ku": "ژێرزەمین. زۆرتر لە خانووەکانی لێواردا هەیە، کە لەسەر لێژییەکە وەستاون و نزیکەی بەخۆڕایی دەستیان دەکەوێت. لە ناو شارەکەدا تەنها خانووە درەنگترەکان هەیانە، و هەندێک جار تەنها لە ژێر تارمەکە.",
+                                        "term_ar": "السرداب",
+                                        "text_ar": "طابق تحت الأرض. أكثر شيوعاً في بيوت الحافة القائمة على المنحدر، فتحصل عليه بلا كلفة تقريباً. وفي داخل المدينة لا يوجد إلا في البيوت المتأخرة، وأحياناً تحت الطارمة فقط."
+                                    },
+                                    {
+                                        "term_en": "Diwakhana",
+                                        "text_en": "A house, or a room in a house, kept for receiving guests.",
+                                        "anchor": "diwakhana",
+                                        "term_ku": "دیوەخان",
+                                        "text_ku": "خانوویەک، یان ژوورێک لە خانوویەکدا، کە بۆ پێشوازی لە میوان تەرخان کراوە.",
+                                        "term_ar": "الديوخانة",
+                                        "text_ar": "بيت، أو غرفة في بيت، مخصصة لاستقبال الضيوف."
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "heading_ku": "یەک بیرۆکە، چەندین خانوو",
+                    "heading_ar": "فكرة واحدة وبيوت كثيرة"
+                }
+            },
+            {
+                "type": "plates",
+                "data": {
+                    "heading_en": "The plates",
+                    "key_en": "Every plan, section and elevation here is redrawn by us from the published surveys: walls, doors with their swings, windows, stairs and fixtures, at one scale per house. Areas are measured off the drawings and are approximate. Where a survey gives no scale or north, we draw none.",
+                    "code": "CH",
+                    "plates": [
+                        {
+                            "name_en": "House 19/2",
+                            "type_en": "The two-room plan",
+                            "plans": [
+                                {
+                                    "drawing": "code:h192",
+                                    "caption_en": "Ground floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "The master plan for the Citadel prints this house as its example of the typical plan, and it is hard to draw a house with less. Two rooms stand side by side across the back of the plot. Each has its own door to the courtyard; neither opens into the other. The entrance is at the far end, straight off the alley.\n\nLook at the walls. The notches cut into them are niches: a shelf, an ornament, and fewer bricks to buy.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "The main wing: two rooms, each with its own door",
+                                    "label_ku": "باڵی سەرەکی: دوو ژوور، هەر یەکەی بە دەرگای خۆی",
+                                    "label_ar": "الجناح الرئيسي: غرفتان، لكلٍّ منهما بابها"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Entrance from the alley",
+                                    "label_ku": "دەروازە لە کۆڵانەوە",
+                                    "label_ar": "المدخل من الزقاق"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "Stair to the roof",
+                                    "label_ku": "پەیژە بۆ سەربان",
+                                    "label_ar": "الدرج إلى السطح"
+                                },
+                                {
+                                    "n": "5",
+                                    "label_en": "Room",
+                                    "label_ku": "ژوور",
+                                    "label_ar": "غرفة"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "19/2",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Plan",
+                                    "value_en": "Two rooms on one side of a courtyard",
+                                    "label_ku": "نەخشە",
+                                    "value_ku": "دوو ژوور لە لایەکی حەوشەدا",
+                                    "label_ar": "المخطط",
+                                    "value_ar": "غرفتان على جهة واحدة من الفناء",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "Not given in the source",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": "لە سەرچاوەکەدا نەدراوە",
+                                    "label_ar": "القياس",
+                                    "value_ar": "غير مذكور في المصدر",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Nomination file, vol. I, fig. 2.50",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "دۆسیەی پاڵاوتن، بەرگی یەکەم, fig. 2.50",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "ملف الترشيح، المجلد الأول, fig. 2.50",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "خانووی ١٩/٢",
+                            "type_ku": "نەخشەی دوو ژووری",
+                            "text_ku": "ماستەرپلانی قەڵا ئەم خانووە وەک نموونەی نەخشەی باو چاپ دەکات، و ئەستەمە خانوویەک بە کەمتر لەمە بکێشرێت. دوو ژوور شان بە شانی یەک لە پشتەوەی پارچە زەوییەکە وەستاون. هەر یەکەیان دەرگای خۆی هەیە بۆ حەوشە؛ هیچیان بەسەر ئەوی تردا ناکرێتەوە. دەروازەکە لە سەری ئەوبەرەوەیە، ڕاستەوخۆ لە کۆڵانەوە.\n\nسەیری دیوارەکان بکە. ئەو بڕینانەی تێیاندا کراون تاقن: ڕەفەیەک، نەخشێک، و خشتی کەمتر بۆ کڕین.",
+                            "name_ar": "البيت ١٩/٢",
+                            "type_ar": "مخطط الغرفتين",
+                            "text_ar": "يطبع المخطط الرئيسي للقلعة هذا البيت مثالاً على المخطط الشائع، ويصعب أن يُرسم بيتٌ بأقل منه. غرفتان متجاورتان في آخر القطعة، لكلٍّ منهما بابها على الفناء، ولا تنفتح إحداهما على الأخرى. والمدخل في الطرف المقابل، من الزقاق مباشرة.\n\nانظر إلى الجدران. التجاويف المقطوعة فيها كُوًى: رفٌّ وزخرفة، وطابوق أقل يُشترى."
+                        },
+                        {
+                            "name_en": "Sayid Abdullah Pasha’s house",
+                            "type_en": "Three rooms behind a colonnade",
+                            "plans": [
+                                {
+                                    "drawing": "code:h318",
+                                    "caption_en": "Ground floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "The same idea with one room more, and a portico. Three rooms in a row fill the far side; in front of them three columns carry a tarma, a roofed strip that shades their doors and windows. You enter from the alley opposite and see the whole house at once.\n\nThe survey notes an inscription inside a niche of the third room, and a lemon tree in the courtyard.",
+                            "legend": [
+                                {
+                                    "n": "1–3",
+                                    "label_en": "The three rooms, each with its own door to the portico",
+                                    "label_ku": "سێ ژوورەکە، هەر یەکەی بە دەرگای خۆی بۆ تارمەکە",
+                                    "label_ar": "الغرف الثلاث، لكلٍّ منها بابها على الطارمة"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "Portico (tarma) on three columns",
+                                    "label_ku": "تارمە لەسەر سێ کۆڵەکە",
+                                    "label_ar": "الطارمة على ثلاثة أعمدة"
+                                },
+                                {
+                                    "n": "5",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "6",
+                                    "label_en": "Entrance from the alley",
+                                    "label_ku": "دەروازە لە کۆڵانەوە",
+                                    "label_ar": "المدخل من الزقاق"
+                                },
+                                {
+                                    "n": "7",
+                                    "label_en": "Stairs; one goes to the roof through a segmental arch",
+                                    "label_ku": "پەیژەکان؛ یەکێکیان لە ژێر کەوانەیەکەوە دەچێتە سەربان",
+                                    "label_ar": "الدرجان؛ أحدهما يصعد إلى السطح عبر قوس"
+                                },
+                                {
+                                    "n": "8",
+                                    "label_en": "Bath",
+                                    "label_ku": "گەرماو",
+                                    "label_ar": "الحمّام"
+                                },
+                                {
+                                    "n": "9",
+                                    "label_en": "WC",
+                                    "label_ku": "ئاودەست",
+                                    "label_ar": "المرحاض"
+                                },
+                                {
+                                    "n": "10",
+                                    "label_en": "Room",
+                                    "label_ku": "ژوور",
+                                    "label_ar": "غرفة"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "31/8",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Plan",
+                                    "value_en": "“Three-room plan, one colonnade” (survey form, 2008)",
+                                    "label_ku": "نەخشە",
+                                    "value_ku": "«نەخشەی سێ ژووری، یەک ڕیزە کۆڵەکە» (فۆرمی ڕووپێو، ٢٠٠٨)",
+                                    "label_ar": "المخطط",
+                                    "value_ar": "«مخطط الغرف الثلاث، صف أعمدة واحد» (استمارة المسح، ٢٠٠٨)",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Date",
+                                    "value_en": "Before 1918; one of only two houses dated by an inscription",
+                                    "label_ku": "مێژوو",
+                                    "value_ku": "پێش ١٩١٨؛ یەکێک لە تەنها دوو خانوو کە بە نووسراوێک مێژوویان دیاری کراوە",
+                                    "label_ar": "التاريخ",
+                                    "value_ar": "قبل ١٩١٨؛ أحد بيتين فقط مؤرَّخين بكتابة",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "12.91 × 14.27 m",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": null,
+                                    "label_ar": "القياس",
+                                    "value_ar": null,
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Storeys",
+                                    "value_en": "One",
+                                    "label_ku": "نهۆم",
+                                    "value_ku": "یەک",
+                                    "label_ar": "الطوابق",
+                                    "value_ar": "واحد",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Nomination file, vol. II (annexes), annex 9",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "دۆسیەی پاڵاوتن، بەرگی دووەم (پاشکۆکان), annex 9",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "ملف الترشيح، المجلد الثاني (الملاحق), annex 9",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "خانووی سەید عەبدوڵڵا پاشا",
+                            "type_ku": "سێ ژوور لە پشت ڕیزە کۆڵەکەیەک",
+                            "text_ku": "هەمان بیرۆکە بە ژوورێکی زیاتر، و تارمەیەک. سێ ژوور بە ڕیز لای ئەوبەر پڕ دەکەنەوە؛ لەبەردەمیاندا سێ کۆڵەکە تارمەیەک هەڵدەگرن، شریتێکی سەرداپۆشراو کە سێبەر دەخاتە سەر دەرگا و پەنجەرەکانیان. لە کۆڵانی بەرامبەرەوە دێیتە ژوورەوە و هەموو خانووەکە بە یەک جار دەبینیت.\n\nڕووپێوەکە تێبینی نووسراوێک دەکات لەناو تاقێکی ژووری سێیەمدا، و درەختێکی لیمۆ لە حەوشەکەدا.",
+                            "name_ar": "بيت السيد عبد الله باشا",
+                            "type_ar": "ثلاث غرف خلف صف أعمدة",
+                            "text_ar": "الفكرة نفسها بغرفة زائدة وطارمة. ثلاث غرف في صف تملأ الجهة البعيدة، وأمامها ثلاثة أعمدة تحمل الطارمة، شريطاً مسقوفاً يظلّل أبوابها ونوافذها. تدخل من الزقاق المقابل فترى البيت كله دفعةً واحدة.\n\nيسجّل المسح كتابةً داخل كوّة في الغرفة الثالثة، وشجرة ليمون في الفناء."
+                        },
+                        {
+                            "name_en": "Abdulla Agha’s diwakhana",
+                            "type_en": "Three arcades",
+                            "plans": [
+                                {
+                                    "drawing": "code:h305",
+                                    "caption_en": "Ground floor · as existing",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی · وەک ئێستا",
+                                    "caption_ar": "الطابق الأرضي · كما هو قائم"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "A diwakhana was a house for receiving. After the afternoon prayer its door stood open, and twenty or thirty people at a time came in to sit, talk and settle matters. The nomination file calls the type “very specific to Erbil”.\n\nSo the plan is the small house grown large. The rooms still line the edges and still open one by one, but now arcades run in front of them on the east and the south, and the best room, the qa‘a, sits behind the south arcade.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "Entrance",
+                                    "label_ku": "دەروازە",
+                                    "label_ar": "المدخل"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "East arcade",
+                                    "label_ku": "ڕیزە کەوانەی ڕۆژهەڵات",
+                                    "label_ar": "الرواق الشرقي"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "South arcade",
+                                    "label_ku": "ڕیزە کەوانەی باشوور",
+                                    "label_ar": "الرواق الجنوبي"
+                                },
+                                {
+                                    "n": "5",
+                                    "label_en": "The main room (qa‘a)",
+                                    "label_ku": "ژووری سەرەکی (قاعە)",
+                                    "label_ar": "الغرفة الرئيسية (القاعة)"
+                                },
+                                {
+                                    "n": "6",
+                                    "label_en": "Rooms behind the arcades",
+                                    "label_ku": "ژوورەکانی پشت ڕیزە کەوانەکان",
+                                    "label_ar": "الغرف خلف الأروقة"
+                                },
+                                {
+                                    "n": "7",
+                                    "label_en": "Room",
+                                    "label_ku": "ژوور",
+                                    "label_ar": "غرفة"
+                                },
+                                {
+                                    "n": "8",
+                                    "label_en": "Modern, roofless room",
+                                    "label_ku": "ژوورێکی نوێی بێ سەربان",
+                                    "label_ar": "غرفة حديثة بلا سقف"
+                                },
+                                {
+                                    "n": "9",
+                                    "label_en": "Second, smaller courtyard",
+                                    "label_ku": "حەوشەی دووەم، بچووکتر",
+                                    "label_ar": "فناء ثانٍ أصغر"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "30/5",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Plan",
+                                    "value_en": "“Three-arcade plan”; houses 30/5 and 30/4 together",
+                                    "label_ku": "نەخشە",
+                                    "value_ku": "«نەخشەی سێ ڕیزە کەوانە»؛ خانووەکانی ٣٠/٥ و ٣٠/٤ پێکەوە",
+                                    "label_ar": "المخطط",
+                                    "value_ar": "«مخطط الأروقة الثلاثة»؛ البيتان ٣٠/٥ و٣٠/٤ معاً",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Date",
+                                    "value_en": "Before 1918",
+                                    "label_ku": "مێژوو",
+                                    "value_ku": "پێش ١٩١٨",
+                                    "label_ar": "التاريخ",
+                                    "value_ar": "قبل ١٩١٨",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Grade",
+                                    "value_en": "1, the highest: eleven buildings in all",
+                                    "label_ku": "پلە",
+                                    "value_ku": "١، بەرزترین: تەنها یازدە بینا",
+                                    "label_ar": "الدرجة",
+                                    "value_ar": "١، وهي الأعلى: أحد عشر مبنى فقط",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Brickwork",
+                                    "value_en": "Irregular bond",
+                                    "label_ku": "خشتکاری",
+                                    "value_ku": "ڕیزبەندی ناڕێک",
+                                    "label_ar": "البناء بالطابوق",
+                                    "value_ar": "رباط غير منتظم",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Nomination file, vol. II (annexes), annex 10",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "دۆسیەی پاڵاوتن، بەرگی دووەم (پاشکۆکان), annex 10",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "ملف الترشيح، المجلد الثاني (الملاحق), annex 10",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "دیوەخانی عەبدوڵڵا ئاغا",
+                            "type_ku": "سێ ڕیزە کەوانە",
+                            "text_ku": "دیوەخان خانوویەک بوو بۆ پێشوازی. دوای نوێژی عەسر دەرگاکەی کراوە دەبوو، و بیست تا سی کەس پێکەوە دەهاتنە ژوورەوە بۆ دانیشتن و قسەکردن و یەکلاکردنەوەی کاروبار. دۆسیەی پاڵاوتن ئەم جۆرە بە «زۆر تایبەت بە هەولێر» ناو دەبات.\n\nبۆیە نەخشەکە هەمان خانووە بچووکەکەیە کە گەورە بووە. ژوورەکان هێشتا بە لێوارەکاندا ڕیز بوون و هێشتا یەک بە یەک دەکرێنەوە، بەڵام ئێستا ڕیزە کەوانە لەبەردەمیاندا لە ڕۆژهەڵات و باشوور دەڕوات، و باشترین ژوور، قاعەکە، لە پشت ڕیزە کەوانەی باشوورە.",
+                            "name_ar": "ديوخانة عبد الله آغا",
+                            "type_ar": "ثلاثة أروقة",
+                            "text_ar": "الديوخانة بيتٌ للاستقبال. بعد صلاة العصر يُفتح بابها فيدخل عشرون أو ثلاثون شخصاً في المرة ليجلسوا ويتحدثوا ويفصلوا في الأمور. يصف ملف الترشيح هذا النوع بأنه «خاص جداً بأربيل».\n\nفالمخطط إذن هو البيت الصغير وقد كبر. ما زالت الغرف تصطف على الأطراف وتنفتح واحدةً واحدة، لكنّ الأروقة تمتد الآن أمامها شرقاً وجنوباً، وأفضل الغرف، القاعة، تقع خلف الرواق الجنوبي."
+                        },
+                        {
+                            "name_en": "Rashid Agha’s diwakhana",
+                            "type_en": "A mansion over its basement",
+                            "plans": [
+                                {
+                                    "drawing": "code:rashid-g",
+                                    "caption_en": "Ground floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                },
+                                {
+                                    "drawing": "code:rashid-b",
+                                    "caption_en": "Basement (sirdab)",
+                                    "wide": false,
+                                    "caption_ku": "ژێرزەمین (سەرداب)",
+                                    "caption_ar": "السرداب"
+                                }
+                            ],
+                            "secs": [
+                                {
+                                    "drawing": "code:rashid-el",
+                                    "caption_en": "Courtyard elevation",
+                                    "caption_ku": "ڕووکاری حەوشە",
+                                    "caption_ar": "واجهة الفناء"
+                                },
+                                {
+                                    "drawing": "code:rashid-sec",
+                                    "caption_en": "Long section",
+                                    "caption_ku": "بڕگەی درێژ",
+                                    "caption_ar": "مقطع طولي"
+                                }
+                            ],
+                            "text_en": "One of the five best-known diwakhanas of the Citadel, and one of the two houses that carry their own date. The plot is long and tapers, so the courtyard does too; a basin marks its middle.\n\nThe main rooms stand at the head of the court, above a sirdab. Compare the two plans: the basement repeats only the main range, a cool room for summer directly beneath it.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "Basin",
+                                    "label_ku": "حەوز",
+                                    "label_ar": "الحوض"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Portico before the main rooms, reached by steps at either end",
+                                    "label_ku": "تارمە لەبەردەم ژوورە سەرەکییەکان، بە پلە لە هەردوو سەرەوە دەچیتە سەری",
+                                    "label_ar": "طارمة أمام الغرف الرئيسية، يُصعد إليها بدرجات عند طرفيها"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "Sirdab under the main range",
+                                    "label_ku": "سەرداب لە ژێر باڵی سەرەکی",
+                                    "label_ar": "السرداب تحت الجناح الرئيسي"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "2/2",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Date",
+                                    "value_en": "Built 1903–5; dated by an inscription",
+                                    "label_ku": "مێژوو",
+                                    "value_ku": "لە ١٩٠٣–١٩٠٥ دروست کراوە؛ بە نووسراوێک مێژووی دیاری کراوە",
+                                    "label_ar": "التاريخ",
+                                    "value_ar": "بُني ١٩٠٣–١٩٠٥؛ مؤرَّخ بكتابة",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "12.8 × 23.0 m",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": null,
+                                    "label_ar": "القياس",
+                                    "value_ar": null,
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Levels drawn",
+                                    "value_en": "Ground floor, Basement (sirdab)",
+                                    "label_ku": "ئەو نهۆمانەی کێشراون",
+                                    "value_ku": "نهۆمی زەوی, ژێرزەمین (سەرداب)",
+                                    "label_ar": "الطوابق المرسومة",
+                                    "value_ar": "الطابق الأرضي, السرداب",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Mustafa & Ali, 2024, table 4 (C1)",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": null,
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": null,
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "دیوەخانی ڕەشید ئاغا",
+                            "type_ku": "کۆشکێک لەسەر سەردابەکەی",
+                            "text_ku": "یەکێک لە پێنج دیوەخانە ناسراوەکەی قەڵا، و یەکێک لەو دوو خانووەی کە مێژووی خۆیان هەڵگرتووە. پارچە زەوییەکە درێژە و باریک دەبێتەوە، بۆیە حەوشەکەش هەروا؛ حەوزێک ناوەڕاستەکەی دیاری دەکات.\n\nژوورە سەرەکییەکان لە سەری حەوشەکەدان، لەسەر سەردابێک. دوو نەخشەکە بەراورد بکە: ژێرزەمینەکە تەنها باڵی سەرەکی دووبارە دەکاتەوە، ژوورێکی فێنک بۆ هاوین ڕاستەوخۆ لە ژێریدا.",
+                            "name_ar": "ديوخانة رشيد آغا",
+                            "type_ar": "قصر فوق سردابه",
+                            "text_ar": "إحدى أشهر خمس ديوخانات في القلعة، وأحد البيتين اللذين يحملان تاريخهما. القطعة طويلة وتضيق، وكذلك الفناء؛ وفي وسطه حوض.\n\nالغرف الرئيسية في رأس الفناء، فوق سرداب. قارن بين المسقطين: السرداب يكرر الجناح الرئيسي وحده، غرفة باردة للصيف تحته مباشرة."
+                        },
+                        {
+                            "name_en": "Salim Qaqa’s house",
+                            "type_en": "Thick walls, a court in the middle",
+                            "plans": [
+                                {
+                                    "drawing": "code:salim-g",
+                                    "caption_en": "Ground floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                },
+                                {
+                                    "drawing": "code:salim-b",
+                                    "caption_en": "Basement (sirdab)",
+                                    "wide": false,
+                                    "caption_ku": "ژێرزەمین (سەرداب)",
+                                    "caption_ar": "السرداب"
+                                }
+                            ],
+                            "secs": [
+                                {
+                                    "drawing": "code:salim-long",
+                                    "caption_en": "Long section",
+                                    "caption_ku": "بڕگەی درێژ",
+                                    "caption_ar": "مقطع طولي"
+                                },
+                                {
+                                    "drawing": "code:salim-cross",
+                                    "caption_en": "Cross section",
+                                    "caption_ku": "بڕگەی پانی",
+                                    "caption_ar": "مقطع عرضي"
+                                }
+                            ],
+                            "text_en": "Here the walls say the most. One side wall is far thicker than any other, and the long wall at the head of the plot is cut by a row of niches, one beside the next.\n\nTwo large rooms take the far end, the two-room plan again. The courtyard sits in the middle of the plot with rooms on three sides, and the basement runs under nearly all of it.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "The two large rooms at the head of the plot",
+                                    "label_ku": "دوو ژوورە گەورەکەی سەری پارچە زەوییەکە",
+                                    "label_ar": "الغرفتان الكبيرتان في رأس القطعة"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "C2",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Date",
+                                    "value_en": "Late Ottoman period",
+                                    "label_ku": "مێژوو",
+                                    "value_ku": "سەردەمی کۆتایی عوسمانی",
+                                    "label_ar": "التاريخ",
+                                    "value_ar": "أواخر العهد العثماني",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "11.4 × 18.1 m",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": null,
+                                    "label_ar": "القياس",
+                                    "value_ar": null,
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Levels drawn",
+                                    "value_en": "Ground floor, Basement (sirdab)",
+                                    "label_ku": "ئەو نهۆمانەی کێشراون",
+                                    "value_ku": "نهۆمی زەوی, ژێرزەمین (سەرداب)",
+                                    "label_ar": "الطوابق المرسومة",
+                                    "value_ar": "الطابق الأرضي, السرداب",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Mustafa & Ali, 2024, table 4 (C2)",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": null,
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": null,
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "خانووی سەلیم قاقە",
+                            "type_ku": "دیواری ئەستوور، حەوشەیەک لە ناوەڕاست",
+                            "text_ku": "لێرەدا دیوارەکان زۆرترین شت دەڵێن. دیوارێکی لاتەنیشت زۆر لە هەموو ئەوانی تر ئەستوورترە، و دیوارە درێژەکەی سەری پارچە زەوییەکە بە ڕیزێک تاق بڕاوە، یەک لە تەنیشت ئەوی تر.\n\nدوو ژووری گەورە سەری ئەوبەریان گرتووە، دیسان نەخشەی دوو ژووری. حەوشەکە لە ناوەڕاستی پارچە زەوییەکەدایە و لە سێ لاوە ژووری لێیە، و ژێرزەمینەکە بە ژێر نزیکەی هەموویدا دەڕوات.",
+                            "name_ar": "بيت سليم قاقا",
+                            "type_ar": "جدران سميكة وفناء في الوسط",
+                            "text_ar": "هنا تقول الجدران أكثر من غيرها. أحد الجدران الجانبية أسمك كثيراً من سواه، والجدار الطويل في رأس القطعة مقطوع بصف من الكُوى، واحدة إلى جانب الأخرى.\n\nغرفتان كبيرتان تحتلان الطرف البعيد، مخطط الغرفتين مرة أخرى. الفناء في وسط القطعة تحيط به الغرف من ثلاث جهات، والسرداب يمتد تحت معظمه."
+                        },
+                        {
+                            "name_en": "Salih Chalabi’s house",
+                            "type_en": "Three rooms, an arcade, two wings",
+                            "plans": [
+                                {
+                                    "drawing": "code:salih-b",
+                                    "caption_en": "Basement (sirdab)",
+                                    "wide": false,
+                                    "caption_ku": "ژێرزەمین (سەرداب)",
+                                    "caption_ar": "السرداب"
+                                },
+                                {
+                                    "drawing": "code:salih-g",
+                                    "caption_en": "Ground floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                },
+                                {
+                                    "drawing": "code:salih-f",
+                                    "caption_en": "First floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی یەکەم",
+                                    "caption_ar": "الطابق الأول"
+                                }
+                            ],
+                            "secs": [
+                                {
+                                    "drawing": "code:salih-long",
+                                    "caption_en": "Long section",
+                                    "caption_ku": "بڕگەی درێژ",
+                                    "caption_ar": "مقطع طولي"
+                                },
+                                {
+                                    "drawing": "code:salih-cross",
+                                    "caption_en": "Cross section",
+                                    "caption_ku": "بڕگەی پانی",
+                                    "caption_ar": "مقطع عرضي"
+                                }
+                            ],
+                            "text_en": "This is the mansion plan the nomination file describes: a main range of three rooms, with a wing down each side of the courtyard. An arcade stands in front of the three rooms, and the court sits at the centre.\n\nRead the three levels together. The basement lies under the main range and one wing only. The first floor repeats the ground floor almost wall for wall, because every wall above needs a wall below.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "The main range: three rooms",
+                                    "label_ku": "باڵی سەرەکی: سێ ژوور",
+                                    "label_ar": "الجناح الرئيسي: ثلاث غرف"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "Arcade before the main range",
+                                    "label_ku": "ڕیزە کەوانە لەبەردەم باڵی سەرەکی",
+                                    "label_ar": "الرواق أمام الجناح الرئيسي"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "The wings, one on each side of the court",
+                                    "label_ku": "باڵەکان، یەک لە هەر لایەکی حەوشە",
+                                    "label_ar": "الجناحان، واحد على كل جانب من الفناء"
+                                },
+                                {
+                                    "n": "5",
+                                    "label_en": "Curved stair",
+                                    "label_ku": "پەیژەی چەماوە",
+                                    "label_ar": "درج منحنٍ"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "C3",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Date",
+                                    "value_en": "Late Ottoman period",
+                                    "label_ku": "مێژوو",
+                                    "value_ku": "سەردەمی کۆتایی عوسمانی",
+                                    "label_ar": "التاريخ",
+                                    "value_ar": "أواخر العهد العثماني",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "Not given in the source",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": "لە سەرچاوەکەدا نەدراوە",
+                                    "label_ar": "القياس",
+                                    "value_ar": "غير مذكور في المصدر",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Levels drawn",
+                                    "value_en": "Basement (sirdab), Ground floor, First floor",
+                                    "label_ku": "ئەو نهۆمانەی کێشراون",
+                                    "value_ku": "ژێرزەمین (سەرداب), نهۆمی زەوی, نهۆمی یەکەم",
+                                    "label_ar": "الطوابق المرسومة",
+                                    "value_ar": "السرداب, الطابق الأرضي, الطابق الأول",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Mustafa & Ali, 2024, table 4 (C3)",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": null,
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": null,
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "خانووی ساڵح چەلەبی",
+                            "type_ku": "سێ ژوور، ڕیزە کەوانەیەک، دوو باڵ",
+                            "text_ku": "ئەمە ئەو نەخشەی کۆشکەیە کە دۆسیەی پاڵاوتن باسی دەکات: باڵێکی سەرەکی لە سێ ژوور، و باڵێک بە هەر لایەکی حەوشەدا. ڕیزە کەوانەیەک لەبەردەم سێ ژوورەکە وەستاوە، و حەوشەکە لە ناوەڕاستدایە.\n\nسێ نهۆمەکە پێکەوە بخوێنەوە. ژێرزەمینەکە تەنها لە ژێر باڵی سەرەکی و یەکێک لە باڵەکاندایە. نهۆمی یەکەم نزیکەی دیوار بە دیوار نهۆمی زەوی دووبارە دەکاتەوە، چونکە هەر دیوارێکی سەرەوە پێویستی بە دیوارێکە لە خوارەوە.",
+                            "name_ar": "بيت صالح چلبي",
+                            "type_ar": "ثلاث غرف ورواق وجناحان",
+                            "text_ar": "هذا هو مخطط القصر الذي يصفه ملف الترشيح: جناح رئيسي من ثلاث غرف، وجناح على كل جانب من الفناء. يقف رواق أمام الغرف الثلاث، والفناء في الوسط.\n\nاقرأ الطوابق الثلاثة معاً. السرداب تحت الجناح الرئيسي وأحد الجناحين فقط. والطابق الأول يكرر الأرضي جداراً بجدار تقريباً، فكل جدار في الأعلى يحتاج إلى جدار تحته."
+                        },
+                        {
+                            "name_en": "Hashim Chalabi’s house",
+                            "type_en": "A house on the edge",
+                            "plans": [
+                                {
+                                    "drawing": "code:hashim",
+                                    "caption_en": "Ground floor",
+                                    "wide": true,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "Not every plot is a rectangle. This house stands where the alleys bend toward the rim of the mound, and its outline follows them. Inside, the rule holds anyway: one open court, and the rooms pressed against the boundary around it.\n\nThe entrance is at the narrow tip, and it does not lead straight in.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Entrance passage: you turn before you see the court",
+                                    "label_ku": "ڕاڕەوی دەروازە: پێش بینینی حەوشە دەسووڕێیتەوە",
+                                    "label_ar": "ممر المدخل: تنعطف قبل أن ترى الفناء"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "Courtyard",
+                                    "label_ku": "حەوشە",
+                                    "label_ar": "الفناء"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Rooms, as the study maps them",
+                                    "label_ku": "ژوورەکان، وەک توێژینەوەکە کێشاونی",
+                                    "label_ar": "الغرف كما رسمتها الدراسة"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "House",
+                                    "value_en": "HC",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Today",
+                                    "value_en": "A museum",
+                                    "label_ku": "ئەمڕۆ",
+                                    "value_ku": "مۆزەخانەیەک",
+                                    "label_ar": "اليوم",
+                                    "value_ar": "متحف",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "Not given in the source",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": "لە سەرچاوەکەدا نەدراوە",
+                                    "label_ar": "القياس",
+                                    "value_ar": "غير مذكور في المصدر",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Goriel, Molnár & Zoltán, 2025, fig. 8b",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": null,
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": null,
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Note",
+                                    "value_en": "A diagram of spaces, not a wall survey: the solid shows everything the study did not map as a room.",
+                                    "label_ku": "تێبینی",
+                                    "value_ku": "هێڵکارییەکی بۆشاییەکانە، نەک ڕووپێوی دیوار: بەشە پڕەکە هەموو ئەوە پیشان دەدات کە توێژینەوەکە وەک ژوور نەیکێشاوە.",
+                                    "label_ar": "ملاحظة",
+                                    "value_ar": "مخطط للفراغات لا مسحٌ للجدران: الجزء المصمت يمثل كل ما لم تُدرجه الدراسة غرفةً.",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "خانووی هاشم چەلەبی",
+                            "type_ku": "خانوویەک لەسەر لێوار",
+                            "text_ku": "هەموو پارچە زەوییەک لاکێشە نییە. ئەم خانووە لەو شوێنەدایە کە کۆڵانەکان بەرەو لێواری گردەکە دەچەمێنەوە، و شێوەکەی بەدوایاندا دەڕوات. لە ناوەوە، یاساکە هەر دەمێنێت: یەک حەوشەی کراوە، و ژوورەکان بە دەوریدا بە سنوورەکەوە نووساون.\n\nدەروازەکە لە نووکە باریکەکەدایە، و ڕاستەوخۆ ناچێتە ژوورەوە.",
+                            "name_ar": "بيت هاشم چلبي",
+                            "type_ar": "بيت على الحافة",
+                            "text_ar": "ليست كل قطعة مستطيلاً. يقف هذا البيت حيث تنحني الأزقة نحو حافة التل، وحدوده تتبعها. وفي الداخل تبقى القاعدة: فناء واحد مفتوح، والغرف ملتصقة بالحدود حوله.\n\nالمدخل عند الطرف الضيق، ولا يقود إلى الداخل مباشرة."
+                        },
+                        {
+                            "name_en": "Block 45",
+                            "type_en": "Thirteen houses, one fabric",
+                            "plans": [
+                                {
+                                    "drawing": "code:b45",
+                                    "caption_en": "Ground floor",
+                                    "wide": true,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "No house on the Citadel stands alone. This is one block out of fifty-eight, drawn as the master plan surveyed it: thirteen houses with shared walls, their courtyards locked together like the pieces of a puzzle. The alleys run around the block and never through it.\n\nHouse 45/3 is the mansion of the block. The nomination file cites it three times: for a main range of two rooms with a wing on either side of the court, for a tarma carried on an arcade of Mosul alabaster, and for a sirdab, rare this far from the rim.\n\nThe survey went further than we show: it dated every wall in the block, and found each house a patchwork of periods.",
+                            "legend": [],
+                            "facts": [
+                                {
+                                    "label_en": "Houses",
+                                    "value_en": "45/1 – 45/13",
+                                    "label_ku": "خانوو",
+                                    "value_ku": null,
+                                    "label_ar": "البيوت",
+                                    "value_ar": null,
+                                    "ltr": true
+                                },
+                                {
+                                    "label_en": "Size",
+                                    "value_en": "Not given in the source",
+                                    "label_ku": "قەبارە",
+                                    "value_ku": "لە سەرچاوەکەدا نەدراوە",
+                                    "label_ar": "القياس",
+                                    "value_ar": "غير مذكور في المصدر",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Nomination file, vol. I, fig. 2.49",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "دۆسیەی پاڵاوتن، بەرگی یەکەم, fig. 2.49",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "ملف الترشيح، المجلد الأول, fig. 2.49",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "بلۆکی ٤٥",
+                            "type_ku": "سێزدە خانوو، یەک پێکهاتە",
+                            "text_ku": "هیچ خانوویەک لە قەڵادا بە تەنیا نەوەستاوە. ئەمە یەک بلۆکە لە پەنجا و هەشت، وەک ماستەرپلانەکە ڕووپێوی کردووە: سێزدە خانوو بە دیواری هاوبەش، حەوشەکانیان وەک پارچەکانی مەتەڵێک تێکەڵ بە یەک بوون. کۆڵانەکان بە دەوری بلۆکەکەدا دەڕۆن و هەرگیز بە ناویدا ناڕۆن.\n\nخانووی ٤٥/٣ کۆشکی بلۆکەکەیە. دۆسیەی پاڵاوتن سێ جار ئاماژەی پێ دەکات: بۆ باڵێکی سەرەکی لە دوو ژوور لەگەڵ باڵێک لە هەر لایەکی حەوشە، بۆ تارمەیەک کە لەسەر ڕیزە کەوانەیەکی مەڕمەڕی مووسڵ هەڵگیراوە، و بۆ سەردابێک، کە ئەوەندە دوور لە لێوار دەگمەنە.\n\nڕووپێوەکە لەوە زیاتر ڕۆیشت کە ئێمە پیشانی دەدەین: مێژووی هەموو دیوارێکی بلۆکەکەی دیاری کرد، و هەر خانوویەکی وەک تێکەڵەیەک لە سەردەمەکان دۆزییەوە.",
+                            "name_ar": "البلوك ٤٥",
+                            "type_ar": "ثلاثة عشر بيتاً ونسيج واحد",
+                            "text_ar": "لا يقف بيتٌ في القلعة وحده. هذا بلوك واحد من ثمانية وخمسين، مرسوم كما مسحه المخطط الرئيسي: ثلاثة عشر بيتاً بجدران مشتركة، أفنيتها متداخلة كقطع الأحجية. الأزقة تدور حول البلوك ولا تخترقه أبداً.\n\nالبيت ٤٥/٣ هو قصر البلوك. يستشهد به ملف الترشيح ثلاث مرات: لجناح رئيسي من غرفتين مع جناح على كل جانب من الفناء، ولطارمة محمولة على عقود من مرمر الموصل، ولسرداب نادر على هذا البعد من الحافة.\n\nوذهب المسح أبعد مما نعرض: أرّخ كل جدار في البلوك، فوجد كل بيت رقعةً من عصور مختلفة."
+                        }
+                    ],
+                    "heading_ku": "تابلۆکان",
+                    "key_ku": "هەموو نەخشە و بڕگە و ڕووکارێک لێرەدا لە ڕووپێوە بڵاوکراوەکانەوە لەلایەن ئێمەوە دووبارە کێشراوەتەوە: دیوار، دەرگا لەگەڵ ڕێڕەوی کرانەوەیان، پەنجەرە، پەیژە و کەلوپەل، بە یەک پێوەر بۆ هەر خانوویەک. ڕووبەرەکان لەسەر نەخشەکان پێوراون و نزیکەیین. لە شوێنێک ڕووپێوەکە پێوەر یان باکووری نەدابێت، ئێمەش نایکێشین.",
+                    "heading_ar": "اللوحات",
+                    "key_ar": "كلّ مسقط ومقطع وواجهة هنا أعدنا رسمه عن المسوح المنشورة: الجدران والأبواب بمسار فتحها والنوافذ والدرج والتجهيزات، بمقياس واحد لكلّ بيت. المساحات مقيسة على الرسوم وتقريبية. وحيث لا يعطي المسح مقياسًا أو اتجاه الشمال لا نرسمهما."
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "How they were built",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "The plans show thick walls, and the nomination file explains what is inside them.",
+                                "text_ku": "نەخشەکان دیواری ئەستوور پیشان دەدەن، و دۆسیەی پاڵاوتن ڕوونی دەکاتەوە چی لە ناویاندایە.",
+                                "text_ar": "تُظهر المخططات جدراناً سميكة، ويشرح ملف الترشيح ما في داخلها."
+                            }
+                        },
+                        {
+                            "type": "list",
+                            "data": {
+                                "style": "build",
+                                "items": [
+                                    {
+                                        "term_en": "Brick and mud",
+                                        "text_en": "Almost everything is fired brick laid in mud mortar, sometimes with a little lime or gypsum. A wall laid in mud comes apart easily, so the same bricks were used many times over. That is why brick sizes cannot date a house.",
+                                        "anchor": null,
+                                        "term_ku": "خشت و قوڕ",
+                                        "text_ku": "نزیکەی هەموو شتێک خشتی سوورکراوەیە کە بە قوڕ دانراوە، هەندێک جار بە کەمێک قسڵ یان گەچ. دیوارێک کە بە قوڕ دانرابێت بە ئاسانی هەڵدەوەشێتەوە، بۆیە هەمان خشت چەندین جار بەکار هاتووەتەوە. هەر بۆیە قەبارەی خشت ناتوانێت مێژووی خانوویەک دیاری بکات.",
+                                        "term_ar": "الطابوق والطين",
+                                        "text_ar": "يكاد كل شيء يكون طابوقاً مشوياً مبنياً بمونة الطين، وأحياناً مع قليل من الكلس أو الجص. الجدار المبني بالطين يُفكّ بسهولة، فاستُعمل الطابوق نفسه مرات كثيرة. ولهذا لا تصلح قياسات الطابوق لتأريخ بيت."
+                                    },
+                                    {
+                                        "term_en": "The wall",
+                                        "text_en": "Two faces of brick with a core of rubble between them. The bonding is irregular; wider, tile-like bricks reach back to tie each face to the core. Bands of timber are hidden in the walls, above all at the corners, to hold them together in an earthquake.",
+                                        "anchor": null,
+                                        "term_ku": "دیوار",
+                                        "text_ku": "دوو ڕووی خشت و ناوکێک لە وردە بەرد لە نێوانیاندا. ڕیزبەندییەکە ناڕێکە؛ خشتی پانتر، وەک کاشی، دەچنە دواوە تا هەر ڕوویەک بە ناوکەکەوە ببەستن. پشتێنی دار لە دیوارەکاندا شاردراوەتەوە، بەتایبەتی لە گۆشەکان، تا لە بوومەلەرزەدا پێکەوە بیانگرێت.",
+                                        "term_ar": "الجدار",
+                                        "text_ar": "وجهان من الطابوق بينهما حشوة من الدبش. الرباط غير منتظم؛ وطابوق أعرض يشبه البلاط يمتد إلى الخلف ليربط كل وجه بالحشوة. وتُخفى في الجدران أحزمة خشبية، خصوصاً عند الزوايا، لتمسكها في الزلازل."
+                                    },
+                                    {
+                                        "term_en": "The foundation",
+                                        "text_en": "Usually no more than the wall itself made a little wider, and no deeper than half a metre.",
+                                        "anchor": null,
+                                        "term_ku": "بناغە",
+                                        "text_ku": "زۆربەی جار تەنها خودی دیوارەکەیە کە کەمێک پانتر کراوە، و لە نیو مەتر قووڵتر نییە.",
+                                        "term_ar": "الأساس",
+                                        "text_ar": "في الغالب ليس أكثر من الجدار نفسه وقد عُرِّض قليلاً، ولا يزيد عمقه على نصف متر."
+                                    },
+                                    {
+                                        "term_en": "The roof",
+                                        "text_en": "Every roof is flat. Round poplar beams span the room. Across them lie oak poles, close together, then reeds and woven matting, then a layer of mud and lime. Each layer was rolled flat with a stone cylinder.",
+                                        "anchor": null,
+                                        "term_ku": "سەربان",
+                                        "text_ku": "هەموو سەربانێک تەختە. کاریتەی خڕی سپیدار ژوورەکە دەبڕێت. بەسەریاندا داری بەڕوو نزیک بە یەک دادەنرێت، پاشان قامیش و حەسیر، پاشان چینێک لە قوڕ و قسڵ. هەر چینێک بە لوولەیەکی بەردین تەخت دەکرا.",
+                                        "term_ar": "السقف",
+                                        "text_ar": "كل السقوف مستوية. جذوع الحور المدوّرة تمتد فوق الغرفة. وفوقها أعواد البلوط متقاربة، ثم القصب والحصير المنسوج، ثم طبقة من الطين والكلس. وكانت كل طبقة تُدحى بأسطوانة حجرية."
+                                    },
+                                    {
+                                        "term_en": "Vaults and iron",
+                                        "text_en": "Brick vaults in lime mortar belong to the better houses and mostly to their basements. From the late-Ottoman years small iron beams appear, carrying shallow brick arches, and iron columns hold up the porticoes.",
+                                        "anchor": null,
+                                        "term_ku": "تاق و ئاسن",
+                                        "text_ku": "تاقی خشتی بە قسڵ هی خانووە باشترەکانە و زۆرتر لە ژێرزەمینەکانیاندایە. لە ساڵانی کۆتایی عوسمانییەوە کاریتەی ئاسنی بچووک دەردەکەون کە کەوانەی خشتی نزم هەڵدەگرن، و کۆڵەکەی ئاسن تارمەکان ڕادەگرن.",
+                                        "term_ar": "القبوات والحديد",
+                                        "text_ar": "القبوات الطابوقية بمونة الكلس تخص البيوت الأفضل، ومعظمها في السراديب. ومنذ السنوات العثمانية الأخيرة تظهر عوارض حديدية صغيرة تحمل عقوداً طابوقية واطئة، وأعمدة حديدية ترفع الطارمات."
+                                    },
+                                    {
+                                        "term_en": "The niche",
+                                        "text_en": "Found in houses of every period. A niche is decoration and storage, and the file adds a third reason: niches “reduced the number of bricks required”.",
+                                        "anchor": null,
+                                        "term_ku": "تاق",
+                                        "text_ku": "لە خانووی هەموو سەردەمێکدا هەیە. تاق ڕازاندنەوە و شوێنی هەڵگرتنە، و دۆسیەکە هۆکارێکی سێیەم زیاد دەکات: تاقەکان «ژمارەی خشتی پێویستیان کەم دەکردەوە».",
+                                        "term_ar": "الكوّة",
+                                        "text_ar": "توجد في بيوت كل العصور. الكوّة زخرفة وخزانة، ويضيف الملف سبباً ثالثاً: الكُوى «قلّلت عدد الطابوق اللازم»."
+                                    },
+                                    {
+                                        "term_en": "The court floor",
+                                        "text_en": "Square brick paving, often laid on the diagonal.",
+                                        "anchor": null,
+                                        "term_ku": "زەویی حەوشە",
+                                        "text_ku": "خشتی چوارگۆشە، زۆر جار بە لاری دانراوە.",
+                                        "term_ar": "أرضية الفناء",
+                                        "text_ar": "بلاط طابوقي مربع، يُفرش غالباً بشكل قطري."
+                                    },
+                                    {
+                                        "term_en": "The corner",
+                                        "text_en": "Street corners are rounded in brick, then brought back to a right angle higher up.",
+                                        "anchor": null,
+                                        "term_ku": "گۆشە",
+                                        "text_ku": "گۆشەی کۆڵانەکان بە خشت خڕ کراون، پاشان لە سەرەوەتر دەگەڕێنەوە بۆ گۆشەی وەستاو.",
+                                        "term_ar": "الزاوية",
+                                        "text_ar": "زوايا الأزقة مدوّرة بالطابوق، ثم تعود إلى الزاوية القائمة في الأعلى."
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "heading_ku": "چۆن دروست کراون",
+                    "heading_ar": "كيف بُنيت"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "Telling the age of a house",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "With so few inscriptions, the houses are dated by their details. The file sets out three periods, and warns that many houses mix them.",
+                                "text_ku": "لەبەر کەمیی نووسراو، خانووەکان بە وردەکارییەکانیان مێژوویان دیاری دەکرێت. دۆسیەکە سێ سەردەم دادەنێت، و ئاگادار دەکاتەوە کە زۆر خانوو تێکەڵیان دەکەن.",
+                                "text_ar": "لقلة الكتابات، تُؤرَّخ البيوت بتفاصيلها. يحدد الملف ثلاث فترات، وينبّه إلى أن بيوتاً كثيرة تخلط بينها."
+                            }
+                        },
+                        {
+                            "type": "periods",
+                            "data": {
+                                "items": [
+                                    {
+                                        "when": "c. 1750 – c. 1880",
+                                        "title_en": "Early Ottoman",
+                                        "text_en": "Dark rooms with small upright vents closed by wooden grilles. Because there are no windows, the whole front is free for patterned brickwork. Doorways sit in rectangular recesses. Niches are square, in two tiers. Wall fireplaces have hoods.",
+                                        "title_ku": "عوسمانیی سەرەتا",
+                                        "text_ku": "ژووری تاریک بە کونی هەواگۆڕکێی بچووکی ستوونی کە بە تۆڕی دار داخراون. چونکە پەنجەرە نییە، هەموو ڕووکارەکە ئازادە بۆ خشتکاریی نەخشدار. دەرگاکان لە ناو چاڵی لاکێشەییدان. تاقەکان چوارگۆشەن، لە دوو ڕیزدا. ئاگردانی دیوار سەرپۆشی هەیە.",
+                                        "title_ar": "العثماني المبكر",
+                                        "text_ar": "غرف معتمة بفتحات تهوية صغيرة قائمة تسدّها شبابيك خشبية. ولأنه لا نوافذ، تبقى الواجهة كلها للطابوق المزخرف. الأبواب داخل تجاويف مستطيلة. الكُوى مربعة في صفّين. ومواقد الجدار لها أغطية."
+                                    },
+                                    {
+                                        "when": "c. 1880 – 1918",
+                                        "title_en": "Late Ottoman",
+                                        "text_en": "Large arched windows with iron grilles, and so a tarma on timber columns or alabaster arcades. Parapets step in and out and are plastered in lime. Doorcases are carved alabaster. Niches gain arched heads. Inside: stencilled blue-on-white painting, mirror-work and wooden ceilings.",
+                                        "title_ku": "عوسمانیی کۆتایی",
+                                        "text_ku": "پەنجەرەی گەورەی کەوانەدار بە تۆڕی ئاسن، و بۆیە تارمەیەک لەسەر کۆڵەکەی دار یان ڕیزە کەوانەی مەڕمەڕ. لێواری سەربان دەچێتە ژوورەوە و دێتە دەرەوە و بە قسڵ سواغ دراوە. چوارچێوەی دەرگا مەڕمەڕی هەڵکۆڵراوە. تاقەکان سەری کەوانەیی وەردەگرن. لە ناوەوە: نیگاری شین لەسەر سپی، ئاوێنەکاری و بنمیچی دار.",
+                                        "title_ar": "العثماني المتأخر",
+                                        "text_ar": "نوافذ كبيرة معقودة بشبابيك حديدية، ولذلك طارمة على أعمدة خشبية أو عقود مرمرية. الستائر العلوية تتراجع وتبرز وتُكسى بالكلس. إطارات الأبواب مرمر منحوت. الكُوى تكتسب رؤوساً معقودة. وفي الداخل: رسم أزرق على أبيض بالقوالب، ومرايا، وسقوف خشبية."
+                                    },
+                                    {
+                                        "when": "1918 – c. 1960",
+                                        "title_en": "After the Ottomans",
+                                        "text_en": "Parapets with panels of bricks set on the diagonal. Tarmas on iron columns, often roofed with shallow brick arches. Tall glazed windows. Street doors set in deep splayed reveals. Ceilings painted on tin.",
+                                        "title_ku": "دوای عوسمانییەکان",
+                                        "text_ku": "لێواری سەربان بە تابلۆی خشتی بە لاری دانراو. تارمە لەسەر کۆڵەکەی ئاسن، زۆر جار بە کەوانەی خشتی نزم سەرداپۆشراوە. پەنجەرەی بەرزی شووشەدار. دەرگای کۆڵان لە ناو چاڵی قووڵی لاردا. بنمیچی نیگارکراو لەسەر تەنەکە.",
+                                        "title_ar": "بعد العثمانيين",
+                                        "text_ar": "ستائر علوية بألواح من طابوق موضوع قطرياً. طارمات على أعمدة حديدية، مسقوفة غالباً بعقود طابوقية واطئة. نوافذ عالية مزججة. أبواب الأزقة داخل تجاويف عميقة مشطوفة. وسقوف مرسومة على الصفيح."
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "heading_ku": "ناسینەوەی تەمەنی خانوویەک",
+                    "heading_ar": "معرفة عمر البيت"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "What we take from them",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "Three things stay with us at the drawing board. A room that opens to a courtyard needs no corridor. A thick wall can hold the cupboard, the shelf and the lamp. And shade came before glass: the builders of the Citadel gave a house a portico in the same years they gave it windows.",
+                                "text_ku": "سێ شت لەسەر مێزی نەخشەکێشان لەگەڵمان دەمێننەوە. ژوورێک کە بەسەر حەوشەدا بکرێتەوە پێویستی بە ڕاڕەو نییە. دیوارێکی ئەستوور دەتوانێت دۆڵاب و ڕەفە و چرا لە خۆ بگرێت. و سێبەر پێش شووشە هات: وەستاکانی قەڵا لە هەمان ئەو ساڵانەدا تارمەیان دا بە خانوو کە پەنجەرەیان پێدا.",
+                                "text_ar": "ثلاثة أشياء تبقى معنا عند طاولة الرسم. الغرفة التي تنفتح على فناء لا تحتاج إلى ممر. والجدار السميك يتّسع للخزانة والرف والمصباح. والظل سبق الزجاج: بنّاؤو القلعة أعطوا البيت طارمة في السنوات نفسها التي أعطوه فيها النوافذ."
+                            }
+                        }
+                    ],
+                    "heading_ku": "ئەوەی لێیان وەردەگرین",
+                    "heading_ar": "ما نأخذه منها"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "sources",
+                    "heading_en": "Sources",
+                    "parts": [
+                        {
+                            "type": "refs",
+                            "data": {
+                                "items": [
+                                    {
+                                        "text": "High Commission for Erbil Citadel Revitalization (HCECR), *Nomination of Erbil Citadel (Kurdistan Region, Iraq) for Inscription on the UNESCO World Heritage List*, vol. I (text) and vol. II (annexes), 2012. Drawings there are from the Conservation and Rehabilitation Master Plan (2011) and the 2008 survey by HBA – Euronet Consulting. [whc.unesco.org/en/list/1437/documents](https://whc.unesco.org/en/list/1437/documents/)"
+                                    },
+                                    {
+                                        "text": "Mustafa, F. A. and Ali, L. A. (2024), ‘Common architectural characteristics of traditional courtyard houses in Erbil city’, *Ain Shams Engineering Journal* 15(11), 103003. [doi.org/10.1016/j.asej.2024.103003](https://doi.org/10.1016/j.asej.2024.103003)"
+                                    },
+                                    {
+                                        "text": "Goriel, W. A. S., Molnár, T. and Zoltán, E. S. (2025), ‘Examining the Hashim Chalbi House’s Spatial Aspects in Erbil Citadel’, *Buildings* 15(12), 2134. [doi.org/10.3390/buildings15122134](https://doi.org/10.3390/buildings15122134)"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "note",
+                            "data": {
+                                "text_en": "The walls are traced from the published figures and are as exact as those figures allow; they are not for measuring from. Rooms are named only where the source names them.",
+                                "text_ku": "دیوارەکان لە وێنە بڵاوکراوەکانەوە هەڵگیراونەتەوە و ئەوەندە وردن کە ئەو وێنانە ڕێگە دەدەن؛ بۆ پێوانە لێوەرگرتن نین. ژوورەکان تەنها لەو شوێنانە ناو نراون کە سەرچاوەکە ناوی ناون.",
+                                "text_ar": "الجدران منقولة عن الأشكال المنشورة، ودقتها بقدر ما تسمح به تلك الأشكال؛ وليست للقياس منها. ولم تُسمَّ الغرف إلا حيث سمّاها المصدر."
+                            }
+                        }
+                    ],
+                    "heading_ku": "سەرچاوەکان",
+                    "heading_ar": "المصادر"
+                }
+            }
+        ]
+    },
+    {
+        "slug": "qaysari-bazaar",
+        "date": "2026-11-16",
+        "is_published": true,
+        "title_en": "The Qaysari: Erbil’s covered bazaar, in plan and section",
+        "title_ku": "قەیسەری: بازاڕە سەرداپۆشراوەکەی هەولێر، لە نەخشە و بڕگەدا",
+        "title_ar": "القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا",
+        "summary_en": "Under the Citadel, two late-Ottoman Qaysaris still trade: vaulted passages lined with shops of four square metres, rooms above reached by timber galleries. How they are built, drawn as a type, and what the fire of 2024 and the repairs after it changed.",
+        "summary_ku": "لە ژێر قەڵاوە، دوو قەیسەریی کۆتایی سەردەمی عوسمانی هێشتا بازرگانییان تێدا دەکرێت: ڕاڕەوی کەوانەدار کە دوکانی چوار مەتر چوارگۆشە بە درێژاییاندا ڕیز بوون، و ژووری سەرەوە کە بە باڵەخانەی دارین دەگەیشتنە سەری. چۆن دروست کراون، وەک جۆرێک کێشراون، و ئەوەی ئاگرەکەی ٢٠٢٤ و چاککردنەوەکانی دوای ئەو گۆڕییان.",
+        "summary_ar": "تحت القلعة ما زالت قيصريتان من أواخر العهد العثماني تعجّان بالتجارة: ممرات معقودة تصطف عليها دكاكين بمساحة أربعة أمتار مربعة، وغرف علوية يُصعد إليها عبر أروقة خشبية. كيف بُنيتا، مرسومتين نموذجاً، وما غيّره حريق ٢٠٢٤ والترميم الذي تلاه.",
+        "extras": {
+            "about": "Qaysari Bazaar, Erbil",
+            "cover_plan": "code:q-g",
+            "cover_section": "code:q-long",
+            "kicker_en": "ERBIL · THE QAYSARI",
+            "kicker_ku": "هەولێر · قەیسەری",
+            "kicker_ar": "أربيل · القيصرية",
+            "line1_en": "A covered passage,",
+            "line1_ku": "ڕاڕەوێکی سەرداپۆشراو،",
+            "line1_ar": "ممرّ مسقوف،",
+            "line2_en": "in plan and section",
+            "line2_ku": "لە نەخشە و بڕگەدا",
+            "line2_ar": "مسقطًا ومقطعًا",
+            "note_en": "1 SITE · 2 PLANS · 2 SECTIONS · 3 ELEVATIONS",
+            "note_ku": "1 شوێن · 2 نەخشە · 2 بڕگە · 3 ڕووکار",
+            "note_ar": "1 موقع · 2 مسقطان · 2 مقطعان · 3 واجهات",
+            "code": "QB-01 — QB-04",
+            "link_url": "/journal/citadel-house-plans",
+            "link_en": "The houses of the Citadel",
+            "link_ku": "خانووەکانی قەڵا",
+            "link_ar": "بيوت القلعة"
+        },
+        "sections": [
+            {
+                "type": "count",
+                "data": {
+                    "items": [
+                        {
+                            "label_en": "Qaysaris",
+                            "value": "2",
+                            "label_ku": "قەیسەری",
+                            "label_ar": "قيصريتان"
+                        },
+                        {
+                            "label_en": "Shops in the East",
+                            "value": "130+",
+                            "label_ku": "دوکان لە ڕۆژهەڵات",
+                            "label_ar": "دكاكين الشرقية"
+                        },
+                        {
+                            "label_en": "A shop, m²",
+                            "value": "4",
+                            "label_ku": "دوکانێک، م²",
+                            "label_ar": "الدكان، م²"
+                        },
+                        {
+                            "label_en": "Built",
+                            "value": "c. 1850–1900",
+                            "label_ku": "دروستکراو",
+                            "label_ar": "بُنيت"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "A market under the Citadel",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "People have traded at the foot of the Citadel for centuries; local accounts trace the market south of the mound to the early thirteenth century and Sultan Muzaffar al-Din Gökböri. The bazaar that stands there now grew in the late Ottoman years, when the town spread again beyond the mound, at its south-western foot.\n\nIts first shops were wooden huts that did not last, and the lanes between them were shaded with mats of reed and straw. In the second half of the nineteenth century some of them were replaced by solid buildings that could be locked, with vaulted passages inside. These are the Qaysaris. Two survive, the East Qaysari, also called the tailors’ Qaysari, and the West Qaysari. They are among the oldest buildings in Erbil’s lower town.",
+                                "text_ku": "خەڵک بە سەدان ساڵە لە بنی قەڵادا بازرگانی دەکەن؛ گێڕانەوە ناوخۆییەکان بازاڕی باشووری گردەکە دەگەڕێننەوە بۆ سەرەتای سەدەی سێزدە و سوڵتان موزەفەرەدینی گۆکبۆری. ئەو بازاڕەی ئێستا لەوێیە لە ساڵانی کۆتایی عوسمانیدا گەشەی کرد، کاتێک شارەکە دووبارە لە گردەکە تێپەڕی، لە بنی باشووری ڕۆژئاوای.\n\nیەکەم دوکانەکانی کوخی دارین بوون کە نەدەمانەوە، و کۆڵانەکانی نێوانیان بە حەسیری قامیش و پووش سێبەریان بۆ کرابوو. لە نیوەی دووەمی سەدەی نۆزدەدا هەندێکیان بە بینای پتەو گۆڕدران کە دەکرا دابخرێن، و ڕاڕەوی کەوانەداریان لە ناودا بوو. ئەمانە قەیسەرییەکانن. دوانیان ماونەتەوە، قەیسەریی ڕۆژهەڵات، کە پێی دەوترێت قەیسەریی بەرگدرووەکان، و قەیسەریی ڕۆژئاوا. ئەمانە لە کۆنترین بیناکانی شاری خوارەوەی هەولێرن.",
+                                "text_ar": "يتاجر الناس عند سفح القلعة منذ قرون؛ وتردّ الروايات المحلية السوق جنوب التل إلى مطلع القرن الثالث عشر وإلى السلطان مظفر الدين كوكبري. أما السوق القائم اليوم فنما في أواخر العهد العثماني، حين امتدت المدينة ثانيةً خارج التل، عند سفحه الجنوبي الغربي.\n\nكانت دكاكينه الأولى أكواخاً خشبية لا تدوم، وظُلّلت الأزقة بينها بحُصر القصب والقش. وفي النصف الثاني من القرن التاسع عشر حلّت محل بعضها أبنية متينة تُقفل، في داخلها ممرات معقودة. تلك هي القيصريات. بقيت منها اثنتان، القيصرية الشرقية، وتُسمّى قيصرية الخياطين، والقيصرية الغربية. وهما من أقدم أبنية المدينة السفلى في أربيل."
+                            }
+                        },
+                        {
+                            "type": "note",
+                            "data": {
+                                "text_en": "A word on the drawings. A team from the German Archaeological Institute and TU Berlin measured both buildings in 2012 and 2013, and their plans are the real thing. Their licence lets us point to them but not redraw them. So these plates are a type: one stretch of passage, built from what the report says in words about widths, shops, walls and how the rooms upstairs are reached. The heights are ours. To see the buildings themselves, read the report, linked below.",
+                                "text_ku": "وشەیەک دەربارەی کێشانەکان. تیمێک لە پەیمانگای ئەرکیۆلۆجیی ئەڵمانی و زانکۆی تەکنیکیی بەرلین لە ٢٠١٢ و ٢٠١٣دا هەردوو بیناکەیان پێوا، و نەخشەکانیان ڕاستەقینەن. مۆڵەتەکەیان ڕێگەمان دەدات ئاماژەیان پێ بکەین بەڵام دووبارە نەیانکێشینەوە. بۆیە ئەم تابلۆیانە جۆرێکن: پارچەیەک لە ڕاڕەو، کە لەوەوە دروست کراوە کە ڕاپۆرتەکە بە وشە دەیڵێت دەربارەی پانی و دوکان و دیوار و چۆنیەتی گەیشتن بە ژوورەکانی سەرەوە. بەرزییەکان هی خۆمانن. بۆ بینینی خودی بیناکان، ڕاپۆرتەکە بخوێنەوە، کە لە خوارەوە بەستەری هەیە.",
+                                "text_ar": "كلمة عن الرسوم. قاس فريق من المعهد الألماني للآثار وجامعة برلين التقنية المبنيين عامي ٢٠١٢ و٢٠١٣، ومخططاتهم هي الأصل. ترخيصهم يسمح لنا بالإشارة إليها لا بإعادة رسمها. لذلك فهذه اللوحات نموذج: مقطع واحد من ممر، مبني مما يقوله التقرير وصفاً عن العروض والدكاكين والجدران وطريقة الوصول إلى الغرف العلوية. والارتفاعات من عندنا. ولرؤية المبنيين نفسيهما اقرأ التقرير، ورابطه أدناه."
+                            }
+                        }
+                    ],
+                    "heading_ku": "بازاڕێک لە ژێر قەڵاوە",
+                    "heading_ar": "سوق تحت القلعة"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "What a Qaysari is",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "The word goes back, through Arabic, to Caesar. Across the Islamic world a qaysariyya was a covered market building for the more valuable trades, closed at night. In Mamluk Cairo it was a courtyard ringed with shops, with homes on the floors above. Erbil’s are different. There is no courtyard. The building is a knot of passages, and the street itself runs inside under a vault.",
+                                "text_ku": "وشەکە لە ڕێگەی عەرەبییەوە دەگەڕێتەوە بۆ قەیسەر. لە سەرانسەری جیهانی ئیسلامیدا قەیسەری بینایەکی بازاڕی سەرداپۆشراو بوو بۆ بازرگانییە بەنرخترەکان، کە شەوان دادەخرا. لە قاهیرەی مەملووکیدا حەوشەیەک بوو کە دوکان دەوری دابوو و ماڵ لە نهۆمەکانی سەرەوەدا بوون. هی هەولێر جیاوازن. حەوشە نییە. بیناکە گرێیەکە لە ڕاڕەو، و خودی شەقامەکە لە ناوەوە لە ژێر کەوانەیەکدا تێدەپەڕێت.",
+                                "text_ar": "تعود الكلمة عبر العربية إلى قيصر. وفي أرجاء العالم الإسلامي كانت القيصرية مبنى سوق مسقوفاً للتجارات الأثمن، يُغلق ليلاً. في القاهرة المملوكية كانت فناءً تحيط به الدكاكين وفوقها مساكن. أما قيصريتا أربيل فمختلفتان: لا فناء فيهما، بل عقدة من الممرات، والطريق نفسه يجري في الداخل تحت قبو."
+                            }
+                        },
+                        {
+                            "type": "glossary",
+                            "data": {
+                                "text_en": "Qaysari, khan, taq and the other words, in the glossary",
+                                "anchor": "qaysari",
+                                "text_ku": "قەیسەری، خان، تاق و وشەکانی تر، لە فەرهەنگەکەدا",
+                                "text_ar": "القيصرية والخان والطاق وسائر الكلمات، في المسرد"
+                            }
+                        }
+                    ],
+                    "heading_ku": "قەیسەری چییە",
+                    "heading_ar": "ما القيصرية"
+                }
+            },
+            {
+                "type": "plates",
+                "data": {
+                    "heading_en": "The plates",
+                    "key_en": "",
+                    "code": "QB",
+                    "plates": [
+                        {
+                            "name_en": "Where it stands",
+                            "type_en": "The bazaar at the foot of the Citadel",
+                            "plans": [
+                                {
+                                    "drawing": "code:q-site",
+                                    "caption_en": "Site plan",
+                                    "wide": false,
+                                    "caption_ku": "نەخشەی شوێن",
+                                    "caption_ar": "مخطط الموقع"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "The Grand Gate is the Citadel’s south gate, and from it a ramp runs down into the bazaar. OpenStreetMap names the whole quarter below it Qaysari Bazaar: about four hectares of covered lanes and market buildings. The two Qaysaris stand inside it.\n\nThe map does not say which of its buildings are the two Qaysaris, so this plate does not guess. The survey’s plans, linked below, show them.",
+                            "legend": [
+                                {
+                                    "n": "▨",
+                                    "label_en": "The bazaar quarter, as OpenStreetMap outlines it, its buildings drawn in full",
+                                    "label_ku": "گەڕەکی بازاڕ، وەک OpenStreetMap سنووری بۆ دەکێشێت، بیناکانی بە تەواوی کێشراون",
+                                    "label_ar": "حيّ السوق كما يحدّه OpenStreetMap، وأبنيته مرسومة كاملة"
+                                },
+                                {
+                                    "n": "▢",
+                                    "label_en": "The Citadel mound, inside its wall",
+                                    "label_ku": "گردی قەڵا، لە ناو دیوارەکەیدا",
+                                    "label_ar": "تل القلعة داخل سوره"
+                                },
+                                {
+                                    "n": "┄",
+                                    "label_en": "Shar Park",
+                                    "label_ku": "باغی شار",
+                                    "label_ar": "حديقة شار"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "The bazaar quarter",
+                                    "value_en": "About 4 ha, 240 × 210 m, as OpenStreetMap outlines it",
+                                    "label_ku": "گەڕەکی بازاڕ",
+                                    "value_ku": "نزیکەی ٤ هێکتار، ٢٤٠ × ٢١٠ م، وەک OpenStreetMap سنووری بۆ دەکێشێت",
+                                    "label_ar": "حيّ السوق",
+                                    "value_ar": "نحو ٤ هكتارات، ٢٤٠ × ٢١٠ م، كما يحدّها OpenStreetMap",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "The Citadel",
+                                    "value_en": "About 11 ha inside its wall",
+                                    "label_ku": "قەڵا",
+                                    "value_ku": "نزیکەی ١١ هێکتار لە ناو دیوارەکەیدا",
+                                    "label_ar": "القلعة",
+                                    "value_ar": "نحو ١١ هكتاراً داخل سورها",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Grand Gate to the bazaar",
+                                    "value_en": "About 90 m, down the ramp",
+                                    "label_ku": "دەروازەی گەورە بۆ بازاڕ",
+                                    "value_ku": "نزیکەی ٩٠ م، بە لێژاییەکەدا بۆ خوارەوە",
+                                    "label_ar": "من البوابة الكبرى إلى السوق",
+                                    "value_ar": "نحو ٩٠ م، نزولاً على المنحدر",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "OpenStreetMap, July 2026",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "OpenStreetMap، تەممووزی ٢٠٢٦",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "OpenStreetMap، تموز ٢٠٢٦",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "لە کوێ دەوەستێت",
+                            "type_ku": "بازاڕەکە لە بنی قەڵادا",
+                            "text_ku": "دەروازەی گەورە دەروازەی باشووری قەڵایە، و لێژاییەک لێیەوە بۆ ناو بازاڕەکە دادەبەزێت. OpenStreetMap هەموو ئەو گەڕەکەی ژێری ناو دەنێت بازاڕی قەیسەری: نزیکەی چوار هێکتار لە کۆڵانی سەرداپۆشراو و بینای بازاڕ. هەردوو قەیسەرییەکە لە ناویدا دەوەستن.\n\nنەخشەکە نایڵێت کام لە بیناکانی دوو قەیسەرییەکەن، بۆیە ئەم تابلۆیە گومان ناکات. نەخشەکانی ڕووپێوەکە، کە لە خوارەوە بەستەریان هەیە، نیشانیان دەدەن.",
+                            "name_ar": "أين يقوم",
+                            "type_ar": "السوق عند سفح القلعة",
+                            "text_ar": "البوابة الكبرى هي البوابة الجنوبية للقلعة، ومنها ينحدر طريق إلى السوق. ويسمّي OpenStreetMap الحيّ كله تحتها سوق القيصرية: نحو أربعة هكتارات من الأزقة المسقوفة وأبنية السوق. وتقوم القيصريتان في داخله.\n\nلا تقول الخريطة أيّ أبنيتها القيصريتان، فلا تخمّن هذه اللوحة. ومخططات المسح، ورابطها أدناه، تُظهرهما."
+                        },
+                        {
+                            "name_en": "A stretch of passage",
+                            "type_en": "Shops below, rooms above, a vault over the street",
+                            "plans": [
+                                {
+                                    "drawing": "code:q-g",
+                                    "caption_en": "Ground floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی زەوی",
+                                    "caption_ar": "الطابق الأرضي"
+                                },
+                                {
+                                    "drawing": "code:q-f",
+                                    "caption_en": "Upper floor",
+                                    "wide": false,
+                                    "caption_ku": "نهۆمی سەرەوە",
+                                    "caption_ar": "الطابق العلوي"
+                                }
+                            ],
+                            "secs": [
+                                {
+                                    "drawing": "code:q-cross",
+                                    "caption_en": "Cross section",
+                                    "caption_ku": "بڕگەی پانی",
+                                    "caption_ar": "مقطع عرضي"
+                                },
+                                {
+                                    "drawing": "code:q-long",
+                                    "caption_en": "Long section, looking north",
+                                    "caption_ku": "بڕگەی درێژ، بەرەو باکوور",
+                                    "caption_ar": "مقطع طولي، باتجاه الشمال"
+                                }
+                            ],
+                            "text_en": "Behind each gate runs a passage three to four metres wide, once vaulted from end to end. Shops line both sides, each opening to the passage under a stone arch, and most are no larger than two metres by two. In the East Qaysari there are more than 130 of them, nearly all alike. Most belong to tailors, who make and sell Kurdish men’s clothes to measure.\n\nUpstairs the rhythm changes. Each room spans two shops and cannot be reached from either. You climb one of seven stair houses, walk along a timber gallery cantilevered from the passage wall, and enter each room by its own door. The survey team calls this a rarity among building types.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Shops, about 2 × 2 m, each open to the passage under a stone arch",
+                                    "label_ku": "دوکان، نزیکەی ٢ × ٢ م، هەر یەکەیان لە ژێر کەوانەیەکی بەردیندا بەسەر ڕاڕەوەکەدا کراوەیە",
+                                    "label_ar": "دكاكين بنحو ٢ × ٢ م، ينفتح كلٌّ منها على الممر تحت قوس حجري"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "The passage, two storeys high, under a barrel vault",
+                                    "label_ku": "ڕاڕەوەکە، دوو نهۆم بەرز، لە ژێر کەوانەیەکی بەرمیلیدا",
+                                    "label_ar": "الممر، بارتفاع طابقين، تحت قبو أسطواني"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Gate to a bazaar lane; it could be locked",
+                                    "label_ku": "دەروازە بۆ کۆڵانێکی بازاڕ؛ دەکرا دابخرێت",
+                                    "label_ar": "بوابة إلى زقاق السوق؛ كانت تُقفل"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "Stair house",
+                                    "label_ku": "پەیژەخانە",
+                                    "label_ar": "بيت الدرج"
+                                },
+                                {
+                                    "n": "5",
+                                    "label_en": "Cellar hatch: every shop had its own store below; all but one were filled in",
+                                    "label_ku": "دەرچەی ژێرزەمین: هەر دوکانێک کۆگای خۆی لە خوارەوە هەبوو؛ جگە لە یەکێک هەموویان پڕ کرانەوە",
+                                    "label_ar": "فتحة القبو: كان لكل دكان مخزنه تحته؛ رُدمت كلها إلا واحداً"
+                                },
+                                {
+                                    "n": "6",
+                                    "label_en": "Timber gallery on beams cantilevered from the wall",
+                                    "label_ku": "باڵەخانەی دارین لەسەر دارەڕای دەرپەڕیو لە دیوارەکەوە",
+                                    "label_ar": "رواق خشبي على روافد ناتئة من الجدار"
+                                },
+                                {
+                                    "n": "7",
+                                    "label_en": "Upper rooms, each over two shops, entered only from the gallery",
+                                    "label_ku": "ژووری سەرەوە، هەر یەکەیان لەسەر دوو دوکان، تەنها لە باڵەخانەکەوە دەچیتە ژوورەوە",
+                                    "label_ar": "غرف علوية، كلٌّ منها فوق دكانين، لا تُدخل إلا من الرواق"
+                                },
+                                {
+                                    "n": "8",
+                                    "label_en": "Two rooms joined; the door no longer needed became a grilled window",
+                                    "label_ku": "دوو ژوور پێکەوە لکێنراون؛ ئەو دەرگایەی پێویست نەما بوو بە پەنجەرەیەکی شیشبەند",
+                                    "label_ar": "غرفتان وُصلتا؛ وصار الباب الذي لم يعد لازماً نافذة مشبّكة"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "Passages",
+                                    "value_en": "3–4 m wide, up to 60 m long",
+                                    "label_ku": "ڕاڕەوەکان",
+                                    "value_ku": "٣–٤ مەتر پان، تا ٦٠ مەتر درێژ",
+                                    "label_ar": "الممرات",
+                                    "value_ar": "بعرض ٣–٤ م وطول يصل إلى ٦٠ م",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Shops",
+                                    "value_en": "Over 130 in the East Qaysari, 107 in the West; most no more than 4 m²",
+                                    "label_ku": "دوکانەکان",
+                                    "value_ku": "زیاتر لە ١٣٠ لە قەیسەریی ڕۆژهەڵات، ١٠٧ لە ڕۆژئاوا؛ زۆربەیان لە ٤ م² زیاتر نین",
+                                    "label_ar": "الدكاكين",
+                                    "value_ar": "أكثر من ١٣٠ في القيصرية الشرقية و١٠٧ في الغربية؛ معظمها لا يتجاوز ٤ م²",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Walls between shops",
+                                    "value_en": "About 40 cm; some cut down to 10 cm",
+                                    "label_ku": "دیواری نێوان دوکانەکان",
+                                    "value_ku": "نزیکەی ٤٠ سم؛ هەندێکیان تا ١٠ سم تاشراون",
+                                    "label_ar": "الجدران بين الدكاكين",
+                                    "value_ar": "نحو ٤٠ سم؛ قُصّ بعضها حتى ١٠ سم",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Gates, stair houses",
+                                    "value_en": "Seven of each in the East Qaysari",
+                                    "label_ku": "دەروازە، پەیژەخانە",
+                                    "value_ku": "لە هەر یەکەیان حەوت لە قەیسەریی ڕۆژهەڵات",
+                                    "label_ar": "البوابات وبيوت الدرج",
+                                    "value_ar": "سبعة من كلٍّ منهما في القيصرية الشرقية",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Kurapkat 2014, in words: a type, not a survey; the heights are ours",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "کوراپکات ٢٠١٤، بە وشە: جۆرێک، نەک ڕووپێو؛ بەرزییەکان هی خۆمانن",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "كورابكات ٢٠١٤، وصفاً: نموذج لا مسح؛ والارتفاعات من عندنا",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "پارچەیەک لە ڕاڕەو",
+                            "type_ku": "دوکان لە خوارەوە، ژوور لە سەرەوە، کەوانەیەک بەسەر شەقامەکەوە",
+                            "text_ku": "لە پشت هەر دەروازەیەکەوە ڕاڕەوێک بە پانیی سێ تا چوار مەتر درێژ دەبێتەوە، کە پێشتر لە سەرەوە تا خوارەوە کەوانەدار بوو. دوکانەکان بە هەردوو لایدا ڕیز بوون، هەر یەکەیان لە ژێر کەوانەیەکی بەردیندا بەسەر ڕاڕەوەکەدا دەکرێتەوە، و زۆربەیان لە دوو مەتر بە دوو مەتر گەورەتر نین. لە قەیسەریی ڕۆژهەڵاتدا زیاتر لە ١٣٠ دوکان هەن، کە نزیکەی هەموویان وەک یەکن. زۆربەیان هی بەرگدرووەکانن، کە جلی پیاوانی کوردی بە پێوانە دەدورن و دەفرۆشن.\n\nلە سەرەوە ڕیتمەکە دەگۆڕێت. هەر ژوورێک بەسەر دوو دوکاندا درێژ دەبێتەوە و لە هیچیانەوە ناگەیتە ناوی. بە یەکێک لە حەوت پەیژەخانەکاندا سەردەکەویت، بە باڵەخانەیەکی دارینی دەرپەڕیو لە دیواری ڕاڕەوەکەدا دەڕۆیت، و بە دەرگای تایبەتی هەر ژوورێک دەچیتە ناوی. تیمی ڕووپێوەکە ئەمە بە دەگمەنییەک لە نێو جۆرەکانی بینادا ناو دەبات.",
+                            "name_ar": "مقطع من الممر",
+                            "type_ar": "دكاكين في الأسفل وغرف في الأعلى وقبو فوق الطريق",
+                            "text_ar": "خلف كل بوابة يمتد ممر بعرض ثلاثة إلى أربعة أمتار، كان معقوداً من أوله إلى آخره. تصطف الدكاكين على جانبيه، ينفتح كلٌّ منها على الممر تحت قوس حجري، ومعظمها لا يزيد على مترين في مترين. في القيصرية الشرقية أكثر من ١٣٠ دكاناً متشابهة تقريباً، معظمها للخياطين الذين يفصّلون الزي الكردي الرجالي ويبيعونه.\n\nفي الطابق العلوي يتغيّر الإيقاع. تمتد كل غرفة فوق دكانين ولا يُوصل إليها من أيٍّ منهما. تصعد أحد بيوت الدرج السبعة، وتمشي على رواق خشبي ناتئ من جدار الممر، وتدخل كل غرفة من بابها. ويعدّ فريق المسح هذا نادراً بين أنماط الأبنية."
+                        },
+                        {
+                            "name_en": "One bay, before and after",
+                            "type_en": "The sample bay of 2012",
+                            "plans": [
+                                {
+                                    "drawing": "code:q-bay-0",
+                                    "caption_en": "As found, 2012",
+                                    "wide": false,
+                                    "caption_ku": "وەک ئەوەی دۆزرایەوە، ٢٠١٢",
+                                    "caption_ar": "كما وُجدت، ٢٠١٢"
+                                },
+                                {
+                                    "drawing": "code:q-bay-1",
+                                    "caption_en": "As the project proposed",
+                                    "wide": false,
+                                    "caption_ku": "وەک پڕۆژەکە پێشنیاری کرد",
+                                    "caption_ar": "كما اقترح المشروع"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "In the autumn of 2012 the project repaired one bay as a sample, to show the shopkeepers what repair could mean. Under thick coats of paint the conservators found an arch of so-called Mosul marble. Its stonework had been forgotten by the very people who worked under it every day.\n\nNobody objected when the gallery was mended and the gypsum plaster renewed. The shutters were another matter. Everyone agreed the folding shutters looked better than the rolling steel ones, but not everyone believed they would keep out a thief. The report draws the lesson: bring the users into the decisions, which was then unusual in Iraqi Kurdistan.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Stone arch: jamb stones and nine voussoirs",
+                                    "label_ku": "کەوانەی بەردین: بەردی لاتەنیشت و نۆ بەردی کەوانە",
+                                    "label_ar": "قوس حجري: أحجار الكتفين وتسع صنجات"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "Folding shutter, closed",
+                                    "label_ku": "داخەری قەدکراو، داخراو",
+                                    "label_ar": "مغلاق قابل للطي، مغلق"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Folding shutter, open: the leaves stand against the jambs",
+                                    "label_ku": "داخەری قەدکراو، کراوە: پەڕەکان بە لاتەنیشتەکانەوە دەوەستن",
+                                    "label_ar": "مغلاق قابل للطي، مفتوح: تقف درفاته عند الكتفين"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "The gallery: beam ends, deck, rail",
+                                    "label_ku": "باڵەخانەکە: سەری دارەڕاکان، تەختە، دەستەگرە",
+                                    "label_ar": "الرواق: رؤوس الروافد والأرضية والدرابزين"
+                                },
+                                {
+                                    "n": "5",
+                                    "label_en": "Rolling shutter and its box; a sign over the arch",
+                                    "label_ku": "داخەری لوولدراو و سندووقەکەی؛ تابلۆیەک بەسەر کەوانەکەوە",
+                                    "label_ar": "مغلاق ملفوف وصندوقه؛ ولافتة فوق القوس"
+                                },
+                                {
+                                    "n": "6",
+                                    "label_en": "The room’s door, made a grilled window",
+                                    "label_ku": "دەرگای ژوورەکە، کراوە بە پەنجەرەی شیشبەند",
+                                    "label_ar": "باب الغرفة وقد صار نافذة مشبّكة"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "The arch",
+                                    "value_en": "So-called Mosul marble, hidden under paint for decades",
+                                    "label_ku": "کەوانەکە",
+                                    "value_ku": "ئەوەی پێی دەڵێن مەڕمەڕی مووسڵ، بۆ چەندین دەیە لە ژێر بۆیەدا شاردرابووەوە",
+                                    "label_ar": "القوس",
+                                    "value_ar": "ما يُسمّى المرمر الموصلي، مخفياً تحت الطلاء لعقود",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Shutters",
+                                    "value_en": "Rolling steel, as found; folding, a steel frame filled with timber, as proposed",
+                                    "label_ku": "داخەرەکان",
+                                    "value_ku": "پۆڵای لوولدراو، وەک دۆزرایەوە؛ قەدکراو، چوارچێوەی پۆڵا پڕکراو بە دار، وەک پێشنیار",
+                                    "label_ar": "المغالق",
+                                    "value_ar": "فولاذ ملفوف كما وُجد؛ قابلة للطي، إطار فولاذي محشو بالخشب، كما اقتُرح",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Gallery",
+                                    "value_en": "Mostly lost; one stretch restored",
+                                    "label_ku": "باڵەخانە",
+                                    "value_ku": "زۆربەی لەناوچووە؛ پارچەیەکی نوێکرایەوە",
+                                    "label_ar": "الرواق",
+                                    "value_ar": "ضاع معظمه؛ ورُمّم جزء منه",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Fanlight",
+                                    "value_en": "Our guess: the report does not say",
+                                    "label_ku": "پەنجەرەی سەر دەرگا",
+                                    "value_ku": "گومانی ئێمەیە: ڕاپۆرتەکە نایڵێت",
+                                    "label_ar": "النافذة العلوية",
+                                    "value_ar": "تخمين منا: التقرير لا يذكرها",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Kurapkat 2014, in words: a type, not a survey; the heights are ours",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "کوراپکات ٢٠١٤، بە وشە: جۆرێک، نەک ڕووپێو؛ بەرزییەکان هی خۆمانن",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "كورابكات ٢٠١٤، وصفاً: نموذج لا مسح؛ والارتفاعات من عندنا",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "یەک بڕگە، پێش و دوای",
+                            "type_ku": "بڕگەی نموونەیی ٢٠١٢",
+                            "text_ku": "لە پاییزی ٢٠١٢دا پڕۆژەکە بڕگەیەکی وەک نموونە چاک کردەوە، بۆ ئەوەی نیشانی دوکاندارەکانی بدات چاککردنەوە چ دەگەیەنێت. لە ژێر چەند چینێکی ئەستووری بۆیەدا پارێزەرەکان کەوانەیەکیان لە ئەوەی پێی دەڵێن مەڕمەڕی مووسڵ دۆزییەوە. بەردکارییەکەی لە یادی ئەو کەسانەش چووبووەوە کە هەموو ڕۆژێک لە ژێریدا کاریان دەکرد.\n\nکاتێک باڵەخانەکە چاک کرایەوە و گەچەکە نوێ کرایەوە کەس ناڕەزایی دەرنەبڕی. داخەرەکان شتێکی تر بوون. هەمووان کۆک بوون کە داخەرە قەدکراوەکان لە داخەرە پۆڵاییە لوولدراوەکان جوانترن، بەڵام هەمووان باوەڕیان نەبوو کە دز ڕابگرن. ڕاپۆرتەکە وانەکە دەردەهێنێت: بەکارهێنەران بهێنە ناو بڕیارەکانەوە، کە ئەو کات لە کوردستانی عێراق نائاسایی بوو.",
+                            "name_ar": "فتحة واحدة، قبل وبعد",
+                            "type_ar": "الفتحة النموذجية لعام ٢٠١٢",
+                            "text_ar": "في خريف ٢٠١٢ رمّم المشروع فتحة واحدة نموذجاً، ليُري أصحاب الدكاكين ما يعنيه الترميم. وتحت طبقات سميكة من الطلاء وجد المرمّمون قوساً مما يُسمّى المرمر الموصلي، نسي حجارتَه حتى الذين يعملون تحته كل يوم.\n\nلم يعترض أحد حين أُصلح الرواق وجُدّد الجص. أما المغالق فأمر آخر. اتفق الجميع على أن المغالق القابلة للطي أجمل من الفولاذية الملفوفة، لكن لم يصدّق الجميع أنها تردّ اللص. ويستخلص التقرير الدرس: أشرِك المستعملين في القرار، وهو ما كان غير مألوف آنذاك في كوردستان العراق."
+                        },
+                        {
+                            "name_en": "A gate",
+                            "type_en": "Where a passage meets the lane",
+                            "plans": [
+                                {
+                                    "drawing": "code:q-gate",
+                                    "caption_en": "Elevation from the lane",
+                                    "wide": false,
+                                    "caption_ku": "ڕووکار لە کۆڵانەوە",
+                                    "caption_ar": "الواجهة من الزقاق"
+                                }
+                            ],
+                            "secs": [],
+                            "text_en": "Each passage ends in a gate to the bazaar lanes, and at night the gates closed the whole building. At the north gate of the East Qaysari stands the Mam Khalil teahouse, the meeting place of the whole bazaar.\n\nIn 2013 the team restored one gate on the West Qaysari’s east front, with local craftsmen working under a conservator. It was reopened with officials of the city and the province looking on.",
+                            "legend": [
+                                {
+                                    "n": "1",
+                                    "label_en": "Stone gateway",
+                                    "label_ku": "دەروازەی بەردین",
+                                    "label_ar": "بوابة حجرية"
+                                },
+                                {
+                                    "n": "2",
+                                    "label_en": "The two gate leaves",
+                                    "label_ku": "دوو پەڕەی دەروازەکە",
+                                    "label_ar": "درفتا البوابة"
+                                },
+                                {
+                                    "n": "3",
+                                    "label_en": "Window with a wrought-iron grille in a timber frame",
+                                    "label_ku": "پەنجەرە بە شیشبەندی ئاسنی کوتراو لە چوارچێوەی داریندا",
+                                    "label_ar": "نافذة بشبكة من الحديد المطروق في إطار خشبي"
+                                },
+                                {
+                                    "n": "4",
+                                    "label_en": "Bare brick",
+                                    "label_ku": "خشتی ڕووت",
+                                    "label_ar": "طابوق ظاهر"
+                                }
+                            ],
+                            "facts": [
+                                {
+                                    "label_en": "Restored",
+                                    "value_en": "2013, on the West Qaysari’s east front",
+                                    "label_ku": "نوێکرایەوە",
+                                    "value_ku": "٢٠١٣، لە ڕووی ڕۆژهەڵاتی قەیسەریی ڕۆژئاوا",
+                                    "label_ar": "رُمّمت",
+                                    "value_ar": "٢٠١٣، في الواجهة الشرقية للقيصرية الغربية",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Work",
+                                    "value_en": "Stone gateway freed and completed; brick repaired; iron grille in its timber frame restored",
+                                    "label_ku": "کار",
+                                    "value_ku": "دەروازە بەردینەکە ڕزگار کرا و تەواو کرا؛ خشتەکە چاک کرایەوە؛ شیشبەندی ئاسنین لە چوارچێوە دارینەکەیدا نوێ کرایەوە",
+                                    "label_ar": "الأعمال",
+                                    "value_ar": "حُرّرت البوابة الحجرية وأُكملت؛ وأُصلح الطابوق؛ ورُمّمت الشبكة الحديدية في إطارها الخشبي",
+                                    "ltr": false
+                                },
+                                {
+                                    "label_en": "Drawn from",
+                                    "value_en": "Kurapkat 2014, in words: a type, not a survey; the heights are ours",
+                                    "label_ku": "لەمەوە کێشراوە",
+                                    "value_ku": "کوراپکات ٢٠١٤، بە وشە: جۆرێک، نەک ڕووپێو؛ بەرزییەکان هی خۆمانن",
+                                    "label_ar": "مرسوم عن",
+                                    "value_ar": "كورابكات ٢٠١٤، وصفاً: نموذج لا مسح؛ والارتفاعات من عندنا",
+                                    "ltr": false
+                                }
+                            ],
+                            "name_ku": "دەروازەیەک",
+                            "type_ku": "ئەو شوێنەی ڕاڕەوێک دەگاتە کۆڵانەکە",
+                            "text_ku": "هەر ڕاڕەوێک بە دەروازەیەک کۆتایی دێت بۆ کۆڵانەکانی بازاڕ، و شەوان دەروازەکان هەموو بیناکەیان دادەخست. لە دەروازەی باکووری قەیسەریی ڕۆژهەڵاتدا چایخانەی مام خەلیل هەیە، شوێنی کۆبوونەوەی هەموو بازاڕەکە.\n\nلە ساڵی ٢٠١٣دا تیمەکە دەروازەیەکی لە ڕووی ڕۆژهەڵاتی قەیسەریی ڕۆژئاوادا نوێ کردەوە، بە وەستای ناوخۆیی لە ژێر سەرپەرشتی پارێزەرێکدا. بە ئامادەبوونی بەرپرسانی شار و پارێزگا دووبارە کرایەوە.",
+                            "name_ar": "بوابة",
+                            "type_ar": "حيث يلتقي الممر بالزقاق",
+                            "text_ar": "ينتهي كل ممر ببوابة إلى أزقة السوق، وفي الليل كانت البوابات تغلق المبنى كله. وعند البوابة الشمالية للقيصرية الشرقية يقع مقهى مام خليل، ملتقى السوق كله.\n\nفي عام ٢٠١٣ رمّم الفريق بوابة في الواجهة الشرقية للقيصرية الغربية، بحرفيين محليين بإشراف مرمّم، وأُعيد افتتاحها بحضور مسؤولي المدينة والمحافظة."
+                        }
+                    ],
+                    "heading_ku": "تابلۆکان",
+                    "key_ku": null,
+                    "heading_ar": "اللوحات",
+                    "key_ar": null
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "How it aged",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "The East Qaysari was built at the end of the nineteenth century by the Chalabi family, Turkmen merchants, on an irregular plot; a small single-storey part in the south-west is older. The West Qaysari followed soon after. Both still belonged to the family when they were surveyed.",
+                                "text_ku": "قەیسەریی ڕۆژهەڵات لە کۆتایی سەدەی نۆزدەدا لەلایەن بنەماڵەی چەلەبی، بازرگانە تورکمانەکان، لەسەر پارچە زەوییەکی ناڕێک دروست کرا؛ بەشێکی بچووکی یەک نهۆمی لە باشووری ڕۆژئاوادا کۆنترە. قەیسەریی ڕۆژئاوا زوو دوای ئەو هات. کاتێک ڕووپێو کران هەردووکیان هێشتا هی بنەماڵەکە بوون.",
+                                "text_ar": "بنت القيصريةَ الشرقية أواخرَ القرن التاسع عشر أسرةُ الچلبي، وهم تجار تركمان، على قطعة غير منتظمة؛ وجزء صغير من طابق واحد في جنوبها الغربي أقدم منها. وتلتها القيصرية الغربية بعد قليل. وكانت الاثنتان ما تزالان ملك الأسرة حين مُسحتا."
+                            }
+                        },
+                        {
+                            "type": "list",
+                            "data": {
+                                "style": "build",
+                                "items": [
+                                    {
+                                        "term_en": "Early 1900s",
+                                        "text_en": "Upper rooms joined into larger suites, doors made windows. Then the upper floor was largely given up.",
+                                        "anchor": null,
+                                        "term_ku": "سەرەتای ١٩٠٠",
+                                        "text_ku": "ژوورەکانی سەرەوە پێکەوە لکێنران بۆ کۆمەڵە ژووری گەورەتر، دەرگا کران بە پەنجەرە. پاشان نهۆمی سەرەوە بە زۆری وازی لێ هێنرا.",
+                                        "term_ar": "مطلع القرن العشرين",
+                                        "text_ar": "وُصلت الغرف العلوية في أجنحة أكبر وصارت الأبواب نوافذ. ثم هُجر الطابق العلوي في معظمه."
+                                    },
+                                    {
+                                        "term_en": "1970s",
+                                        "text_en": "The vault over the East Qaysari’s eastern passage fell in. Sheet metal on a makeshift steel frame has covered it since.",
+                                        "anchor": null,
+                                        "term_ku": null,
+                                        "text_ku": "کەوانەی سەر ڕاڕەوی ڕۆژهەڵاتی قەیسەریی ڕۆژهەڵات ڕووخا. لەو کاتەوە تەنەکە لەسەر چوارچێوەیەکی پۆڵای کاتی دایپۆشیوە.",
+                                        "term_ar": null,
+                                        "text_ar": "انهار القبو فوق الممر الشرقي للقيصرية الشرقية، ويغطيه منذ ذلك الحين صفيح على هيكل فولاذي مؤقت."
+                                    },
+                                    {
+                                        "term_en": "1980s →",
+                                        "text_en": "No more repairs in common: each tenant mends his own shop, sometimes doing more harm than good. Walls between shops are cut from 40 cm to as little as 10 to win space, and goods spread into the passage until only a path is left.",
+                                        "anchor": null,
+                                        "term_ku": null,
+                                        "text_ku": "چیتر چاککردنەوەی هاوبەش نییە: هەر کرێچییەک دوکانی خۆی چاک دەکاتەوە، هەندێک جار زیانی زیاتر لە سوود. دیواری نێوان دوکانەکان لە ٤٠ سم تا ١٠ سم دەتاشرێن بۆ بەدەستهێنانی شوێن، و کاڵاکان بە ناو ڕاڕەوەکەدا بڵاو دەبنەوە تا تەنها ڕێڕەوێک دەمێنێتەوە.",
+                                        "term_ar": null,
+                                        "text_ar": "لا إصلاحات مشتركة بعد ذلك: كل مستأجر يصلح دكانه وحده، وأحياناً يضرّ أكثر مما ينفع. تُقصّ الجدران بين الدكاكين من ٤٠ سم حتى ١٠ لكسب المساحة، وتمتد البضائع في الممر حتى لا يبقى إلا ممشى."
+                                    },
+                                    {
+                                        "term_en": "2011–2013",
+                                        "text_en": "The DAI and TU Berlin survey both buildings, train staff of Erbil’s Directorate of Antiquities, repair sample bays, and hand a conservation master plan to the Governor.",
+                                        "anchor": null,
+                                        "term_ku": null,
+                                        "text_ku": "پەیمانگای ئەرکیۆلۆجیی ئەڵمانی و زانکۆی تەکنیکیی بەرلین هەردوو بیناکە ڕووپێو دەکەن، کارمەندانی بەڕێوەبەرایەتیی شوێنەوارەکانی هەولێر ڕادەهێنن، بڕگەی نموونەیی چاک دەکەنەوە، و ماستەرپلانێکی پاراستن دەدەنە پارێزگار.",
+                                        "term_ar": null,
+                                        "text_ar": "يمسح المعهد الألماني للآثار وجامعة برلين التقنية المبنيين، ويدرّبان موظفي مديرية آثار أربيل، ويرمّمان فتحات نموذجية، ويسلّمان المحافظ مخططاً رئيسياً للصون."
+                                    },
+                                    {
+                                        "term_en": "5.5.2024",
+                                        "text_en": "Fire. 227 shops and seven storerooms destroyed, some 270 units hit, more than a hundred people hurt. Goods and timber fed it.",
+                                        "anchor": null,
+                                        "term_ku": null,
+                                        "text_ku": "ئاگر. ٢٢٧ دوکان و حەوت کۆگا وێران بوون، نزیکەی ٢٧٠ یەکە زیانیان پێ گەیشت، زیاتر لە سەد کەس بریندار بوون. کاڵا و دار خۆراکی بوون.",
+                                        "term_ar": null,
+                                        "text_ar": "حريق. دُمّر ٢٢٧ دكاناً وسبعة مخازن، وأصاب الضرر نحو ٢٧٠ وحدة، وجُرح أكثر من مئة شخص. غذّته البضائع والأخشاب."
+                                    },
+                                    {
+                                        "term_en": "2024–2025",
+                                        "text_en": "The governorate pays for the repair, about 3.6 million dollars. In April 2025 the shops go back to their owners.",
+                                        "anchor": null,
+                                        "term_ku": null,
+                                        "text_ku": "پارێزگا پارەی چاککردنەوەکە دەدات، نزیکەی ٣.٦ ملیۆن دۆلار. لە نیسانی ٢٠٢٥دا دوکانەکان دەگەڕێنەوە بۆ خاوەنەکانیان.",
+                                        "term_ar": null,
+                                        "text_ar": "تموّل المحافظة الترميم بنحو ٣٫٦ مليون دولار. وفي نيسان ٢٠٢٥ تعود الدكاكين إلى أصحابها."
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "heading_ku": "چۆن پیر بوو",
+                    "heading_ar": "كيف شاخت"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "After the fire",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "The repair sorted the damage before it chose a method. Shops that had collapsed were rebuilt in their old form; those that stood got new surfaces. The brick was made to match: old brickworks were brought back into use, with the old raw materials and moulds. Much of the stone came from Mosul, and the timber from nearby. The older Qaysari was repaired without changing its structure, and its half-ruined upper floor was rebuilt in its nineteenth-century form.\n\nFloors were levelled, leaks stopped, and new ventilation, drains and lighting run through the old fabric. Sprinklers are still being laid. One new rule may do more than any of these: goods must now stay inside the shops, and nothing may be left out after closing. Twelve years before the fire, the survey had described how far the displays reached into the passages.\n\nThe shopkeepers asked in a later study were mostly pleased with the result and felt the bazaar had kept its character. They had also spent a year without income, and few had received any help.",
+                                "text_ku": "چاککردنەوەکە پێش هەڵبژاردنی ڕێگا زیانەکەی پۆلێن کرد. ئەو دوکانانەی ڕووخابوون بە شێوە کۆنەکەیان دووبارە دروست کرانەوە؛ ئەوانەی مابوون ڕووی نوێیان بۆ کرا. خشتەکە بە گونجاوی دروست کرا: کۆرە خشتە کۆنەکان دووبارە خرانەوە کار، بە هەمان کەرەستەی خاو و قاڵب. زۆربەی بەردەکە لە مووسڵەوە هات، و دارەکە لە نزیکەوە. قەیسەرییە کۆنەکە بەبێ گۆڕینی پێکهاتەکەی چاک کرایەوە، و نهۆمی سەرەوەی نیوە وێرانی بە شێوەی سەدەی نۆزدەی دووبارە دروست کرایەوە.\n\nزەوییەکان ڕێک کران، دڵۆپە ڕاگیرا، و هەواگۆڕکێ و ئاوەڕۆ و ڕووناکیی نوێ بە ناو پێکهاتە کۆنەکەدا ڕاکێشران. سپرینکلەر هێشتا دادەنرێن. یاسایەکی نوێ لەوانەیە لە هەموو ئەمانە زیاتر بکات: کاڵا ئێستا دەبێت لە ناو دوکانەکاندا بمێنێتەوە، و دوای داخستن هیچ شتێک نابێت لە دەرەوە بمێنێتەوە. دوازدە ساڵ پێش ئاگرەکە، ڕووپێوەکە باسی کردبوو کە پیشانگاکان تا چەند بە ناو ڕاڕەوەکاندا درێژ دەبوونەوە.\n\nزۆربەی ئەو دوکاندارانەی لە توێژینەوەیەکی دواتردا پرسیاریان لێ کرا لە ئەنجامەکە ڕازی بوون و هەستیان دەکرد بازاڕەکە کەسایەتیی خۆی پاراستووە. هەروەها ساڵێک بێ داهات مابوونەوە، و کەمێکیان هیچ یارمەتییەکیان وەرگرتبوو.",
+                                "text_ar": "صنّف الترميم الضرر قبل أن يختار الطريقة. أُعيد بناء الدكاكين المنهارة على هيئتها القديمة، ونالت القائمة سطوحاً جديدة. وصُنع الطابوق مطابقاً: أُعيدت معامل الطابوق القديمة إلى العمل بموادها الخام وقوالبها. وجاء كثير من الحجر من الموصل، والخشب من الجوار. ورُمّمت القيصرية الأقدم دون تغيير إنشائها، وأُعيد بناء طابقها العلوي نصف المهدّم على هيئته في القرن التاسع عشر.\n\nسُوّيت الأرضيات وأوقف التسرّب، ومُدّت تهوية وصرف وإنارة جديدة عبر النسيج القديم، وما زالت المرشّات قيد التركيب. وقد تفعل قاعدة جديدة واحدة أكثر من ذلك كله: يجب الآن أن تبقى البضائع داخل الدكاكين، ولا يُترك شيء خارجها بعد الإغلاق. وقبل الحريق باثني عشر عاماً كان المسح قد وصف إلى أي حدٍّ تمتد المعروضات في الممرات.\n\nكان معظم أصحاب الدكاكين الذين سُئلوا في دراسة لاحقة راضين عن النتيجة، ورأوا أن السوق حفظ طابعه. لكنهم قضوا عاماً بلا دخل، وقليل منهم تلقّى أي عون."
+                            }
+                        }
+                    ],
+                    "heading_ku": "دوای ئاگرەکە",
+                    "heading_ar": "بعد الحريق"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "text",
+                    "heading_en": "What we take from it",
+                    "parts": [
+                        {
+                            "type": "paragraphs",
+                            "data": {
+                                "text_en": "Three things stay with us at the drawing board. A small bay, repeated, makes a building that can be mended one bay at a time: the sample bay of 2012 and the repair after the fire both worked that way. A floor lives only as long as its way in: when the galleries rotted, the rooms upstairs emptied. And the people who use a building decide whether a repair lasts, so the shutters are as much their decision as ours.",
+                                "text_ku": "سێ شت لای مێزی کێشان لەگەڵمان دەمێننەوە. بڕگەیەکی بچووک کە دووبارە دەبێتەوە بینایەک دروست دەکات کە دەکرێت بڕگە بە بڕگە چاک بکرێتەوە: بڕگە نموونەییەکەی ٢٠١٢ و چاککردنەوەی دوای ئاگرەکە هەردووکیان بەو شێوەیە کاریان کرد. نهۆمێک تەنها هێندەی ڕێگای چوونە ژوورەوەی دەژی: کاتێک باڵەخانەکان ڕزین، ژوورەکانی سەرەوە چۆڵ بوون. و ئەو کەسانەی بینایەک بەکاردەهێنن بڕیار دەدەن ئایا چاککردنەوەیەک دەمێنێت، بۆیە داخەرەکان هێندەی ئێمە بڕیاری ئەوانیشە.",
+                                "text_ar": "ثلاثة أشياء تبقى معنا عند لوحة الرسم. الفتحة الصغيرة المكرّرة تصنع مبنىً يمكن إصلاحه فتحةً فتحة: هكذا عملت الفتحة النموذجية عام ٢٠١٢ والترميم بعد الحريق. والطابق لا يعيش إلا ما عاش مدخله: حين تعفّنت الأروقة فرغت الغرف العلوية. ومن يستعمل المبنى هو من يقرّر إن كان الترميم سيدوم، فالمغالق قرارهم بقدر ما هي قرارنا."
+                            }
+                        }
+                    ],
+                    "heading_ku": "ئەوەی لێی وەردەگرین",
+                    "heading_ar": "ما نأخذه منها"
+                }
+            },
+            {
+                "type": "chapter",
+                "data": {
+                    "style": "sources",
+                    "heading_en": "Sources",
+                    "parts": [
+                        {
+                            "type": "refs",
+                            "data": {
+                                "items": [
+                                    {
+                                        "text": "Kurapkat, D. (2014), ‘Erbil, Irak. Die osmanischen Qaisariya-Gebäude im Basar. Die Arbeiten der Jahre 2012 und 2013’, *e-Forschungsberichte des DAI* 2014(1), 58–66. The measured plans are its figs. 4, 5, 16 and 17. [doi.org/10.34780/0r26-1i7a](https://doi.org/10.34780/0r26-1i7a)"
+                                    },
+                                    {
+                                        "text": "Shehab, M. A. and Faraj, R. S. (2024), ‘Contextual Preservation and Contemporary Facilitation of Qaisaria in Iraqi Kurdistan Region’, *Journal of Studies in Science and Engineering* 4(2), 190–212. [doi.org/10.53898/josse2024430](https://doi.org/10.53898/josse2024430)"
+                                    },
+                                    {
+                                        "text": "Khayyat, M., Abdollah, I., Al-Baldawi, H. and Husham, Z. (2026), ‘Post-Disaster Restoration of Erbil’s Qaysariya Bazaar’, *REAL CORP 2026 Proceedings*, 1285–1290. [doi.org/10.48494/REALCORP2026.1081](https://doi.org/10.48494/REALCORP2026.1081)"
+                                    },
+                                    {
+                                        "text": "OpenStreetMap, the Citadel, the bazaar and the buildings around them, as of 15 July 2026 (plate QB-01). © OpenStreetMap contributors, available under the Open Database License. [openstreetmap.org/copyright](https://www.openstreetmap.org/copyright)"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "note",
+                            "data": {
+                                "text_en": "The drawings are ours: a type built from the description, to explain how such a building works. They are not a record of either Qaysari and not for measuring from. The figures for the fire and the repair are those the 2026 paper reports. The site plan alone is drawn from a map, OpenStreetMap’s.",
+                                "text_ku": "کێشانەکان هی خۆمانن: جۆرێک کە لە وەسفەکەوە دروست کراوە، بۆ ڕوونکردنەوەی ئەوەی بینایەکی وا چۆن کار دەکات. تۆمارێکی هیچ کام لە قەیسەرییەکان نین و بۆ پێوانە لێیانەوە نین. ژمارەکانی ئاگرەکە و چاککردنەوەکە ئەوانەن کە توێژینەوەکەی ٢٠٢٦ ڕاپۆرتیان دەکات. تەنها نەخشەی شوێنەکە لە نەخشەیەکەوە کێشراوە، هی OpenStreetMap.",
+                                "text_ar": "الرسوم من عملنا: نموذج مبني على الوصف لشرح كيف يعمل مبنى كهذا. ليست سجلاً لأيٍّ من القيصريتين ولا يُقاس عليها. وأرقام الحريق والترميم هي ما تورده دراسة ٢٠٢٦. ووحده مخطط الموقع مرسوم عن خريطة، هي خريطة OpenStreetMap."
+                            }
+                        }
+                    ],
+                    "heading_ku": "سەرچاوەکان",
+                    "heading_ar": "المصادر"
+                }
+            }
+        ]
+    }
+]

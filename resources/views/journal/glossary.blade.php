@@ -6,7 +6,7 @@
      Texts are written here in the three languages: $t(English, Kurdish, Arabic). --}}
 @php
     use App\Models\Landmark;
-    use App\Support\Articles;
+    use App\Models\Essay;
     $lang = site_lang();
     $t = fn (string $en, string $ku, string $ar) => bi($en, $ku, $ar);
     $brand = trim(explode('|', bival('seo_title'))[0]);
@@ -19,13 +19,12 @@
         'مفردات المبنى بالكوردية، من الأساس إلى القبّة: '.Landmark::digits($count).' كلمة، كلٌّ منها مضاءة على رسم كي يبقى الاسم مقروناً بالشيء، والعربية والإنكليزية إلى جانبها. ثم المفردات القديمة للبيت الكردي، وتاريخها.');
     $description = $lead;
     $path = '/journal/glossary';
-    $citadel = Articles::find('citadel-house-plans');
-    $qaysari = Articles::find('qaysari-bazaar');
-    $essay = fn ($a) => [$t(...$a['title']), Articles::url($a)];
+    $essays = Essay::published()->whereIn('slug', ['citadel-house-plans', 'qaysari-bazaar'])->get()->keyBy('slug');
+    $essay = fn (string $slug) => ($e = $essays->get($slug)) ? [$e->tr('title'), $e->url()] : null;
     $landmarks = Landmark::where('is_published', true)->get()->keyBy('slug');
     $place = fn (string $slug) => ($l = $landmarks->get($slug)) ? [$l->tr('name'), $l->url()] : null;
 
-    // the court of the essay's simplest house, and its tarma and iwan houses (citadel-houses: ty1, ty2, ty3)
+    // the court of the essay's simplest house, and its tarma and iwan houses (the Citadel essay's first three diagrams)
     $plans = [
         'hawsh' => ['holes' => [[22, 20, 75, 40], [103, 20, 75, 40], [22, 66, 156, 64]], 'court' => [22, 66, 156, 64],
             'doors' => [[52, 60, 12, 'h', -1], [127, 60, 12, 'h', -1], [94, 130, 12, 'h', -1]], 'wins' => [[30, 60, 14, 'h'], [158, 60, 14, 'h']],
@@ -59,31 +58,31 @@
                     'ئەو بۆشاییە کراوەیەی خانوو بە دەوریدا دروست دەکرێت. ژوورەکان بەسەریدا دەکرێنەوە نەک بەسەر یەکتردا، بۆیە هەم ڕاڕەوە و هەم ژووری دانیشتن و هەم باخچە، و خێزان دەیتوانی ژوورێک زیاد بکات بێ ئەوەی دەست لە ژوورەکانی پێشووی بدات. زۆربەی خانووەکانی قەڵای هەولێر بە دەوری حەوشەیەکدا دروست کراون.',
                     'الفناء المكشوف الذي يُبنى البيت حوله. تنفتح الغرف عليه لا على بعضها، فهو الممر وغرفة الجلوس والحديقة معاً، وتستطيع الأسرة أن تضيف غرفة دون أن تمسّ غرفها. ومعظم بيوت قلعة أربيل مبنية حول فناء.')],
                 'cap' => $t('Plan: two rooms on a court, the house in its simplest form.', 'نەخشە: دوو ژوور بەسەر حەوشەیەکەوە، خانوو لە سادەترین شێوەیدا.', 'مخطط: غرفتان على فناء، البيت في أبسط صوره.'),
-                'see' => [$essay($citadel), $place('erbil-citadel')]],
+                'see' => [$essay('citadel-house-plans'), $place('erbil-citadel')]],
             ['id' => 'iwan', 'term' => $t('Iwan', 'ئەیوان', 'الإيوان'), 'ku' => 'ئەیوان', 'ar' => 'الإيوان', 'lat' => 'eywan · īwān',
                 'def' => [$t('A room without a front wall, open to the court under a high arch or beam: shade in summer, and a place to sit outdoors under a roof. The form is very old. The Sasanian kings built great vaulted iwans as the halls of their palaces, and at Taq-e Bostan two are cut into the rock. In Erbil the larger early houses set one between two rooms.',
                     'ژوورێک بێ دیواری پێشەوە، کە لە ژێر کەوانەیەکی بەرز یان دارێکدا بەسەر حەوشەدا کراوەیە: سێبەرە لە هاویندا، و شوێنێکە بۆ دانیشتن لە دەرەوە بەڵام لە ژێر سەربان. ئەم شێوەیە زۆر کۆنە. پاشاکانی ساسانی ئەیوانی گەورەی کەوانەداریان وەک هۆڵی کۆشکەکانیان دروست دەکرد، و لە تاقی وەسان دوو ئەیوان لە بەرددا هەڵکۆڵراون. لە هەولێردا خانووە گەورە کۆنەکان یەکێکیان لە نێوان دوو ژووردا داناوە.',
                     'غرفة بلا جدار أمامي، تنفتح على الفناء تحت قوس عالٍ أو جسر خشبي: ظلّ في الصيف، ومجلس في الهواء الطلق تحت سقف. والشكل قديم جداً: بنى الملوك الساسانيون إيوانات معقودة كبيرة قاعاتٍ لقصورهم، وفي طاق بستان نُحت إيوانان في الصخر. وفي أربيل تضع البيوت الكبيرة المبكرة إيواناً بين غرفتين.')],
                 'cap' => $t('Plan: an iwan between two rooms; the dashed line is its arch.', 'نەخشە: ئەیوانێک لە نێوان دوو ژووردا؛ هێڵە پچڕپچڕەکە کەوانەکەیەتی.', 'مخطط: إيوان بين غرفتين؛ والخط المتقطع قوسه.'),
-                'see' => [$essay($citadel), $place('taq-e-bostan')]],
+                'see' => [$essay('citadel-house-plans'), $place('taq-e-bostan')]],
             ['id' => 'tarma', 'term' => $t('Tarma', 'تارمە', 'الطارمة'), 'ku' => 'تارمە', 'ar' => 'الطارمة', 'lat' => 'tarme · ṭārma',
                 'def' => [$t('A portico along the front of the rooms, roofed and open to the court. Early houses had only small vents and stayed dark, so their fronts needed no shade. When large windows came in the late-Ottoman period, the tarma became essential: on timber columns with carved capitals, on arcades of Mosul alabaster, and later on iron columns.',
                     'ڕاڕەوێکی سەرداپۆشراو بە درێژایی پێشەوەی ژوورەکان، کە بەسەر حەوشەدا کراوەیە. خانووە کۆنەکان تەنها کونی هەواگۆڕکێی بچووکیان هەبوو و تاریک بوون، بۆیە ڕووکاریان پێویستی بە سێبەر نەبوو. کاتێک پەنجەرەی گەورە لە کۆتایی سەردەمی عوسمانیدا هات، تارمە پێویست بوو: لەسەر کۆڵەکەی دار بە سەرکۆڵەکەی هەڵکۆڵراو، لەسەر ڕیزە کەوانەی مەڕمەڕی مووسڵ، و دواتر لەسەر کۆڵەکەی ئاسن.',
                     'رواق مسقوف على امتداد واجهة الغرف، مفتوح على الفناء. لم يكن للبيوت المبكرة سوى فتحات تهوية صغيرة وكانت معتمة، فلم تحتج واجهاتها إلى الظل. وحين جاءت النوافذ الكبيرة في أواخر العهد العثماني صارت الطارمة ضرورة: على أعمدة خشبية بتيجان منحوتة، أو على عقود من مرمر الموصل، ثم على أعمدة حديدية.')],
                 'cap' => $t('Plan: three rooms behind a tarma on four columns.', 'نەخشە: سێ ژوور لە پشت تارمەیەک لەسەر چوار کۆڵەکە.', 'مخطط: ثلاث غرف خلف طارمة على أربعة أعمدة.'),
-                'see' => [$essay($citadel)]],
+                'see' => [$essay('citadel-house-plans')]],
             ['id' => 'diwakhana', 'term' => $t('Diwakhana', 'دیوەخان', 'الديوخانة'), 'ku' => 'دیوەخان', 'ar' => 'الديوخانة', 'lat' => 'dîwexan · dīwakhāna',
                 'def' => [$t('A house, or a room in a house, kept for receiving guests. In Erbil a diwakhana’s door stood open after the afternoon prayer, and twenty or thirty people at a time came in to sit, talk and settle matters. The Citadel’s nomination file calls the type “very specific to Erbil”.',
                     'خانوویەک، یان ژوورێک لە خانوویەکدا، کە بۆ پێشوازی لە میوان تەرخان کراوە. لە هەولێردا دوای نوێژی عەسر دەرگای دیوەخان کراوە دەبوو، و بیست تا سی کەس پێکەوە دەهاتنە ژوورەوە بۆ دانیشتن و قسەکردن و یەکلاکردنەوەی کاروبار. دۆسیەی پاڵاوتنی قەڵا ئەم جۆرە بە «زۆر تایبەت بە هەولێر» ناو دەبات.',
                     'بيت، أو غرفة في بيت، مخصصة لاستقبال الضيوف. في أربيل كان باب الديوخانة يُفتح بعد صلاة العصر فيدخل عشرون أو ثلاثون شخصاً في المرة ليجلسوا ويتحدثوا ويفصلوا في الأمور. ويصف ملف ترشيح القلعة هذا النوع بأنه «خاص جداً بأربيل».')],
                 'cap' => $t('Plan: a long room over the court, seats along three walls. A diagram, not a survey.', 'نەخشە: ژوورێکی درێژ بەسەر حەوشەوە، شوێنی دانیشتن بە درێژایی سێ دیوار. هێڵکارییە، نەک ڕووپێو.', 'مخطط: غرفة طويلة على الفناء، والمقاعد على ثلاثة جدران. رسم توضيحي لا مسح.'),
-                'see' => [$essay($citadel)]],
+                'see' => [$essay('citadel-house-plans')]],
             ['id' => 'sirdab', 'term' => $t('Sirdab', 'سەرداب', 'السرداب'), 'ku' => 'سەرداب', 'ar' => 'السرداب', 'lat' => 'serdab · sirdāb',
                 'def' => [$t('A room below ground. The earth around it keeps it cool, and across Iraq families went down to the sirdab in the heat of a summer afternoon. On Erbil’s Citadel it is commonest in the houses on the rim, which stand on the slope and get one almost for free; inside the town only the later houses have one, sometimes only under the tarma.',
                     'ژوورێک لە ژێر زەویدا. ئەو گڵەی دەوری فێنکی دەهێڵێتەوە، و لە سەرانسەری عێراقدا خێزانەکان لە گەرمای نیوەڕۆی هاویندا دادەبەزینە سەرداب. لە قەڵای هەولێردا زۆرتر لە خانووەکانی لێواردا هەیە، کە لەسەر لێژییەکە وەستاون و نزیکەی بەخۆڕایی دەستیان دەکەوێت؛ لە ناو شارەکەدا تەنها خانووە درەنگترەکان هەیانە، و هەندێک جار تەنها لە ژێر تارمەکە.',
                     'غرفة تحت الأرض. تحفظ التربة من حولها برودتها، وفي أنحاء العراق كانت الأسر تنزل إلى السرداب في قيظ ظهيرة الصيف. وفي قلعة أربيل هو أكثر شيوعاً في بيوت الحافة القائمة على المنحدر، فتحصل عليه بلا كلفة تقريباً؛ أما في داخل المدينة فلا يوجد إلا في البيوت المتأخرة، وأحياناً تحت الطارمة فقط.')],
                 'cap' => $t('Section: a room above, the sirdab below, a grille at the ground to let air in.', 'بڕگە: ژوورێک لە سەرەوە، سەرداب لە خوارەوە، شیشبەندێک لە ئاستی زەوی بۆ هاتنە ژوورەوەی هەوا.', 'مقطع: غرفة في الأعلى والسرداب تحتها، وشبكة عند مستوى الأرض لدخول الهواء.'),
-                'see' => [$essay($citadel)]],
+                'see' => [$essay('citadel-house-plans')]],
             ['id' => 'sarban', 'term' => $t('Flat roof', 'سەربان', 'السطح'), 'ku' => 'سەربان', 'ar' => 'السطح', 'lat' => 'serban · saṭḥ',
                 'def' => [$t('The flat roof, and a room of the house in its own right. Poplar poles span the walls, a layer of reeds or brushwood goes over them, then packed earth, rolled smooth with a stone roller after rain to keep the water out. In summer families slept on it. In the stepped villages of Hawraman one house’s roof is the yard of the house above.',
                     'سەربانی تەخت، کە خۆی ژوورێکی خانووەکەیە. داری سپیندار بەسەر دیوارەکاندا ڕادەخرێت، چینێک قامیش یان چڵ و پووش دەخرێتە سەری، پاشان گڵی کوتراو، کە دوای باران بە بانگلێرێکی بەردین ساف دەکرێتەوە تا ئاو نەچێتە خوارەوە. لە هاویندا خێزانەکان لەسەری دەخەوتن. لە گوندە پلەپلەکانی هەوراماندا سەربانی ماڵێک حەوشەی ماڵەکەی سەرووترە.',
@@ -97,19 +96,19 @@
                     'خشتی کاڵ کە لە بەر خۆردا وشک دەکرێتەوە بۆ دیواری ئاسایی؛ خشتی سوورەوەکراو بۆ ئەوەی دەبوو بمێنێتەوە یان ببینرێت، وەک تاق و منارە و دەروازە. خشتی سوورەوەکراو دەکرێت بە نەخش دابنرێت، و منارەی موزەفەرییە لە هەولێر، سی و شەش مەتر، هەمووی بە نەخش داپۆشراوە. دوای ئاگری ٢٠٢٤ خشتەکانی قەیسەری لە کۆرە خشتە کۆنەکاندا، بە هەمان کەرەستەی خاو و قاڵب، دووبارە دروست کرانەوە.',
                     'اللبن المجفف في الشمس للجدران العادية، والطابوق المفخور لما يجب أن يدوم أو يُرى، كالقبوات والمآذن والبوابات. ويمكن رصف الطابوق المفخور بنقوش، ومنارة المظفرية في أربيل، بارتفاع ستة وثلاثين متراً، مكسوّة بها. وبعد حريق ٢٠٢٤ صُنع طابوق القيصرية من جديد في معامل الطابوق القديمة، بموادها الخام وقوالبها.')],
                 'cap' => $t('Elevation: brick in courses, and a band laid in a pattern.', 'ڕووکار: خشت بە ڕیز، و پشتێنەیەک بە نەخش دانراو.', 'واجهة: طابوق في مداميك، وحزام مرصوف بنقش.'),
-                'see' => [$place('mudhafaria-minaret'), $essay($qaysari)]],
+                'see' => [$place('mudhafaria-minaret'), $essay('qaysari-bazaar')]],
             ['id' => 'taq', 'term' => $t('Arch, vault', 'تاق', 'الطاق'), 'ku' => 'تاق', 'ar' => 'الطاق', 'lat' => 'taq · ṭāq',
                 'def' => [$t('An arch, or a vault, which is an arch drawn out over a room. Where long timber is scarce, brick roofs the wider spaces: the Qaysari’s passages stand under brick vaults, and on the Citadel brick vaults in lime mortar belong to the better houses, mostly to their basements. The word is in the name of Taq-e Bostan, the “arch of the garden”, where the Sasanian kings had arches cut into the rock.',
                     'کەوانەیەک، یان سەقفێکی کەوانەیی، کە کەوانەیەکە بەسەر ژوورێکدا درێژ کراوەتەوە. لەو شوێنانەی داری درێژ کەمە، خشت بۆشاییە پانەکان دادەپۆشێت: ڕاڕەوەکانی قەیسەری لە ژێر تاقی خشتیندان، و لە قەڵادا تاقی خشت بە گەچ و گیرە هی خانووە باشترەکانە، زۆرتر هی ژێرزەمینەکانیان. وشەکە لە ناوی تاقی وەسان دایە، «کەوانەی باخ»، کە پاشاکانی ساسانی کەوانەیان لەوێ لە بەرددا هەڵکۆڵی.',
                     'القوس، أو القبو، وهو قوس ممتد فوق غرفة. وحيث يندر الخشب الطويل يسقف الطابوقُ الفراغاتِ الواسعة: ممرات القيصرية تحت أقبية من الطابوق، وفي القلعة تعود أقبية الطابوق بمونة الجير إلى البيوت الأحسن، وأكثرها في سراديبها. والكلمة في اسم طاق بستان، «قوس الحديقة»، حيث نحت الملوك الساسانيون أقواساً في الصخر.')],
                 'cap' => $t('Elevation: an arch, every joint pointing at its centre.', 'ڕووکار: کەوانەیەک، هەموو جومگەکانی ڕوو لە ناوەڕاستەکەی.', 'واجهة: قوس، وكل فواصله تتجه إلى مركزه.'),
-                'see' => [$place('taq-e-bostan'), $essay($qaysari)]],
+                'see' => [$place('taq-e-bostan'), $essay('qaysari-bazaar')]],
             ['id' => 'mosul-alabaster', 'term' => $t('Mosul alabaster', 'مەڕمەڕی مووسڵ', 'مرمر الموصل'), 'ku' => 'مەڕمەڕی مووسڵ', 'ar' => 'مرمر الموصل', 'lat' => 'meřmeřî Mûsiḻ · marmar al-Mawṣil',
                 'def' => [$t('A grey-blue gypsum stone from around Mosul, soft enough to carve when freshly cut. Across northern Iraq it made door frames, column bases, arcades and floors. On Erbil’s Citadel it carried the arcades of the late-Ottoman tarmas, and the Qaysari’s repair after the fire brought much of its stone from Mosul.',
                     'بەردێکی گەچی شینی خۆڵەمێشی لە دەوروبەری مووسڵ، کە کاتێک تازە دەبڕدرێت ئەوەندە نەرمە هەڵبکۆڵرێت. لە سەرانسەری باکووری عێراقدا چوارچێوەی دەرگا و بنکەی کۆڵەکە و ڕیزە کەوانە و زەوی لێ دروست دەکرا. لە قەڵای هەولێردا ڕیزە کەوانەی تارمەکانی کۆتایی عوسمانی هەڵدەگرت، و چاککردنەوەی قەیسەری دوای ئاگرەکە زۆربەی بەردەکەی لە مووسڵەوە هێنا.',
                     'حجر جصّي رمادي مزرقّ من نواحي الموصل، ليّن يُنحت حين يُقطع حديثاً. صُنعت منه في شمال العراق أطر الأبواب وقواعد الأعمدة والعقود والأرضيات. وفي قلعة أربيل حمل عقود الطارمات العثمانية المتأخرة، وجاء ترميم القيصرية بعد الحريق بكثير من حجره من الموصل.')],
                 'cap' => $t('Elevation: a carved doorcase, rosettes on the lintel. A diagram, not a survey.', 'ڕووکار: چوارچێوەی دەرگایەکی هەڵکۆڵراو، گوڵ لەسەر سەردەرگاکە. هێڵکارییە، نەک ڕووپێو.', 'واجهة: إطار باب منحوت، وورود على العتبة. رسم توضيحي لا مسح.'),
-                'see' => [$essay($citadel), $essay($qaysari)]],
+                'see' => [$essay('citadel-house-plans'), $essay('qaysari-bazaar')]],
         ]],
         [$t('The town and the road', 'شار و ڕێگا', 'المدينة والطريق'), [
             ['id' => 'qaysari', 'term' => $t('Qaysari', 'قەیسەری', 'القيصرية'), 'ku' => 'قەیسەری', 'ar' => 'القيصرية', 'lat' => 'qeyserî · qayṣariyya',
@@ -117,13 +116,13 @@
                     'بینایەکی بازاڕی سەرداپۆشراو بۆ بازرگانییە بەنرخترەکان، کە شەوان دادەخرا. وشەکە لە ڕێگەی عەرەبییەوە دەگەڕێتەوە بۆ قەیسەر. لە قاهیرەی مەملووکیدا قەیسەری حەوشەیەک بوو کە دوکان دەوری دابوو؛ دووانەکەی هەولێر گرێیەکن لە ڕاڕەوی کەوانەدار، دوکان لە خوارەوە و ژوور لە سەرەوە، کە لە باڵەخانەیەکی دارینەوە دەگەیتە ناویان.',
                     'مبنى سوق مسقوف للتجارات الأثمن، يُقفل ليلاً. تعود الكلمة عبر العربية إلى قيصر. في القاهرة المملوكية كانت القيصرية فناءً تحيط به الدكاكين؛ أما قيصريتا أربيل فعقدتان من الممرات المعقودة، الدكاكين في الأسفل والغرف في الأعلى يُوصل إليها من رواق خشبي.')],
                 'cap' => $t('Section: across a passage, shops and rooms either side, the vault over the street.', 'بڕگە: بە پانیی ڕاڕەوێکدا، دوکان و ژوور لە هەردوو لا، تاقەکە بەسەر شەقامەکەوە.', 'مقطع: عرض ممر، دكاكين وغرف على جانبيه، والقبو فوق الطريق.'),
-                'see' => [$essay($qaysari)]],
+                'see' => [$essay('qaysari-bazaar')]],
             ['id' => 'khan', 'term' => $t('Khan, caravanserai', 'خان', 'الخان'), 'ku' => 'خان', 'ar' => 'الخان', 'lat' => 'xan · khān',
                 'def' => [$t('An inn for merchants: rooms around a court, and one gate that closed at night. Travellers slept in the rooms, and their animals and goods stayed in the court or in stables behind. On the roads they stood about a day’s journey apart; in towns they stood by the bazaar and served as warehouses and offices too.',
                     'میوانخانەی بازرگانان: ژوور بە دەوری حەوشەیەکدا، و یەک دەروازە کە شەوان دادەخرا. ڕێبواران لە ژوورەکاندا دەخەوتن، و ئاژەڵ و کاڵاکانیان لە حەوشەکە یان لە تەویلەی پشتەوەدا دەمانەوە. لەسەر ڕێگاکان نزیکەی ڕۆژێک ڕێگا لە یەکترەوە دوور بوون؛ لە شارەکاندا لە تەنیشت بازاڕ بوون و کاری کۆگا و نووسینگەشیان دەکرد.',
                     'نُزُل للتجار: غرف حول فناء، وبوابة واحدة تُغلق ليلاً. ينام المسافرون في الغرف، وتبقى دوابّهم وبضائعهم في الفناء أو في إسطبلات خلفه. على الطرق كانت تقوم على مسيرة يوم تقريباً بعضها من بعض، وفي المدن تقوم بجوار السوق وتكون مخازن ومكاتب أيضاً.')],
                 'cap' => $t('Plan: rooms all round a court, and the one gate.', 'نەخشە: ژوور بە دەوری حەوشەیەکدا، و یەک دەروازە.', 'مخطط: غرف حول فناء، والبوابة الوحيدة.'),
-                'see' => [$essay($qaysari)]],
+                'see' => [$essay('qaysari-bazaar')]],
             ['id' => 'kahrez', 'term' => $t('Kahrez, qanat', 'کارێز', 'الكهريز'), 'ku' => 'کارێز', 'ar' => 'الكهريز', 'lat' => 'karêz · kahrīz',
                 'def' => [$t('A tunnel that brings groundwater to the surface without a pump. It starts at a mother well dug down to the water at the foot of the hills, and runs out under the plain at a gentler slope than the ground, until it comes out among the fields. Shafts every few dozen metres let the diggers in and the spoil out. The plain around Erbil was watered by many of them; by the 2000s most had run dry, as drought and pumped wells drew the water table down.',
                     'تونێلێک کە ئاوی ژێرزەوی بێ پەمپ دەهێنێتە سەر زەوی. لە بیری دایکەوە دەست پێ دەکات، کە لە بنی گردەکاندا تا ئاو هەڵکەنراوە، و بە لێژییەکی نەرمتر لە زەوییەکە بە ژێر دەشتەکەدا دەڕوات، تا لە نێو کێڵگەکاندا دەردەچێت. هەر چەند دەیان مەترێک بیرێک هەیە کە کرێکاران پێیدا دادەبەزن و گڵەکەی پێدا دەردەهێنرێت. دەشتی دەوروبەری هەولێر بە زۆرێک لەمانە ئاو دەدرا؛ تا ساڵانی ٢٠٠٠ زۆربەیان وشک بوون، چونکە وشکەساڵی و بیرە پەمپدارەکان ئاوی ژێرزەوییان دابەزاند.',

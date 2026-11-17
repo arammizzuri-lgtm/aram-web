@@ -1,6 +1,7 @@
 {{-- An essay written in the admin (App\Models\Essay): headed as the journal's essays are, its cover photograph,
      then its sections, drawn by the heritage pages' own blocks (heritage/blocks, landmark.css, landmark.js:
-     the sections drifting in, the figures counting, the lightbox). A draft shows only through the signed preview. --}}
+     the sections drifting in, the figures counting, the lightbox), and the journal's chapters and plates for an essay
+     on buildings (journal-essay.css; its first "count" goes up in the head). A draft shows only through the signed preview. --}}
 @php
     /** @var \App\Models\Essay $essay */
     $l = $essay;   // the heritage blocks call their page $l
@@ -12,11 +13,17 @@
     $description = \Illuminate\Support\Str::limit($essay->tr('summary') ?: $headline, 160);
     $path = '/journal/'.$essay->slug;
     $kind = bi('Essay', 'وتار', 'مقال');
-    $cover = $essay->imageUrl('lg') ? url($essay->imageUrl('lg')) : null;
+    // the link preview: the cover photograph, or a picture of the card's drawing sheet made by a script (public/images/journal/{slug}-{lang}.jpg)
+    $card = 'images/journal/'.$essay->slug.'-'.$lang.'.jpg';
+    $cover = $essay->imageUrl('lg') ? url($essay->imageUrl('lg')) : (is_file(public_path($card)) ? asset($card).'?v='.filemtime(public_path($card)) : null);
+    $sections = $essay->sections();
+    $count = collect($sections)->search(fn ($s) => $s['type'] === 'count');
+    $link = $essay->extras['link_url'] ?? null;
     $schema = array_filter(['@context' => 'https://schema.org', '@type' => 'Article', 'headline' => $headline,
         'datePublished' => $essay->date->toDateString(), 'dateModified' => $essay->updated_at?->toAtomString(), 'url' => site_url($path),
         'inLanguage' => $lang, 'description' => $description, 'image' => $cover,
         'author' => \App\Support\Architect::reference(), 'publisher' => ['@id' => url('/').'#studio'],
+        'about' => filled($essay->extras['about'] ?? null) ? ['@type' => 'LandmarksOrHistoricalBuildings', 'name' => $essay->extras['about']] : null,
         'isPartOf' => ['@type' => 'Blog', 'name' => 'Journal', 'url' => site_url('/journal')]]);
 @endphp
 <!DOCTYPE html>
@@ -51,6 +58,9 @@
             @if (filled($essay->tr('summary')))
                 <p class="ja-head__lead"{{ text_dir($essay->tr('summary')) }}>{{ $essay->tr('summary') }}</p>
             @endif
+            @if ($count !== false)
+                @include('heritage.blocks.count', ['d' => $sections[$count]['data'], 'n' => $count])
+            @endif
         </header>
 
         @if ($essay->image)
@@ -63,12 +73,16 @@
         @endif
 
         <div class="lm-body">
-            @foreach ($essay->sections() as $i => ['type' => $type, 'data' => $data])
+            @foreach ($sections as $i => ['type' => $type, 'data' => $data])
+                @continue($i === $count)
                 @include('heritage.blocks.'.$type, ['d' => $data, 'n' => $i])
             @endforeach
         </div>
 
         <div class="jr-post__actions">
+            @if (filled($link))
+                <a class="pp-btn" href="{{ str_starts_with($link, '/') ? site_url($link) : $link }}">{{ $essay->extra('link') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+            @endif
             @include('partials.share-link', ['shareClass' => 'pp-btn pp-btn--line', 'shareAt' => 'journal', 'shareUrl' => site_url($path), 'shareTitle' => $headline])
         </div>
         <p class="jr-post__back"><a href="{{ site_url('/journal') }}"><span class="pp-arrow pp-arrow--back" aria-hidden="true">←</span> {{ bival('journal_all') }}</a></p>

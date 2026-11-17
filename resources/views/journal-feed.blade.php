@@ -6,8 +6,7 @@
     $items = $entries->map(fn ($e) => match (true) {
         isset($e['post']) => ['title' => $e['post']->title($lang) ?: $e['post']->project->tr('name'), 'url' => $e['post']->journalUrl(),
             'summary' => $e['post']->note($lang)],
-        isset($e['essay']) => ['title' => $e['essay']->tr('title'), 'url' => $e['essay']->url(), 'summary' => $e['essay']->tr('summary')],
-        default => ['title' => bi(...$e['article']['title']), 'url' => \App\Support\Articles::url($e['article']), 'summary' => bi(...$e['article']['summary'])],
+        default => ['title' => $e['essay']->tr('title'), 'url' => $e['essay']->url(), 'summary' => $e['essay']->tr('summary')],
     } + ['date' => $e['date']->copy()->startOfDay()->toAtomString()]);
 @endphp
 {!! '<?xml version="1.0" encoding="UTF-8"?>' !!}

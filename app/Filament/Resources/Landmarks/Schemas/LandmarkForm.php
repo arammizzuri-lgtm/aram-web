@@ -148,7 +148,7 @@ class LandmarkForm
     /* ── Field helpers ───────────────────────────────────────────────── */
 
     /** One text, three times: English, Kurdish, Arabic, side by side. */
-    private static function tri(string $field, string $label, bool $area = false, int $rows = 3, ?string $help = null): Grid
+    public static function tri(string $field, string $label, bool $area = false, int $rows = 3, ?string $help = null): Grid
     {
         $make = fn (string $lang, string $name) => ($area
             ? Textarea::make($field.'_'.$lang)->rows($rows)
@@ -186,7 +186,7 @@ class LandmarkForm
     }
 
     /** The first words of a text, for a collapsed section's label. */
-    private static function words(?string $s, int $n = 8): string
+    public static function words(?string $s, int $n = 8): string
     {
         return Str::words(trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $s))), $n, '…');
     }
@@ -194,7 +194,7 @@ class LandmarkForm
     /* ── The kinds of section ────────────────────────────────────────── */
 
     /**
-     * @param  list<string>|null  $only  the kinds to offer (an essay offers those of AppModelsEssay::BLOCKS)
+     * @param  list<string>|null  $only  the kinds to offer (an essay offers those of App\Models\Essay::BLOCKS; its chapters and plates are EssayForm's)
      * @return array<int, Block>
      */
     public static function blocks(?array $only = null): array

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasPageSections;
-use App\Support\Articles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -12,20 +11,22 @@ use Illuminate\Support\Str;
  * An essay written in the admin for the journal (/journal/{slug}): a title,
  * a line and a cover photograph for its card, and a page composed of the
  * heritage pages' sections — text, photographs, galleries, quotations and the
- * rest — every text in English, Kurdish and Arabic. Essays with drawings of
- * their own are code instead (App\Support\Articles).
+ * rest — every text in English, Kurdish and Arabic. An essay on buildings
+ * also has chapters and plates drawn as the journal draws them (the Citadel's
+ * houses, the Qaysari), and `extras`: its card's drawing sheet in place of a
+ * photograph, a link at its end, and the place it is about.
  */
 class Essay extends Model
 {
     use HasPageSections;   // its photographs: measured, resized, listed
 
     /** The kinds of section an essay can have: the landmarks', less the ones about a place. */
-    public const BLOCKS = ['text', 'statement', 'image', 'gallery', 'stats', 'facts', 'timeline', 'quote', 'annotated', 'compare', 'drawing', 'sources'];
+    public const BLOCKS = ['text', 'statement', 'image', 'gallery', 'stats', 'facts', 'timeline', 'quote', 'annotated', 'compare', 'drawing', 'sources', 'count', 'chapter', 'plates'];
 
     protected $fillable = ['slug', 'date', 'title_en', 'title_ku', 'title_ar', 'summary_en', 'summary_ku', 'summary_ar',
-        'image', 'image_credit', 'image_source', 'sections', 'is_published'];
+        'image', 'image_credit', 'image_source', 'sections', 'extras', 'is_published'];
 
-    protected $casts = ['date' => 'date', 'sections' => 'array', 'is_published' => 'boolean'];
+    protected $casts = ['date' => 'date', 'sections' => 'array', 'extras' => 'array', 'is_published' => 'boolean'];
 
     protected static function booted(): void
     {
@@ -42,11 +43,10 @@ class Essay extends Model
         });
     }
 
-    /** Whether /journal/{slug} is free for this essay: not another essay, an essay in code or a build entry. */
+    /** Whether /journal/{slug} is free for this essay: not another essay or a build entry. */
     public static function slugIsFree(string $slug, ?int $except = null): bool
     {
         return ! in_array($slug, ['feed', 'glossary'], true)   // the journal's feed and glossary
-            && ! Articles::find($slug)
             && ! self::where('slug', $slug)->where('id', '!=', $except ?? 0)->exists()
             && ! ProjectUpdate::where('slug', $slug)->exists();
     }
@@ -63,6 +63,12 @@ class Essay extends Model
         $field = $field === 'name' ? 'title' : $field;   // the heritage blocks ask for their page's name
 
         return Landmark::separators(bi_record($lang, $this->{$field.'_en'}, $this->{$field.'_ku'}, $this->{$field.'_ar'}), $lang);
+    }
+
+    /** One of `extras` in a language (default: the page's): a text in three, as the sections have them (kicker_en …). */
+    public function extra(string $field, ?string $lang = null): ?string
+    {
+        return Landmark::t((array) $this->extras, $field, $lang);
     }
 
     /** @return array<int, array{type: string, data: array}> */

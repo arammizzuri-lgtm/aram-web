@@ -4,17 +4,19 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Essays\EssayResource;
 use App\Filament\Resources\Essays\Pages\CreateEssay;
+use App\Filament\Resources\Essays\Pages\EditEssay;
+use App\Models\Drawing;
 use App\Models\Essay;
 use App\Models\User;
-use App\Support\Articles;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * The journal's essays (App\Support\Articles): listed on /journal among the
+ * The journal's essays (App\Models\Essay): listed on /journal among the
  * build entries, each a page of its own in the three languages — the first,
- * the houses of Erbil Citadel, with its plates of redrawn plans.
+ * the houses of Erbil Citadel, with its plates of redrawn plans, written in
+ * code first and moved to the admin (database/data/journal-essays.json).
  */
 class JournalEssaysTest extends TestCase
 {
@@ -22,8 +24,7 @@ class JournalEssaysTest extends TestCase
 
     public function test_the_journal_lists_an_essay_and_gives_it_a_page_in_every_language(): void
     {
-        $article = Articles::find('citadel-house-plans');
-        $this->assertNotNull($article);
+        $this->assertTrue(Essay::where('slug', 'citadel-house-plans')->sole()->is_published);
 
         // on the journal, with no build entry published, the essay is the lead card, its cover a sheet of its drawings
         $this->get('/journal')->assertOk()
@@ -61,7 +62,6 @@ class JournalEssaysTest extends TestCase
             $this->assertSame(8, substr_count($html, '<p class="ja-plate__foot">'));
             $this->assertStringContainsString('· 8 / 8</span>', $html);
         }
-        $this->assertNull(Articles::image(['slug' => 'no-such-essay'], 'en'));
     }
 
     /** An essay written in the admin, its page composed of the heritage sections. */
@@ -105,7 +105,7 @@ class JournalEssaysTest extends TestCase
         $this->get($e->previewUrl('ku'))->assertOk()->assertSee('بیناسازی بە گڵ')->assertSee('هێشتا بڵاونەکراوەتەوە')
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
 
-        // the code essay keeps its address: one written in the admin under the same title gets another
+        // the Citadel essay keeps its address: one written in the admin under the same title gets another
         $this->assertSame('building-with-earth-2', $this->essay()->slug);
         $this->assertFalse(Essay::slugIsFree('citadel-house-plans'));
         $this->assertTrue(Essay::slugIsFree('building-with-earth', $e->id));
@@ -184,21 +184,22 @@ class JournalEssaysTest extends TestCase
 
     public function test_every_drawing_an_essay_shows_has_its_walls(): void
     {
-        $counts = ['citadel-house-plans' => 18, 'qaysari-bazaar' => 8];
-        foreach (Articles::all() as $article) {
-            $dwgs = Articles::drawings($article);
-            $this->assertCount($counts[$article['slug']], $dwgs, $article['slug']);
-            foreach ($dwgs as $key => $dwg) {
-                $this->assertStringStartsWith('M', $dwg['d']['wall'], $key);
-                // the box round what is built, which the journal card frames by
-                $this->assertCount(4, $dwg['bb'], $key);
-                $this->assertGreaterThan(0, $dwg['bb'][2] * $dwg['bb'][3], $key);
-            }
-            foreach ($article['cover'] as $key) {
-                $this->assertArrayHasKey($key, $dwgs);
-            }
-            $this->assertTrue(view()->exists($article['view']));
-            $this->assertNotNull(Articles::image($article, 'ar'), $article['slug']);
+        $files = Drawing::files();
+        $this->assertSame(['citadel-drawings' => 18, 'qaysari-drawings' => 8], array_map('count', $files));
+        foreach (Drawing::code() as $key => $dwg) {
+            $this->assertStringStartsWith('M', $dwg['d']['wall'], $key);
+            // the box round what is built, which the journal card frames by
+            $this->assertCount(4, $dwg['bb'], $key);
+            $this->assertGreaterThan(0, $dwg['bb'][2] * $dwg['bb'][3], $key);
+        }
+        // each essay draws every one of its file's drawings, its card's two among them, and has its link preview
+        foreach (['citadel-house-plans' => 'citadel-drawings', 'qaysari-bazaar' => 'qaysari-drawings'] as $slug => $file) {
+            $essay = Essay::where('slug', $slug)->sole();
+            preg_match_all('/"code:([a-z0-9-]+)"/', json_encode($essay->sections), $m);
+            $this->assertEqualsCanonicalizing(array_keys($files[$file]), $m[1], $slug);
+            $this->assertArrayHasKey(substr($essay->extras['cover_plan'], 5), $files[$file]);
+            $this->assertArrayHasKey(substr($essay->extras['cover_section'], 5), $files[$file]);
+            $this->assertFileExists(public_path('images/journal/'.$slug.'-ar.jpg'));
         }
     }
 
@@ -243,5 +244,31 @@ class JournalEssaysTest extends TestCase
         $this->get('/llms.txt')->assertSee(url('/journal/glossary'), false);
         // and no essay written in the admin can take its address
         $this->assertFalse(Essay::slugIsFree('glossary'));
+    }
+
+    public function test_the_essays_with_plates_are_edited_in_the_admin_and_keep_everything_when_saved(): void
+    {
+        $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.test', 'password' => 'secret-password']));
+        $e = Essay::where('slug', 'citadel-house-plans')->sole();
+        $before = $e->sections;
+
+        $this->get(EssayResource::getUrl('index'))->assertOk()->assertSee('The houses of the Citadel, in plan, section and elevation')->assertSee('The Qaysari');
+        $this->get(EssayResource::getUrl('edit', ['record' => $e]))->assertOk()
+            ->assertSee('Chapter · A town of courtyards')->assertSee('Plates · 8 · The plates')->assertSee('Figures at the top')
+            ->assertSee('Drawing sheet on the card');
+
+        // saved as it is, nothing is lost: not a word, a drawing, nor the diagrams' shapes, which the form only carries
+        Livewire::test(EditEssay::class, ['record' => $e->getKey()])->call('save')->assertHasNoFormErrors();
+        $this->assertEquals($before, $e->fresh()->sections);
+        $this->assertSame('CH-01 — CH-08', $e->fresh()->extras['code']);
+
+        // a word changed in a plate shows on the page, in its language
+        $sections = $e->sections;
+        $sections[3]['data']['plates'][1]['name_ku'] = 'خانووی سەید عەبدوڵڵا پاشا (نوێ)';
+        $e->update(['sections' => $sections]);
+        $this->get('/ku/journal/citadel-house-plans')->assertSee('<h3 class="ja-plate__name">خانووی سەید عەبدوڵڵا پاشا (نوێ)</h3>', false)
+            ->assertSee(url('/ku/kurdistan-heritage'), false);   // the button at the end, in the page's language
+        $this->get('/journal/citadel-house-plans')->assertSee('"about":{"@type":"LandmarksOrHistoricalBuildings","name":"Erbil Citadel"}', false)
+            ->assertSee('<dd dir="ltr">31/8</dd>', false)->assertSee('<dd dir="ltr">c. 1750–1930</dd>', false);
     }
 }

@@ -325,8 +325,9 @@ html[dir="rtl"] .jg-word__ku, html[dir="rtl"] .jg-word__lat { text-align: right;
 
     /* "Print the plates" (journal-drawing.js sets html.ja-printing): the plates alone, one to an A3 sheet,
        drawings on the left, the text down the right, a title strip along the foot */
-    html.ja-printing body > :not(main), html.ja-printing .ja > :not(.ja-plates), html.ja-printing .ja-plates > :not(.ja-plate) { display: none !important; }
-    html.ja-printing body, html.ja-printing .ja, html.ja-printing .ja-plates { margin: 0; padding: 0; max-width: none; background: none; }
+    html.ja-printing body > :not(main), html.ja-printing .ja > :not(.lm-body), html.ja-printing .lm-body > :not(.ja-plates),
+    html.ja-printing .ja-plates > :not(.ja-plate) { display: none !important; }
+    html.ja-printing body, html.ja-printing .ja, html.ja-printing .lm-body, html.ja-printing .ja-plates { margin: 0; padding: 0; max-width: none; background: none; }
     html.ja-printing .ja-plate { page: plate; break-before: page; margin: 0; height: 276mm; border: .3mm solid #222; border-radius: 0; overflow: hidden;
         display: grid; grid-template: "head head" auto "dwg side" minmax(0, 1fr) "sec side" auto "foot foot" auto / minmax(0, 1fr) 92mm; }
     html.ja-printing .ja-plate:has(.ja-plate__sheet--sec) { grid-template-rows: auto minmax(0, 1.3fr) minmax(0, 1fr) auto; }

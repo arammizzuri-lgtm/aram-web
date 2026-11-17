@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Support\Articles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -43,24 +42,33 @@ class Drawing extends Model
 
     /* ── The essays' drawings ────────────────────────────────────────── */
 
+    /**
+     * The essays' drawing files (resources/journal/*-drawings.json, built by scripts in tools/journal), by name, each
+     * its drawings by key as the file has them (no corrections).
+     *
+     * @return array<string, array<string, array>>
+     */
+    public static function files(): array
+    {
+        static $read;
+
+        return $read ??= collect(glob(resource_path('journal/*-drawings.json')))
+            ->mapWithKeys(fn ($f) => [basename($f, '.json') => json_decode(file_get_contents($f), true)])->all();
+    }
+
     /** Every drawing of the essays, by key, as its file has it (no corrections). */
     public static function code(): array
     {
-        $all = [];
-        foreach (Articles::all() as $a) {
-            $all += Articles::raw($a);
-        }
-
-        return $all;
+        return array_merge(...array_values(self::files()));
     }
 
     /** The drawings an essay's "Drawing" section can show: the essays' own, then the new ones traced here. */
     public static function options(): array
     {
         $o = [];
-        foreach (Articles::all() as $a) {
-            foreach (array_keys(Articles::raw($a)) as $k) {
-                $o['code:'.$k] = $a['title'][0].' · '.$k;
+        foreach (self::files() as $file => $dwgs) {
+            foreach (array_keys($dwgs) as $k) {
+                $o['code:'.$k] = ucfirst(str_replace('-', ' ', $file)).' · '.$k;
             }
         }
         foreach (self::whereNull('base')->orderBy('title_en')->get() as $d) {
@@ -75,13 +83,9 @@ class Drawing extends Model
     {
         [$kind, $key] = explode(':', (string) $ref, 2) + [1 => ''];
         if ($kind === 'code') {
-            foreach (Articles::all() as $a) {
-                if (isset(Articles::raw($a)[$key])) {
-                    return Articles::drawings($a)[$key];
-                }
-            }
+            $dwg = self::code()[$key] ?? null;
 
-            return null;
+            return $dwg ? self::corrected([$key => $dwg])[$key] : null;
         }
 
         return $kind === 'db' ? self::whereNull('base')->find((int) $key)?->toDwg() : null;

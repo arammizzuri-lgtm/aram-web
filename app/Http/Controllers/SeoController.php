@@ -124,9 +124,6 @@ class SeoController extends Controller
         $out[] = '- [How we work — the four phases of a project]('.site_url('/process', 'en').')';
         $out[] = '- [Journal — projects as they are built, and essays on architecture]('.site_url('/journal', 'en').')';
         $out[] = '- [A dictionary of Kurdish architecture — building words in Kurdish, Arabic and English, each drawn]('.site_url('/journal/glossary', 'en').')';
-        foreach (\App\Support\Articles::all() as $article) {
-            $out[] = '- ['.$article['title'][0].']('.\App\Support\Articles::url($article, 'en').') — '.$article['summary'][0];
-        }
         foreach (\App\Models\Essay::published()->orderByDesc('date')->get() as $essay) {
             $out[] = '- ['.$essay->title_en.']('.$essay->url('en').')'.(filled($essay->summary_en) ? ' — '.$essay->summary_en : '');
         }
@@ -190,9 +187,6 @@ class SeoController extends Controller
         $this->page($xml, '/journal/glossary', \Illuminate\Support\Carbon::createFromTimestamp(filemtime(resource_path('views/journal/glossary.blade.php'))));
         foreach ($posts as $post) {
             $this->page($xml, '/journal/'.$post->slug, $post->updated_at, $post->imageUrls('lg'));
-        }
-        foreach (\App\Support\Articles::all() as $article) {
-            $this->page($xml, '/journal/'.$article['slug'], \Illuminate\Support\Carbon::parse($article['date']));
         }
         foreach (\App\Models\Essay::published()->get() as $essay) {
             $this->page($xml, '/journal/'.$essay->slug, $essay->updated_at, $essay->imageUrl() ? [url($essay->imageUrl())] : []);

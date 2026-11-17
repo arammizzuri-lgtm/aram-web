@@ -1,11 +1,9 @@
 {{-- An essay's card cover on /journal: one drawing sheet with a plan and a section from the essay itself
      (its drawings file, framed by each drawing's 'bb', the box round what is built),
      a 5 m bar to the section's scale and a title block. Gold line on the dark panel, as the essay draws.
-     $article: one of App\Support\Articles, its 'cover' [plan, section] and its 'sheet', the title block's words. --}}
+     $essay: an App\Models\Essay whose extras name the plan and the section (cover_plan, cover_section, as Drawing::resolve
+     takes them) and the title block's words (kicker, line1, line2, note in three languages, and code); $plan, $sec resolved. --}}
 @php
-    $dwgs = \App\Support\Articles::drawings($article);
-    [$plan, $sec] = [$dwgs[$article['cover'][0]], $dwgs[$article['cover'][1]]];
-    $sheet = $article['sheet'];
     $rtl = site_rtl();
     // the section across the top right, 770 wide; the plan fills the left within 620 x 860
     $ss = 770 / $sec['bb'][2];
@@ -46,10 +44,10 @@
 
     {{-- the title block --}}
     <g @if ($rtl) direction="rtl" @endif>
-        <text class="c-kicker{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="640">{{ bi(...$sheet['kicker']) }}</text>
-        <text class="c-title" x="{{ $tx }}" y="722">{{ bi(...$sheet['title'][0]) }}</text>
-        <text class="c-title" x="{{ $tx }}" y="786">{{ bi(...$sheet['title'][1]) }}</text>
-        <text class="c-note{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="870">{{ bi(...$sheet['note']) }}</text>
+        <text class="c-kicker{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="640">{{ $essay->extra('kicker') }}</text>
+        <text class="c-title" x="{{ $tx }}" y="722">{{ $essay->extra('line1') }}</text>
+        <text class="c-title" x="{{ $tx }}" y="786">{{ $essay->extra('line2') }}</text>
+        <text class="c-note{{ $rtl ? ' is-rtl' : '' }}" x="{{ $tx }}" y="870">{{ $essay->extra('note') }}</text>
     </g>
-    <text class="c-code" x="{{ $rtl ? 760 : 1530 }}" y="930" text-anchor="{{ $rtl ? 'start' : 'end' }}" direction="ltr">{{ $sheet['code'] }}</text>
+    <text class="c-code" x="{{ $rtl ? 760 : 1530 }}" y="930" text-anchor="{{ $rtl ? 'start' : 'end' }}" direction="ltr">{{ $essay->extras['code'] ?? '' }}</text>
 </svg>

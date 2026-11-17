@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Drawings\Pages;
 
 use App\Filament\Resources\Drawings\DrawingResource;
 use App\Models\Drawing;
-use App\Support\Articles;
+use App\Models\Essay;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -30,15 +30,8 @@ class EditDrawing extends EditRecord
                 }),
             Action::make('open')->label('Open the essay')->icon(Heroicon::OutlinedArrowTopRightOnSquare)->color('gray')
                 ->visible(fn (Drawing $record) => (bool) $record->base)
-                ->url(function (Drawing $record) {
-                    foreach (Articles::all() as $a) {
-                        if (isset(Articles::raw($a)[$record->base])) {
-                            return Articles::url($a, 'en');
-                        }
-                    }
-
-                    return null;
-                }, shouldOpenInNewTab: true),
+                // the essay whose plates or sections draw it
+                ->url(fn (Drawing $record) => Essay::where('sections', 'like', '%"code:'.$record->base.'"%')->first()?->url('en'), shouldOpenInNewTab: true),
             DeleteAction::make(),
         ];
     }

@@ -1,7 +1,7 @@
 {{-- One plan, section or elevation of a journal essay's plates, drawn the way the sheet's
      plan is (partials/sheet-plan): walls in double line, doors swinging, windows, stairs with their
      arrows, rooms named with their areas, the axes and their dimensions, a north point and a scale.
-     $dwg comes from the essay's drawings file (Articles::drawings; all in cm); $id keeps its defs apart; $name is for readers who cannot see it; $rel (0–1) is its width against
+     $dwg comes from an essay's drawings file or the admin's tracer (Drawing::resolve; all in cm); $id keeps its defs apart; $name is for readers who cannot see it; $rel (0–1) is its width against
      the widest drawing on its plate, so the floors of one house share a scale.
      Lines draw themselves as the drawing comes into view, and the court is lit by the sun over Erbil
      now (journal-drawing.js). --}}
