@@ -69,7 +69,7 @@ class LandmarkForm
 
                     Section::make('Publishing')->columns(3)->columnSpanFull()->schema([
                         TextInput::make('slug')->label('Web address')->prefix('/kurdistan-heritage/')->maxLength(120)
-                            ->rules(['nullable', 'alpha_dash'])->unique(ignoreRecord: true)
+                            ->rules(['nullable', 'alpha_dash', 'not_in:poster'])->unique(ignoreRecord: true)
                             ->helperText('Made from the English name when left empty.'),
                         TextInput::make('sort_order')->label('Order in the list')->numeric()->default(fn () => (int) Landmark::max('sort_order') + 1),
                         Toggle::make('is_published')->label('Shown on the website')->default(true)->inline(false)

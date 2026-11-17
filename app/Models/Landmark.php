@@ -127,7 +127,8 @@ class Landmark extends Model
             if (blank($l->slug)) {
                 $base = Str::slug($l->name_en) ?: 'landmark';
                 $slug = $base;
-                for ($i = 2; static::withTrashed()->where('slug', $slug)->where('id', '!=', $l->id ?? 0)->exists(); $i++) {
+                // /kurdistan-heritage/poster is the poster's
+                for ($i = 2; $slug === 'poster' || static::withTrashed()->where('slug', $slug)->where('id', '!=', $l->id ?? 0)->exists(); $i++) {
                     $slug = $base.'-'.$i;
                 }
                 $l->slug = $slug;

@@ -17,6 +17,12 @@ class HeritageController extends Controller
         return view('heritage', ['landmarks' => Landmark::publishedOrdered()->get()->values()]);
     }
 
+    /** Every landmark on one A2 sheet, to print or download (heritage/poster). */
+    public function poster()
+    {
+        return view('heritage.poster', ['landmarks' => Landmark::publishedOrdered()->get()]);
+    }
+
     /**
      * A landmark's page. An unpublished landmark is shown only through the
      * admin's signed preview link (Landmark::previewUrl), never indexed.

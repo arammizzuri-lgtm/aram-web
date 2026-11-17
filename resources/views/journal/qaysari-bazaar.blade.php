@@ -182,6 +182,7 @@
             <p>{{ $t('The word goes back, through Arabic, to Caesar. Across the Islamic world a qaysariyya was a covered market building for the more valuable trades, closed at night. In Mamluk Cairo it was a courtyard ringed with shops, with homes on the floors above. Erbil’s are different. There is no courtyard. The building is a knot of passages, and the street itself runs inside under a vault.',
                 'وشەکە لە ڕێگەی عەرەبییەوە دەگەڕێتەوە بۆ قەیسەر. لە سەرانسەری جیهانی ئیسلامیدا قەیسەری بینایەکی بازاڕی سەرداپۆشراو بوو بۆ بازرگانییە بەنرخترەکان، کە شەوان دادەخرا. لە قاهیرەی مەملووکیدا حەوشەیەک بوو کە دوکان دەوری دابوو و ماڵ لە نهۆمەکانی سەرەوەدا بوون. هی هەولێر جیاوازن. حەوشە نییە. بیناکە گرێیەکە لە ڕاڕەو، و خودی شەقامەکە لە ناوەوە لە ژێر کەوانەیەکدا تێدەپەڕێت.',
                 'تعود الكلمة عبر العربية إلى قيصر. وفي أرجاء العالم الإسلامي كانت القيصرية مبنى سوق مسقوفاً للتجارات الأثمن، يُغلق ليلاً. في القاهرة المملوكية كانت فناءً تحيط به الدكاكين وفوقها مساكن. أما قيصريتا أربيل فمختلفتان: لا فناء فيهما، بل عقدة من الممرات، والطريق نفسه يجري في الداخل تحت قبو.') }}</p>
+            <p class="ja-glossary"><a href="{{ site_url('/journal/glossary') }}#qaysari">{{ $t('Qaysari, khan, taq and the other words, in the glossary', 'قەیسەری، خان، تاق و وشەکانی تر، لە فەرهەنگەکەدا', 'القيصرية والخان والطاق وسائر الكلمات، في المسرد') }}</a> <span class="pp-arrow" aria-hidden="true">→</span></p>
         </section>
 
         <section class="ja-plates">

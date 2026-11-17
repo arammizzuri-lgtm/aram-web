@@ -475,4 +475,32 @@ class HeritageTest extends TestCase
         $this->actingAs($admin)->get(LandmarkResource::getUrl('edit', ['record' => Landmark::where('slug', 'gobekli-tepe')->sole()]))->assertOk()
             ->assertSee('How it was built')->assertSee('How a ring was raised');
     }
+
+    public function test_the_poster_numbers_every_landmark_on_one_sheet_and_offers_it_as_a_pdf(): void
+    {
+        $landmarks = Landmark::publishedOrdered()->whereNotNull('lat')->get();
+        $this->assertGreaterThan(20, $landmarks->count());
+
+        foreach (['' => 'en', '/ku' => 'ku', '/ar' => 'ar'] as $prefix => $lang) {
+            $html = $this->get($prefix.'/kurdistan-heritage/poster')->assertOk()->getContent();
+            // one numbered pin and one line in the list for each landmark, the oldest era first
+            $this->assertSame($landmarks->count(), substr_count($html, '<circle class="po-pin"'), $lang);
+            $this->assertSame($landmarks->count(), substr_count($html, '<span class="po-era__n">'), $lang);
+            foreach ($landmarks as $l) {
+                $this->assertStringContainsString(e($l->tr('name', $lang)), $html, $lang.' '.$l->slug);
+            }
+            $this->assertLessThan(strpos($html, e(Landmark::eraName('living', $lang))), strpos($html, e(Landmark::eraName('prehistory', $lang))));
+            // the base map, a code to the live collection, and the PDF of the sheet in each language
+            $this->assertStringContainsString('<path class="po-edge" d="M', $html);
+            $this->assertStringContainsString('class="qr-svg qr"', $html);
+            $this->assertStringContainsString('arammizuri.com'.($prefix ?: '').'/kurdistan-heritage</p>', $html);
+            $this->assertStringContainsString('downloads/heritage-poster-'.$lang.'.pdf', $html);
+            $this->assertFileExists(public_path('downloads/heritage-poster-'.$lang.'.pdf'));
+        }
+
+        // the collection links to it, search engines are told of it, and no landmark can take its address
+        $this->get('/kurdistan-heritage')->assertSee('href="'.url('/kurdistan-heritage/poster').'"', false);
+        $this->get('/sitemap.xml')->assertSee(url('/ar/kurdistan-heritage/poster'), false);
+        $this->assertSame('poster-2', $this->landmark(['name_en' => 'Poster', 'slug' => null])->slug);
+    }
 }

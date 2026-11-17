@@ -1,0 +1,82 @@
+/* =========================================================
+   ARAM MIZURI ARCHITECTURE — poster.css
+   The heritage poster (/kurdistan-heritage/poster, views/heritage/poster):
+   an A2 sheet on paper, drawn in millimetres. On screen the sheet is scaled
+   to the column (--mm is one millimetre of it, from the frame's width);
+   printed, the frame is 594 mm wide and the sheet is A2 landscape.
+   ========================================================= */
+
+.po { max-width: var(--wide); margin: 0 auto; padding: clamp(112px, 15vh, 156px) var(--gutter) clamp(64px, 10vh, 112px); }
+.po-head { max-width: 860px; }
+.po-head__title { margin-top: 18px; font-size: clamp(34px, 4.6vw, 64px); font-weight: 200; line-height: 1.05; letter-spacing: -.03em; color: #fff; }
+[dir="rtl"] .po-head__title { letter-spacing: 0; line-height: 1.4; font-weight: 400; }
+.po-head__lead { margin-top: 20px; font-size: 17px; font-weight: 300; line-height: 1.75; color: var(--text); }
+[dir="rtl"] .po-head__lead { font-size: 18px; line-height: 2; }
+.po-head__get { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.po-head__note { margin-top: 16px; font-size: 13px; line-height: 1.7; color: var(--faint); }
+[dir="rtl"] .po-head__note { font-size: 14px; }
+.po-back { margin-top: 40px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+.po-back a { color: var(--muted); text-decoration: none; }
+
+/* ---- the sheet -------------------------------------------- */
+.po-frame { container-type: inline-size; margin-top: clamp(36px, 6vh, 64px); }
+.po-sheet {
+    --mm: calc(100cqw / 594);
+    --ink: #1c1b19; --soft: #5a564d; --gold: #8a6500; --paper: #f4f0e6;
+    display: grid; grid-template-columns: calc(380 * var(--mm)) minmax(0, 1fr); gap: calc(12 * var(--mm));
+    width: 100%; aspect-ratio: 594 / 420; padding: calc(12 * var(--mm)); box-sizing: border-box; overflow: hidden;
+    font-size: calc(3 * var(--mm)); line-height: 1.3;   /* else the page's 16px sets every line's height */
+    background: var(--paper); color: var(--ink); border-radius: 2px; box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+.po-map { display: block; width: 100%; height: 100%; overflow: hidden; font-family: var(--font); }
+.po-map text { stroke: none; direction: ltr; unicode-bidi: isolate; }
+.po-grat { fill: none; stroke: #ddd5c4; stroke-width: .2; }
+.po-grat__label { font-size: 2.3px; fill: #a39a87; letter-spacing: .1px; }
+.po-land { fill: #ebe3cf; }
+.po-edge { fill: none; stroke: var(--gold); stroke-width: .6; stroke-linejoin: round; }
+.po-lake { fill: #cfdbe1; stroke: #7d97a6; stroke-width: .25; }
+.po-river { fill: none; stroke: #7d97a6; stroke-width: .45; stroke-linejoin: round; stroke-linecap: round; }
+.po-water { font-size: 3px; font-style: italic; fill: #56768a; letter-spacing: .15px; }
+.po-town { fill: var(--soft); }
+.po-town__label { font-size: 2.7px; fill: var(--soft); }
+.po-leader { fill: none; stroke: var(--ink); stroke-width: .3; }
+.po-dot { fill: var(--ink); }
+.po-pin { fill: var(--ink); stroke: var(--paper); stroke-width: .5; }
+.po-pin__n { font-size: 3.4px; font-weight: 500; fill: #f2c230; }
+.po-key__line { fill: none; stroke: var(--ink); stroke-width: .35; }
+.po-key__n { font-size: 2.6px; fill: var(--ink); }
+.po-border { fill: none; stroke: var(--ink); stroke-width: .4; }
+
+/* the side: title, the numbered list by era, the studio and the code */
+.po-side { display: flex; flex-direction: column; min-height: 0; gap: calc(6 * var(--mm)); }
+.po-title__label { font-size: calc(2.6 * var(--mm)); letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
+.po-title__name { margin-top: calc(2 * var(--mm)); font-size: calc(10.5 * var(--mm)); font-weight: 200; line-height: 1.05; letter-spacing: -.02em; color: var(--ink); }
+.po-title__sub { margin-top: calc(2.5 * var(--mm)); font-size: calc(3.2 * var(--mm)); font-weight: 300; line-height: 1.45; color: var(--soft); }
+[dir="rtl"] .po-title__label { letter-spacing: 0; font-size: calc(3 * var(--mm)); }
+[dir="rtl"] .po-title__name { letter-spacing: 0; font-weight: 400; line-height: 1.35; font-size: calc(9 * var(--mm)); }
+.po-legend { flex: 1; min-height: 0; display: grid; align-content: start; gap: calc(4.6 * var(--mm)); padding-top: calc(4 * var(--mm)); border-top: calc(.3 * var(--mm)) solid var(--ink); }
+.po-era__name { font-size: calc(2.7 * var(--mm)); font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: calc(1.4 * var(--mm)); }
+[dir="rtl"] .po-era__name { letter-spacing: 0; font-size: calc(2.9 * var(--mm)); }
+.po-era ol { list-style: none; display: grid; gap: calc(2.2 * var(--mm)); }
+.po-era li { display: grid; grid-template-columns: calc(6.4 * var(--mm)) minmax(0, 1fr); gap: calc(2.4 * var(--mm)); align-items: start; }
+.po-era__n { display: grid; place-items: center; width: calc(6 * var(--mm)); height: calc(6 * var(--mm)); border-radius: 50%; background: var(--ink); color: #f2c230; font-size: calc(3 * var(--mm)); font-weight: 500; }
+.po-era li strong { font-size: calc(3.7 * var(--mm)); font-weight: 500; line-height: 1.3; color: var(--ink); }
+.po-era li em { display: block; margin-top: calc(.4 * var(--mm)); font-style: normal; font-size: calc(2.7 * var(--mm)); line-height: 1.35; color: var(--soft); }
+[dir="rtl"] .po-era li strong { font-size: calc(3.8 * var(--mm)); }
+[dir="rtl"] .po-era li em { font-size: calc(2.9 * var(--mm)); line-height: 1.5; }
+.po-foot { display: grid; grid-template-columns: calc(24 * var(--mm)) minmax(0, 1fr); gap: calc(4 * var(--mm)); align-items: end; padding-top: calc(4 * var(--mm)); border-top: calc(.3 * var(--mm)) solid var(--ink); }
+.po-foot__qr svg { display: block; width: 100%; height: auto; }
+.po-foot__qr path { fill: var(--ink); }
+.po-foot__brand { font-size: calc(3 * var(--mm)); font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
+.po-foot__url { margin-top: calc(1 * var(--mm)); font-size: calc(2.8 * var(--mm)); color: var(--gold); }
+.po-foot__src { margin-top: calc(2 * var(--mm)); font-size: calc(2.1 * var(--mm)); line-height: 1.45; color: var(--soft); }
+[dir="rtl"] .po-foot__src { font-size: calc(2.3 * var(--mm)); line-height: 1.6; }
+
+/* ---- printed: the sheet alone, A2 landscape, colours kept ---- */
+@page { size: 594mm 420mm; margin: 0; }
+@media print {
+    body > :not(main), .po > :not(.po-frame) { display: none !important; }
+    html, body, .po { margin: 0; padding: 0; max-width: none; background: #fff; }
+    .po-frame { width: 594mm; margin: 0; }
+    .po-sheet { border-radius: 0; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

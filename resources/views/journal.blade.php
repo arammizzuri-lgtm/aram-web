@@ -30,6 +30,7 @@
             <p class="pp-label">{{ bival('journal_label') }}</p>
             <h1 class="jr-hero__title">{{ bival('journal_title') }}</h1>
             <p class="jr-hero__intro">{{ bival('journal_intro') }}</p>
+            <p class="jr-hero__more"><a href="{{ site_url('/journal/glossary') }}">{{ bi('Words of the Kurdish house: a glossary', 'وشەکانی خانووی کوردی: فەرهەنگێک', 'مفردات البيت الكردي: مسرد') }} <span class="pp-arrow" aria-hidden="true">→</span></a></p>
         </header>
 
         @if ($entries->isEmpty())

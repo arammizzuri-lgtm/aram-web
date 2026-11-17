@@ -103,6 +103,7 @@
             @if ($landmarks->isNotEmpty())
                 <div class="hr-hero__row">
                     <a class="pp-btn" href="#map">{{ bival('landmarks_explore') }} <span class="pp-arrow" aria-hidden="true">→</span></a>
+                    <a class="pp-btn pp-btn--line" href="{{ site_url(\App\Models\Landmark::PATH.'/poster') }}">{{ bi('The map as a poster (PDF)', 'نەخشەکە وەک پۆستەر (PDF)', 'الخريطة ملصقاً (PDF)') }}</a>
                     <p class="hr-hero__count">{{ str_replace(['{n}', '{u}'], [$digits($landmarks->count()), $digits($landmarks->where('unesco', true)->count())], bival('landmarks_count')) }}</p>
                 </div>
             @endif

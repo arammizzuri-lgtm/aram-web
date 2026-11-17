@@ -5,7 +5,7 @@
      as it comes into view (journal-drawing.js, through .ja-dwg).
      $id keeps its defs apart; $tp: holes (rooms and court, [x, y, w, h] or [[x, y], ...]), court (the open,
      sunlit part), doors [x, y, w, 'h'|'v', into -1|1], wins [x, y, w, 'h'|'v'], cols [[x, y]], over (dashed
-     roof edges), words [[x, y, word]]. All in a 200 x 150 frame, walls 6 thick. --}}
+     roof edges), fix (fittings, as a path), words [[x, y, word]]. All in a 200 x 150 frame, walls 6 thick. --}}
 @php
     $T = 6;
     $box = fn ($b) => is_array($b[0]) ? 'M'.implode('L', array_map(fn ($p) => $p[0].' '.$p[1], $b)).'Z' : "M{$b[0]} {$b[1]}h{$b[2]}v{$b[3]}h-{$b[2]}z";
@@ -40,7 +40,8 @@
     }
     $cols = implode('', array_map(fn ($c) => 'M'.($c[0] - 2.6).' '.$c[1].'a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0', $tp['cols'] ?? []));
     $words = ['court' => bi('COURT', 'حەوشە', 'الفناء'), 'tarma' => bi('TARMA', 'تارمە', 'طارمة'), 'iwan' => bi('IWAN', 'ئەیوان', 'إيوان'),
-        'room' => bi('ROOM', 'ژوور', 'غرفة'), 'arcade' => bi('ARCADE', 'ڕیزە کەوانە', 'رواق')];
+        'room' => bi('ROOM', 'ژوور', 'غرفة'), 'arcade' => bi('ARCADE', 'ڕیزە کەوانە', 'رواق'),
+        'diwakhana' => bi('DIWAKHANA', 'دیوەخان', 'الديوخانة')];
 @endphp
 <svg class="ja-dwg ja-type" viewBox="0 0 200 150" style="--u:1px;font-size:10px" aria-hidden="true">
     <defs>
@@ -62,6 +63,7 @@
     @if ($glass)<path class="d-glass dl" pathLength="1" d="{{ $glass }}"/>@endif
     <path class="d-open dl" pathLength="1" d="{{ $arc }}"/>
     <path class="d-leaf dl" pathLength="1" d="{{ $leaf }}"/>
+    @if (! empty($tp['fix']))<path class="d-fix dl" pathLength="1" d="{{ $tp['fix'] }}"/>@endif
     @if (! empty($tp['over']))<path class="d-over" d="{{ $tp['over'] }}"/>@endif
     @if ($cols)<path class="d-poche t-col" d="{{ $cols }}"/><path class="d-wall dl" pathLength="1" d="{{ $cols }}"/>@endif
     {{-- the way in, under the street door --}}

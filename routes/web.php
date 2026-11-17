@@ -54,9 +54,11 @@ $pages = function (string $lang) {
         // the build journal: construction updates published as posts
         Route::get('/journal', [JournalController::class, 'index'])->name('journal');
         Route::get('/journal/feed', [JournalController::class, 'feed'])->name('journal.feed');
+        Route::view('/journal/glossary', 'journal.glossary')->name('journal.glossary');
         // Kurdistan's architectural heritage: the map of Greater Kurdistan, and a
         // page per landmark. The Erbil walk it replaced points here.
         Route::get('/kurdistan-heritage', [HeritageController::class, 'index'])->name('heritage');
+        Route::get('/kurdistan-heritage/poster', [HeritageController::class, 'poster'])->name('heritage.poster');
         Route::get('/kurdistan-heritage/{slug}', [HeritageController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('landmark');
         Route::get('/erbil-walk', fn () => redirect(site_url('/kurdistan-heritage'), 301));
         // the suppliers and brands the studio builds with

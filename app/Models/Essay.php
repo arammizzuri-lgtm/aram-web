@@ -45,7 +45,7 @@ class Essay extends Model
     /** Whether /journal/{slug} is free for this essay: not another essay, an essay in code or a build entry. */
     public static function slugIsFree(string $slug, ?int $except = null): bool
     {
-        return $slug !== 'feed'   // /journal/feed is the journal's feed
+        return ! in_array($slug, ['feed', 'glossary'], true)   // the journal's feed and glossary
             && ! Articles::find($slug)
             && ! self::where('slug', $slug)->where('id', '!=', $except ?? 0)->exists()
             && ! ProjectUpdate::where('slug', $slug)->exists();

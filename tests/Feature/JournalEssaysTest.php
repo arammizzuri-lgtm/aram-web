@@ -201,4 +201,31 @@ class JournalEssaysTest extends TestCase
             $this->assertNotNull(Articles::image($article, 'ar'), $article['slug']);
         }
     }
+
+    public function test_the_glossary_draws_every_word_in_three_languages_and_the_essays_link_to_it(): void
+    {
+        $words = ['hawsh', 'iwan', 'tarma', 'diwakhana', 'sirdab', 'sarban', 'khisht', 'taq', 'mosul-alabaster', 'qaysari', 'khan', 'kahrez'];
+        foreach (['' => 'Words of the Kurdish house', '/ku' => 'وشەکانی خانووی کوردی', '/ar' => 'مفردات البيت الكردي'] as $lang => $title) {
+            $html = $this->get($lang.'/journal/glossary')->assertOk()->assertSee($title)->getContent();
+            foreach ($words as $id) {
+                $this->assertStringContainsString('<article class="jg-term" id="'.$id.'">', $html, $lang.' '.$id);
+            }
+            // a drawing for each, and the words for search engines as a set of defined terms
+            $this->assertSame(12, substr_count($html, '<svg class="ja-dwg ja-type"'), $lang);
+            $this->assertStringContainsString('"@type":"DefinedTermSet"', $html);
+            $this->assertSame(12, substr_count($html, '"@type":"DefinedTerm"'), $lang);
+        }
+        // each word points to where it is seen: an essay or a landmark
+        $this->get('/journal/glossary')->assertSee('href="'.url('/kurdistan-heritage/taq-e-bostan').'"', false)
+            ->assertSee('href="'.url('/journal/qaysari-bazaar').'"', false);
+
+        // the essays link their words to it, and the journal and the sitemap point to it
+        $this->get('/journal/citadel-house-plans')->assertSee(url('/journal/glossary').'#iwan', false)->assertSee(url('/journal/glossary').'#diwakhana', false);
+        $this->get('/ar/journal/qaysari-bazaar')->assertSee(url('/ar/journal/glossary').'#qaysari', false);
+        $this->get('/journal')->assertSee('href="'.url('/journal/glossary').'"', false);
+        $this->get('/sitemap.xml')->assertSee(url('/ku/journal/glossary'), false);
+        $this->get('/llms.txt')->assertSee(url('/journal/glossary'), false);
+        // and no essay written in the admin can take its address
+        $this->assertFalse(Essay::slugIsFree('glossary'));
+    }
 }

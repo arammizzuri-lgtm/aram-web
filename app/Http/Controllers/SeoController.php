@@ -123,6 +123,7 @@ class SeoController extends Controller
         $out[] = '- [Services — architecture, exteriors, interiors, construction, tendering, furniture]('.site_url('/services', 'en').')';
         $out[] = '- [How we work — the four phases of a project]('.site_url('/process', 'en').')';
         $out[] = '- [Journal — projects as they are built, and essays on architecture]('.site_url('/journal', 'en').')';
+        $out[] = '- [Words of the Kurdish house — a glossary of building words in Kurdish, Arabic and English]('.site_url('/journal/glossary', 'en').')';
         foreach (\App\Support\Articles::all() as $article) {
             $out[] = '- ['.$article['title'][0].']('.\App\Support\Articles::url($article, 'en').') — '.$article['summary'][0];
         }
@@ -134,6 +135,7 @@ class SeoController extends Controller
         }
         $out[] = '- [Careers — open applications welcome all year from architects, interior designers, fresh graduates and architecture students (training) in Erbil and Kurdistan]('.site_url('/careers', 'en').')';
         $out[] = '- [Kurdistan\'s architectural heritage — the landmarks of Greater Kurdistan on one map, introduced by Aram Mizuri]('.site_url(\App\Models\Landmark::PATH, 'en').')';
+        $out[] = '- [The heritage map as an A2 poster, free to download and print]('.site_url(\App\Models\Landmark::PATH.'/poster', 'en').')';
         $out[] = '';
 
         // the heritage map's landmarks, one line each
@@ -185,6 +187,7 @@ class SeoController extends Controller
         // the build journal and its entries, and the heritage map and its landmarks
         $posts = \App\Models\ProjectUpdate::inJournal()->orderByDesc('date')->get();
         $this->page($xml, '/journal', $posts->max('updated_at'));
+        $this->page($xml, '/journal/glossary', \Illuminate\Support\Carbon::createFromTimestamp(filemtime(resource_path('views/journal/glossary.blade.php'))));
         foreach ($posts as $post) {
             $this->page($xml, '/journal/'.$post->slug, $post->updated_at, $post->imageUrls('lg'));
         }
@@ -196,6 +199,7 @@ class SeoController extends Controller
         }
         $landmarks = \App\Models\Landmark::publishedOrdered()->get();
         $this->page($xml, \App\Models\Landmark::PATH, $landmarks->max('updated_at'));
+        $this->page($xml, \App\Models\Landmark::PATH.'/poster', $landmarks->max('updated_at'));
         foreach ($landmarks as $landmark) {
             $this->page($xml, \App\Models\Landmark::PATH.'/'.$landmark->slug, $landmark->updated_at, $landmark->imageUrl() ? [url($landmark->imageUrl())] : []);
         }

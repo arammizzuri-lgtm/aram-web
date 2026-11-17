@@ -61,6 +61,41 @@
 [dir="rtl"] .ja-terms dt, [dir="rtl"] .ja-build dt { letter-spacing: 0; font-size: 15px; padding-top: 2px; }
 .ja-terms dd, .ja-build dd { font-size: 15px; font-weight: 300; line-height: 1.8; color: var(--text); }
 [dir="rtl"] .ja-terms dd, [dir="rtl"] .ja-build dd { font-size: 16px; line-height: 2; }
+.ja-terms dt a, .ja-glossary a { color: inherit; text-decoration: underline; text-decoration-color: rgba(245,197,24,.4); text-underline-offset: 4px; }
+.ja-terms dt a:hover, .ja-glossary a:hover { text-decoration-color: var(--gold); }
+.ja-text > p.ja-glossary { margin-top: 14px; font-size: 14px; color: var(--muted); }
+
+/* ---- the glossary (journal/glossary): an index, then each word with its drawing ---- */
+.jg-index { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; max-width: 860px; margin-top: clamp(40px, 6vh, 64px); padding: 22px 0; border-block: 1px solid var(--line); }
+.jg-index__group { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+[dir="rtl"] .jg-index__group { letter-spacing: 0; font-size: 13px; }
+.jg-index ul { list-style: none; display: grid; gap: 6px; }
+.jg-index a { font-size: 15px; font-weight: 300; color: var(--text); text-decoration: none; }
+.jg-index a:hover { color: var(--gold); }
+.jg-group { margin-top: clamp(64px, 10vh, 112px); }
+.jg-term { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); padding: clamp(28px, 4vh, 40px) 0; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.jg-term__fig { display: flex; flex-direction: column; gap: 10px; }
+.jg-term__fig svg { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; }
+.jg-term__fig .ja-dwg { max-height: none; }
+.jg-term__fig figcaption { font-size: 13px; font-weight: 300; line-height: 1.6; color: var(--muted); }
+[dir="rtl"] .jg-term__fig figcaption { font-size: 14px; line-height: 1.8; }
+.jg-term__text { max-width: 640px; }
+.jg-term__name { font-size: clamp(24px, 2.6vw, 34px); font-weight: 200; line-height: 1.2; color: #fff; }
+[dir="rtl"] .jg-term__name { font-weight: 400; line-height: 1.5; }
+.jg-term__name a { color: inherit; text-decoration: none; }
+.jg-term__words { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 10px 0 18px; font-size: 17px; color: var(--gold); }
+.jg-term__words span[dir="ltr"] { font-size: 13px; letter-spacing: .04em; color: var(--muted); align-self: center; }
+.jg-term__text > p:not([class]) { font-size: 16px; font-weight: 300; line-height: 1.85; color: var(--text); }
+[dir="rtl"] .jg-term__text > p:not([class]) { font-size: 17px; line-height: 2.05; }
+.jg-term__see { margin-top: 14px; font-size: 14px; color: var(--muted); }
+.jg-term__see a { color: var(--gold); text-decoration: none; }
+.jg-term__see a:hover { text-decoration: underline; }
+.jg-term:target .jg-term__name { color: var(--gold); }
+@media (max-width: 760px) {
+    .jg-index { grid-template-columns: 1fr 1fr; }
+    .jg-term { grid-template-columns: 1fr; }
+    .jg-term__fig { max-width: 420px; }
+}
 
 /* ---- the plates -------------------------------------------- */
 .ja-plates { margin-top: clamp(64px, 10vh, 112px); }
