@@ -20,6 +20,9 @@
         'yard' => bi('YARD', 'حەوشە', 'الحوش'), 'basin' => bi('BASIN', 'حەوز', 'حوض'), 'entry' => bi('ENTRY', 'دەروازە', 'المدخل'),
         'shop' => bi('SHOP', 'دوکان', 'دكان'), 'passage' => bi('PASSAGE', 'ڕاڕەو', 'الممر'), 'lane' => bi('BAZAAR LANE', 'کۆڵانی بازاڕ', 'زقاق السوق'),
         'cellar' => bi('CELLAR', 'ژێرزەمین', 'قبو'),
+        // a site plan's places, named as OpenStreetMap names them
+        'citadel' => bi('CITADEL', 'قەڵا', 'القلعة'), 'qaysari' => bi('QAYSARI BAZAAR', 'بازاڕی قەیسەری', 'سوق القيصرية'),
+        'park' => bi('SHAR PARK', 'باغی شار', 'حديقة شار'), 'gate' => bi('GRAND GATE', 'دەروازەی گەورە', 'البوابة الكبرى'),
     ];
     $lit = $dwg['court'] && $dwg['north'] !== null;   // a court whose north we know gets the sun; one without, plain paving
     $say = fn (string $v) => str_starts_with($v, '@') ? ($words[substr($v, 1)] ?? substr($v, 1)) : $v;

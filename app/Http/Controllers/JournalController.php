@@ -6,6 +6,7 @@ use App\Models\Essay;
 use App\Models\ProjectUpdate;
 use App\Support\Articles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 /**
  * The studio's journal — /journal (and /ku, /ar): construction updates
@@ -18,11 +19,28 @@ class JournalController extends Controller
 {
     public function index()
     {
-        return view('journal', [
-            'posts' => ProjectUpdate::inJournal()->with('project')->orderByDesc('date')->orderByDesc('id')->get(),
-            'articles' => collect(Articles::all()),
-            'essays' => Essay::published()->get(),
-        ]);
+        return view('journal', ['entries' => self::entries()]);
+    }
+
+    /** The same entries as an Atom feed, in the page's language: /journal/feed, /ku/journal/feed, /ar/journal/feed. */
+    public function feed()
+    {
+        return response()->view('journal-feed', ['entries' => self::entries()->take(30)])
+            ->header('Content-Type', 'application/atom+xml; charset=UTF-8');
+    }
+
+    /**
+     * The build entries and the essays, as one list, newest first: each ['date' => Carbon, and 'post', 'article' or 'essay'].
+     *
+     * @return \Illuminate\Support\Collection<int, array>
+     */
+    private static function entries()
+    {
+        return ProjectUpdate::inJournal()->with('project')->orderByDesc('date')->orderByDesc('id')->get()
+            ->map(fn ($p) => ['date' => $p->date, 'post' => $p])
+            ->concat(collect(Articles::all())->map(fn ($a) => ['date' => Carbon::parse($a['date']), 'article' => $a]))
+            ->concat(Essay::published()->get()->map(fn ($e) => ['date' => $e->date, 'essay' => $e]))
+            ->sortByDesc(fn ($e) => $e['date']->getTimestamp())->values();
     }
 
     public function show(Request $request, string $slug)

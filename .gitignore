@@ -61,3 +61,7 @@ Thumbs.db
 
 # ── Local project-intake staging (not deployed) ───────────
 /project-uploads/
+
+# The journal drawings' build output (tools/journal/README.md)
+/tools/journal/out/
+/tools/journal/reg/

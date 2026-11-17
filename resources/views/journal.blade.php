@@ -1,17 +1,10 @@
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\ProjectUpdate> $posts */
-    /** @var \Illuminate\Support\Collection<int, array> $articles  the essays in code (App\Support\Articles) */
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Essay> $essays  the essays written in the admin */
+    /** @var \Illuminate\Support\Collection<int, array> $entries  the build entries ('post'), the essays in code ('article', App\Support\Articles) and those written in the admin ('essay'), newest first */
     $lang = site_lang();
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = bival('journal_label').' — '.$brand;
     $description = \Illuminate\Support\Str::limit(bival('journal_intro'), 160);
     $cover = fn ($post) => $post->imageUrls('thumb')[0] ?? $post->project?->coverThumbUrl();
-    // the build entries and the essays, as one list, newest first
-    $entries = $posts->map(fn ($p) => ['date' => $p->date, 'post' => $p])
-        ->concat($articles->map(fn ($a) => ['date' => \Illuminate\Support\Carbon::parse($a['date']), 'article' => $a]))
-        ->concat($essays->map(fn ($e) => ['date' => $e->date, 'essay' => $e]))
-        ->sortByDesc(fn ($e) => $e['date']->getTimestamp())->values();
     $schema = ['@context' => 'https://schema.org', '@type' => 'Blog', 'name' => bival('journal_label'), 'url' => site_url('/journal'),
         'inLanguage' => $lang, 'publisher' => ['@id' => url('/').'#studio'],
         'blogPost' => $entries->take(20)->map(fn ($e) => match (true) {
@@ -27,6 +20,7 @@
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
 <head>
     @include('partials.page-head', ['path' => '/journal', 'css' => 'journal.css'])
+    <link rel="alternate" type="application/atom+xml" title="{{ $title }}" href="{{ site_url('/journal/feed') }}">
 </head>
 <body class="pp pp--journal">
     @include('partials.page-top', ['otherUrl' => null])

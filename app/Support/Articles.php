@@ -55,8 +55,8 @@ class Articles
                 'sheet' => [
                     'kicker' => ['ERBIL · THE QAYSARI', 'هەولێر · قەیسەری', 'أربيل · القيصرية'],
                     'title' => [['A covered passage,', 'ڕاڕەوێکی سەرداپۆشراو،', 'ممرّ مسقوف،'], ['in plan and section', 'لە نەخشە و بڕگەدا', 'مسقطًا ومقطعًا']],
-                    'note' => ['2 PLANS · 2 SECTIONS · 3 ELEVATIONS', '2 نەخشە · 2 بڕگە · 3 ڕووکار', '2 مسقطان · 2 مقطعان · 3 واجهات'],
-                    'code' => 'QB-01 — QB-03',
+                    'note' => ['1 SITE · 2 PLANS · 2 SECTIONS · 3 ELEVATIONS', '1 شوێن · 2 نەخشە · 2 بڕگە · 3 ڕووکار', '1 موقع · 2 مسقطان · 2 مقطعان · 3 واجهات'],
+                    'code' => 'QB-01 — QB-04',
                 ],
             ],
         ];

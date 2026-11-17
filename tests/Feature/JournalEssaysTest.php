@@ -133,16 +133,19 @@ class JournalEssaysTest extends TestCase
     {
         $this->get('/journal')->assertOk()
             ->assertSee('href="'.url('/journal/qaysari-bazaar').'"', false)
-            ->assertSee('2 PLANS · 2 SECTIONS · 3 ELEVATIONS')->assertSee('QB-01 — QB-03')
+            ->assertSee('1 SITE · 2 PLANS · 2 SECTIONS · 3 ELEVATIONS')->assertSee('QB-01 — QB-04')
             ->assertSee('12 PLANS · 5 SECTIONS · 1 ELEVATION');   // each card its own title block
 
         foreach (['' => 'The Qaysari: Erbil’s covered bazaar, in plan and section', '/ku' => 'قەیسەری: بازاڕە سەرداپۆشراوەکەی هەولێر، لە نەخشە و بڕگەدا', '/ar' => 'القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا'] as $lang => $title) {
             $html = $this->get($lang.'/journal/qaysari-bazaar')->assertOk()->assertSee($title)->getContent();
-            // three plates: a stretch of passage (two plans, two sections), one bay before and after, a gate
-            $this->assertSame(3, substr_count($html, '<article class="ja-plate"'), $lang);
-            $this->assertSame(7, substr_count($html, '<svg class="ja-dwg"'), $lang);
-            $this->assertSame(3, substr_count($html, '<p class="ja-plate__foot">'), $lang);
-            $this->assertStringContainsString('<span class="ja-plate__code" dir="ltr">QB-03</span>', $html);
+            // four plates: the site, a stretch of passage (two plans, two sections), one bay before and after, a gate
+            $this->assertSame(4, substr_count($html, '<article class="ja-plate"'), $lang);
+            $this->assertSame(8, substr_count($html, '<svg class="ja-dwg"'), $lang);
+            $this->assertSame(4, substr_count($html, '<p class="ja-plate__foot">'), $lang);
+            $this->assertStringContainsString('<span class="ja-plate__code" dir="ltr">QB-04</span>', $html);
+            // the site plan is OpenStreetMap's, and says so on the drawing and in the sources
+            $this->assertSame(2, substr_count($html, '© OpenStreetMap contributors'), $lang);
+            $this->assertStringContainsString('https://www.openstreetmap.org/copyright', $html);
             // drawn from a description, not traced from the survey, whose licence does not allow it: the page says so and links it
             $this->assertStringContainsString('https://doi.org/10.34780/0r26-1i7a', $html);
             $this->assertStringContainsString('https://doi.org/10.48494/REALCORP2026.1081', $html);
@@ -154,9 +157,34 @@ class JournalEssaysTest extends TestCase
         $this->get('/sitemap.xml')->assertOk()->assertSee(url('/ar/journal/qaysari-bazaar'), false);
     }
 
+    public function test_the_journal_has_a_feed_in_every_language_with_its_entries_newest_first(): void
+    {
+        $project = \App\Models\Project::create(['name' => 'Erbil Tower', 'category' => 'commercial', 'status' => 'Under Construction',
+            'size' => 'default', 'imgs' => ['https://example.com/cover.jpg'], 'is_published' => true]);
+        $project->updates()->create(['date' => '2026-11-30', 'title_en' => 'Roof slab cast', 'note_en' => 'The last pour & the first rain.', 'in_journal' => true]);
+        $this->essay(['title_en' => 'A draft on lime', 'is_published' => false]);
+        $this->essay();   // Building with earth, 2026-11-20
+
+        $this->get('/journal')->assertSee('<link rel="alternate" type="application/atom+xml"', false)->assertSee(url('/journal/feed'), false);
+        $res = $this->get('/journal/feed')->assertOk()->assertHeader('Content-Type', 'application/atom+xml; charset=UTF-8');
+        $feed = simplexml_load_string($res->getContent());
+        $this->assertNotFalse($feed);
+        $titles = array_map(fn ($e) => (string) $e->title, iterator_to_array($feed->entry, false));
+        $this->assertSame(['Roof slab cast', 'Building with earth', 'The Qaysari: Erbil’s covered bazaar, in plan and section',
+            'The houses of the Citadel, in plan, section and elevation'], $titles);   // the draft left out
+        $this->assertSame('The last pour & the first rain.', (string) $feed->entry[0]->summary);
+        $this->assertSame('2026-11-30T00:00:00+00:00', (string) $feed->updated);
+
+        $ar = simplexml_load_string($this->get('/ar/journal/feed')->assertOk()->getContent());
+        $this->assertSame(url('/ar/journal/qaysari-bazaar'), (string) $ar->entry[2]->link['href']);
+        $this->assertSame('القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا', (string) $ar->entry[2]->title);
+
+        $this->assertFalse(Essay::slugIsFree('feed'));
+    }
+
     public function test_every_drawing_an_essay_shows_has_its_walls(): void
     {
-        $counts = ['citadel-house-plans' => 18, 'qaysari-bazaar' => 7];
+        $counts = ['citadel-house-plans' => 18, 'qaysari-bazaar' => 8];
         foreach (Articles::all() as $article) {
             $dwgs = Articles::drawings($article);
             $this->assertCount($counts[$article['slug']], $dwgs, $article['slug']);

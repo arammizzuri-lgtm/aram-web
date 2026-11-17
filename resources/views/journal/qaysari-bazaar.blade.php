@@ -1,5 +1,5 @@
 {{-- The journal's essay on Erbil's Qaysari bazaar: the two late-Ottoman Qaysari buildings under the Citadel,
-     drawn as a type (resources/journal/qaysari-drawings.json): one stretch of passage in plan and section, one bay
+     drawn as a type (resources/journal/qaysari-drawings.json; tools/journal): the site from OpenStreetMap, one stretch of passage in plan and section, one bay
      before and after repair, one gate. Not surveys: the DAI's measured plans may not be redrawn (CC BY-NC-ND), so
      the drawings are built from what its report says in words, and the heights are ours. Every fact has its source
      below. Texts are written here in the three languages: $t(English, Kurdish, Arabic). --}}
@@ -23,6 +23,30 @@
     $src = $t('Kurapkat 2014, in words: a type, not a survey; the heights are ours', 'کوراپکات ٢٠١٤، بە وشە: جۆرێک، نەک ڕووپێو؛ بەرزییەکان هی خۆمانن', 'كورابكات ٢٠١٤، وصفاً: نموذج لا مسح؛ والارتفاعات من عندنا');
 
     $plates = [
+        [
+            'name' => $t('Where it stands', 'لە کوێ دەوەستێت', 'أين يقوم'),
+            'type' => $t('The bazaar at the foot of the Citadel', 'بازاڕەکە لە بنی قەڵادا', 'السوق عند سفح القلعة'),
+            'plans' => [['key' => 'q-site', 'level' => $t('Site plan', 'نەخشەی شوێن', 'مخطط الموقع')]],
+            'facts' => [
+                [$t('The bazaar quarter', 'گەڕەکی بازاڕ', 'حيّ السوق'), $t('About 4 ha, 240 × 210 m, as OpenStreetMap outlines it', 'نزیکەی ٤ هێکتار، ٢٤٠ × ٢١٠ م، وەک OpenStreetMap سنووری بۆ دەکێشێت', 'نحو ٤ هكتارات، ٢٤٠ × ٢١٠ م، كما يحدّها OpenStreetMap')],
+                [$t('The Citadel', 'قەڵا', 'القلعة'), $t('About 11 ha inside its wall', 'نزیکەی ١١ هێکتار لە ناو دیوارەکەیدا', 'نحو ١١ هكتاراً داخل سورها')],
+                [$t('Grand Gate to the bazaar', 'دەروازەی گەورە بۆ بازاڕ', 'من البوابة الكبرى إلى السوق'), $t('About 90 m, down the ramp', 'نزیکەی ٩٠ م، بە لێژاییەکەدا بۆ خوارەوە', 'نحو ٩٠ م، نزولاً على المنحدر')],
+                [$t('Drawn from', 'لەمەوە کێشراوە', 'مرسوم عن'), $t('OpenStreetMap, July 2026', 'OpenStreetMap، تەممووزی ٢٠٢٦', 'OpenStreetMap، تموز ٢٠٢٦')],
+            ],
+            'legend' => [
+                ['▨', $t('The bazaar quarter, as OpenStreetMap outlines it, its buildings drawn in full', 'گەڕەکی بازاڕ، وەک OpenStreetMap سنووری بۆ دەکێشێت، بیناکانی بە تەواوی کێشراون', 'حيّ السوق كما يحدّه OpenStreetMap، وأبنيته مرسومة كاملة')],
+                ['▢', $t('The Citadel mound, inside its wall', 'گردی قەڵا، لە ناو دیوارەکەیدا', 'تل القلعة داخل سوره')],
+                ['┄', $t('Shar Park', 'باغی شار', 'حديقة شار')],
+            ],
+            'text' => [
+                $t('The Grand Gate is the Citadel’s south gate, and from it a ramp runs down into the bazaar. OpenStreetMap names the whole quarter below it Qaysari Bazaar: about four hectares of covered lanes and market buildings. The two Qaysaris stand inside it.',
+                    'دەروازەی گەورە دەروازەی باشووری قەڵایە، و لێژاییەک لێیەوە بۆ ناو بازاڕەکە دادەبەزێت. OpenStreetMap هەموو ئەو گەڕەکەی ژێری ناو دەنێت بازاڕی قەیسەری: نزیکەی چوار هێکتار لە کۆڵانی سەرداپۆشراو و بینای بازاڕ. هەردوو قەیسەرییەکە لە ناویدا دەوەستن.',
+                    'البوابة الكبرى هي البوابة الجنوبية للقلعة، ومنها ينحدر طريق إلى السوق. ويسمّي OpenStreetMap الحيّ كله تحتها سوق القيصرية: نحو أربعة هكتارات من الأزقة المسقوفة وأبنية السوق. وتقوم القيصريتان في داخله.'),
+                $t('The map does not say which of its buildings are the two Qaysaris, so this plate does not guess. The survey’s plans, linked below, show them.',
+                    'نەخشەکە نایڵێت کام لە بیناکانی دوو قەیسەرییەکەن، بۆیە ئەم تابلۆیە گومان ناکات. نەخشەکانی ڕووپێوەکە، کە لە خوارەوە بەستەریان هەیە، نیشانیان دەدەن.',
+                    'لا تقول الخريطة أيّ أبنيتها القيصريتان، فلا تخمّن هذه اللوحة. ومخططات المسح، ورابطها أدناه، تُظهرهما.'),
+            ],
+        ],
         [
             'name' => $t('A stretch of passage', 'پارچەیەک لە ڕاڕەو', 'مقطع من الممر'),
             'type' => $t('Shops below, rooms above, a vault over the street', 'دوکان لە خوارەوە، ژوور لە سەرەوە، کەوانەیەک بەسەر شەقامەکەوە', 'دكاكين في الأسفل وغرف في الأعلى وقبو فوق الطريق'),
@@ -253,10 +277,11 @@
                 <li>Kurapkat, D. (2014), ‘Erbil, Irak. Die osmanischen Qaisariya-Gebäude im Basar. Die Arbeiten der Jahre 2012 und 2013’, <cite>e-Forschungsberichte des DAI</cite> 2014(1), 58–66. The measured plans are its figs. 4, 5, 16 and 17. <a href="https://doi.org/10.34780/0r26-1i7a" rel="noopener" target="_blank">doi.org/10.34780/0r26-1i7a</a></li>
                 <li>Shehab, M. A. and Faraj, R. S. (2024), ‘Contextual Preservation and Contemporary Facilitation of Qaisaria in Iraqi Kurdistan Region’, <cite>Journal of Studies in Science and Engineering</cite> 4(2), 190–212. <a href="https://doi.org/10.53898/josse2024430" rel="noopener" target="_blank">doi.org/10.53898/josse2024430</a></li>
                 <li>Khayyat, M., Abdollah, I., Al-Baldawi, H. and Husham, Z. (2026), ‘Post-Disaster Restoration of Erbil’s Qaysariya Bazaar’, <cite>REAL CORP 2026 Proceedings</cite>, 1285–1290. <a href="https://doi.org/10.48494/REALCORP2026.1081" rel="noopener" target="_blank">doi.org/10.48494/REALCORP2026.1081</a></li>
+                <li>OpenStreetMap, the Citadel, the bazaar and the buildings around them, as of 15 July 2026 (plate QB-01). © OpenStreetMap contributors, available under the Open Database License. <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">openstreetmap.org/copyright</a></li>
             </ol>
-            <p class="ja-note">{{ $t('The drawings are ours: a type built from the description, to explain how such a building works. They are not a record of either Qaysari and not for measuring from. The figures for the fire and the repair are those the 2026 paper reports.',
-                'کێشانەکان هی خۆمانن: جۆرێک کە لە وەسفەکەوە دروست کراوە، بۆ ڕوونکردنەوەی ئەوەی بینایەکی وا چۆن کار دەکات. تۆمارێکی هیچ کام لە قەیسەرییەکان نین و بۆ پێوانە لێیانەوە نین. ژمارەکانی ئاگرەکە و چاککردنەوەکە ئەوانەن کە توێژینەوەکەی ٢٠٢٦ ڕاپۆرتیان دەکات.',
-                'الرسوم من عملنا: نموذج مبني على الوصف لشرح كيف يعمل مبنى كهذا. ليست سجلاً لأيٍّ من القيصريتين ولا يُقاس عليها. وأرقام الحريق والترميم هي ما تورده دراسة ٢٠٢٦.') }}</p>
+            <p class="ja-note">{{ $t('The drawings are ours: a type built from the description, to explain how such a building works. They are not a record of either Qaysari and not for measuring from. The figures for the fire and the repair are those the 2026 paper reports. The site plan alone is drawn from a map, OpenStreetMap’s.',
+                'کێشانەکان هی خۆمانن: جۆرێک کە لە وەسفەکەوە دروست کراوە، بۆ ڕوونکردنەوەی ئەوەی بینایەکی وا چۆن کار دەکات. تۆمارێکی هیچ کام لە قەیسەرییەکان نین و بۆ پێوانە لێیانەوە نین. ژمارەکانی ئاگرەکە و چاککردنەوەکە ئەوانەن کە توێژینەوەکەی ٢٠٢٦ ڕاپۆرتیان دەکات. تەنها نەخشەی شوێنەکە لە نەخشەیەکەوە کێشراوە، هی OpenStreetMap.',
+                'الرسوم من عملنا: نموذج مبني على الوصف لشرح كيف يعمل مبنى كهذا. ليست سجلاً لأيٍّ من القيصريتين ولا يُقاس عليها. وأرقام الحريق والترميم هي ما تورده دراسة ٢٠٢٦. ووحده مخطط الموقع مرسوم عن خريطة، هي خريطة OpenStreetMap.') }}</p>
         </section>
 
         <div class="jr-post__actions">

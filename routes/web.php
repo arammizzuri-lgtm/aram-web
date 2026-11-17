@@ -53,6 +53,7 @@ $pages = function (string $lang) {
         Route::get('/careers', [CareersController::class, 'index'])->name('careers');
         // the build journal: construction updates published as posts
         Route::get('/journal', [JournalController::class, 'index'])->name('journal');
+        Route::get('/journal/feed', [JournalController::class, 'feed'])->name('journal.feed');
         // Kurdistan's architectural heritage: the map of Greater Kurdistan, and a
         // page per landmark. The Erbil walk it replaced points here.
         Route::get('/kurdistan-heritage', [HeritageController::class, 'index'])->name('heritage');

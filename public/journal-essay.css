@@ -226,7 +226,7 @@
     .ja-dwg .d-glass { stroke: #777; }
     .ja-dwg .d-ctx, .ja-dwg .d-axis { stroke: #aaa; }
     .ja-dwg .d-hatch { stroke: #bbb; }
-    .ja-dwg .d-poche { fill: #dcdcdc; }
+    .ja-dwg .d-poche { fill: #000; fill-opacity: .14; }   /* #dcdcdc on paper, but a site plan's buildings show through the Citadel's */
     .ja-dwg .d-light { fill: none; }
     .ja-dwg text, .ja-dwg .p-tag, .ja-dwg .p-room, .ja-dwg .p-note, .ja-dwg .p-dim, .ja-dwg .d-title { fill: #222; }
     .ja-type .t-cut { fill: #fff; }
