@@ -84,6 +84,10 @@ class LandmarkForm
                             Textarea::make('summary_en')->label('One line (English)')->rows(3),
                             Textarea::make('summary_ku')->label('One line (Kurdish)')->rows(3)->extraInputAttributes(self::KU),
                             Textarea::make('summary_ar')->label('One line (Arabic)')->rows(3)->extraInputAttributes(self::AR),
+                            Textarea::make('snippet_en')->label('Search snippet (English)')->rows(3)->maxLength(170)
+                                ->helperText('What Google shows under the title, and link previews. One whole sentence, under about 155 characters. Empty: the introduction, shortened.'),
+                            Textarea::make('snippet_ku')->label('Search snippet (Kurdish)')->rows(3)->maxLength(170)->extraInputAttributes(self::KU),
+                            Textarea::make('snippet_ar')->label('Search snippet (Arabic)')->rows(3)->maxLength(170)->extraInputAttributes(self::AR),
                             Textarea::make('intro_en')->label('Introduction (English)')->rows(5)->helperText('Two or three sentences that make the visitor curious.'),
                             Textarea::make('intro_ku')->label('Introduction (Kurdish)')->rows(5)->extraInputAttributes(self::KU),
                             Textarea::make('intro_ar')->label('Introduction (Arabic)')->rows(5)->extraInputAttributes(self::AR),

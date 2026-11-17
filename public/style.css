@@ -845,7 +845,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 .hero__scroll {
     position: absolute; bottom: 92px; left: clamp(18px, 6vw, 84px); z-index: 3;
     display: flex; flex-direction: column; align-items: center; gap: 12px;
-    color: rgba(255,255,255,.3); font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+    color: rgba(255,255,255,.5); font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
     writing-mode: vertical-rl;
 }
 [dir="rtl"] .hero__scroll { left: auto; right: clamp(18px, 6vw, 84px); }
@@ -920,7 +920,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
     font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold);
 }
 [dir="rtl"] .pg__all { letter-spacing: 0; font-size: 13px; }
-.pg__all-n { color: rgba(255,255,255,.45); letter-spacing: 0; }
+.pg__all-n { color: rgba(255,255,255,.5); letter-spacing: 0; }
 .pg__all-arrow { font-variant-emoji: text; transition: transform .35s var(--ease); }
 .pg__head-link:hover .pg__all-arrow { transform: translate(3px, -3px); }
 [dir="rtl"] .pg__head-link:hover .pg__all-arrow { transform: translate(-3px, -3px); }
@@ -1188,7 +1188,7 @@ body.is-loaded .hero__titleblock { animation: heroFade 1s var(--ease-out) 1.25s 
 }
 .pgc__meta {
     font-size: 8.5px; letter-spacing: .18em;
-    text-transform: uppercase; color: rgba(255,255,255,.4);
+    text-transform: uppercase; color: rgba(255,255,255,.55);
 }
 
 /* CTA — glass circle at top-right, pops in on hover */
@@ -1525,7 +1525,7 @@ a.service { display: flex; flex-direction: column; color: inherit; text-decorati
 }
 .process__count-total {
     font-size: 18px; font-weight: 300; letter-spacing: .12em;
-    color: rgba(255,255,255,.35);
+    color: rgba(255,255,255,.55);
 }
 .process__bar {
     margin-top: 20px; height: 3px; border-radius: 100px;
@@ -1997,12 +1997,12 @@ a.service { display: flex; flex-direction: column; color: inherit; text-decorati
 .cmethod--copy:hover .cmethod__icon { box-shadow: 0 0 18px rgba(245,197,24,.3); background: rgba(245,197,24,.14); }
 .cmethod__icon svg { width: 18px; height: 18px; }
 .cmethod__text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.cmethod__label { font-size: 9px; letter-spacing: .26em; text-transform: uppercase; color: rgba(255,255,255,.4); }
+.cmethod__label { font-size: 9px; letter-spacing: .26em; text-transform: uppercase; color: rgba(255,255,255,.58); }
 .cmethod__value { font-size: 15px; font-weight: 300; color: var(--text); line-height: 1.45; word-break: break-word; }
 .cmethod__hint {
     margin-left: auto; flex: none;
     font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase;
-    color: rgba(255,255,255,.3);
+    color: rgba(255,255,255,.55);
     padding: 5px 11px; border-radius: 100px; border: 1px solid rgba(255,255,255,.1);
     transition: color .3s, border-color .3s, background .3s;
 }
@@ -2112,7 +2112,7 @@ a.service { display: flex; flex-direction: column; color: inherit; text-decorati
 .form-field.is-invalid textarea { border-color: rgba(255,143,122,.7); box-shadow: 0 0 0 3px rgba(255,143,122,.12); }
 .form-field.is-invalid label { color: #ff8f7a; }
 
-.form-note { margin: -6px 2px 16px; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,.38); }
+.form-note { margin: -6px 2px 16px; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,.58); }
 
 .form-more { margin: 0 0 16px; }
 .form-more__toggle {
@@ -2348,7 +2348,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
     color: rgba(255,255,255,.5);   /* .25 failed contrast (2.1:1); .5 reads 4.9:1 */ text-transform: uppercase; margin-bottom: 6px;
 }
 .footer__kurdish {
-    font-size: 13px; color: var(--gold); opacity: .5;
+    font-size: 13px; color: var(--gold); opacity: .7;
     letter-spacing: .04em;
     /* Stays dir="rtl" so the Kurdish shapes and reads correctly, but the line
        is pinned left so it starts on the same edge as the English tagline
@@ -2414,7 +2414,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .statbar__sub {
     margin-top: 12px;
     font-size: 13px; font-weight: 300; line-height: 1.75;
-    color: rgba(255,255,255,.45);
+    color: rgba(255,255,255,.5);
 }
 .statbar__track {
     position: relative; flex: 1; min-width: 0;
@@ -2638,7 +2638,7 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 .client-logo__sub {
     font-size: 9px; letter-spacing: .1em;
     text-transform: uppercase;
-    color: rgba(255,255,255,.6); white-space: nowrap;
+    color: rgba(255,255,255,.72); white-space: nowrap;
 }
 .clients__hint {
     margin: 14px 0 0;
@@ -3567,17 +3567,17 @@ body:has(.proj-overlay.open) .wa-fab { opacity: 0; pointer-events: none; }
 }
 .map-stat__lbl {
     font-size: 8px; letter-spacing: .24em; text-transform: uppercase;
-    color: rgba(255,255,255,.28);
+    color: rgba(255,255,255,.5);
 }
 .map-stat__div { width: 1px; height: 26px; background: rgba(255,255,255,.07); flex-shrink: 0; }
 
 /* Override Leaflet attribution for dark theme */
 .leaflet-control-attribution {
     background: transparent !important;
-    color: rgba(255,255,255,.14) !important;
+    color: rgba(255,255,255,.5) !important;
     font-size: 8px !important;
 }
-.leaflet-control-attribution a { color: rgba(255,255,255,.22) !important; }
+.leaflet-control-attribution a { color: rgba(255,255,255,.65) !important; }
 
 /* ── Custom pin markers ────────────────────────────────── */
 .map-pin { position: relative; width: 36px; height: 36px; cursor: none; }

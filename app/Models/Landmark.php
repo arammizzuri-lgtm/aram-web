@@ -109,7 +109,7 @@ class Landmark extends Model
     protected $fillable = [
         'slug', 'sort_order', 'region', 'era', 'hero_style',
         'name_en', 'name_ku', 'name_ar', 'place_en', 'place_ku', 'place_ar', 'period_en', 'period_ku', 'period_ar',
-        'summary_en', 'summary_ku', 'summary_ar', 'intro_en', 'intro_ku', 'intro_ar', 'body_en', 'body_ku', 'body_ar',
+        'summary_en', 'summary_ku', 'summary_ar', 'snippet_en', 'snippet_ku', 'snippet_ar', 'intro_en', 'intro_ku', 'intro_ar', 'body_en', 'body_ku', 'body_ar',
         'sections', 'year_from', 'year_to', 'materials',
         'condition', 'condition_en', 'condition_ku', 'condition_ar', 'condition_url',
         'lat', 'lng', 'image', 'image_credit', 'image_source',
@@ -269,6 +269,21 @@ class Landmark extends Model
     public function url(?string $lang = null): string
     {
         return site_url(self::PATH.'/'.$this->slug, $lang);
+    }
+
+    /**
+     * The link preview card in a language (default: the page's): the cover
+     * with the name, place and age, made by tools/heritage/share-cards.mjs.
+     * shortcut: the cards are files made on a laptop, so a new landmark, or a
+     * new name or cover, previews with the plain cover until the script is run
+     * again; make them on the server (with a font that shapes Kurdish) if that
+     * gets in the way.
+     */
+    public function shareImage(?string $lang = null): ?string
+    {
+        $file = 'images/heritage/og/'.$this->slug.'-'.($lang ?? site_lang()).'.jpg';
+
+        return is_file(public_path($file)) ? asset($file).'?v='.filemtime(public_path($file)) : null;
     }
 
     /** A signed link that shows the page even while it is unpublished — for the admin's Preview. */

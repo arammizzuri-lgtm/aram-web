@@ -211,7 +211,7 @@
 .lm-stats--band .lm-stat__value { color: #0a0a0a; }
 .lm-stats--band .lm-stat__unit { color: rgba(0,0,0,.6); }
 .lm-stats--band .lm-stat__label { color: rgba(0,0,0,.65); }
-.lm-stats--band .lm-stat__note { color: rgba(0,0,0,.5); }
+.lm-stats--band .lm-stat__note { color: rgba(0,0,0,.7); }
 .lm-stats--list .lm-stats__list { grid-template-columns: 1fr; gap: 0; max-width: 900px; }
 .lm-stats--list .lm-stat { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0 28px; align-items: baseline; padding: 20px 0; border-top: 1px solid var(--line); }
 .lm-stats--list .lm-stat:last-child { border-bottom: 1px solid var(--line); }

@@ -16,7 +16,7 @@
 .px {
     --bar-top: 62px;                  /* the top bar, once it turns solid */
     --ink: rgba(0,0,0,.2);            /* drawing lines */
-    --text: #2B2B2B; --muted: rgba(0,0,0,.62); --faint: rgba(0,0,0,.46); --line: rgba(0,0,0,.12);
+    --text: #2B2B2B; --muted: rgba(0,0,0,.62); --faint: rgba(0,0,0,.56); --line: rgba(0,0,0,.12);
     --panel: #F2F0EB; --black: #fff;
     --gold: #8A6500;                  /* gold as ink: readable on white */
     --bright: #F5C518;                /* the site's gold, for fills and on pictures */
@@ -100,7 +100,7 @@
     font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
     border-bottom: 1px solid rgba(138,101,0,.4); transition: border-color .25s;
 }
-.px-roomlink sup { font-size: 9px; letter-spacing: 0; color: rgba(138,101,0,.7); }
+.px-roomlink sup { font-size: 9px; letter-spacing: 0; color: #8A6500; }
 .px-roomlink:hover { border-bottom-color: var(--gold); }
 [dir="rtl"] .px-roomlink { letter-spacing: 0; font-size: 14px; text-transform: none; }
 .px-keys { display: contents; }
@@ -553,7 +553,7 @@
 .px .pp-btn { background: var(--bright); box-shadow: 0 10px 28px rgba(245,197,24,.3); }
 .px .pp-btn--line { background: none; color: var(--gold); border-color: rgba(138,101,0,.5); box-shadow: none; }
 .px .pp-btn--line:hover { background: rgba(138,101,0,.06); }
-.px .pp-btn--wa { background: rgba(18,140,75,.06); color: #128C4B; border-color: rgba(18,140,75,.45); box-shadow: none; }
+.px .pp-btn--wa { background: rgba(18,140,75,.06); color: #0F7A41; border-color: rgba(18,140,75,.45); box-shadow: none; }
 .px .pp-btn--wa:hover { background: rgba(18,140,75,.12); box-shadow: none; }
 .px .pp-act { border-color: rgba(0,0,0,.16); }
 

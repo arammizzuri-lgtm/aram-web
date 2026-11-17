@@ -10,11 +10,6 @@
 @view-transition { navigation: auto; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-/* The small grey text here — photo credits, which the licences require to be
-   legible, notes, the timeline's years and hints — at the site's --faint
-   (32% white) read at about 2.6:1 on the dark ground. 50% gives about 5:1,
-   past the 4.5:1 that small text needs. The bar and footer keep the site's. */
-.pp--heritage main, .lm-lb { --faint: rgba(255,255,255,.5); }
 
 /* ---- Introduction -------------------------------------------------- */
 .hr-hero { max-width: var(--wide); margin: 0 auto; padding: clamp(120px, 17vh, 170px) var(--gutter) clamp(28px, 5vh, 48px); }
@@ -58,7 +53,7 @@ html { scroll-behavior: smooth; }
 .hr-chip__n { font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
 .hr-chip:hover { border-color: rgba(245,197,24,.45); color: #fff; }
 .hr-chip.is-on { background: var(--gold); border-color: var(--gold); color: #0a0a0a; font-weight: 500; }
-.hr-chip.is-on .hr-chip__n { color: rgba(0,0,0,.55); }
+.hr-chip.is-on .hr-chip__n { color: rgba(0,0,0,.7); }
 /* a material: its own colour as a swatch, and — chosen — on the chip and its pins */
 .hr-swatch { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--mat); box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
 .hr-chip--mat { padding-inline-start: 11px; }

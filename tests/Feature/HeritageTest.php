@@ -292,6 +292,29 @@ class HeritageTest extends TestCase
         $this->get('/llms.txt')->assertOk()->assertSee('Test Citadel')->assertSee('UNESCO World Heritage Site');
     }
 
+    public function test_every_landmark_has_a_whole_search_snippet_in_each_language_and_its_share_card(): void
+    {
+        foreach (Landmark::publishedOrdered()->get() as $l) {
+            foreach (['en', 'ku', 'ar'] as $lang) {
+                $snippet = $l->{'snippet_'.$lang};
+                $this->assertNotEmpty($snippet, "$l->slug $lang");
+                $this->assertLessThanOrEqual(155, mb_strlen($snippet), "$l->slug $lang");
+                $this->assertNotNull($l->shareImage($lang), "$l->slug $lang has no share card");
+            }
+        }
+
+        $l = Landmark::where('slug', 'erbil-citadel')->first();
+        $page = $this->get('/ku/kurdistan-heritage/erbil-citadel')->assertOk();
+        $page->assertSee('<meta name="description" content="'.e($l->snippet_ku).'">', false)
+            ->assertSee('images/heritage/og/erbil-citadel-ku.jpg', false);
+
+        // a landmark without a snippet or a card: its introduction, shortened, and its cover
+        $this->landmark(['slug' => 'no-card']);
+        $this->get('/kurdistan-heritage/no-card')->assertOk()
+            ->assertSee('<meta name="description" content="Thirty metres of houses on houses.">', false)
+            ->assertSee('<meta property="og:image" content="https://example.test/cover.jpg">', false);
+    }
+
     public function test_the_home_page_opens_onto_the_heritage_through_seven_doors(): void
     {
         $html = $this->get('/')->assertOk()->assertSee('Eleven thousand years of building')->assertSee('Explore the heritage map')->getContent();

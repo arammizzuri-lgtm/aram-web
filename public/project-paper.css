@@ -15,7 +15,7 @@
     --ink:    #111;
     --text:   #2B2B2B;
     --muted:  rgba(0,0,0,.62);
-    --faint:  rgba(0,0,0,.46);
+    --faint:  rgba(0,0,0,.56);   /* .46 read at 3.5:1 on the paper */
     --line:   rgba(0,0,0,.12);
     --panel:  #F2F0EB;
     --black:  #fff;
@@ -27,7 +27,7 @@
 /* what stays dark inside the page keeps the site's own colours */
 .pp--paper .pp-compare__frame,
 .pp--paper .pp-embed__frame, .pp--paper .pp-map__frame, .pp--paper .pp-notes {
-    --gold: #F5C518; --text: #E5E2DC; --muted: rgba(255,255,255,.55); --faint: rgba(255,255,255,.32);
+    --gold: #F5C518; --text: #E5E2DC; --muted: rgba(255,255,255,.55); --faint: rgba(255,255,255,.5);
     --line: rgba(255,255,255,.08); --panel: #111; --black: #090909;
 }
 .pp--paper main :focus-visible { outline-color: var(--ink); }
@@ -160,13 +160,13 @@
 .pp--paper .pp-quote { margin-top: 0; color: var(--ink); border-inline-start-color: var(--bright); font-weight: 300; }
 .pp--paper .pp-voice { margin-top: 0; padding-top: 0; border-top: 0; }
 .pp--paper .pp-chips li { background: rgba(138,101,0,.06); border-color: rgba(138,101,0,.28); color: var(--gold); }
-.pp--paper .pp-chip-link sup { color: rgba(138,101,0,.7); }
+.pp--paper .pp-chip-link sup { color: #8A6500; }
 .pp--paper .pp-chip-link:hover { background: rgba(138,101,0,.12); }
 .pp--paper .pp-act { border-color: rgba(0,0,0,.2); color: var(--ink); }
 .pp--paper .pp-act:hover, .pp--paper .pp-act.is-done { border-color: var(--ink); color: var(--ink); background: rgba(0,0,0,.04); }
 .pp--paper .pp-act--save.is-saved { border-color: rgba(138,101,0,.5); color: var(--gold); background: rgba(245,197,24,.12); }
-.pp--paper .pp-act--wa, .pp--paper .pp-act--wa:hover { color: #128C4B; border-color: rgba(18,140,75,.4); }
-.pp--paper .pp-act--wa:hover { border-color: #128C4B; background: rgba(18,140,75,.07); }
+.pp--paper .pp-act--wa, .pp--paper .pp-act--wa:hover { color: #0F7A41; border-color: rgba(18,140,75,.4); }
+.pp--paper .pp-act--wa:hover { border-color: #0F7A41; background: rgba(18,140,75,.07); }
 /* the voice players (voices.css is drawn for a dark page) */
 .pp--paper main .cv__player { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); }
 .pp--paper main .cv__bar { background: rgba(0,0,0,.24); }
@@ -277,7 +277,7 @@
 .pp--paper .pp-map__frame { border-color: rgba(0,0,0,.14); background: #ECEAE5; }
 .pp--paper .pp-map__canvas, .pp--paper .pp-map__canvas.leaflet-container, .pp--paper .pp-map__canvas .leaflet-container { background: #ECEAE5; }
 .pp--paper .pp-btn { background: var(--bright); box-shadow: 0 10px 28px rgba(245,197,24,.3); }
-.pp--paper .pp-btn--wa { background: rgba(18,140,75,.06); color: #128C4B; border-color: rgba(18,140,75,.45); box-shadow: none; }
+.pp--paper .pp-btn--wa { background: rgba(18,140,75,.06); color: #0F7A41; border-color: rgba(18,140,75,.45); box-shadow: none; }
 .pp--paper .pp-btn--wa:hover { background: rgba(18,140,75,.12); box-shadow: none; }
 
 /* ---- The neighbouring sheets: previous, every project, next -------- */

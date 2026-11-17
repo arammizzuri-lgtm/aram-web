@@ -9,7 +9,9 @@
     $preview = $preview ?? false;
     $brand = trim(explode('|', bival('seo_title'))[0]);
     $title = $l->tr('name').' — '.$l->tr('place').' · '.bival('landmarks_label').' | '.$brand;
-    $description = \Illuminate\Support\Str::limit($l->tr('intro') ?: ($l->tr('summary') ?: ($l->paragraphs()[0] ?? '')), 200);
+    // the snippet written for search in this language, else the introduction shortened
+    $description = filled($l->{'snippet_'.$lang}) ? Landmark::separators($l->{'snippet_'.$lang}, $lang)
+        : \Illuminate\Support\Str::limit($l->tr('intro') ?: ($l->tr('summary') ?: ($l->paragraphs()[0] ?? '')), 200);
     $tiles = carto_tiles('dark_nolabels');
     $cover = $l->imageUrl('lg') ? url($l->imageUrl('lg')) : null;
 
@@ -51,7 +53,7 @@
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
 <head>
-    @include('partials.page-head', ['path' => Landmark::PATH.'/'.$l->slug, 'css' => 'heritage.css', 'type' => 'article', 'image' => $cover])
+    @include('partials.page-head', ['path' => Landmark::PATH.'/'.$l->slug, 'css' => 'heritage.css', 'type' => 'article', 'image' => $l->shareImage() ?? $cover])
     <link rel="stylesheet" href="{{ asset('landmark.css') }}?v={{ filemtime(public_path('landmark.css')) }}">
     @if ($hasMap)
         <link rel="stylesheet" href="{{ asset('vendor/leaflet.css') }}?v={{ filemtime(public_path('vendor/leaflet.css')) }}">
