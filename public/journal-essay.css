@@ -66,12 +66,13 @@
 .ja-text > p.ja-glossary { margin-top: 14px; font-size: 14px; color: var(--muted); }
 
 /* ---- the glossary (journal/glossary): an index, then each word with its drawing ---- */
-.jg-index { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; max-width: 860px; margin-top: clamp(40px, 6vh, 64px); padding: 22px 0; border-block: 1px solid var(--line); }
+.jg-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 28px 24px; margin-top: clamp(40px, 6vh, 64px); padding: 22px 0; border-block: 1px solid var(--line); }
 .jg-index__group { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
 [dir="rtl"] .jg-index__group { letter-spacing: 0; font-size: 13px; }
 .jg-index ul { list-style: none; display: grid; gap: 6px; }
 .jg-index a { font-size: 15px; font-weight: 300; color: var(--text); text-decoration: none; }
 .jg-index a:hover { color: var(--gold); }
+.jg-index__group a { font-size: inherit; color: inherit; }
 .jg-group { margin-top: clamp(64px, 10vh, 112px); }
 .jg-term { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); padding: clamp(28px, 4vh, 40px) 0; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
 .jg-term__fig { display: flex; flex-direction: column; gap: 10px; }
@@ -91,10 +92,59 @@
 .jg-term__see a { color: var(--gold); text-decoration: none; }
 .jg-term__see a:hover { text-decoration: underline; }
 .jg-term:target .jg-term__name { color: var(--gold); }
+/* the words of a building: a card each, the Kurdish name large, its part lit on the scene's drawing (journal/word) */
+.jg-words { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: clamp(18px, 2vw, 28px); margin-top: 28px; }
+.jg-word { display: flex; flex-direction: column; padding: 16px 16px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; scroll-margin-top: 90px; }
+.jg-word:target { border-color: rgba(245,197,24,.55); }
+.jg-word .jg-ill { margin-bottom: 14px; max-height: none; }
+.jg-word__ku { font-family: var(--font-ku); font-size: 30px; font-weight: 400; line-height: 1.4; color: var(--gold); text-align: start; }
+.jg-word__ku { text-align: left; }
+html[dir="rtl"] .jg-word__ku, html[dir="rtl"] .jg-word__lat { text-align: right; }
+.jg-word__ku a { color: inherit; text-decoration: none; }
+.jg-word__lat { font-size: 13px; letter-spacing: .04em; color: var(--muted); }
+.jg-word__names { margin-top: 6px; font-size: 15px; color: #fff; }
+.jg-word__def { margin-top: 10px; font-size: 14px; font-weight: 300; line-height: 1.7; color: var(--text); }
+[dir="rtl"] .jg-word__def { font-size: 15px; line-height: 1.95; }
+.jg-part { margin-top: clamp(80px, 12vh, 136px); padding-top: clamp(40px, 6vh, 64px); border-top: 1px solid var(--line); }
+.jg-part + .jg-group { margin-top: clamp(32px, 5vh, 56px); }
+
+/* the scenes draw in: lines first, the part in gold, then its name, and the part keeps glowing */
+.jg-ill.is-pending .s-p, .jg-ill.is-pending .s-a, .jg-ill.is-pending .s-t, .jg-ill.is-pending .jg-hlf, .jg-ill.is-pending .jg-lbl { opacity: 0; }
+.jg-ill.is-drawn .s-p, .jg-ill.is-drawn .s-a, .jg-ill.is-drawn .s-t { animation: jaFade 1s .6s both; }
+.ja-dwg.jg-ill.is-drawn .s-w, .ja-dwg.jg-ill.is-drawn .s-c, .ja-dwg.jg-ill.is-drawn .s-g { animation-duration: 1.4s; }
+.ja-dwg.jg-ill.is-drawn .jg-hl { animation: jaDraw 1.4s cubic-bezier(.2,.7,.2,1) 1s forwards, jgGlow 2.8s ease-in-out 2.8s infinite; }
+.jg-ill.is-drawn .jg-hlf { animation: jaFade .8s 1.5s both, jgPulse 2.8s ease-in-out 2.8s infinite; }
+.jg-ill.is-drawn .jg-lbl { animation: jaFade .8s 1.9s both; }
+@keyframes jgPulse { 50% { opacity: .3; } }
+@keyframes jgGlow { 50% { stroke-opacity: .45; } }
+
+/* the game: the drawing, and three names to pick from */
+.jg-quiz { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center;
+    margin-top: clamp(36px, 5vh, 56px); padding: clamp(18px, 3vw, 32px); background: var(--panel); border: 1px solid rgba(245,197,24,.25); border-radius: 4px; }
+.jg-quiz[hidden] { display: none; }
+.jg-quiz:not(.is-shown) .jg-lbl { visibility: hidden; }
+.jg-quiz .ja-h { margin: 0; }
+.jg-quiz__ask { margin-top: 8px; font-size: 15px; font-weight: 300; color: var(--muted); }
+.jg-quiz__opts { display: grid; gap: 10px; margin-top: 18px; }
+.jg-quiz__opts button { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 10px 16px; font: inherit; text-align: start;
+    background: none; color: #fff; border: 1px solid rgba(255,255,255,.18); border-radius: 3px; cursor: pointer; transition: border-color .2s, background .2s; }
+.jg-quiz__opts button:hover:not(:disabled) { border-color: var(--gold); }
+.jg-quiz__opts button:disabled { cursor: default; opacity: .55; }
+.jg-quiz__opts button.is-right { opacity: 1; border-color: var(--gold); background: rgba(245,197,24,.12); }
+.jg-quiz__opts button.is-wrong { opacity: 1; border-color: rgba(255,120,100,.7); }
+.jg-quiz__opts span { font-family: var(--font-ku); font-size: 22px; line-height: 1.4; }
+.jg-quiz__opts small { font-size: 13px; color: var(--muted); }
+.jg-quiz__out { min-height: 1.8em; margin-top: 14px; font-size: 15px; color: var(--gold); }
+.jg-quiz__foot { display: flex; align-items: center; gap: 18px; margin-top: 8px; }
+.jg-quiz__score { font-size: 14px; color: var(--muted); }
+/* Latin (and the English beside the Arabic) in the Latin face, also on the Kurdish and Arabic pages */
+.jg-word__lat, .jg-word__names, .jg-quiz__opts small, .jg-quiz__out .jg-lat { font-family: 'Inter', 'Vazirmatn', system-ui, sans-serif; }
+
 @media (max-width: 760px) {
     .jg-index { grid-template-columns: 1fr 1fr; }
     .jg-term { grid-template-columns: 1fr; }
     .jg-term__fig { max-width: 420px; }
+    .jg-quiz { grid-template-columns: 1fr; }
 }
 
 /* ---- the plates -------------------------------------------- */
@@ -254,6 +304,11 @@
     .ja-dwg .dl { stroke-dasharray: none !important; animation: none !important; }
     .ja-dwg .d-poche, .ja-dwg .d-text, .ja-dwg .d-over, .ja-dwg .d-axis { opacity: 1 !important; animation: none !important; }
     .ja-dwg .d-sun, .ja-dwg .d-sunmark { display: none; }
+    .jg-ill .s-p, .jg-ill .s-a, .jg-ill .s-t, .jg-ill .jg-hlf, .jg-ill .jg-lbl { opacity: 1 !important; animation: none !important; }
+    .jg-ill .s-w, .jg-ill .s-c, .jg-ill .s-g, .jg-ill .s-a { stroke: #777; }
+    .jg-ill .s-cut { fill: #fff; }
+    .jg-ill .jg-lbl text { fill: #111; }
+    .jg-quiz { display: none !important; }
     .ja-dwg, .ja-dwg .d-wall, .ja-dwg .d-leaf, .ja-dwg .d-open, .ja-dwg .d-fix, .ja-dwg .d-stair, .ja-dwg .d-arrow,
     .ja-dwg .d-dim, .ja-dwg .d-bubble, .ja-dwg .d-north, .ja-dwg .d-scale { stroke: #1a1a1a; }
     .ja-dwg .d-over { stroke: #555; }

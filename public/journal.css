@@ -13,9 +13,46 @@
 [dir="rtl"] .jr-hero__title { letter-spacing: 0; line-height: 1.3; font-weight: 400; }
 .jr-hero__intro { max-width: 58ch; margin-top: 22px; font-size: 16px; font-weight: 300; line-height: 1.8; color: var(--muted); }
 [dir="rtl"] .jr-hero__intro { font-size: 17px; line-height: 2; }
-.jr-hero__more { margin-top: 18px; font-size: 14px; }
-.jr-hero__more a { color: var(--gold); text-decoration: none; }
-.jr-hero__more a:hover { text-decoration: underline; }
+
+/* the glossary pinned over the entries: its house in section, each part lit in turn with its Kurdish name */
+.jr-pin { max-width: var(--wide); margin: 0 auto clamp(40px, 6vh, 64px); padding: 0 var(--gutter); }
+.jr-pin a {
+    display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: clamp(20px, 4vw, 56px); align-items: center;
+    padding: clamp(18px, 3vw, 32px); background: var(--panel); border: 1px solid var(--line); border-radius: 4px;
+    color: inherit; text-decoration: none; transition: border-color .3s;
+}
+.jr-pin a:hover { border-color: rgba(245,197,24,.45); }
+.jr-pin__tag { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+.jr-pin__tag svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+[dir="rtl"] .jr-pin__tag { letter-spacing: 0; font-size: 13px; }
+.jr-pin__title, .jr-pin__text { display: block; }
+.jr-pin__title { margin-top: 12px; font-size: clamp(26px, 3vw, 40px); font-weight: 200; line-height: 1.15; color: #fff; }
+[dir="rtl"] .jr-pin__title { font-weight: 400; line-height: 1.5; }
+.jr-pin__text { margin-top: 12px; max-width: 52ch; font-size: 15px; font-weight: 300; line-height: 1.75; color: var(--muted); }
+[dir="rtl"] .jr-pin__text { font-size: 16px; line-height: 2; }
+.jr-pin__go { display: inline-block; margin-top: 18px; font-size: 14px; color: var(--gold); }
+.jr-pin a:hover .jr-pin__go { text-decoration: underline; }
+.jr-pin .jp-step { opacity: 0; animation: jpCycle 20.8s calc(var(--i) * 2.6s) infinite both; }
+@keyframes jpCycle { 0% { opacity: 0; } 2% { opacity: 1; } 11% { opacity: 1; } 12.5% { opacity: 0; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .jr-pin .jp-step { animation: none; } .jr-pin .jp-step:first-of-type { opacity: 1; } }
+@media (max-width: 760px) { .jr-pin a { grid-template-columns: 1fr; } }
+
+/* the glossary's scenes (journal/word), here for the pin and on the glossary: pale lines, one part lit in gold, its name above */
+.jg-ill { display: block; width: 100%; height: auto; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.jg-ill .s-w { stroke: rgba(229,226,220,.42); stroke-width: 1; }
+.jg-ill .s-c { stroke: rgba(229,226,220,.24); stroke-width: .8; }
+.jg-ill .s-g { stroke: rgba(229,226,220,.38); stroke-width: .6; }
+.jg-ill .s-a { stroke: rgba(229,226,220,.32); stroke-width: .7; stroke-dasharray: 10 3 1.5 3; }
+.jg-ill .s-p { fill: rgba(229,226,220,.05); stroke: none; }
+.jg-ill .s-cut { fill: var(--panel); stroke: none; }
+.jg-ill .s-shade { stroke: none; }
+.jg-ill .s-hatch { stroke: rgba(229,226,220,.14); stroke-width: .6; }
+.jg-ill .s-t { fill: rgba(229,226,220,.5); stroke: none; font-family: Inter, system-ui, sans-serif; font-size: 7px; text-anchor: middle; }
+.jg-ill .jg-hl { stroke: var(--gold); stroke-width: 1.6; }
+.jg-ill .jg-hlf { fill: rgba(245,197,24,.16); stroke: none; }
+.jg-ill .jg-lbl path { stroke: rgba(245,197,24,.6); stroke-width: .7; stroke-dasharray: 2 2; }
+.jg-ill .jg-lbl circle { fill: var(--gold); stroke: none; }
+.jg-ill .jg-lbl text { fill: var(--gold); stroke: none; font-family: var(--font-ku); font-size: 14px; letter-spacing: 0; text-anchor: middle; direction: rtl; }
 .jr-empty { max-width: var(--wide); margin: 0 auto; padding: 0 var(--gutter) 120px; color: var(--muted); font-size: 16px; }
 
 /* the entries: the newest across two columns, the rest three to a row */

@@ -1,6 +1,8 @@
-{{-- The journal's glossary: the Kurdish building words the essays use, in the three languages, each with a small
-     drawing (plans through journal/type, sections and elevations through journal/term), what it means, and where
-     to see it. The essays link their words here by anchor (#iwan), so an id, once published, stays.
+{{-- The journal's glossary: architecture in Kurdish. First the words of any building, scene by scene, each lit on a
+     small drawing with its Kurdish name (resources/journal/glossary.php, drawn by journal/word), and a game to test
+     yourself on them (glossary.js); then the old words of the Kurdish house, each with its own drawing (plans through
+     journal/type, sections and elevations through journal/term), what it means, and where to see it.
+     The essays link their words here by anchor (#iwan), so an id, once published, stays.
      Texts are written here in the three languages: $t(English, Kurdish, Arabic). --}}
 @php
     use App\Models\Landmark;
@@ -8,11 +10,13 @@
     $lang = site_lang();
     $t = fn (string $en, string $ku, string $ar) => bi($en, $ku, $ar);
     $brand = trim(explode('|', bival('seo_title'))[0]);
-    $headline = $t('Words of the Kurdish house', 'وشەکانی خانووی کوردی', 'مفردات البيت الكردي');
+    $headline = $t('Architecture in Kurdish', 'تەلارسازی بە کوردی', 'العمارة بالكوردية');
     $title = $headline.' — '.$brand;
-    $lead = $t('Twelve words for the parts of old houses, markets and waterworks in Kurdistan, in Kurdish, Arabic and English, each drawn the way we draw.',
-        'دوازدە وشە بۆ بەشەکانی خانوو و بازاڕ و ئاوەڕۆ کۆنەکانی کوردستان، بە کوردی و عەرەبی و ئینگلیزی، هەر یەکەیان بەو شێوەیە کێشراوە کە ئێمە دەیکێشین.',
-        'اثنتا عشرة كلمة لأجزاء البيوت والأسواق ومنشآت الماء القديمة في كوردستان، بالكوردية والعربية والإنكليزية، وكلٌّ منها مرسوم على طريقتنا.');
+    $scenes = require resource_path('journal/glossary.php');
+    $count = collect($scenes)->sum(fn ($s) => count($s['parts'])) + 12;
+    $lead = $t('The words of a building in Kurdish, from the foundation to the dome: '.$count.' of them, each lit on a drawing so the name stays with the thing, with the Arabic and English beside it. Then the old words of the Kurdish house, and their history.',
+        'وشەکانی بینا بە کوردی، لە بناغەوە تا گومبەز: '.Landmark::digits($count).' وشە، هەر یەکەیان لەسەر نەخشەیەک ڕووناک کراوەتەوە تا ناوەکە لەگەڵ شتەکە لە بیر بمێنێت، و عەرەبی و ئینگلیزییەکەی لە تەنیشتی. پاشان وشە کۆنەکانی خانووی کوردی، و مێژوویان.',
+        'مفردات المبنى بالكوردية، من الأساس إلى القبّة: '.Landmark::digits($count).' كلمة، كلٌّ منها مضاءة على رسم كي يبقى الاسم مقروناً بالشيء، والعربية والإنكليزية إلى جانبها. ثم المفردات القديمة للبيت الكردي، وتاريخها.');
     $description = $lead;
     $path = '/journal/glossary';
     $citadel = Articles::find('citadel-house-plans');
@@ -129,12 +133,15 @@
         ]],
     ];
 
-    $all = collect($groups)->flatMap(fn ($g) => $g[1]);
+    // every word for search engines: the scene words first, then the house's
+    $terms = collect($scenes)->flatMap(fn ($sc) => collect($sc['parts'])->map(fn ($p, $k) => ['id' => $k, 'term' => bi(...$p['w']),
+        'alt' => [$p['w'][1], $p['w'][2], $p['w'][0]], 'def' => bi(...$p['def'])]))->values()
+        ->concat(collect($groups)->flatMap(fn ($g) => $g[1])->map(fn ($e) => ['id' => $e['id'], 'term' => $e['term'], 'alt' => [$e['ku'], $e['ar']], 'def' => $e['def'][0]]));
     $schema = ['@context' => 'https://schema.org', '@type' => 'DefinedTermSet', '@id' => site_url($path).'#set', 'name' => $headline,
         'description' => $description, 'url' => site_url($path), 'inLanguage' => $lang, 'author' => \App\Support\Architect::reference(),
-        'hasDefinedTerm' => $all->map(fn ($e) => ['@type' => 'DefinedTerm', '@id' => site_url($path).'#'.$e['id'], 'name' => $e['term'],
-            'alternateName' => array_values(array_unique([$e['ku'], $e['ar']])), 'description' => $e['def'][0],
-            'url' => site_url($path).'#'.$e['id'], 'inDefinedTermSet' => site_url($path).'#set'])->values()->all()];
+        'hasDefinedTerm' => $terms->map(fn ($e) => ['@type' => 'DefinedTerm', '@id' => site_url($path).'#'.$e['id'], 'name' => $e['term'],
+            'alternateName' => array_values(array_diff(array_unique($e['alt']), [$e['term']])), 'description' => $e['def'],
+            'url' => site_url($path).'#'.$e['id'], 'inDefinedTermSet' => site_url($path).'#set'])->all()];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ site_rtl() ? 'rtl' : 'ltr' }}">
@@ -157,7 +164,33 @@
             <p class="ja-head__lead">{{ $lead }}</p>
         </header>
 
+        {{-- the game: a lit part, three Kurdish names; shown once glossary.js has the words --}}
+        <section class="jg-quiz" data-quiz hidden aria-labelledby="jg-quiz-h" data-digits="{{ Landmark::digits('0123456789') }}"
+            data-right="{{ $t('Right.', 'ڕاستە.', 'صحيح.') }}" data-wrong="{{ $t('Not this one. It is', 'ئەمە نا. ئەوە', 'ليست هذه. إنها') }}">
+            <div class="jg-quiz__stage" data-quiz-stage></div>
+            <div class="jg-quiz__side">
+                <h2 class="ja-h" id="jg-quiz-h">{{ $t('Test yourself', 'خۆت تاقی بکەرەوە', 'اختبر نفسك') }}</h2>
+                <p class="jg-quiz__ask">{{ $t('What is the gold part called in Kurdish?', 'ناوی بەشە زەردەکە بە کوردی چییە؟', 'ما اسم الجزء الذهبي بالكوردية؟') }}</p>
+                <div class="jg-quiz__opts" data-quiz-opts></div>
+                <p class="jg-quiz__out" data-quiz-out aria-live="polite"></p>
+                <p class="jg-quiz__foot">
+                    <button type="button" class="pp-btn pp-btn--line" data-quiz-next>{{ $t('Another word', 'وشەیەکی تر', 'كلمة أخرى') }}</button>
+                    <span class="jg-quiz__score" data-quiz-score></span>
+                </p>
+            </div>
+        </section>
+
         <nav class="jg-index" aria-label="{{ $t('The words', 'وشەکان', 'الكلمات') }}">
+            @foreach ($scenes as $sk => $sc)
+                <div>
+                    <p class="jg-index__group"><a href="#g-{{ $sk }}">{{ bi(...$sc['name']) }}</a></p>
+                    <ul>
+                        @foreach ($sc['parts'] as $k => $p)
+                            <li><a href="#{{ $k }}">{{ bi(...$p['w']) }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endforeach
             @foreach ($groups as [$name, $entries])
                 <div>
                     <p class="jg-index__group">{{ $name }}</p>
@@ -169,6 +202,31 @@
                 </div>
             @endforeach
         </nav>
+
+        @foreach ($scenes as $sk => $sc)
+            <section class="jg-group" id="g-{{ $sk }}">
+                <h2 class="ja-h">{{ bi(...$sc['name']) }}</h2>
+                <div class="jg-words">
+                    @foreach ($sc['parts'] as $k => $p)
+                        <article class="jg-word" id="{{ $k }}" data-scene="{{ $sk }}" data-ku="{{ $p['w'][1] }}" data-lat="{{ $p['lat'] }}"
+                            data-name="{{ $lang === 'ku' ? $p['w'][0] : bi(...$p['w']) }}">
+                            @include('journal.word', ['sc' => $sc, 'keys' => [$k], 'cls' => 'ja-dwg jg-ill', 'sid' => 'w-'.$k])
+                            <h3 class="jg-word__ku" lang="ckb" dir="rtl"><a href="#{{ $k }}">{{ $p['w'][1] }}</a></h3>
+                            <p class="jg-word__lat" dir="ltr">{{ $p['lat'] }}</p>
+                            <p class="jg-word__names">{{ $p['w'][0] }} · <span lang="ar" dir="rtl">{{ $p['w'][2] }}</span></p>
+                            <p class="jg-word__def">{{ bi(...$p['def']) }}</p>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endforeach
+
+        <header class="jg-part">
+            <h2 class="jr-post__title">{{ $t('The old words of the Kurdish house', 'وشە کۆنەکانی خانووی کوردی', 'المفردات القديمة للبيت الكردي') }}</h2>
+            <p class="ja-head__lead">{{ $t('Twelve words for the parts of old houses, markets and waterworks in Kurdistan, each with its history and where to see it.',
+                'دوازدە وشە بۆ بەشەکانی خانوو و بازاڕ و ئاوەڕۆ کۆنەکانی کوردستان، هەر یەکەیان بە مێژووەکەی و ئەو شوێنەی دەیبینیت.',
+                'اثنتا عشرة كلمة لأجزاء البيوت والأسواق ومنشآت الماء القديمة في كوردستان، كلٌّ منها بتاريخها وأين تُرى.') }}</p>
+        </header>
 
         @foreach ($groups as [$name, $entries])
             <section class="jg-group">
@@ -221,5 +279,6 @@
     @include('partials.page-foot')
     <script src="{{ asset('engage.js') }}?v={{ filemtime(public_path('engage.js')) }}" defer></script>
     <script src="{{ asset('journal-drawing.js') }}?v={{ filemtime(public_path('journal-drawing.js')) }}" defer></script>
+    <script src="{{ asset('glossary.js') }}?v={{ filemtime(public_path('glossary.js')) }}" defer></script>
 </body>
 </html>

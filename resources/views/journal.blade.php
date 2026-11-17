@@ -30,8 +30,23 @@
             <p class="pp-label">{{ bival('journal_label') }}</p>
             <h1 class="jr-hero__title">{{ bival('journal_title') }}</h1>
             <p class="jr-hero__intro">{{ bival('journal_intro') }}</p>
-            <p class="jr-hero__more"><a href="{{ site_url('/journal/glossary') }}">{{ bi('Words of the Kurdish house: a glossary', 'وشەکانی خانووی کوردی: فەرهەنگێک', 'مفردات البيت الكردي: مسرد') }} <span class="pp-arrow" aria-hidden="true">→</span></a></p>
         </header>
+
+        {{-- pinned: the glossary, its house in section with each part named in Kurdish in turn (journal/word) --}}
+        @php $section = (require resource_path('journal/glossary.php'))['section']; @endphp
+        <aside class="jr-pin" aria-label="{{ bi('Pinned', 'هەڵواسراو', 'مثبّت') }}">
+            <a href="{{ site_url('/journal/glossary') }}">
+                @include('journal.word', ['sc' => $section, 'keys' => array_keys($section['parts']), 'cls' => 'jg-ill', 'sid' => 'pin', 'steps' => true])
+                <span>
+                    <span class="jr-pin__tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 3h6M10 3v6l-3 4v4h10v-4l-3-4V3"/></svg>{{ bi('Pinned · Glossary', 'هەڵواسراو · فەرهەنگ', 'مثبّت · مسرد') }}</span>
+                    <span class="jr-pin__title" role="heading" aria-level="2">{{ bi('Architecture in Kurdish', 'تەلارسازی بە کوردی', 'العمارة بالكوردية') }}</span>
+                    <span class="jr-pin__text">{{ bi('Foundation, column, beam, arch, dome: the words of a building in Kurdish, each lit on a drawing so the name stays with the thing. Then test yourself.',
+                        'بناغە، کۆڵەکە، تیر، کەوانە، گومبەز: وشەکانی بینا بە کوردی، هەر یەکەیان لەسەر نەخشەیەک ڕووناک کراوەتەوە تا ناوەکە لەگەڵ شتەکە لە بیر بمێنێت. پاشان خۆت تاقی بکەرەوە.',
+                        'الأساس، العمود، الجسر، القوس، القبّة: مفردات المبنى بالكوردية، كلٌّ منها مضاءة على رسم كي يبقى الاسم مقروناً بالشيء. ثم اختبر نفسك.') }}</span>
+                    <span class="jr-pin__go">{{ bi('Learn the words', 'وشەکان فێر بە', 'تعلّم الكلمات') }} <span class="pp-arrow" aria-hidden="true">→</span></span>
+                </span>
+            </a>
+        </aside>
 
         @if ($entries->isEmpty())
             <p class="jr-empty">{{ bival('journal_empty') }}</p>

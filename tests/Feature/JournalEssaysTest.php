@@ -205,15 +205,29 @@ class JournalEssaysTest extends TestCase
     public function test_the_glossary_draws_every_word_in_three_languages_and_the_essays_link_to_it(): void
     {
         $words = ['hawsh', 'iwan', 'tarma', 'diwakhana', 'sirdab', 'sarban', 'khisht', 'taq', 'mosul-alabaster', 'qaysari', 'khan', 'kahrez'];
-        foreach (['' => 'Words of the Kurdish house', '/ku' => 'وشەکانی خانووی کوردی', '/ar' => 'مفردات البيت الكردي'] as $lang => $title) {
+        $scenes = require resource_path('journal/glossary.php');
+        $lit = collect($scenes)->flatMap(fn ($s) => array_keys($s['parts']));
+        $this->assertGreaterThanOrEqual(50, $lit->count());
+        $this->assertSame($lit->count(), $lit->unique()->count(), 'a word id is used twice');
+        $this->assertEmpty($lit->intersect($words)->all(), 'a building word takes the anchor of a house word');
+        foreach (['' => 'Architecture in Kurdish', '/ku' => 'تەلارسازی بە کوردی', '/ar' => 'العمارة بالكوردية'] as $lang => $title) {
             $html = $this->get($lang.'/journal/glossary')->assertOk()->assertSee($title)->getContent();
             foreach ($words as $id) {
                 $this->assertStringContainsString('<article class="jg-term" id="'.$id.'">', $html, $lang.' '.$id);
             }
-            // a drawing for each, and the words for search engines as a set of defined terms
+            // each building word on its own card, its part of the scene lit and its Kurdish name on it
+            foreach ($scenes as $sc) {
+                foreach ($sc['parts'] as $id => $p) {
+                    $this->assertStringContainsString('<article class="jg-word" id="'.$id.'"', $html, $lang.' '.$id);
+                    $this->assertStringContainsString('lang="ckb">'.$p['w'][1].'</text>', $html, $lang.' '.$id);
+                }
+            }
+            $this->assertSame($lit->count(), substr_count($html, '<svg class="ja-dwg jg-ill"'), $lang);
+            // a drawing for each house word, the game, and every word for search engines as a set of defined terms
             $this->assertSame(12, substr_count($html, '<svg class="ja-dwg ja-type"'), $lang);
+            $this->assertStringContainsString('data-quiz hidden', $html);
             $this->assertStringContainsString('"@type":"DefinedTermSet"', $html);
-            $this->assertSame(12, substr_count($html, '"@type":"DefinedTerm"'), $lang);
+            $this->assertSame($lit->count() + 12, substr_count($html, '"@type":"DefinedTerm"'), $lang);
         }
         // each word points to where it is seen: an essay or a landmark
         $this->get('/journal/glossary')->assertSee('href="'.url('/kurdistan-heritage/taq-e-bostan').'"', false)
@@ -222,7 +236,9 @@ class JournalEssaysTest extends TestCase
         // the essays link their words to it, and the journal and the sitemap point to it
         $this->get('/journal/citadel-house-plans')->assertSee(url('/journal/glossary').'#iwan', false)->assertSee(url('/journal/glossary').'#diwakhana', false);
         $this->get('/ar/journal/qaysari-bazaar')->assertSee(url('/ar/journal/glossary').'#qaysari', false);
-        $this->get('/journal')->assertSee('href="'.url('/journal/glossary').'"', false);
+        // pinned on the journal: the house in section, each of its parts named in turn
+        $journal = $this->get('/journal')->assertSee('href="'.url('/journal/glossary').'"', false)->assertSee('class="jr-pin"', false)->getContent();
+        $this->assertSame(count($scenes['section']['parts']), substr_count($journal, 'class="jp-step"'));
         $this->get('/sitemap.xml')->assertSee(url('/ku/journal/glossary'), false);
         $this->get('/llms.txt')->assertSee(url('/journal/glossary'), false);
         // and no essay written in the admin can take its address
