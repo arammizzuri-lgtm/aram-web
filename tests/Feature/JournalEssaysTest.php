@@ -210,7 +210,7 @@ class JournalEssaysTest extends TestCase
         $this->assertGreaterThanOrEqual(50, $lit->count());
         $this->assertSame($lit->count(), $lit->unique()->count(), 'a word id is used twice');
         $this->assertEmpty($lit->intersect($words)->all(), 'a building word takes the anchor of a house word');
-        foreach (['' => 'Architecture in Kurdish', '/ku' => 'تەلارسازی بە کوردی', '/ar' => 'العمارة بالكوردية'] as $lang => $title) {
+        foreach (['' => 'A dictionary of Kurdish architecture', '/ku' => 'فەرهەنگی تەلارسازی کوردی', '/ar' => 'معجم العمارة الكوردية'] as $lang => $title) {
             $html = $this->get($lang.'/journal/glossary')->assertOk()->assertSee($title)->getContent();
             foreach ($words as $id) {
                 $this->assertStringContainsString('<article class="jg-term" id="'.$id.'">', $html, $lang.' '.$id);

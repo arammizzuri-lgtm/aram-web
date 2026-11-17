@@ -36,6 +36,17 @@
 @keyframes jpCycle { 0% { opacity: 0; } 2% { opacity: 1; } 11% { opacity: 1; } 12.5% { opacity: 0; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .jr-pin .jp-step { animation: none; } .jr-pin .jp-step:first-of-type { opacity: 1; } }
 @media (max-width: 760px) { .jr-pin a { grid-template-columns: 1fr; } }
+/* with room beside the entries, the pin moves to a column of its own at the start side and stays in view down the list */
+@media (min-width: 1280px) {
+    .jr-main { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: calc(var(--wide) + 250px); margin: 0 auto; padding-inline-start: var(--gutter); }
+    .jr-main > :not(.jr-pin) { grid-column: 2; width: 100%; }
+    .jr-pin { grid-column: 1; grid-row: 1 / span 2; margin: 0; padding: clamp(120px, 17vh, 170px) 0 clamp(72px, 12vh, 128px); }
+    .jr-pin a { position: sticky; top: 104px; grid-template-columns: 1fr; gap: 16px; padding: 18px 18px 22px; }
+    .jr-pin__title { margin-top: 8px; font-size: 22px; }
+    .jr-pin__text { font-size: 13.5px; line-height: 1.7; }
+    [dir="rtl"] .jr-pin__text { font-size: 15px; line-height: 1.9; }
+    .jr-pin__go { margin-top: 12px; font-size: 13px; }
+}
 
 /* the glossary's scenes (journal/word), here for the pin and on the glossary: pale lines, one part lit in gold, its name above */
 .jg-ill { display: block; width: 100%; height: auto; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }

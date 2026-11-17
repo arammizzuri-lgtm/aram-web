@@ -10,7 +10,7 @@
     $lang = site_lang();
     $t = fn (string $en, string $ku, string $ar) => bi($en, $ku, $ar);
     $brand = trim(explode('|', bival('seo_title'))[0]);
-    $headline = $t('Architecture in Kurdish', 'تەلارسازی بە کوردی', 'العمارة بالكوردية');
+    $headline = $t('A dictionary of Kurdish architecture', 'فەرهەنگی تەلارسازی کوردی', 'معجم العمارة الكوردية');
     $title = $headline.' — '.$brand;
     $scenes = require resource_path('journal/glossary.php');
     $count = collect($scenes)->sum(fn ($s) => count($s['parts'])) + 12;

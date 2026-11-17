@@ -25,7 +25,7 @@
 <body class="pp pp--journal">
     @include('partials.page-top', ['otherUrl' => null])
 
-    <main>
+    <main class="jr-main">
         <header class="jr-hero">
             <p class="pp-label">{{ bival('journal_label') }}</p>
             <h1 class="jr-hero__title">{{ bival('journal_title') }}</h1>
@@ -39,7 +39,7 @@
                 @include('journal.word', ['sc' => $section, 'keys' => array_keys($section['parts']), 'cls' => 'jg-ill', 'sid' => 'pin', 'steps' => true])
                 <span>
                     <span class="jr-pin__tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 3h6M10 3v6l-3 4v4h10v-4l-3-4V3"/></svg>{{ bi('Pinned · Glossary', 'هەڵواسراو · فەرهەنگ', 'مثبّت · مسرد') }}</span>
-                    <span class="jr-pin__title" role="heading" aria-level="2">{{ bi('Architecture in Kurdish', 'تەلارسازی بە کوردی', 'العمارة بالكوردية') }}</span>
+                    <span class="jr-pin__title" role="heading" aria-level="2">{{ bi('A dictionary of Kurdish architecture', 'فەرهەنگی تەلارسازی کوردی', 'معجم العمارة الكوردية') }}</span>
                     <span class="jr-pin__text">{{ bi('Foundation, column, beam, arch, dome: the words of a building in Kurdish, each lit on a drawing so the name stays with the thing. Then test yourself.',
                         'بناغە، کۆڵەکە، تیر، کەوانە، گومبەز: وشەکانی بینا بە کوردی، هەر یەکەیان لەسەر نەخشەیەک ڕووناک کراوەتەوە تا ناوەکە لەگەڵ شتەکە لە بیر بمێنێت. پاشان خۆت تاقی بکەرەوە.',
                         'الأساس، العمود، الجسر، القوس، القبّة: مفردات المبنى بالكوردية، كلٌّ منها مضاءة على رسم كي يبقى الاسم مقروناً بالشيء. ثم اختبر نفسك.') }}</span>

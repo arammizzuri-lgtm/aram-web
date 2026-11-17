@@ -123,7 +123,7 @@ class SeoController extends Controller
         $out[] = '- [Services — architecture, exteriors, interiors, construction, tendering, furniture]('.site_url('/services', 'en').')';
         $out[] = '- [How we work — the four phases of a project]('.site_url('/process', 'en').')';
         $out[] = '- [Journal — projects as they are built, and essays on architecture]('.site_url('/journal', 'en').')';
-        $out[] = '- [Words of the Kurdish house — a glossary of building words in Kurdish, Arabic and English]('.site_url('/journal/glossary', 'en').')';
+        $out[] = '- [A dictionary of Kurdish architecture — building words in Kurdish, Arabic and English, each drawn]('.site_url('/journal/glossary', 'en').')';
         foreach (\App\Support\Articles::all() as $article) {
             $out[] = '- ['.$article['title'][0].']('.\App\Support\Articles::url($article, 'en').') — '.$article['summary'][0];
         }
