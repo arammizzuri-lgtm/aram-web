@@ -46,7 +46,7 @@
 [dir="rtl"] .ja-types span { font-size: 14px; line-height: 1.8; }
 /* the four diagrams (journal/type): drawn like the plans; a door or window cuts the wall in the panel's colour,
    and the court's shade swings across it as a day's would */
-.ja-types .ja-dwg { min-width: 0; max-height: none; }
+.ja-types .ja-dwg { max-height: none; }
 .ja-type .t-cut { fill: var(--panel); stroke: none; }
 .ja-type .t-court { stroke: none; }
 .ja-type .t-pave { stroke: rgba(229,226,220,.09); stroke-width: .5; }
@@ -196,9 +196,8 @@
 @keyframes jaFade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ja-dwg .dl { animation: none !important; stroke-dasharray: none !important; } .ja-dwg * { animation: none !important; } .ja-dwg .d-sunlit { transition: none; } }
 @media (max-width: 600px) {
-    /* a drawing stays legible: it keeps a working width and scrolls sideways */
-    .ja-plate__fig { overflow-x: auto; align-items: flex-start; }
-    .ja-dwg { min-width: 560px; max-height: none; }
+    /* the whole drawing on the screen, to pinch in on for detail */
+    .ja-plate__fig { padding: 14px 8px; }
 }
 /* ---- an essay written in the admin (journal/essay): its cover, then the heritage pages' sections ---- */
 .je-cover { margin-top: clamp(32px, 5vh, 52px); }
