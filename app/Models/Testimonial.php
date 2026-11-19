@@ -36,7 +36,7 @@ class Testimonial extends Model
 
     protected $fillable = [
         'quote_en', 'quote_ku', 'quote_ar', 'person_name', 'person_name_ku', 'person_name_ar', 'person_role_en', 'person_role_ku', 'person_role_ar',
-        'client_id', 'project_id', 'sort_order', 'is_published',
+        'client_id', 'project_id', 'sort_order', 'is_published', 'show_on',
         'voice', 'portrait', 'sketch_detail', 'media_consent',
         // sent by the client through a review link, waiting for the studio's approval
         'from_client', 'submitted_at',
@@ -44,6 +44,7 @@ class Testimonial extends Model
 
     protected $casts = [
         'is_published' => 'boolean',
+        'show_on' => 'array',
         'media_consent' => 'boolean',
         'from_client' => 'boolean',
         'submitted_at' => 'datetime',
@@ -274,27 +275,47 @@ class Testimonial extends Model
         return $query->where('is_published', true)->orderBy('sort_order')->orderBy('id');
     }
 
-    /**
-     * Only quotes that have something to say in this language. A quote is the
-     * client's own words, so one written in English is never shown on the
-     * Kurdish site in its place.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder<Testimonial>  $query
-     */
-    public function scopeInLanguage($query, string $lang)
-    {
-        $column = match ($lang) { 'ku' => 'quote_ku', 'ar' => 'quote_ar', default => 'quote_en' };
+    /** The site's language versions, for the admin's "Show on" choice. */
+    public const LANGS = ['en' => 'English', 'ku' => 'Kurdish', 'ar' => 'Arabic'];
 
-        return $query->whereNotNull($column)->where($column, '!=', '');
+    /**
+     * Whether the site in $lang shows this quote: the languages chosen in the
+     * admin, or — never chosen, like a review just sent in — the languages it
+     * is written in (Arabic falling back to the English).
+     */
+    public function showsIn(string $lang): bool
+    {
+        return $this->show_on !== null
+            ? in_array($lang, $this->show_on, true)
+            : filled($this->ownQuote($lang) ?: ($lang === 'ar' ? $this->quote_en : null));
     }
 
+    /** The languages it shows in, as showsIn says. @return list<string> */
+    public function shownLanguages(): array
+    {
+        return array_values(array_filter(array_keys(self::LANGS), fn ($l) => $this->showsIn($l)));
+    }
+
+    /** "en ar" — the languages it has no words of its own in, where a computer voice must not read it (voices.js). */
+    public function notWrittenIn(): string
+    {
+        return implode(' ', array_filter(array_keys(self::LANGS), fn ($l) => blank($this->ownQuote($l))));
+    }
+
+    /** Its words as written in $lang — no other language's in their place. */
+    public function ownQuote(string $lang): ?string
+    {
+        return match ($lang) { 'ku' => $this->quote_ku, 'ar' => $this->quote_ar, default => $this->quote_en };
+    }
+
+    /**
+     * Its words in $lang, or — on a language it is shown in but was not
+     * written in — the client's own words as they gave them, never a
+     * translation they did not give.
+     */
     public function quote(string $lang): string
     {
-        return (string) match ($lang) {
-            'ku' => $this->quote_ku,
-            'ar' => filled($this->quote_ar) ? $this->quote_ar : $this->quote_en,
-            default => $this->quote_en,
-        };
+        return (string) ($this->ownQuote($lang) ?: $this->quote_en ?: $this->quote_ku ?: $this->quote_ar);
     }
 
     public function personName(string $lang): string

@@ -425,11 +425,13 @@
          hides the rest — and the whole band only exists in a language that
          has at least one. --}}
     @php
-        $quotesEn = $quotes->filter(fn ($q) => filled($q->quote_en));
-        $quotesKu = $quotes->filter(fn ($q) => filled($q->quote_ku));
+        // the toggle's second slot is Arabic on /ar, Kurdish everywhere else
+        $second = site_lang() === 'ar' ? 'ar' : 'ku';
+        $quotesEn = $quotes->filter->showsIn('en');
+        $quotesKu = $quotes->filter->showsIn($second);
     @endphp
     @if ($quotes->isNotEmpty())
-        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ((site_lang() === "ar" ? $quotesEn : $quotesKu)->isNotEmpty()) data-has-ku @endif>
+        <section class="quotes" id="quotes" @if ($quotesEn->isNotEmpty()) data-has-en @endif @if ($quotesKu->isNotEmpty()) data-has-ku @endif>
             <p class="section-label section-label--center" {!! bitext('quotes_label') !!}>{{ bival('quotes_label') }}</p>
             <h2 class="quotes__title" {!! bitext('quotes_title') !!}>{{ bival('quotes_title') }}</h2>
             {{-- the studio's rating on Google, once it is set in the admin: a link to read the reviews there --}}
@@ -443,9 +445,9 @@
             @endif
             <div class="quotes__stage" id="quotesStage" aria-live="polite">
                 @foreach ($quotes as $q)
-                    <figure class="quote" @if (filled($q->quote_en)) data-has-en @endif @if (filled(rtl_slot($q->quote_en, $q->quote_ku, $q->quote_ar))) data-has-ku @endif>
+                    <figure class="quote" @if ($q->showsIn('en')) data-has-en @endif @if ($q->showsIn($second)) data-has-ku @endif>
                         @include('partials.client-voice', ['cvQuote' => $q])
-                        <blockquote class="quote__text" dir="auto" data-en="{{ $q->quote('en') }}" data-ku="{{ rtl_slot($q->quote("en"), $q->quote("ku"), $q->quote("ar")) }}">{{ $q->quote(site_lang()) ?: $q->quote_en ?: $q->quote_ku }}</blockquote>
+                        <blockquote class="quote__text" dir="auto" data-not-written-in="{{ $q->notWrittenIn() }}" data-en="{{ $q->quote('en') }}" data-ku="{{ $q->quote($second) }}">{{ $q->quote(site_lang()) }}</blockquote>
                         <figcaption class="quote__by">
                             <span class="quote__name" data-en="{{ $q->personName('en') }}" data-ku="{{ rtl_slot($q->personName("en"), $q->personName("ku"), $q->personName("ar")) }}">{{ $q->personName(site_lang()) }}</span>
                             @php $roleEn = $q->attribution('en'); $roleKu = rtl_slot($roleEn, $q->attribution("ku"), $q->attribution("ar")); @endphp

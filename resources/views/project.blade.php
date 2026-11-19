@@ -585,7 +585,7 @@
                 @foreach ($quotes as $q)
                     <figure class="pp-quote-card{{ $q->hasMedia() ? ' has-cv' : '' }}">
                         @include('partials.client-voice', ['cvQuote' => $q])
-                        <blockquote dir="auto">{{ $q->quote($lang) }}</blockquote>
+                        <blockquote dir="auto" data-not-written-in="{{ $q->notWrittenIn() }}">{{ $q->quote($lang) }}</blockquote>
                         <figcaption>
                             <span class="pp-quote-card__name"><bdi>{{ $q->personName($lang) }}</bdi></span>
                             @if (filled($q->attribution($lang)))

@@ -182,6 +182,46 @@ class EnquiriesTest extends TestCase
         $this->get('/ku/projects/'.$project->slug)->assertDontSee('They listened before they drew.');
     }
 
+    public function test_the_admin_chooses_which_languages_show_a_quote(): void
+    {
+        $project = $this->project();
+        $quote = Testimonial::create([
+            'quote_ku' => 'زۆر سوپاس بۆ کارەکەتان.', 'person_name' => 'Hawre', 'project_id' => $project->id, 'is_published' => true,
+        ]);
+
+        // never chosen: only where it is written
+        $this->assertSame(['ku'], $quote->shownLanguages());
+        $this->get('/')->assertDontSee('data-has-en', false);
+        $this->get('/projects/'.$project->slug)->assertDontSee('زۆر سوپاس بۆ کارەکەتان.');
+
+        // chosen for all three: the client's own Kurdish words on the English and Arabic pages, and no
+        // English computer voice reading them
+        $quote->update(['show_on' => ['en', 'ku', 'ar']]);
+        $this->get('/')->assertSee('class="quote"  data-has-en', false)->assertSee('زۆر سوپاس بۆ کارەکەتان.')
+            ->assertSee('data-not-written-in="en ar"', false);
+        $this->get('/ar')->assertSee('data-has-ku', false);
+        $this->get('/projects/'.$project->slug)->assertSee('زۆر سوپاس بۆ کارەکەتان.');
+
+        // and taken off the Kurdish site, though written in Kurdish
+        $quote->update(['show_on' => ['en']]);
+        $this->get('/ku')->assertDontSee('class="quote"  data-has-en  data-has-ku', false);
+        $this->get('/ku/projects/'.$project->slug)->assertDontSee('زۆر سوپاس بۆ کارەکەتان.');
+    }
+
+    public function test_the_admin_form_saves_the_languages_a_quote_shows_on(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $quote = Testimonial::create(['quote_ku' => 'باش بوو.', 'person_name' => 'Hawre', 'is_published' => true]);
+
+        \Livewire\Livewire::test(\App\Filament\Resources\Testimonials\Pages\EditTestimonial::class, ['record' => $quote->getRouteKey()])
+            ->assertFormSet(['show_on' => ['ku']])
+            ->fillForm(['show_on' => ['en', 'ku']])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(['en', 'ku'], $quote->fresh()->show_on);
+    }
+
     /* ---- the admin ---- */
 
     public function test_the_admin_screens_render(): void

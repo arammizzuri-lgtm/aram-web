@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Testimonial;
 use App\Support\ReadAloud;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -28,7 +29,7 @@ class TestimonialForm
 
         return $schema->components([
             Section::make('What they said')
-                ->description('A quote shows only in the language it is written in — the client’s own words are never stood in for by a translation they did not give. Fill in one or both.')
+                ->description('The client’s own words are never stood in for by a translation they did not give. Fill in one or more; choose below which language versions of the site show it.')
                 ->columns(2)
                 ->schema([
                     Textarea::make('quote_en')->label('Quote (English)')->rows(5)
@@ -75,6 +76,12 @@ class TestimonialForm
                         ->searchable()->native(false)
                         ->helperText('The quote also appears on that project’s page.'),
                     Toggle::make('is_published')->label('Show on the website')->default(true),
+                    CheckboxList::make('show_on')->label('Show on')
+                        ->options(Testimonial::LANGS)->columns(3)->required()
+                        ->helperText('Which language versions of the site show it, with its voice and portrait. Where it has no words of that language, the client’s own words show as they gave them.')
+                        // never chosen (a review just sent in): the languages it is written in
+                        ->afterStateHydrated(fn (CheckboxList $component, ?Testimonial $record) => $record?->show_on === null
+                            ? $component->state($record ? $record->shownLanguages() : array_keys(Testimonial::LANGS)) : null),
                 ]),
 
             Section::make('Their voice and portrait')

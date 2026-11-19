@@ -357,8 +357,10 @@
         const src = btn.dataset.srcKu;
         let audio = null, utter = null, frame = 0, active = false;
 
-        // how the words on screen can be read, if they can
-        const way = () => (pageLang() === 'ku' ? (src ? 'file' : deviceVoice('ku') && 'device') : deviceVoice(pageLang()) && 'device') || null;
+        // how the words on screen can be read, if they can — never words of
+        // another language shown on this page, in this language's voice
+        const notOwn = (quote.dataset.notWrittenIn || '').split(' ');
+        const way = () => notOwn.includes(pageLang()) ? null : (pageLang() === 'ku' ? (src ? 'file' : deviceVoice('ku') && 'device') : deviceVoice(pageLang()) && 'device') || null;
         const setLabel = () => { label.textContent = pick(btn, active ? 'stop' : 'label'); };
         const refresh = () => { btn.hidden = !way(); setLabel(); };
 

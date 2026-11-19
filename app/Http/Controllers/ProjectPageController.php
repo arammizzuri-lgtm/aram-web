@@ -60,7 +60,7 @@ class ProjectPageController extends Controller
         }, $project->orderedImages());
 
         // what clients said about this one, in the language of the page
-        $quotes = $project->testimonials()->publishedOrdered()->inLanguage(site_lang())->with('client')->get();
+        $quotes = $project->testimonials()->publishedOrdered()->with('client')->get()->filter->showsIn(site_lang())->values();
 
         return view('project', [
             'project' => $project,
