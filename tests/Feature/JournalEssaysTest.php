@@ -170,14 +170,14 @@ class JournalEssaysTest extends TestCase
         $feed = simplexml_load_string($res->getContent());
         $this->assertNotFalse($feed);
         $titles = array_map(fn ($e) => (string) $e->title, iterator_to_array($feed->entry, false));
-        $this->assertSame(['Roof slab cast', 'Building with earth', 'The Qaysari: Erbil’s covered bazaar, in plan and section',
-            'The houses of the Citadel, in plan, section and elevation'], $titles);   // the draft left out
+        $this->assertSame(['Roof slab cast', 'The courtyard house across Kurdistan: Erbil, Sulaimani, Amed and Amedi', 'Building with earth',
+            'The Qaysari: Erbil’s covered bazaar, in plan and section', 'The houses of the Citadel, in plan, section and elevation'], $titles);   // the draft left out
         $this->assertSame('The last pour & the first rain.', (string) $feed->entry[0]->summary);
         $this->assertSame('2026-11-30T00:00:00+00:00', (string) $feed->updated);
 
         $ar = simplexml_load_string($this->get('/ar/journal/feed')->assertOk()->getContent());
-        $this->assertSame(url('/ar/journal/qaysari-bazaar'), (string) $ar->entry[2]->link['href']);
-        $this->assertSame('القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا', (string) $ar->entry[2]->title);
+        $this->assertSame(url('/ar/journal/qaysari-bazaar'), (string) $ar->entry[3]->link['href']);
+        $this->assertSame('القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا', (string) $ar->entry[3]->title);
 
         $this->assertFalse(Essay::slugIsFree('feed'));
     }
@@ -185,18 +185,20 @@ class JournalEssaysTest extends TestCase
     public function test_every_drawing_an_essay_shows_has_its_walls(): void
     {
         $files = Drawing::files();
-        $this->assertSame(['citadel-drawings' => 18, 'qaysari-drawings' => 8], array_map('count', $files));
+        $this->assertSame(['citadel-drawings' => 18, 'kurdistan-drawings' => 3, 'qaysari-drawings' => 8], array_map('count', $files));
         foreach (Drawing::code() as $key => $dwg) {
             $this->assertStringStartsWith('M', $dwg['d']['wall'], $key);
             // the box round what is built, which the journal card frames by
             $this->assertCount(4, $dwg['bb'], $key);
             $this->assertGreaterThan(0, $dwg['bb'][2] * $dwg['bb'][3], $key);
         }
-        // each essay draws every one of its file's drawings, its card's two among them, and has its link preview
-        foreach (['citadel-house-plans' => 'citadel-drawings', 'qaysari-bazaar' => 'qaysari-drawings'] as $slug => $file) {
+        // each essay draws every one of its file's drawings, its card's two among them, and has its link preview;
+        // one may also borrow another's (the courtyard houses set a Citadel house beside their own)
+        foreach (['citadel-house-plans' => 'citadel-drawings', 'qaysari-bazaar' => 'qaysari-drawings', 'courtyard-house-across-kurdistan' => 'kurdistan-drawings'] as $slug => $file) {
             $essay = Essay::where('slug', $slug)->sole();
             preg_match_all('/"code:([a-z0-9-]+)"/', json_encode($essay->sections), $m);
-            $this->assertEqualsCanonicalizing(array_keys($files[$file]), $m[1], $slug);
+            $this->assertEqualsCanonicalizing(array_keys($files[$file]), array_values(array_intersect(array_unique($m[1]), array_keys($files[$file]))), $slug);
+            $this->assertEmpty(array_diff($m[1], array_keys(Drawing::code())), $slug);
             $this->assertArrayHasKey(substr($essay->extras['cover_plan'], 5), $files[$file]);
             $this->assertArrayHasKey(substr($essay->extras['cover_section'], 5), $files[$file]);
             $this->assertFileExists(public_path('images/journal/'.$slug.'-ar.jpg'));
@@ -270,5 +272,46 @@ class JournalEssaysTest extends TestCase
             ->assertSee(url('/ku/kurdistan-heritage'), false);   // the button at the end, in the page's language
         $this->get('/journal/citadel-house-plans')->assertSee('"about":{"@type":"LandmarksOrHistoricalBuildings","name":"Erbil Citadel"}', false)
             ->assertSee('<dd dir="ltr">31/8</dd>', false)->assertSee('<dd dir="ltr">c. 1750–1930</dd>', false);
+    }
+
+    public function test_the_courtyard_houses_set_two_cities_at_one_scale_and_say_what_they_could_not_draw(): void
+    {
+        $this->get('/journal')->assertOk()
+            ->assertSee('href="'.url('/journal/courtyard-house-across-kurdistan').'"', false)
+            ->assertSee('4 PLANS · 3 DIAGRAMS')->assertSee('KH-01 — KH-02');
+
+        foreach (['' => 'The courtyard house across Kurdistan: Erbil, Sulaimani, Amed and Amedi', '/ku' => 'خانووی حەوشەدار لە سەرانسەری کوردستاندا: هەولێر، سلێمانی، ئامەد و ئامێدی', '/ar' => 'البيت ذو الفناء عبر كوردستان: أربيل والسليمانية وآمد والعمادية'] as $lang => $title) {
+            $html = $this->get($lang.'/journal/courtyard-house-across-kurdistan')->assertOk()->assertSee($title)->getContent();
+            // two plates: Erbil and Sulaimani side by side (three plans), and Amed (one); three type diagrams before them
+            $this->assertSame(2, substr_count($html, '<article class="ja-plate"'), $lang);
+            $this->assertSame(4, substr_count($html, '<svg class="ja-dwg"'), $lang);
+            $this->assertSame(3, substr_count($html, '<svg class="ja-dwg ja-type"'), $lang);
+            $this->assertStringContainsString('<div class="ja-plate__sheet ja-plate__sheet--3">', $html);
+            $this->assertStringContainsString('<span class="ja-plate__code" dir="ltr">KH-02</span>', $html);
+            // each plan's source, open-licensed where we redrew it, and the plateau we could not draw
+            foreach (['https://doi.org/10.1016/j.asej.2024.103003', 'https://doi.org/10.17656/sjes.102007', 'https://doi.org/10.3989/ic.6980',
+                'https://doi.org/10.4000/ejts.4055', 'https://artsandculture.google.com/story/FgWxre3slKQTKQ'] as $doi) {
+                $this->assertStringContainsString($doi, $html, $lang);
+            }
+            $this->assertStringContainsString('<meta property="og:image" content="'.url('/images/journal/courtyard-house-across-kurdistan-'.($lang ? substr($lang, 1) : 'en').'.jpg'), $html);
+        }
+
+        // the first plate's plans share one scale: one text unit, so a plate sets their widths by their size alone
+        $dwg = Drawing::code();
+        $this->assertSame([40, 40, 40], [$dwg['salim-g']['fs'], $dwg['k-faqe-g']['fs'], $dwg['k-faqe-f']['fs']]);
+        $page = $this->get('/journal/courtyard-house-across-kurdistan')->getContent();
+        preg_match_all('/<svg class="ja-dwg" viewBox="[^"]+" style="[^"]*width:([\d.]+)%/', $page, $w);
+        $this->assertEqualsWithDelta($dwg['salim-g']['vb'][2] / $dwg['k-faqe-g']['vb'][2] * 100, (float) $w[1][0], 0.1);
+        $this->assertSame('100', $w[1][1]);
+        // Amed's has no scale in its source, so neither has the drawing: no bar, no dimensions, no areas
+        $this->assertSame('', $dwg['k-dengbej']['d']['scale']);
+        $this->assertSame('', $dwg['k-dengbej']['d']['dim']);
+        $this->assertStringNotContainsString('m²', json_encode($dwg['k-dengbej']['text'], JSON_UNESCAPED_UNICODE));
+
+        // the words on the drawings in the page's language: the rewaq, the seasons of Amed's rooms
+        $this->get('/journal/courtyard-house-across-kurdistan')->assertSee('REWAQ')->assertSee('SUMMER')->assertSee('WINTER')
+            ->assertSee('A word on the drawings.')->assertSee('Amedi, the plan we could not draw');
+        $this->get('/ku/journal/courtyard-house-across-kurdistan')->assertSee('ڕەواق')->assertSee('هاوینە');
+        $this->get('/sitemap.xml')->assertOk()->assertSee(url('/ar/journal/courtyard-house-across-kurdistan'), false);
     }
 }

@@ -1,4 +1,5 @@
-// gathers out/*.json into the site's resources/journal/: q-* into qaysari-drawings.json, the rest into citadel-drawings.json
+// gathers out/*.json into the site's resources/journal/: q-* into qaysari-drawings.json, k-* (the courtyard house across
+// Kurdistan) into kurdistan-drawings.json, the rest into citadel-drawings.json
 import fs from 'fs';
 import { fileURLToPath } from 'node:url';
 const HERE = fileURLToPath(new URL('.', import.meta.url));   // this folder, ending in a separator
@@ -25,7 +26,7 @@ for (const f of fs.readdirSync(HERE + 'out').filter((f) => f.endsWith('.json') &
   console.assert(g.bb[2] > 0 && g.bb[3] > 0, f);
   o[f.slice(0, -5)] = g;
 }
-for (const [file, keep] of [['citadel', (k) => !k.startsWith('q-')], ['qaysari', (k) => k.startsWith('q-')]]) {
+for (const [file, keep] of [['citadel', (k) => !/^[qk]-/.test(k)], ['qaysari', (k) => k.startsWith('q-')], ['kurdistan', (k) => k.startsWith('k-')]]) {
   const to = HERE + '../../resources/journal/' + file + '-drawings.json';
   const part = Object.fromEntries(Object.entries(o).filter(([k]) => keep(k)));
   fs.writeFileSync(to, JSON.stringify(part));

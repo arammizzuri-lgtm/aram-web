@@ -21,7 +21,7 @@ node tools/journal/hand.mjs q-g     # plan: spec -> anno   (skip for a plan with
 node tools/journal/build.mjs q-g    # plan: anno + trace -> out/q-g.json
 node tools/journal/sec.mjs q-long   # section or elevation: spec -> out/q-long.json
 node tools/journal/site.mjs q-site  # site plan: osm (add --fetch to ask OpenStreetMap again) -> out/q-site.json
-node tools/journal/gen.mjs          # out/*.json -> resources/journal/ (q-* to qaysari, the rest to citadel)
+node tools/journal/gen.mjs          # out/*.json -> resources/journal/ (q-* to qaysari, k-* to kurdistan, the rest to citadel)
 ```
 
 `gen.mjs` writes every drawing in `out/`, so build them all first on a fresh checkout:

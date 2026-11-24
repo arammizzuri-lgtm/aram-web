@@ -41,7 +41,9 @@
     $cols = implode('', array_map(fn ($c) => 'M'.($c[0] - 2.6).' '.$c[1].'a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0', $tp['cols'] ?? []));
     $words = ['court' => bi('COURT', 'حەوشە', 'الفناء'), 'tarma' => bi('TARMA', 'تارمە', 'طارمة'), 'iwan' => bi('IWAN', 'ئەیوان', 'إيوان'),
         'room' => bi('ROOM', 'ژوور', 'غرفة'), 'arcade' => bi('ARCADE', 'ڕیزە کەوانە', 'رواق'),
-        'diwakhana' => bi('DIWAKHANA', 'دیوەخان', 'الديوخانة')];
+        'diwakhana' => bi('DIWAKHANA', 'دیوەخان', 'الديوخانة'),
+        // the seasons of a house in Amed: rooms used in summer on the side the sun does not reach, in winter on the side it does
+        'summer' => bi('SUMMER', 'هاوینە', 'صيفي'), 'winter' => bi('WINTER', 'زستانە', 'شتوي')];
 @endphp
 <svg class="ja-dwg ja-type" viewBox="0 0 200 150" style="--u:1px;font-size:10px" aria-hidden="true">
     <defs>

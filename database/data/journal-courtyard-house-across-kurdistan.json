@@ -1,0 +1,932 @@
+{
+    "slug": "courtyard-house-across-kurdistan",
+    "date": "2026-11-25",
+    "is_published": true,
+    "title_en": "The courtyard house across Kurdistan: Erbil, Sulaimani, Amed and Amedi",
+    "title_ku": "خانووی حەوشەدار لە سەرانسەری کوردستاندا: هەولێر، سلێمانی، ئامەد و ئامێدی",
+    "title_ar": "البيت ذو الفناء عبر كوردستان: أربيل والسليمانية وآمد والعمادية",
+    "summary_en": "One idea, a house turned inward on open ground, built four ways: a house in Erbil Citadel and one in Sulaimani drawn at one scale, a house in Amed with its rooms set by the seasons, and Amedi on its rock, where no house has yet been published in plan.",
+    "summary_ku": "یەک بیرۆکە، خانوویەک کە ڕووی لە زەوییەکی کراوەی ناو خۆیەتی، بە چوار شێوە دروستکراوە: خانوویەک لە قەڵای هەولێر و یەکێک لە سلێمانی بە یەک پێوەر کێشراون، خانوویەک لە ئامەد کە ژوورەکانی بەپێی وەرزەکان ڕێکخراون، و ئامێدی لەسەر بەردەکەی، کە هێشتا نەخشەی هیچ خانوویەکی بڵاونەکراوەتەوە.",
+    "summary_ar": "فكرة واحدة، بيت يلتفت إلى أرض مكشوفة في داخله، بُنيت على أربعة أوجه: بيت في قلعة أربيل وآخر في السليمانية مرسومان بمقياس واحد، وبيت في آمد رُتّبت غرفه على فصول السنة، والعمادية على صخرتها، حيث لم يُنشر بعدُ مسقط لأي بيت من بيوتها.",
+    "extras": {
+        "about": "Courtyard houses of Kurdistan",
+        "cover_plan": "code:k-faqe-g",
+        "cover_section": "code:k-faqe-f",
+        "kicker_en": "ERBIL · SULAIMANI · AMED · AMEDI",
+        "kicker_ku": "هەولێر · سلێمانی · ئامەد · ئامێدی",
+        "kicker_ar": "أربيل · السليمانية · آمد · العمادية",
+        "line1_en": "One courtyard,",
+        "line1_ku": "یەک حەوشە،",
+        "line1_ar": "فناء واحد،",
+        "line2_en": "four cities",
+        "line2_ku": "چوار شار",
+        "line2_ar": "أربع مدن",
+        "note_en": "4 PLANS · 3 DIAGRAMS",
+        "note_ku": "4 نەخشە · 3 هێڵکاری",
+        "note_ar": "4 مساقط · 3 رسوم توضيحية",
+        "code": "KH-01 — KH-02",
+        "link_url": "/journal/citadel-house-plans",
+        "link_en": "The houses of the Citadel",
+        "link_ku": "خانووەکانی قەڵا",
+        "link_ar": "بيوت القلعة"
+    },
+    "sections": [
+        {
+            "type": "count",
+            "data": {
+                "items": [
+                    {
+                        "label_en": "Cities",
+                        "value": "4",
+                        "label_ku": "شار",
+                        "label_ar": "مدن"
+                    },
+                    {
+                        "label_en": "Houses drawn",
+                        "value": "3",
+                        "label_ku": "خانووی کێشراو",
+                        "label_ar": "بيوت مرسومة"
+                    },
+                    {
+                        "label_en": "Plans",
+                        "value": "4",
+                        "label_ku": "نەخشە",
+                        "label_ar": "مساقط"
+                    },
+                    {
+                        "label_en": "Diagrams",
+                        "value": "3",
+                        "label_ku": "هێڵکاری",
+                        "label_ar": "رسوم توضيحية"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "One idea, four cities",
+                "heading_ku": "یەک بیرۆکە، چوار شار",
+                "heading_ar": "فكرة واحدة، أربع مدن",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "A town house in Kurdistan a century ago was built round open ground. The street saw a wall and a door; the rooms looked inward, and the family’s day moved between the rooms and the court as the sun and the seasons moved. The idea ran from the Tigris to the Zagros. The houses did not repeat each other.\n\nWe set four cities side by side. In Erbil the house closes round a court in the middle of its plot. In Sulaimani it stands in one long row, with a court in front as large as a garden. In Amed the rooms round the court are named for the seasons they serve. And Amedi, packed onto a plateau ringed by cliffs, has not yet had one of its houses published in plan.",
+                            "text_ku": "خانوویەکی شار لە کوردستان سەد ساڵ لەمەوبەر بە دەوری زەوییەکی کراوەدا دروست دەکرا. شەقام تەنها دیوارێک و دەرگایەکی دەبینی؛ ژوورەکان ڕوویان لە ناوەوە بوو، و ڕۆژی خێزان لە نێوان ژوورەکان و حەوشەدا دەجووڵا، وەک چۆن خۆر و وەرزەکان دەجووڵان. بیرۆکەکە لە دیجلەوە تا زاگرۆس درێژ دەبووەوە. بەڵام خانووەکان دووبارەی یەکتر نەبوون.\n\nچوار شارمان شان بە شانی یەک داناوە. لە هەولێر خانووەکە بە دەوری حەوشەیەکدا دادەخرێت کە لە ناوەڕاستی زەوییەکەیدایە. لە سلێمانی لە یەک ڕیزی درێژدا ڕادەوەستێت، و حەوشەیەکی بە قەد باخچەیەک لە بەردەمیدایە. لە ئامەد ژوورەکانی دەوری حەوشە بە ناوی ئەو وەرزانەوە ناو دەنرێن کە خزمەتیان دەکەن. و ئامێدی، کە لەسەر دەشتاییەکی بەرزی دەورەدراو بە هەڵدێر چڕ بووەتەوە، هێشتا نەخشەی هیچ یەکێک لە خانووەکانی بڵاونەکراوەتەوە.",
+                            "text_ar": "كان البيت في مدن كوردستان قبل قرن يُبنى حول أرض مكشوفة. لا يرى الشارع منه إلا جداراً وباباً؛ والغرف تلتفت إلى الداخل، ويتنقّل يوم الأسرة بين الغرف والفناء كما تتنقّل الشمس والفصول. امتدت الفكرة من دجلة إلى زاغروس، لكن البيوت لم يكرّر بعضها بعضاً.\n\nوضعنا أربع مدن جنباً إلى جنب. في أربيل ينغلق البيت حول فناء في وسط قطعته. وفي السليمانية يقوم في صف واحد طويل، أمامه فناء بسعة حديقة. وفي آمد تُسمّى الغرف حول الفناء بأسماء الفصول التي تخدمها. أما العمادية، المكتظة على هضبة تحيط بها الجروف، فلم يُنشر بعدُ مسقط لأي بيت من بيوتها."
+                        }
+                    },
+                    {
+                        "type": "note",
+                        "data": {
+                            "text_en": "A word on the drawings. We did not measure these houses. The plans are redrawn by us from published surveys: Erbil’s from the study our essay on the Citadel used, Sulaimani’s from a 2025 paper that reconstructs the house as it was first laid out, Amed’s from a 2025 paper on the iwan. Erbil and Sulaimani share a plate and one scale. Amed’s source gives no scale, so its plan has none and stands on a plate of its own. The three small diagrams are ours: types, not surveys.",
+                            "text_ku": "وشەیەک دەربارەی نەخشەکان. ئێمە ئەم خانووانەمان نەپێواوە. نەخشەکان لەلایەن ئێمەوە لە ڕووپێوە بڵاوکراوەکانەوە دووبارە کێشراونەتەوە: هی هەولێر لەو توێژینەوەیەوە کە وتارەکەمان دەربارەی قەڵا پشتی پێ بەست، هی سلێمانی لە توێژینەوەیەکی ٢٠٢٥ەوە کە خانووەکە وەک یەکەمجار نەخشەی بۆ دانرابوو دووبارە دروست دەکاتەوە، هی ئامەد لە توێژینەوەیەکی ٢٠٢٥ەوە دەربارەی ئەیوان. هەولێر و سلێمانی یەک تابلۆ و یەک پێوەریان هەیە. سەرچاوەکەی ئامەد هیچ پێوەرێک نادات، بۆیە نەخشەکەی بێ پێوەرە و لەسەر تابلۆیەکی جیا دانراوە. سێ هێڵکارییە بچووکەکە هی خۆمانن: جۆرن، نەک ڕووپێو.",
+                            "text_ar": "كلمة عن الرسوم. لم نقِس هذه البيوت نحن. أعدنا رسم المساقط عن مسوح منشورة: مسقط أربيل عن الدراسة التي اعتمدها مقالنا عن القلعة، ومسقط السليمانية عن دراسة من ٢٠٢٥ تعيد تركيب البيت كما خُطّط أول مرة، ومسقط آمد عن دراسة من ٢٠٢٥ عن الإيوان. أربيل والسليمانية على لوحة واحدة وبمقياس واحد. أما مصدر آمد فلا يعطي مقياساً، فجاء مسقطها بلا مقياس وعلى لوحة وحدها. والرسوم التوضيحية الثلاثة الصغيرة من عملنا: أنماط لا مسوح."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "Three ways round a court",
+                "heading_ku": "سێ ڕێگا بە دەوری حەوشەدا",
+                "heading_ar": "ثلاث طرق حول الفناء",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "Drawn as types, the three houses are three answers to one question: where the rooms go, and which way they face.",
+                            "text_ku": "ئەگەر وەک جۆر بکێشرێن، سێ خانووەکە سێ وەڵامن بۆ یەک پرسیار: ژوورەکان لە کوێ دابنرێن، و ڕوویان لە کوێ بێت.",
+                            "text_ar": "إذا رُسمت البيوت الثلاثة أنماطاً، بدت ثلاثة أجوبة عن سؤال واحد: أين توضع الغرف، وإلى أين تنظر."
+                        }
+                    },
+                    {
+                        "type": "diagrams",
+                        "data": {
+                            "items": [
+                                {
+                                    "tp": {
+                                        "holes": [
+                                            [
+                                                22,
+                                                20,
+                                                75,
+                                                38
+                                            ],
+                                            [
+                                                103,
+                                                20,
+                                                75,
+                                                38
+                                            ],
+                                            [
+                                                22,
+                                                64,
+                                                38,
+                                                66
+                                            ],
+                                            [
+                                                140,
+                                                64,
+                                                38,
+                                                66
+                                            ],
+                                            [
+                                                66,
+                                                64,
+                                                68,
+                                                66
+                                            ]
+                                        ],
+                                        "court": [
+                                            66,
+                                            64,
+                                            68,
+                                            66
+                                        ],
+                                        "doors": [
+                                            [
+                                                52,
+                                                58,
+                                                12,
+                                                "h",
+                                                -1
+                                            ],
+                                            [
+                                                127,
+                                                58,
+                                                12,
+                                                "h",
+                                                -1
+                                            ],
+                                            [
+                                                60,
+                                                90,
+                                                12,
+                                                "v",
+                                                -1
+                                            ],
+                                            [
+                                                134,
+                                                90,
+                                                12,
+                                                "v",
+                                                1
+                                            ],
+                                            [
+                                                94,
+                                                130,
+                                                12,
+                                                "h",
+                                                -1
+                                            ]
+                                        ],
+                                        "wins": [
+                                            [
+                                                30,
+                                                58,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                158,
+                                                58,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                60,
+                                                110,
+                                                10,
+                                                "v"
+                                            ],
+                                            [
+                                                134,
+                                                110,
+                                                10,
+                                                "v"
+                                            ]
+                                        ],
+                                        "words": [
+                                            [
+                                                59.5,
+                                                43,
+                                                "room"
+                                            ],
+                                            [
+                                                140.5,
+                                                43,
+                                                "room"
+                                            ],
+                                            [
+                                                41,
+                                                100,
+                                                "room"
+                                            ],
+                                            [
+                                                159,
+                                                100,
+                                                "room"
+                                            ],
+                                            [
+                                                100,
+                                                101,
+                                                "court"
+                                            ]
+                                        ]
+                                    },
+                                    "title_en": "Erbil: the court in the middle",
+                                    "title_ku": "هەولێر: حەوشە لە ناوەڕاست",
+                                    "title_ar": "أربيل: الفناء في الوسط",
+                                    "text_en": "Rooms line the edges of the plot, each with its own door to the court. The court is corridor, living room and garden at once.",
+                                    "text_ku": "ژوورەکان بە لێواری زەوییەکەدا ڕیز بوون، هەر یەکەیان دەرگای خۆی بۆ حەوشەکە هەیە. حەوشەکە لە یەک کاتدا ڕاڕەو و ژووری دانیشتن و باخچەیە.",
+                                    "text_ar": "تصطف الغرف على حواف القطعة، لكل منها بابها إلى الفناء. والفناء ممرّ وغرفة جلوس وحديقة معاً."
+                                },
+                                {
+                                    "tp": {
+                                        "holes": [
+                                            [
+                                                22,
+                                                20,
+                                                52,
+                                                36
+                                            ],
+                                            [
+                                                126,
+                                                20,
+                                                52,
+                                                36
+                                            ],
+                                            [
+                                                [
+                                                    22,
+                                                    62
+                                                ],
+                                                [
+                                                    80,
+                                                    62
+                                                ],
+                                                [
+                                                    80,
+                                                    20
+                                                ],
+                                                [
+                                                    120,
+                                                    20
+                                                ],
+                                                [
+                                                    120,
+                                                    62
+                                                ],
+                                                [
+                                                    178,
+                                                    62
+                                                ],
+                                                [
+                                                    178,
+                                                    130
+                                                ],
+                                                [
+                                                    62,
+                                                    130
+                                                ],
+                                                [
+                                                    62,
+                                                    100
+                                                ],
+                                                [
+                                                    22,
+                                                    100
+                                                ]
+                                            ],
+                                            [
+                                                22,
+                                                106,
+                                                34,
+                                                24
+                                            ]
+                                        ],
+                                        "court": [
+                                            [
+                                                22,
+                                                62
+                                            ],
+                                            [
+                                                178,
+                                                62
+                                            ],
+                                            [
+                                                178,
+                                                130
+                                            ],
+                                            [
+                                                62,
+                                                130
+                                            ],
+                                            [
+                                                62,
+                                                100
+                                            ],
+                                            [
+                                                22,
+                                                100
+                                            ]
+                                        ],
+                                        "doors": [
+                                            [
+                                                74,
+                                                34,
+                                                12,
+                                                "v",
+                                                -1
+                                            ],
+                                            [
+                                                120,
+                                                34,
+                                                12,
+                                                "v",
+                                                1
+                                            ],
+                                            [
+                                                56,
+                                                111,
+                                                12,
+                                                "v",
+                                                -1
+                                            ],
+                                            [
+                                                94,
+                                                130,
+                                                12,
+                                                "h",
+                                                -1
+                                            ]
+                                        ],
+                                        "wins": [
+                                            [
+                                                30,
+                                                56,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                54,
+                                                56,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                134,
+                                                56,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                158,
+                                                56,
+                                                12,
+                                                "h"
+                                            ]
+                                        ],
+                                        "cols": [
+                                            [
+                                                93.3,
+                                                62
+                                            ],
+                                            [
+                                                106.7,
+                                                62
+                                            ]
+                                        ],
+                                        "over": "M80 62H120",
+                                        "fix": "M140 98a9 9 0 1 0 18 0a9 9 0 1 0 -18 0M157 118a5 5 0 1 0 10 0a5 5 0 1 0 -10 0",
+                                        "words": [
+                                            [
+                                                48,
+                                                42,
+                                                "room"
+                                            ],
+                                            [
+                                                152,
+                                                42,
+                                                "room"
+                                            ],
+                                            [
+                                                100,
+                                                44,
+                                                "iwan"
+                                            ],
+                                            [
+                                                104,
+                                                92,
+                                                "court"
+                                            ]
+                                        ]
+                                    },
+                                    "title_en": "Sulaimani: a row of rooms, the court in front",
+                                    "title_ku": "سلێمانی: ڕیزێک ژوور، حەوشە لە بەردەمیدا",
+                                    "title_ar": "السليمانية: صف من الغرف، والفناء أمامه",
+                                    "text_en": "The commonest type in the old quarters: one range of rooms, often two storeys, the iwan in its middle and a door from it into each room. The court lies in front; the services stand by the gate, apart from the rooms.",
+                                    "text_ku": "باوترین جۆر لە گەڕەکە کۆنەکاندا: یەک ڕیز ژوور، زۆرجار دوو نهۆم، ئەیوانەکە لە ناوەڕاستیدا و دەرگایەک لێیەوە بۆ هەر ژوورێک. حەوشەکە لە بەردەمیدایە؛ خزمەتگوزارییەکان لای دەروازەکەن، دوور لە ژوورەکان.",
+                                    "text_ar": "النمط الأشيع في الأحياء القديمة: صف واحد من الغرف، من طابقين غالباً، والإيوان في وسطه ومنه باب إلى كل غرفة. والفناء أمامه، والخدمات عند البوابة، بعيدة عن الغرف."
+                                },
+                                {
+                                    "tp": {
+                                        "holes": [
+                                            [
+                                                22,
+                                                20,
+                                                75,
+                                                34
+                                            ],
+                                            [
+                                                103,
+                                                20,
+                                                75,
+                                                34
+                                            ],
+                                            [
+                                                [
+                                                    22,
+                                                    60
+                                                ],
+                                                [
+                                                    178,
+                                                    60
+                                                ],
+                                                [
+                                                    178,
+                                                    130
+                                                ],
+                                                [
+                                                    112,
+                                                    130
+                                                ],
+                                                [
+                                                    112,
+                                                    90
+                                                ],
+                                                [
+                                                    22,
+                                                    90
+                                                ]
+                                            ],
+                                            [
+                                                22,
+                                                96,
+                                                66,
+                                                34
+                                            ],
+                                            [
+                                                94,
+                                                96,
+                                                12,
+                                                34
+                                            ]
+                                        ],
+                                        "court": [
+                                            22,
+                                            60,
+                                            156,
+                                            30
+                                        ],
+                                        "doors": [
+                                            [
+                                                66,
+                                                54,
+                                                12,
+                                                "h",
+                                                -1
+                                            ],
+                                            [
+                                                122,
+                                                54,
+                                                12,
+                                                "h",
+                                                -1
+                                            ],
+                                            [
+                                                60,
+                                                90,
+                                                12,
+                                                "h",
+                                                1
+                                            ],
+                                            [
+                                                94,
+                                                90,
+                                                12,
+                                                "h",
+                                                1
+                                            ],
+                                            [
+                                                94,
+                                                130,
+                                                12,
+                                                "h",
+                                                -1
+                                            ]
+                                        ],
+                                        "wins": [
+                                            [
+                                                30,
+                                                54,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                84,
+                                                54,
+                                                9,
+                                                "h"
+                                            ],
+                                            [
+                                                107,
+                                                54,
+                                                9,
+                                                "h"
+                                            ],
+                                            [
+                                                156,
+                                                54,
+                                                12,
+                                                "h"
+                                            ],
+                                            [
+                                                30,
+                                                90,
+                                                12,
+                                                "h"
+                                            ]
+                                        ],
+                                        "over": "M112 90H178",
+                                        "words": [
+                                            [
+                                                59.5,
+                                                40,
+                                                "winter"
+                                            ],
+                                            [
+                                                140.5,
+                                                40,
+                                                "winter"
+                                            ],
+                                            [
+                                                100,
+                                                78,
+                                                "court"
+                                            ],
+                                            [
+                                                55,
+                                                116,
+                                                "summer"
+                                            ],
+                                            [
+                                                145,
+                                                113,
+                                                "iwan"
+                                            ]
+                                        ]
+                                    },
+                                    "title_en": "Amed: a room for each season",
+                                    "title_ku": "ئامەد: ژوورێک بۆ هەر وەرزێک",
+                                    "title_ar": "آمد: غرفة لكل فصل",
+                                    "text_en": "The rooms on the south side of the court face north, and the summer sun never reaches them: the summer rooms, the summer iwan, the serdab. Those on the north side face south and take the sun all day: the winter rooms.",
+                                    "text_ku": "ژوورەکانی لای باشووری حەوشەکە ڕوویان لە باکوورە، و خۆری هاوین هەرگیز پێیان ناگات: ژوورە هاوینەکان، ئەیوانی هاوینە، سەرداب. ئەوانەی لای باکوور ڕوویان لە باشوورە و هەموو ڕۆژ خۆریان بەردەکەوێت: ژوورە زستانەکان.",
+                                    "text_ar": "الغرف في الجهة الجنوبية من الفناء تنظر إلى الشمال، ولا تبلغها شمس الصيف أبداً: الغرف الصيفية والإيوان الصيفي والسرداب. أما التي في الجهة الشمالية فتنظر إلى الجنوب وتأخذ الشمس طوال النهار: الغرف الشتوية."
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "caption",
+                        "data": {
+                            "text_en": "Diagrams, not surveys: one idea in three cities.",
+                            "text_ku": "هێڵکاری، نەک ڕووپێو: یەک بیرۆکە لە سێ شاردا.",
+                            "text_ar": "رسوم توضيحية لا مسوحات: فكرة واحدة في ثلاث مدن."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "plates",
+            "data": {
+                "heading_en": "The plates",
+                "heading_ku": "تابلۆکان",
+                "heading_ar": "اللوحات",
+                "key_en": "Every plan here is redrawn by us from a published survey: walls, doors with their swings, windows and stairs. The three plans on the first plate share one scale, so the two houses can be compared as they stand. Areas are measured off the drawings and are approximate. The second plate’s source gives no scale, so its plan shows no dimensions and no areas.",
+                "key_ku": "هەموو نەخشەیەک لێرەدا لەلایەن ئێمەوە لە ڕووپێوێکی بڵاوکراوەوە دووبارە کێشراوەتەوە: دیوار، دەرگا لەگەڵ ڕێڕەوی کرانەوەیان، پەنجەرە و پەیژە. سێ نەخشەکەی تابلۆی یەکەم یەک پێوەریان هەیە، بۆیە دەکرێت دوو خانووەکە وەک خۆیان بەراورد بکرێن. ڕووبەرەکان لەسەر نەخشەکان پێوراون و نزیکەیین. سەرچاوەی تابلۆی دووەم هیچ پێوەرێک نادات، بۆیە نەخشەکەی نە ڕەهەند و نە ڕووبەر پیشان دەدات.",
+                "key_ar": "كل مسقط هنا أعدنا رسمه عن مسح منشور: الجدران والأبواب بمسار فتحها والنوافذ والدرج. المساقط الثلاثة في اللوحة الأولى بمقياس واحد، فيمكن مقارنة البيتين كما هما. المساحات مقيسة على الرسوم وتقريبية. ومصدر اللوحة الثانية لا يعطي مقياساً، فلا يُظهر مسقطها أبعاداً ولا مساحات.",
+                "code": "KH",
+                "plates": [
+                    {
+                        "name_en": "Erbil and Sulaimani, at one scale",
+                        "name_ku": "هەولێر و سلێمانی، بە یەک پێوەر",
+                        "name_ar": "أربيل والسليمانية بمقياس واحد",
+                        "type_en": "A court in the middle; a court in front",
+                        "type_ku": "حەوشەیەک لە ناوەڕاست؛ حەوشەیەک لە بەردەم",
+                        "type_ar": "فناء في الوسط؛ وفناء في المقدمة",
+                        "plans": [
+                            {
+                                "drawing": "code:salim-g",
+                                "caption_en": "Erbil · Salim Qaqa’s house",
+                                "caption_ku": "هەولێر · خانووی سەلیم قاقە",
+                                "caption_ar": "أربيل · بيت سليم قاقا",
+                                "wide": false
+                            },
+                            {
+                                "drawing": "code:k-faqe-g",
+                                "caption_en": "Sulaimani · Faqe Shally’s house, ground floor",
+                                "caption_ku": "سلێمانی · خانووی فەقێ شاڵی، نهۆمی زەوی",
+                                "caption_ar": "السليمانية · بيت فقي شالي، الطابق الأرضي",
+                                "wide": false
+                            },
+                            {
+                                "drawing": "code:k-faqe-f",
+                                "caption_en": "Sulaimani · upper floor",
+                                "caption_ku": "سلێمانی · نهۆمی سەرەوە",
+                                "caption_ar": "السليمانية · الطابق العلوي",
+                                "wide": false
+                            }
+                        ],
+                        "secs": [],
+                        "text_en": "Salim Qaqa’s house in Erbil Citadel and Faqe Shally’s house in Sulaimani are drawn here at the same scale. They are close in date: Salim Qaqa’s belongs to the late Ottoman years, and the Faqe Shally family built theirs in 1901.\n\nIn Erbil the house fills its plot. A court of about 28 m² sits in the middle, with rooms, two iwans and a portico, the tarma, round it, and the way in from the alley passes through a dalan, an entrance passage.\n\nIn Sulaimani the house is one range twenty metres long, and the court in front of it, about 294 m², is ten times the Erbil court. Downstairs the rewaq, an open hall, gives on to the court through four openings; stores, a kitchen and a service room open off it. Upstairs the iwan stands over the rewaq, open to the court on three columns, with a room either side of it and one at each end. Each room has its own door from the iwan, as each room in Erbil has its own door from the court.\n\nEvery room in Sulaimani is about three metres wide. The roof is poplar poles laid across the room, and a pole spans no more than about three metres: the tree sets the width, and the plan follows.",
+                        "text_ku": "خانووی سەلیم قاقە لە قەڵای هەولێر و خانووی فەقێ شاڵی لە سلێمانی لێرەدا بە یەک پێوەر کێشراون. مێژوویان لە یەکەوە نزیکە: خانووی سەلیم قاقە هی ساڵانی کۆتایی عوسمانییە، و بنەماڵەی فەقێ شاڵی لە ساڵی ١٩٠١دا خانووەکەیان دروست کرد.\n\nلە هەولێر خانووەکە هەموو زەوییەکەی پڕ کردووەتەوە. حەوشەیەکی نزیکەی ٢٨ م² لە ناوەڕاستدایە، و ژوور و دوو ئەیوان و تارمەیەک دەوریان داوە، و ڕێگای چوونە ژوورەوە لە کۆڵانەوە بە دالانێکدا تێدەپەڕێت.\n\nلە سلێمانی خانووەکە یەک ڕیزە بە درێژیی بیست مەتر، و حەوشەکەی بەردەمی، نزیکەی ٢٩٤ م²، دە هێندەی حەوشەکەی هەولێرە. لە خوارەوە ڕەواق، هۆڵێکی کراوە، بە چوار دەلاقە بەسەر حەوشەکەدا دەکرێتەوە؛ کۆگا و چێشتخانە و ژوورێکی خزمەتگوزاری لێیەوە دەکرێنەوە. لە سەرەوە ئەیوان لەسەر ڕەواقەکە ڕاوەستاوە، بە سێ کۆڵەکە بەسەر حەوشەکەدا کراوەیە، و ژوورێک لە هەر لایەکی و یەکێک لە هەر سەرێکی هەیە. هەر ژوورێک دەرگای خۆی لە ئەیوانەکەوە هەیە، وەک چۆن هەر ژوورێک لە هەولێر دەرگای خۆی لە حەوشەکەوە هەیە.\n\nهەموو ژوورێک لە سلێمانی نزیکەی سێ مەتر پانە. سەربانەکە کاریتەی سپیندارە کە بە پانیی ژوورەکەدا ڕاخراون، و کاریتەیەک لە نزیکەی سێ مەتر زیاتر ناگرێت: دارەکە پانییەکە دیاری دەکات، و نەخشەکە بەدوایدا دێت.",
+                        "text_ar": "رُسم هنا بيت سليم قاقا في قلعة أربيل وبيت فقي شالي في السليمانية بمقياس واحد. وتاريخاهما متقاربان: بيت سليم قاقا من أواخر العهد العثماني، وبنت أسرة فقي شالي بيتها عام ١٩٠١.\n\nفي أربيل يملأ البيت قطعته. في الوسط فناء بنحو ٢٨ م²، تحيط به الغرف وإيوانان وطارمة، ويمرّ المدخل من الزقاق بدهليز.\n\nوفي السليمانية البيت صف واحد بطول عشرين متراً، والفناء أمامه، بنحو ٢٩٤ م²، عشرة أضعاف فناء أربيل. في الطابق الأرضي ينفتح الرواق، وهو قاعة مفتوحة، على الفناء بأربع فتحات، وتنفتح عليه المخازن والمطبخ وغرفة للخدمة. وفي الطابق العلوي يقوم الإيوان فوق الرواق، مفتوحاً على الفناء على ثلاثة أعمدة، وعلى جانبيه غرفتان وفي كل طرف غرفة. لكل غرفة بابها من الإيوان، كما لكل غرفة في أربيل بابها من الفناء.\n\nكل غرفة في السليمانية بعرض ثلاثة أمتار تقريباً. فالسقف أعمدة من خشب الحور ممدودة عبر الغرفة، والعمود لا يتجاوز نحو ثلاثة أمتار: الشجرة تحدد العرض، والمسقط يتبعها.",
+                        "legend": [
+                            {
+                                "n": "1",
+                                "label_en": "The court",
+                                "label_ku": "حەوشە",
+                                "label_ar": "الفناء"
+                            },
+                            {
+                                "n": "2",
+                                "label_en": "Rooms, each entered by a door of its own: in Erbil the two large rooms at the head of the plot; in Sulaimani the rooms either side of the iwan and the end rooms (kalagi, the survey calls them)",
+                                "label_ku": "ژوورەکان، هەر یەکەیان بە دەرگای خۆی: لە هەولێر دوو ژوورە گەورەکەی سەری زەوییەکە؛ لە سلێمانی ژوورەکانی دوو لای ئەیوانەکە و ژوورەکانی هەردوو سەر",
+                                "label_ar": "غرف، لكلٍّ منها بابها: في أربيل الغرفتان الكبيرتان في رأس القطعة؛ وفي السليمانية غرفتا جانبي الإيوان وغرفتا الطرفين"
+                            },
+                            {
+                                "n": "3",
+                                "label_en": "Rewaq: an open hall under the iwan, on four openings to the court",
+                                "label_ku": "ڕەواق: هۆڵێکی کراوە لە ژێر ئەیوانەکەدا، بە چوار دەلاقە بەسەر حەوشەکەدا",
+                                "label_ar": "الرواق: قاعة مفتوحة تحت الإيوان، بأربع فتحات على الفناء"
+                            },
+                            {
+                                "n": "4",
+                                "label_en": "Stores, a service room and the kitchen, each opening off the rewaq",
+                                "label_ku": "کۆگا و ژووری خزمەتگوزاری و چێشتخانە، هەر یەکەیان لە ڕەواقەکەوە دەکرێتەوە",
+                                "label_ar": "المخازن وغرفة الخدمة والمطبخ، ينفتح كلٌّ منها على الرواق"
+                            },
+                            {
+                                "n": "5",
+                                "label_en": "Iwan, open to the court on three columns",
+                                "label_ku": "ئەیوان، بە سێ کۆڵەکە بەسەر حەوشەکەدا کراوەیە",
+                                "label_ar": "الإيوان، مفتوح على الفناء على ثلاثة أعمدة"
+                            }
+                        ],
+                        "facts": [
+                            {
+                                "label_en": "Erbil",
+                                "label_ku": "هەولێر",
+                                "label_ar": "أربيل",
+                                "value_en": "Salim Qaqa’s house, late Ottoman; 11.4 × 18.1 m",
+                                "value_ku": "خانووی سەلیم قاقە، کۆتایی سەردەمی عوسمانی؛ ١١.٤ × ١٨.١ م",
+                                "value_ar": "بيت سليم قاقا، أواخر العهد العثماني؛ ١١٫٤ × ١٨٫١ م",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Sulaimani",
+                                "label_ku": "سلێمانی",
+                                "label_ar": "السليمانية",
+                                "value_en": "Faqe Shally’s house, Dargazen quarter, built 1901; a museum since 1970",
+                                "value_ku": "خانووی فەقێ شاڵی، گەڕەکی دەرگەزێن، دروستکراوی ١٩٠١؛ لە ١٩٧٠ەوە مۆزەخانەیە",
+                                "value_ar": "بيت فقي شالي، محلة دركزين، بُني عام ١٩٠١؛ متحف منذ ١٩٧٠",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "The courts",
+                                "label_ku": "حەوشەکان",
+                                "label_ar": "الفناءان",
+                                "value_en": "About 28 m² and 294 m², measured off the drawings",
+                                "value_ku": "نزیکەی ٢٨ م² و ٢٩٤ م²، لەسەر نەخشەکان پێوراون",
+                                "value_ar": "نحو ٢٨ م² و٢٩٤ م²، مقيسة على الرسوم",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Walls in Sulaimani",
+                                "label_ku": "دیوار لە سلێمانی",
+                                "label_ar": "الجدران في السليمانية",
+                                "value_en": "Sun-dried brick in mud mortar, 80–120 cm thick, with timbers laid in them a metre apart",
+                                "value_ku": "خشتی کاڵ لە قوڕدا، ٨٠–١٢٠ سم ئەستوور، و پارچە دار بە دووریی مەترێک لە ناویاندا دانراون",
+                                "value_ar": "لِبن بملاط طيني، بسماكة ٨٠–١٢٠ سم، تتخللها أخشاب كل متر",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Drawn from",
+                                "label_ku": "لەمەوە کێشراوە",
+                                "label_ar": "مرسوم عن",
+                                "value_en": "Erbil: Mustafa & Ali 2024, table 4 (C2). Sulaimani: Abdulla & Qaradaghi 2025, fig. 14, at 1:100",
+                                "value_ku": "هەولێر: مستەفا و عەلی ٢٠٢٤، خشتەی ٤ (C2). سلێمانی: عەبدوڵڵا و قەرەداغی ٢٠٢٥، وێنەی ١٤، بە پێوەری ١:١٠٠",
+                                "value_ar": "أربيل: مصطفى وعلي ٢٠٢٤، الجدول ٤ (C2). السليمانية: عبدالله وقره داغي ٢٠٢٥، الشكل ١٤، بمقياس ١:١٠٠",
+                                "ltr": false
+                            }
+                        ]
+                    },
+                    {
+                        "name_en": "The Dengbêj House, Amed",
+                        "name_ku": "ماڵی دەنگبێژان، ئامەد",
+                        "name_ar": "بيت الدنكبيج، آمد",
+                        "type_en": "A summer iwan on the south side of the court",
+                        "type_ku": "ئەیوانێکی هاوینە لە لای باشووری حەوشە",
+                        "type_ar": "إيوان صيفي في الجهة الجنوبية من الفناء",
+                        "plans": [
+                            {
+                                "drawing": "code:k-dengbej",
+                                "caption_en": "Ground floor · not to scale",
+                                "caption_ku": "نهۆمی زەوی · بێ پێوەر",
+                                "caption_ar": "الطابق الأرضي · بلا مقياس",
+                                "wide": false
+                            }
+                        ],
+                        "secs": [],
+                        "text_en": "Inside the walls of Amed, the old city of Diyarbakır, this house wraps a court on three sides. Its north and west fronts rise two storeys; its south front, one. The iwan is on the south side, open to the north, so the summer sun never enters it.\n\nOn three days of August 2023 a study set thermometers in this iwan, in the room beside it and in the court, and did the same in three other houses like it. Across the four houses the iwan was on average the coolest of the three, its daily highs and lows both the lowest, and it did the most good at about three in the afternoon.\n\nThe study calls it the Dengbej House. Since May 2007 it has been the House of the Dengbêj, Mala Dengbêjan, where the singers of the Kurdish sung tradition meet and sing.",
+                        "text_ku": "لە ناو شوورەکانی ئامەد، شارە کۆنەکەی دیاربەکر، ئەم خانووە لە سێ لاوە حەوشەیەکی لە باوەش گرتووە. ڕووە باکووری و ڕۆژئاواییەکەی دوو نهۆم بەرزن؛ ڕووە باشوورییەکەی یەک نهۆم. ئەیوانەکە لە لای باشوورە و ڕووی لە باکوورە، بۆیە خۆری هاوین هەرگیز ناچێتە ناوی.\n\nلە سێ ڕۆژی ئابی ٢٠٢٣دا توێژینەوەیەک پلەپێوی لەم ئەیوانەدا و لە ژوورەکەی تەنیشتی و لە حەوشەکەدا دانا، و هەمان شتی لە سێ خانووی تری وەک ئەویشدا کرد. لە هەر چوار خانووەکەدا ئەیوانەکە بە تێکڕا فێنکترینی هەر سێکیان بوو، بەرزترین و نزمترین پلەی ڕۆژانەی هەردووکیان نزمترین بوون، و زۆرترین سوودی لە دەوروبەری کاتژمێر سێی دوانیوەڕۆدا هەبوو.\n\nتوێژینەوەکە بە ماڵی دەنگبێژ ناوی دەبات. لە ئایاری ٢٠٠٧ەوە ماڵی دەنگبێژانە، ئەو شوێنەی دەنگبێژان، گۆرانیبێژانی نەریتی گۆرانیی کوردی، تێیدا کۆدەبنەوە و دەڵێن.",
+                        "text_ar": "داخل أسوار آمد، مدينة ديار بكر القديمة، يحتضن هذا البيت فناءً من ثلاث جهات. واجهتاه الشمالية والغربية من طابقين، والجنوبية من طابق واحد. والإيوان في الجهة الجنوبية مفتوح على الشمال، فلا تدخله شمس الصيف أبداً.\n\nفي ثلاثة أيام من آب ٢٠٢٣ وضعت دراسة موازين حرارة في هذا الإيوان وفي الغرفة المجاورة له وفي الفناء، وفعلت مثل ذلك في ثلاثة بيوت أخرى تشبهه. وفي البيوت الأربعة كان الإيوان في المتوسط أبرد الثلاثة، عظماه وصغراه اليومية أدنى من غيرهما، وكان أنفع ما يكون نحو الثالثة بعد الظهر.\n\nتسمّيه الدراسة بيت الدنكبيج. فمنذ أيار ٢٠٠٧ صار بيت الدنكبيجيين (مالا دنگبێژان)، حيث يلتقي ويغنّي رواة الغناء الكوردي الشفاهي.",
+                        "legend": [
+                            {
+                                "n": "1",
+                                "label_en": "The court, with its pool",
+                                "label_ku": "حەوشەکە، لەگەڵ حەوزەکەی",
+                                "label_ar": "الفناء وحوضه"
+                            },
+                            {
+                                "n": "2",
+                                "label_en": "The summer iwan, open to the north: by the study’s measure 4.26 × 6.72 m, 4.68 m high",
+                                "label_ku": "ئەیوانی هاوینە، ڕووی لە باکوورە: بە پێوانەی توێژینەوەکە ٤.٢٦ × ٦.٧٢ م، بە بەرزیی ٤.٦٨ م",
+                                "label_ar": "الإيوان الصيفي، مفتوح على الشمال: بقياس الدراسة ٤٫٢٦ × ٦٫٧٢ م، وارتفاعه ٤٫٦٨ م"
+                            },
+                            {
+                                "n": "3",
+                                "label_en": "Rooms either side of the iwan, each entered from it",
+                                "label_ku": "ژوورەکانی دوو لای ئەیوان، هەر یەکەیان لە ئەیوانەکەوە دەچیتە ناوی",
+                                "label_ar": "غرفتا جانبي الإيوان، تُدخل كلٌّ منهما منه"
+                            }
+                        ],
+                        "facts": [
+                            {
+                                "label_en": "Plan",
+                                "label_ku": "نەخشە",
+                                "label_ar": "المسقط",
+                                "value_en": "U-shaped, round an outer court",
+                                "value_ku": "شێوەی U، بە دەوری حەوشەیەکی دەرەکیدا",
+                                "value_ar": "على شكل U حول فناء خارجي",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Walls",
+                                "label_ku": "دیوار",
+                                "label_ar": "الجدران",
+                                "value_en": "60–70 cm on average in the rooms the study measured",
+                                "value_ku": "بە تێکڕا ٦٠–٧٠ سم لەو ژوورانەی توێژینەوەکە پێواونی",
+                                "value_ar": "٦٠–٧٠ سم في المتوسط في الغرف التي قاستها الدراسة",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Today",
+                                "label_ku": "ئەمڕۆ",
+                                "label_ar": "اليوم",
+                                "value_en": "The House of the Dengbêj, since May 2007",
+                                "value_ku": "ماڵی دەنگبێژان، لە ئایاری ٢٠٠٧ەوە",
+                                "value_ar": "بيت الدنكبيجيين منذ أيار ٢٠٠٧",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Drawn from",
+                                "label_ku": "لەمەوە کێشراوە",
+                                "label_ar": "مرسوم عن",
+                                "value_en": "Ergün 2025, fig. 4c, edited from Yıldırım 2002: no scale",
+                                "value_ku": "ئەرگون ٢٠٢٥، وێنەی 4c، دەستکاریکراو لە یڵدرم ٢٠٠٢: بێ پێوەر",
+                                "value_ar": "إرغون ٢٠٢٥، الشكل 4c، معدّل عن يلدريم ٢٠٠٢: بلا مقياس",
+                                "ltr": false
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "The calendar in the plan",
+                "heading_ku": "ساڵنامە لە نەخشەدا",
+                "heading_ar": "التقويم في المسقط",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "In Amed summer is long and hot, over 40°C, and winter can fall below freezing. The houses answer in plan. The side of the court the sun cannot reach is for summer; the side it reaches all day is for winter; larger houses add a room for autumn on the east and one for spring on the west. The family moved round the court through the year, and up and down through a summer’s day. Of 279 old buildings one survey of the city studied, 168 had an iwan.\n\nThe stone helps. Walls half a metre to sixty centimetres thick, and flat roofs of earth 30 to 50 centimetres deep, are slow to warm and slow to cool. How these rooms behave through a year, measured, is a story for sections rather than plans.",
+                            "text_ku": "لە ئامەد هاوین درێژ و گەرمە، لە ٤٠ پلەی سەدی زیاتر، و زستان دەکرێت لە خوار سفرەوە بێت. خانووەکان لە نەخشەدا وەڵام دەدەنەوە. ئەو لایەی حەوشە کە خۆر پێی ناگات بۆ هاوینە؛ ئەو لایەی هەموو ڕۆژ خۆری بەردەکەوێت بۆ زستانە؛ خانووە گەورەکان ژوورێک بۆ پاییز لە ڕۆژهەڵات و یەکێک بۆ بەهار لە ڕۆژئاوا زیاد دەکەن. خێزان بە درێژایی ساڵ بە دەوری حەوشەکەدا دەسووڕایەوە، و لە ڕۆژێکی هاویندا سەر و خوار دەکرد. لە ٢٧٩ بینای کۆن کە ڕووپێوێکی شارەکە لێیانی کۆڵیەوە، ١٦٨یان ئەیوانیان هەبوو.\n\nبەردەکەش یارمەتی دەدات. دیواری نیو مەتر تا شەست سانتیمەتر ئەستوور، و سەربانی تەختی گڵ بە ئەستووریی ٣٠ تا ٥٠ سانتیمەتر، درەنگ گەرم دەبن و درەنگ سارد دەبنەوە. ئەوەی ئەم ژوورانە بە درێژایی ساڵێک چۆن ڕەفتار دەکەن، بە پێوانە، چیرۆکی بڕگەیە نەک نەخشە.",
+                            "text_ar": "في آمد صيف طويل حارّ يتجاوز ٤٠ درجة، وشتاء قد ينزل تحت الصفر. وتجيب البيوت في المسقط: الجهة التي لا تبلغها الشمس من الفناء للصيف، والجهة التي تأخذها طوال النهار للشتاء، وتضيف البيوت الكبيرة غرفة للخريف في الشرق وأخرى للربيع في الغرب. كانت الأسرة تدور حول الفناء على مدار السنة، وتصعد وتنزل في يوم الصيف. ومن ٢٧٩ مبنى قديماً درسها مسح للمدينة، كان في ١٦٨ منها إيوان.\n\nوالحجر يعين. جدران بسماكة نصف متر إلى ستين سنتيمتراً، وسطوح مستوية من التراب بعمق ٣٠ إلى ٥٠ سنتيمتراً، بطيئة في الاحترار بطيئة في البرودة. أما كيف تتصرف هذه الغرف على مدار سنة، مقيسةً، فتلك حكاية المقاطع لا المساقط."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "Amedi, the plan we could not draw",
+                "heading_ku": "ئامێدی، ئەو نەخشەیەی نەمانتوانی بیکێشین",
+                "heading_ar": "العمادية، المسقط الذي لم نستطع رسمه",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "Amedi should be on the first plate. The town stands on a limestone plateau some 800 metres long, ringed by cliffs about sixty metres high, and for most of its history it could be reached only by two stairways leading up to fortified gates. Its houses are packed tightly onto the rock. Most of the old buildings standing there went up under the Bahdinan emirate, between the fourteenth and the nineteenth centuries.\n\nWe looked for a measured plan of one of those houses and found none in print. Meanwhile the town is changing: in 2016 the World Monuments Fund put Amedi on its Watch because new building was crowding the old fabric, and several significant buildings had already been lost or damaged. So this frame stays empty for now. A house on that rock, measured and drawn, is the plate this essay is missing. If you know of a survey, we would like to hear from you.",
+                            "text_ku": "ئامێدی دەبوو لەسەر تابلۆی یەکەم بێت. شارەکە لەسەر دەشتاییەکی بەرزی بەردی کلسی بە درێژیی نزیکەی ٨٠٠ مەتر ڕاوەستاوە، کە هەڵدێری نزیکەی شەست مەتر بەرز دەوریان داوە، و بە درێژایی زۆربەی مێژووی تەنها بە دوو پەیژەدا دەگەیشتیتە دەروازە قەڵابەندەکانی. خانووەکانی بە چڕی لەسەر بەردەکە نراون. زۆربەی بینا کۆنەکانی کە هێشتا ماون لە سەردەمی میرنشینی بادینان، لە نێوان سەدەی چواردە و نۆزدەدا، دروست کراون.\n\nبەدوای نەخشەیەکی پێوراوی یەکێک لەو خانووانەدا گەڕاین و هیچمان بە بڵاوکراوەیی نەدۆزییەوە. لەو کاتەدا شارەکە دەگۆڕێت: لە ساڵی ٢٠١٦دا سندووقی جیهانیی شوێنەوارەکان (World Monuments Fund) ئامێدی خستە سەر لیستی چاودێرییەکەی، چونکە بیناسازیی نوێ پێکهاتە کۆنەکەی تەنگ دەکردەوە، و چەند بینایەکی گرنگ پێشتر لەناوچووبوون یان زیانیان پێ گەیشتبوو. بۆیە ئەم چوارچێوەیە بۆ ئێستا بەتاڵ دەمێنێتەوە. خانوویەک لەسەر ئەو بەردە، پێوراو و کێشراو، ئەو تابلۆیەیە کە ئەم وتارە کەمیەتی. ئەگەر ڕووپێوێکی وا دەناسیت، پێمان خۆشە لێت ببیستین.",
+                            "text_ar": "كان ينبغي أن تكون العمادية على اللوحة الأولى. تقوم البلدة على هضبة كلسية طولها نحو ٨٠٠ متر، تحيط بها جروف بارتفاع ستين متراً تقريباً، ولم يكن الوصول إليها في معظم تاريخها إلا عبر درجين يصعدان إلى بوابتين محصّنتين. وبيوتها مكتظة على الصخرة. ومعظم مبانيها القديمة القائمة بُني في عهد إمارة بهدينان، بين القرنين الرابع عشر والتاسع عشر.\n\nبحثنا عن مسقط مقيس لبيت من تلك البيوت فلم نجد شيئاً منشوراً. وفي الأثناء تتغير البلدة: ففي ٢٠١٦ وضع الصندوق العالمي للآثار (World Monuments Fund) العمادية على قائمة رصده، لأن البناء الجديد كان يزحم النسيج القديم، وكانت عدة مبانٍ مهمة قد ضاعت أو تضررت. لذا يبقى هذا الإطار فارغاً الآن. بيت على تلك الصخرة، مقيساً ومرسوماً، هو اللوحة التي تنقص هذا المقال. وإن كنت تعرف مسحاً كهذا فيسعدنا أن نسمع منك."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "What we take from them",
+                "heading_ku": "ئەوەی لێیان وەردەگرین",
+                "heading_ar": "ما نأخذه منها",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "Three things stay with us at the drawing board. The court is an idea, not a size: in Erbil it is a room open to the sky, in Sulaimani a garden in front of the house. A room is as wide as its roof timber allows, and the plan follows from that width. And a plan can keep a calendar: give each side of the court a season, and the house does much of its own heating and cooling.",
+                            "text_ku": "سێ شت لای مێزی کێشان لەگەڵمان دەمێننەوە. حەوشە بیرۆکەیەکە نەک قەبارەیەک: لە هەولێر ژوورێکە کە ئاسمان سەربانێتی، لە سلێمانی باخچەیەکە لە بەردەم خانووەکەدا. ژوور هێندەی کاریتەی سەربانەکەی ڕێگە بدات پانە، و نەخشەکە لەو پانییەوە دێت. و نەخشە دەتوانێت ساڵنامەیەک بپارێزێت: هەر لایەکی حەوشەکە بدە بە وەرزێک، و خانووەکە بەشێکی زۆری گەرمکردنەوە و فێنککردنەوەی خۆی دەکات.",
+                            "text_ar": "ثلاثة أشياء تبقى معنا عند لوحة الرسم. الفناء فكرة لا مساحة: في أربيل غرفة سقفها السماء، وفي السليمانية حديقة أمام البيت. والغرفة بعرض ما تسمح به خشبة سقفها، ومن ذلك العرض يأتي المسقط. والمسقط يمكن أن يحفظ تقويماً: أعطِ كل جهة من الفناء فصلاً، فيتولى البيت كثيراً من تدفئته وتبريده بنفسه."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "sources",
+                "heading_en": "Sources",
+                "heading_ku": "سەرچاوەکان",
+                "heading_ar": "المصادر",
+                "parts": [
+                    {
+                        "type": "refs",
+                        "data": {
+                            "items": [
+                                {
+                                    "text": "Mustafa, F. A. and Ali, L. A. (2024), ‘Common architectural characteristics of traditional courtyard houses in Erbil city’, *Ain Shams Engineering Journal* 15(11), 103003. Salim Qaqa’s house on plate KH-01 is its house C2. [doi.org/10.1016/j.asej.2024.103003](https://doi.org/10.1016/j.asej.2024.103003)"
+                                },
+                                {
+                                    "text": "Abdulla, G. K. F. and Qaradaghi, A. M. A. (2025), ‘The Impact of Environmental Design Solution on Livability in the Traditional Houses of Sulaymaniyah City’, *Sulaimani Journal for Engineering Sciences* 12(1), 163–181. Faqe Shally’s house on plate KH-01 is its fig. 14 (CC BY 4.0). [doi.org/10.17656/sjes.102007](https://doi.org/10.17656/sjes.102007)"
+                                },
+                                {
+                                    "text": "Raof, B. Y., Bahaadin, S. D. and Rasul, H. Q. (2020), ‘The Thermal Performance of Vernacular Houses as An Identity of Kurdish Traditional Architecture’, *Kurdistan Journal of Applied Research* 5(1). [doi.org/10.24017/science.2020.1.17](https://doi.org/10.24017/science.2020.1.17)"
+                                },
+                                {
+                                    "text": "Abdullah, W. S. and Abdullah, A. A. (2024), ‘Genotypical Change of Traditional Houses in Sulaymaniyah City’, *The Scientific Journal of Cihan University – Sulaimaniya* 8(1), 1–23. [doi.org/10.25098/8.1.23](https://doi.org/10.25098/8.1.23)"
+                                },
+                                {
+                                    "text": "Ergün, R. (2025), ‘The effect of iwan as traditional shading element on indoor temperature: the case of Diyarbakır houses’, *Informes de la Construcción* 77(578), e6980. The Dengbêj House on plate KH-02 is its fig. 4c, edited there from Yıldırım (2002) (CC BY 4.0). [doi.org/10.3989/ic.6980](https://doi.org/10.3989/ic.6980)"
+                                },
+                                {
+                                    "text": "Bekleyen, A. and Dalkılıç, N. (2012), ‘Design with Climate: What Can We Learn from the Past to Cope with Climate in Terms of Design Strategy and Usage Style of Courtyard Houses?’, *Middle-East Journal of Scientific Research* 11(3), 357–366."
+                                },
+                                {
+                                    "text": "Scalbert-Yücel, C. (2009), ‘The Invention of a Tradition: Diyarbakır’s Dengbêj Project’, *European Journal of Turkish Studies* 10. [doi.org/10.4000/ejts.4055](https://doi.org/10.4000/ejts.4055)"
+                                },
+                                {
+                                    "text": "World Monuments Fund, ‘World Monuments Watch: Amedy’ (the 2016 Watch), on Google Arts & Culture. [artsandculture.google.com/story/FgWxre3slKQTKQ](https://artsandculture.google.com/story/FgWxre3slKQTKQ)"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "note",
+                        "data": {
+                            "text_en": "The plans are traced from the published figures and are as exact as those figures allow; they are not for measuring from. Erbil’s and Sulaimani’s are to scale; Amed’s is not. Rooms are named only where the sources name them, or where nothing else could be meant. The three diagrams are ours.",
+                            "text_ku": "نەخشەکان لە وێنە بڵاوکراوەکانەوە هەڵگیراونەتەوە و ئەوەندە وردن کە ئەو وێنانە ڕێگە دەدەن؛ بۆ پێوانە لێوەرگرتن نین. هی هەولێر و سلێمانی بە پێوەرن؛ هی ئامەد نا. ژوورەکان تەنها لەو شوێنانە ناو نراون کە سەرچاوەکان ناویان ناون، یان هیچی تر نەدەکرا مەبەست بێت. سێ هێڵکارییەکە هی خۆمانن.",
+                            "text_ar": "المساقط منقولة عن الأشكال المنشورة، ودقتها بقدر ما تسمح به تلك الأشكال؛ وليست للقياس منها. مسقطا أربيل والسليمانية بمقياس، ومسقط آمد بلا مقياس. ولم تُسمَّ الغرف إلا حيث سمّتها المصادر، أو حيث لا يُقصد غير ذلك. والرسوم التوضيحية الثلاثة من عملنا."
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
