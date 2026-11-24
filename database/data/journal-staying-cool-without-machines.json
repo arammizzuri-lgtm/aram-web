@@ -1,0 +1,428 @@
+{
+    "slug": "staying-cool-without-machines",
+    "date": "2026-11-25",
+    "is_published": true,
+    "title_en": "Staying cool without machines: the old house in section",
+    "title_ku": "فێنک مانەوە بەبێ ئامێر: خانووی کۆن لە بڕگەدا",
+    "title_ar": "البرودة بلا آلات: البيت القديم مقطعاً",
+    "summary_en": "Before air conditioning, a house in Kurdistan kept its people cool with what it was made of and how it was cut: thick walls and earth roofs, a court, a shaded iwan, a room below ground and a roof to sleep on. Read through sections, with the noon sun drawn in and what thermometers found.",
+    "summary_ku": "پێش فێنککەرەوەی کارەبایی، خانوو لە کوردستان خەڵکەکەی بەو شتانە فێنک دەهێشتەوە کە لێی دروستکرابوو و بەو شێوەیەی بڕابوو: دیواری ئەستوور و سەربانی گڵ، حەوشە، ئەیوانی سێبەردار، ژوورێک لە ژێر زەوی و سەربانێک بۆ لەسەر نووستن. لە ڕێگەی بڕگەکانەوە دەخوێنرێتەوە، لەگەڵ خۆری نیوەڕۆ کە تێیاندا کێشراوە و ئەوەی پلەپێوەکان دۆزیویانەتەوە.",
+    "summary_ar": "قبل التكييف كان البيت في كوردستان يُبقي أهله باردين بما صُنع منه وبطريقة قطعه: جدران سميكة وسطوح من تراب، وفناء، وإيوان مظلَّل، وغرفة تحت الأرض، وسطح للنوم. نقرؤه في المقاطع، مع شمس الظهر مرسومةً فيها، وما وجدته موازين الحرارة.",
+    "extras": {
+        "about": "Passive cooling in Kurdish courtyard houses",
+        "cover_plan": "code:rashid-b",
+        "cover_section": "code:s-sun",
+        "kicker_en": "KEEPING COOL · IN SECTION",
+        "kicker_ku": "فێنک مانەوە · لە بڕگەدا",
+        "kicker_ar": "البرودة · مقطعاً",
+        "line1_en": "Staying cool",
+        "line1_ku": "فێنک مانەوە",
+        "line1_ar": "البرودة",
+        "line2_en": "without machines",
+        "line2_ku": "بەبێ ئامێر",
+        "line2_ar": "بلا آلات",
+        "note_en": "4 SECTIONS · 2 PLANS",
+        "note_ku": "4 بڕگە · 2 نەخشە",
+        "note_ar": "4 مقاطع · مسقطان",
+        "code": "SC-01 — SC-03",
+        "link_url": "/journal/courtyard-house-across-kurdistan",
+        "link_en": "The courtyard house across Kurdistan",
+        "link_ku": "خانووی حەوشەدار لە سەرانسەری کوردستاندا",
+        "link_ar": "البيت ذو الفناء عبر كوردستان"
+    },
+    "sections": [
+        {
+            "type": "count",
+            "data": {
+                "items": [
+                    {
+                        "label_en": "Noon sun at midsummer, Amed",
+                        "value": "75.5°",
+                        "label_ku": "خۆری نیوەڕۆی ناوەڕاستی هاوین، ئامەد",
+                        "label_ar": "شمس الظهر في منتصف الصيف، آمد"
+                    },
+                    {
+                        "label_en": "Noon sun at midwinter",
+                        "value": "28.7°",
+                        "label_ku": "خۆری نیوەڕۆی ناوەڕاستی زستان",
+                        "label_ar": "شمس الظهر في منتصف الشتاء"
+                    },
+                    {
+                        "label_en": "A roof in Amed, a July afternoon",
+                        "value": "51°C",
+                        "label_ku": "سەربانێک لە ئامەد، دوانیوەڕۆیەکی تەممووز",
+                        "label_ar": "سطح في آمد، عصر يوم من تموز"
+                    },
+                    {
+                        "label_en": "Machines",
+                        "value": "0",
+                        "label_ku": "ئامێر",
+                        "label_ar": "آلات"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "Five ways to keep cool",
+                "heading_ku": "پێنج ڕێگا بۆ فێنک مانەوە",
+                "heading_ar": "خمس طرق للبقاء بارداً",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "Summer in Amed and Sulaimani passes 40°C, and winter brings frost. A house built before electricity had to answer both with nothing but its own shape and stuff. It used five means, and a plan shows only some of them. A section shows the rest: how thick the walls are and what the roof is made of, how high the sun climbs over the court, where the shade falls, and how far down the coolest room lies.\n\nThe five are mass, the court, the shaded hall, the room below ground, and the roof at night. None is a machine, and none works alone: the family moved from one to another through the day and through the year.",
+                            "text_ku": "هاوین لە ئامەد و سلێمانی لە ٤٠ پلەی سەدی تێدەپەڕێت، و زستان سەهۆڵبەندان دەهێنێت. خانوویەک کە پێش کارەبا دروستکرابێت دەبوو وەڵامی هەردووکیان بداتەوە تەنها بە شێوە و کەرەستەی خۆی. پێنج ڕێگای بەکار دەهێنا، و نەخشە تەنها هەندێکیان پیشان دەدات. بڕگە ئەوانی تر پیشان دەدات: دیوارەکان چەند ئەستوورن و سەربانەکە لە چی دروستکراوە، خۆر چەند بەرز بەسەر حەوشەکەدا دەڕوات، سێبەر لە کوێ دەکەوێت، و فێنکترین ژوور چەند لە خوارەوەیە.\n\nپێنجەکە بریتین لە: بارستایی، حەوشە، هۆڵی سێبەردار، ژووری ژێر زەوی، و سەربان لە شەودا. هیچیان ئامێر نین، و هیچیان بە تەنها کار ناکات: خێزان بە درێژایی ڕۆژ و ساڵ لە یەکێکیانەوە دەچوو بۆ ئەوی تر.",
+                            "text_ar": "يتجاوز الصيف في آمد والسليمانية ٤٠ درجة، ويأتي الشتاء بالصقيع. وكان على البيت المبني قبل الكهرباء أن يواجه الاثنين بشكله ومادته وحدهما. استعمل خمس وسائل، لا يُظهر المسقط إلا بعضها، ويُظهر المقطع الباقي: كم تسمك الجدران ومِمَّ صُنع السطح، وإلى أي علوّ تصعد الشمس فوق الفناء، وأين يقع الظل، وعلى أي عمق تقع أبرد الغرف.\n\nوالخمس هي: الكتلة، والفناء، والقاعة المظلَّلة، والغرفة تحت الأرض، والسطح ليلاً. ليس فيها آلة، ولا تعمل واحدة منها وحدها: كانت الأسرة تنتقل من واحدة إلى أخرى على مدار اليوم والسنة."
+                        }
+                    },
+                    {
+                        "type": "note",
+                        "data": {
+                            "text_en": "A word on the drawings. The first plate is ours: a diagram, not a survey, of a court house of Amed’s kind, cut from south to north, its sizes within what the sources give. The sun in it is calculated, not measured: the angle of the noon sun at Amed’s latitude on the longest and the shortest day. The other two plates are houses of Erbil Citadel, redrawn from their published survey for our essay on the Citadel, and read here for how they keep cool.",
+                            "text_ku": "وشەیەک دەربارەی نەخشەکان. تابلۆی یەکەم هی خۆمانە: هێڵکارییەکە، نەک ڕووپێو، بۆ خانوویەکی حەوشەداری جۆری ئامەد، لە باشوورەوە بۆ باکوور بڕاوە، و قەبارەکانی لە ناو ئەوەدان کە سەرچاوەکان دەیدەن. خۆرەکەی ناوی ژمێردراوە، نەک پێوراو: گۆشەی خۆری نیوەڕۆ لەسەر هێڵی پانیی ئامەد لە درێژترین و کورتترین ڕۆژی ساڵدا. دوو تابلۆکەی تر خانووی قەڵای هەولێرن، کە لە ڕووپێوە بڵاوکراوەکەیانەوە بۆ وتارەکەمان دەربارەی قەڵا دووبارە کێشراونەتەوە، و لێرەدا بۆ ئەوە دەخوێنرێنەوە کە چۆن فێنک دەمێننەوە.",
+                            "text_ar": "كلمة عن الرسوم. اللوحة الأولى من عملنا: رسم توضيحي لا مسح، لبيت ذي فناء من طراز آمد، مقطوع من الجنوب إلى الشمال، وقياساته في حدود ما تذكره المصادر. والشمس فيه محسوبة لا مقيسة: زاوية شمس الظهر عند خط عرض آمد في أطول يوم وأقصره. أما اللوحتان الأخريان فبيتان من قلعة أربيل، أعدنا رسمهما عن مسحهما المنشور لمقالنا عن القلعة، ونقرؤهما هنا لنرى كيف يبقيان باردين."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "plates",
+            "data": {
+                "heading_en": "The plates",
+                "heading_ku": "تابلۆکان",
+                "heading_ar": "اللوحات",
+                "key_en": "The first plate is a diagram drawn by us; its sun is calculated. The second and third are redrawn from the published survey, each house’s plans and sections at one scale.",
+                "key_ku": "تابلۆی یەکەم هێڵکارییەکە کە خۆمان کێشاومانە؛ خۆرەکەی ژمێردراوە. دووەم و سێیەم لە ڕووپێوە بڵاوکراوەکەوە دووبارە کێشراونەتەوە، نەخشە و بڕگەکانی هەر خانوویەک بە یەک پێوەر.",
+                "key_ar": "اللوحة الأولى رسم توضيحي من عملنا، وشمسها محسوبة. والثانية والثالثة أُعيد رسمهما عن المسح المنشور، ومساقط كل بيت ومقاطعه بمقياس واحد.",
+                "code": "SC",
+                "plates": [
+                    {
+                        "name_en": "The sun over a court",
+                        "name_ku": "خۆر بەسەر حەوشەیەکەوە",
+                        "name_ar": "الشمس فوق الفناء",
+                        "type_en": "Noon on the longest and the shortest day, at Amed’s latitude",
+                        "type_ku": "نیوەڕۆی درێژترین و کورتترین ڕۆژ، لەسەر هێڵی پانیی ئامەد",
+                        "type_ar": "ظهر أطول يوم وأقصره، عند خط عرض آمد",
+                        "plans": [],
+                        "secs": [
+                            {
+                                "drawing": "code:s-sun",
+                                "caption_en": "Section, south to north · a diagram",
+                                "caption_ku": "بڕگە، باشوور بۆ باکوور · هێڵکاری",
+                                "caption_ar": "مقطع من الجنوب إلى الشمال · رسم توضيحي"
+                            }
+                        ],
+                        "text_en": "At noon on 21 June the sun stands 75.5° above the horizon at Amed, so high that the court barely shades itself: the summer range throws a shadow little more than a metre long. What keeps the sun out is a roof. The iwan, open to the north, never sees it at all, and in the winter room the summer ray stops on the window sill, inside the thickness of the wall.\n\nOn 21 December the noon sun is at 28.7°. Now the same ray clears the low summer range, crosses the whole court and lights the winter range from half a metre up; through the window it reaches the back wall of the room. In the diagram, as in the Dengbêj House on our plate of Amed, the south range is the low one: it lets the winter sun through to the tall range that catches it.\n\nErbil lies a little further south, and its noon sun stands at 77° in June and 30° in December. The geometry is the same.",
+                        "text_ku": "لە نیوەڕۆی ٢١ی حوزەیراندا خۆر لە ئامەد ٧٥.٥ پلە لە ئاسۆوە بەرزە، ئەوەندە بەرز کە حەوشەکە بە زەحمەت سێبەر بۆ خۆی دەکات: باڵی هاوینە سێبەرێک فڕێ دەدات کە کەمێک لە مەترێک درێژترە. ئەوەی خۆر دوور دەخاتەوە سەربانە. ئەیوانەکە، کە ڕووی لە باکوورە، هەرگیز نایبینێت، و لە ژووری زستانەدا تیشکی هاوین لەسەر لێواری پەنجەرەکە دەوەستێت، لە ناو ئەستووریی دیوارەکەدا.\n\nلە ٢١ی کانوونی یەکەمدا خۆری نیوەڕۆ لە ٢٨.٧ پلەدایە. ئێستا هەمان تیشک بەسەر باڵە نزمە هاوینەکەدا تێدەپەڕێت، هەموو حەوشەکە دەبڕێت و باڵی زستانە لە نیو مەترەوە بەرەو سەر ڕووناک دەکاتەوە؛ بە پەنجەرەکەدا دەگاتە دیواری پشتەوەی ژوورەکە. لە هێڵکارییەکەدا، وەک لە ماڵی دەنگبێژان لەسەر تابلۆکەمان بۆ ئامەد، باڵی باشوور نزمەکەیە: خۆری زستان تێدەپەڕێنێت بۆ باڵە بەرزەکە کە وەریدەگرێت.\n\nهەولێر کەمێک باشوورترە، و خۆری نیوەڕۆی لە حوزەیراندا لە ٧٧ پلە و لە کانوونی یەکەمدا لە ٣٠ پلەدایە. ئەندازەکە هەمان شتە.",
+                        "text_ar": "عند ظهر ٢١ حزيران تقف الشمس في آمد على ارتفاع ٧٥٫٥ درجة فوق الأفق، عالية حتى إن الفناء لا يكاد يظلّل نفسه: يلقي الجناح الصيفي ظلاً يزيد قليلاً على متر. ما يحجب الشمس هو السقف. فالإيوان المفتوح على الشمال لا يراها أبداً، وفي الغرفة الشتوية يقف شعاع الصيف عند عتبة النافذة، داخل سماكة الجدار.\n\nوفي ٢١ كانون الأول تكون شمس الظهر على ٢٨٫٧ درجة. فيتجاوز الشعاع نفسه الجناح الصيفي المنخفض، ويعبر الفناء كله، ويضيء واجهة الجناح الشتوي من نصف متر فما فوق؛ ومن النافذة يبلغ الجدار الخلفي للغرفة. في الرسم، كما في بيت الدنكبيج على لوحتنا لآمد، الجناح الجنوبي هو المنخفض: يُمرّر شمس الشتاء إلى الجناح العالي الذي يتلقّاها.\n\nوأربيل أبعد قليلاً نحو الجنوب، فشمس ظهرها على ٧٧ درجة في حزيران و٣٠ في كانون الأول. والهندسة نفسها.",
+                        "legend": [
+                            {
+                                "n": "┄",
+                                "label_en": "The noon sun: 75.5° on 21 June, the longest day; 28.7° on 21 December, the shortest",
+                                "label_ku": "خۆری نیوەڕۆ: ٧٥.٥ پلە لە ٢١ی حوزەیران، درێژترین ڕۆژ؛ ٢٨.٧ پلە لە ٢١ی کانوونی یەکەم، کورتترین ڕۆژ",
+                                "label_ar": "شمس الظهر: ٧٥٫٥ درجة في ٢١ حزيران، أطول يوم؛ و٢٨٫٧ في ٢١ كانون الأول، أقصره"
+                            },
+                            {
+                                "n": "S",
+                                "label_en": "South on the left: the section looks west",
+                                "label_ku": "باشوور لە لای چەپ: بڕگەکە ڕووی لە ڕۆژئاوایە",
+                                "label_ar": "الجنوب إلى اليسار: المقطع ينظر إلى الغرب"
+                            }
+                        ],
+                        "facts": [
+                            {
+                                "label_en": "Latitude",
+                                "label_ku": "هێڵی پانی",
+                                "label_ar": "خط العرض",
+                                "value_en": "Amed 37.9° N; Erbil 36.2° N",
+                                "value_ku": "ئامەد ٣٧.٩° باکوور؛ هەولێر ٣٦.٢° باکوور",
+                                "value_ar": "آمد ٣٧٫٩° شمالاً؛ أربيل ٣٦٫٢° شمالاً",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Noon sun",
+                                "label_ku": "خۆری نیوەڕۆ",
+                                "label_ar": "شمس الظهر",
+                                "value_en": "90° less the latitude, plus or less 23.4°, on the longest and the shortest day",
+                                "value_ku": "٩٠ پلە کەم هێڵی پانی، زیاد یان کەم ٢٣.٤ پلە، لە درێژترین و کورتترین ڕۆژدا",
+                                "value_ar": "٩٠ درجة ناقص خط العرض، زائداً أو ناقصاً ٢٣٫٤، في أطول يوم وأقصره",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Walls, roofs",
+                                "label_ku": "دیوار، سەربان",
+                                "label_ar": "الجدران والسطوح",
+                                "value_en": "Walls 60 cm and roofs 40 cm, within Amed’s 50–60 and 30–50 cm",
+                                "value_ku": "دیوار ٦٠ سم و سەربان ٤٠ سم، لە ناو ٥٠–٦٠ و ٣٠–٥٠ سمی ئامەددا",
+                                "value_ar": "الجدران ٦٠ سم والسطوح ٤٠ سم، ضمن ٥٠–٦٠ و٣٠–٥٠ سم في آمد",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Drawn",
+                                "label_ku": "کێشراوە",
+                                "label_ar": "مرسوم",
+                                "value_en": "By us: a diagram, not a survey; the sizes are ours",
+                                "value_ku": "لەلایەن ئێمەوە: هێڵکاری، نەک ڕووپێو؛ قەبارەکان هی خۆمانن",
+                                "value_ar": "من عملنا: رسم توضيحي لا مسح؛ والقياسات من عندنا",
+                                "ltr": false
+                            }
+                        ]
+                    },
+                    {
+                        "name_en": "Rashid Agha’s diwakhana, Erbil",
+                        "name_ku": "دیوەخانی ڕەشید ئاغا، هەولێر",
+                        "name_ar": "ديوخانة رشيد آغا، أربيل",
+                        "type_en": "A cool room under the main range",
+                        "type_ku": "ژوورێکی فێنک لە ژێر باڵی سەرەکیدا",
+                        "type_ar": "غرفة باردة تحت الجناح الرئيسي",
+                        "plans": [
+                            {
+                                "drawing": "code:rashid-b",
+                                "caption_en": "Basement (sirdab)",
+                                "caption_ku": "ژێرزەمین (سەرداب)",
+                                "caption_ar": "السرداب",
+                                "wide": false
+                            }
+                        ],
+                        "secs": [
+                            {
+                                "drawing": "code:rashid-sec",
+                                "caption_en": "Long section",
+                                "caption_ku": "بڕگەی درێژ",
+                                "caption_ar": "مقطع طولي"
+                            }
+                        ],
+                        "text_en": "The section shows what the plan cannot: the house is built on two levels at once. The court stays at ground level. The main rooms stand a metre above it, behind a portico reached by steps, and the sirdab lies under them, its floor below the court’s. Half sunk in the mound, it keeps the ground’s steadier temperature: a cool room for summer, directly beneath the rooms.\n\nIn Erbil Citadel the easiest place for a sirdab was the edge of the mound, where the slope gave a basement almost for free; inside the town it was mostly the later houses that dug one. Rashid Agha’s is a late house, dated by its inscription to 1903–5.",
+                        "text_ku": "بڕگەکە ئەوە پیشان دەدات کە نەخشە ناتوانێت: خانووەکە لە یەک کاتدا لەسەر دوو ئاست دروستکراوە. حەوشەکە لە ئاستی زەویدا دەمێنێتەوە. ژوورە سەرەکییەکان مەترێک لەسەرووی ئەوەوەن، لە پشت تارمەیەکەوە کە بە پلە دەچیتە سەری، و سەردابەکە لە ژێریانەوەیە، زەوییەکەی لە خوار زەویی حەوشەکەوەیە. نیوەی لە ناو گردەکەدا نوقم بووە، بۆیە پلەی گەرمیی جێگیرتری زەوی دەپارێزێت: ژوورێکی فێنکە بۆ هاوین، ڕێک لە ژێر ژوورەکانەوە.\n\nلە قەڵای هەولێر ئاسانترین شوێن بۆ سەرداب لێواری گردەکە بوو، کە لێژییەکە ژێرزەمینێکی بە نزیکەیی بەخۆڕایی دەدا؛ لە ناو شارۆچکەکەدا زیاتر خانووە درەنگەکان سەردابیان هەڵدەکەند. خانووی ڕەشید ئاغا یەکێکە لە درەنگەکان، بەپێی نووسراوەکەی بۆ ١٩٠٣–١٩٠٥ دەگەڕێتەوە.",
+                        "text_ar": "يُظهر المقطع ما لا يستطيعه المسقط: البيت مبني على مستويين معاً. يبقى الفناء على مستوى الأرض. وتقوم الغرف الرئيسية فوقه بمتر، خلف طارمة يُصعد إليها بدرجات، والسرداب تحتها، أرضه أدنى من أرض الفناء. ولأنه نصف غائص في التل، يحفظ حرارة الأرض الأثبت: غرفة باردة للصيف، تحت الغرف مباشرة.\n\nفي قلعة أربيل كان أيسر مكان للسرداب حافةَ التل، حيث يمنح المنحدر قبواً شبه مجاني؛ أما في داخل البلدة فكانت البيوت المتأخرة في الغالب هي التي تحفره. وبيت رشيد آغا من المتأخرة، يؤرّخه نقشه بين ١٩٠٣ و١٩٠٥.",
+                        "legend": [
+                            {
+                                "n": "4",
+                                "label_en": "Sirdab under the main range",
+                                "label_ku": "سەرداب لە ژێر باڵی سەرەکی",
+                                "label_ar": "السرداب تحت الجناح الرئيسي"
+                            }
+                        ],
+                        "facts": [
+                            {
+                                "label_en": "Levels",
+                                "label_ku": "ئاستەکان",
+                                "label_ar": "المناسيب",
+                                "value_en": "Sirdab floor −0.85 · court ±0.00 · main rooms +0.95",
+                                "value_ku": null,
+                                "value_ar": null,
+                                "ltr": true
+                            },
+                            {
+                                "label_en": "Built",
+                                "label_ku": "دروستکراو",
+                                "label_ar": "بُني",
+                                "value_en": "1903–5, by its inscription",
+                                "value_ku": "١٩٠٣–١٩٠٥، بەپێی نووسراوەکەی",
+                                "value_ar": "١٩٠٣–١٩٠٥، بحسب نقشه",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Drawn from",
+                                "label_ku": "لەمەوە کێشراوە",
+                                "label_ar": "مرسوم عن",
+                                "value_en": "Mustafa & Ali 2024, table 4 and fig. 4 (C1)",
+                                "value_ku": "مستەفا و عەلی ٢٠٢٤، خشتەی ٤ و وێنەی ٤ (C1)",
+                                "value_ar": "مصطفى وعلي ٢٠٢٤، الجدول ٤ والشكل ٤ (C1)",
+                                "ltr": false
+                            }
+                        ]
+                    },
+                    {
+                        "name_en": "Salim Qaqa’s house, Erbil",
+                        "name_ku": "خانووی سەلیم قاقە، هەولێر",
+                        "name_ar": "بيت سليم قاقا، أربيل",
+                        "type_en": "Thick walls, low rooms below, tall rooms above",
+                        "type_ku": "دیواری ئەستوور، ژووری نزم لە خوارەوە، ژووری بەرز لە سەرەوە",
+                        "type_ar": "جدران سميكة، وغرف واطئة في الأسفل وعالية في الأعلى",
+                        "plans": [
+                            {
+                                "drawing": "code:salim-b",
+                                "caption_en": "Basement (sirdab)",
+                                "caption_ku": "ژێرزەمین (سەرداب)",
+                                "caption_ar": "السرداب",
+                                "wide": false
+                            }
+                        ],
+                        "secs": [
+                            {
+                                "drawing": "code:salim-cross",
+                                "caption_en": "Cross section",
+                                "caption_ku": "بڕگەی پانی",
+                                "caption_ar": "مقطع عرضي"
+                            },
+                            {
+                                "drawing": "code:salim-long",
+                                "caption_en": "Long section",
+                                "caption_ku": "بڕگەی درێژ",
+                                "caption_ar": "مقطع طولي"
+                            }
+                        ],
+                        "text_en": "The cross section, cut through the court, shows two storeys of different kinds. Below, under the main floor, lie the sirdab rooms, their floor a little below the court and their ceiling only about two metres up. Above them the rooms are more than four metres high, and their roofs are some 35 centimetres of earth and timber. The walls are thick, and one of them very thick: about 1.7 metres on the west against 60 centimetres on the east, measured off the drawing.\n\nIn front of the main rooms stands the tarma, an arcaded portico that shades their doors and windows. In the Citadel such porticoes came in the same years as large windows: shade arrived with the glass.",
+                        "text_ku": "بڕگە پانییەکە، کە بە ناو حەوشەکەدا بڕاوە، دوو نهۆم لە دوو جۆری جیاواز پیشان دەدات. لە خوارەوە، لە ژێر نهۆمی سەرەکیدا، ژوورەکانی سەرداب هەن، زەوییەکەیان کەمێک لە خوار حەوشەکەوەیە و بنمیچەکەیان تەنها نزیکەی دوو مەتر بەرزە. لە سەرووی ئەوانەوە ژوورەکان لە چوار مەتر بەرزترن، و سەربانەکانیان نزیکەی ٣٥ سانتیمەتر گڵ و دارە. دیوارەکان ئەستوورن، و یەکێکیان زۆر ئەستوور: نزیکەی ١.٧ مەتر لە ڕۆژئاوا بەرامبەر ٦٠ سانتیمەتر لە ڕۆژهەڵات، لەسەر نەخشەکە پێوراوە.\n\nلەبەردەم ژوورە سەرەکییەکاندا تارمە ڕاوەستاوە، ڕیزە کەوانەیەک کە سێبەر بۆ دەرگا و پەنجەرەکانیان دەکات. لە قەڵادا ئەم جۆرە تارمانە لە هەمان ساڵەکانی پەنجەرە گەورەکاندا هاتن: سێبەر لەگەڵ شووشەدا گەیشت.",
+                        "text_ar": "المقطع العرضي، المقطوع عبر الفناء، يُظهر طابقين من نوعين مختلفين. في الأسفل، تحت الطابق الرئيسي، غرف السرداب، أرضها أدنى من الفناء قليلاً وسقفها على نحو مترين فقط. وفوقها غرف يزيد ارتفاعها على أربعة أمتار، وسطوحها نحو ٣٥ سنتيمتراً من التراب والخشب. والجدران سميكة، وأحدها سميك جداً: نحو ١٫٧ متر في الغرب مقابل ٦٠ سنتيمتراً في الشرق، مقيسةً على الرسم.\n\nوأمام الغرف الرئيسية تقوم الطارمة، رواق معقود يظلّل أبوابها ونوافذها. وفي القلعة جاءت هذه الأروقة في السنوات نفسها التي جاءت فيها النوافذ الكبيرة: جاء الظل مع الزجاج.",
+                        "legend": [],
+                        "facts": [
+                            {
+                                "label_en": "Levels",
+                                "label_ku": "ئاستەکان",
+                                "label_ar": "المناسيب",
+                                "value_en": "Sirdab floor −0.35 · court ±0.00 · roofs +6.28 and +7.96",
+                                "value_ku": null,
+                                "value_ar": null,
+                                "ltr": true
+                            },
+                            {
+                                "label_en": "Walls",
+                                "label_ku": "دیوار",
+                                "label_ar": "الجدران",
+                                "value_en": "About 1.7 m on the west, 0.6 m on the east, measured off the drawing",
+                                "value_ku": "نزیکەی ١.٧ م لە ڕۆژئاوا، ٠.٦ م لە ڕۆژهەڵات، لەسەر نەخشەکە پێوراوە",
+                                "value_ar": "نحو ١٫٧ م في الغرب و٠٫٦ م في الشرق، مقيسة على الرسم",
+                                "ltr": false
+                            },
+                            {
+                                "label_en": "Drawn from",
+                                "label_ku": "لەمەوە کێشراوە",
+                                "label_ar": "مرسوم عن",
+                                "value_en": "Mustafa & Ali 2024, table 4 and fig. 4 (C2)",
+                                "value_ku": "مستەفا و عەلی ٢٠٢٤، خشتەی ٤ و وێنەی ٤ (C2)",
+                                "value_ar": "مصطفى وعلي ٢٠٢٤، الجدول ٤ والشكل ٤ (C2)",
+                                "ltr": false
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "Mass: walls and roofs",
+                "heading_ku": "بارستایی: دیوار و سەربان",
+                "heading_ar": "الكتلة: الجدران والسطوح",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "A thick wall is slow. It takes the day’s heat into itself and gives it back hours later, when the night outside has cooled, so the room inside swings less than the air. In Amed in August 2023 the rooms and the iwans swung less through the day than the courts. Every old house here is built that way, each with what was at hand.\n\nIn Erbil Citadel a wall is two faces of fired brick laid in mud, with rubble between them. In Sulaimani it is sun-dried brick in mud, 80 to 120 centimetres thick, with timbers laid through it a metre apart. In Amed it is stone, 50 to 60 centimetres. The roofs are flat everywhere, and heavy. In Sulaimani poplar poles lie 25 to 40 centimetres apart, a mat of reed or straw on them, then some 30 centimetres of red clay pressed hard and sloped just enough to shed the rain; in spring plants grew on it, one more layer against the sun. In Amed the earth roofs are 30 to 50 centimetres deep.",
+                            "text_ku": "دیواری ئەستوور خاوە. گەرمای ڕۆژ دەخاتە ناو خۆیەوە و چەند کاتژمێرێک دواتر دەیداتەوە، کاتێک شەوی دەرەوە فێنک بووەتەوە، بۆیە ژوورەکەی ناوەوە کەمتر لە هەوا دەگۆڕێت. لە ئامەد لە ئابی ٢٠٢٣دا ژوورەکان و ئەیوانەکان بە درێژایی ڕۆژ کەمتر لە حەوشەکان گۆڕان. هەموو خانوویەکی کۆن لێرە بەو شێوەیە دروستکراوە، هەر یەکەیان بەو شتەی لە بەردەستدا بوو.\n\nلە قەڵای هەولێر دیوار دوو ڕووی خشتی سوورکراوەیە کە بە قوڕ دانراون، و وردە بەرد لە نێوانیاندایە. لە سلێمانی خشتی کاڵە لە قوڕدا، ٨٠ تا ١٢٠ سانتیمەتر ئەستوور، و دار بە دووریی مەترێک بە ناویدا ڕاخراوە. لە ئامەد بەردە، ٥٠ تا ٦٠ سانتیمەتر. سەربانەکان لە هەموو شوێنێک تەخت و قورسن. لە سلێمانی کاریتەی سپیدار بە دووریی ٢٥ تا ٤٠ سانتیمەتر لە یەکەوە ڕاخراون، حەسیرێکی قامیش یان پووش لەسەریانە، پاشان نزیکەی ٣٠ سانتیمەتر گڵی سووری پەستێنراو کە ئەوەندە لێژە باران بڕوات؛ لە بەهاردا ڕووەکی لەسەر دەڕوا، چینێکی تر دژی خۆر. لە ئامەد سەربانە گڵینەکان ٣٠ تا ٥٠ سانتیمەتر ئەستوورن.",
+                            "text_ar": "الجدار السميك بطيء. يأخذ حرارة النهار إلى داخله ويعيدها بعد ساعات، حين يكون الليل في الخارج قد برد، فتتقلب الغرفة في الداخل أقل من الهواء. وفي آمد في آب ٢٠٢٣ تقلّبت الغرف والإيوانات على مدار النهار أقل من الأفنية. كل بيت قديم هنا مبني على هذا النحو، كلٌّ بما كان في متناول اليد.\n\nفي قلعة أربيل الجدار وجهان من الطابوق المشوي المبني بمونة الطين، بينهما حشوة من الدبش. وفي السليمانية لِبن بالطين، بسماكة ٨٠ إلى ١٢٠ سنتيمتراً، تتخلله أخشاب كل متر. وفي آمد حجر بسماكة ٥٠ إلى ٦٠ سنتيمتراً. والسطوح في كل مكان مستوية وثقيلة. في السليمانية جذوع من الحور بين الواحد والآخر ٢٥ إلى ٤٠ سنتيمتراً، فوقها حصير من القصب أو القش، ثم نحو ٣٠ سنتيمتراً من الطين الأحمر المرصوص، مائلاً بما يكفي لتصريف المطر؛ وفي الربيع تنبت عليه النباتات، طبقةً أخرى في وجه الشمس. وفي آمد تبلغ السطوح الترابية ٣٠ إلى ٥٠ سنتيمتراً."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "The shaded hall",
+                "heading_ku": "هۆڵی سێبەردار",
+                "heading_ar": "القاعة المظلَّلة",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "The iwan is the shaded hall: a room with one side missing, open to the court. In August 2023 a study measured four of them in Amed, each facing north. On average each was cooler than both the court and the room behind it, its highs and its lows both the lowest, and it did most good in the heat of the afternoon, about three o’clock.\n\nSulaimani turns the same room the other way. There most houses face south-east, south or south-west, and the iwan opens to the sun: in summer, when the sun is high, its roof shades the rooms beside it; in winter the low sun comes in under it. The court’s high walls and the narrow alleys around it shade each other and keep the air moving, and small round vents, high in the walls, let damp out of the rooms.\n\nHow well does it work? A computer model of Sulaimani’s old house types, run without heating or cooling, found the best of them, a single-storey house round two sides of its court, between 20 and 26°C on 146 days of the year. The rest of the year the family moved: to the fire in winter, to the iwan, the court and the roof in summer.",
+                            "text_ku": "ئەیوان هۆڵی سێبەردارە: ژوورێک کە یەک لای نییە و بەسەر حەوشەکەدا کراوەیە. لە ئابی ٢٠٢٣دا توێژینەوەیەک چوار ئەیوانی لە ئامەد پێوا، هەموویان ڕوویان لە باکوور بوو. بە تێکڕا هەر یەکەیان لە حەوشەکە و لە ژوورەکەی پشتیشی فێنکتر بوو، بەرزترین و نزمترین پلەکانی هەردووکیان نزمترین بوون، و زۆرترین سوودی لە گەرمای دوانیوەڕۆدا هەبوو، نزیکەی کاتژمێر سێ.\n\nسلێمانی هەمان ژوور بە پێچەوانەوە دەسووڕێنێت. لەوێ زۆربەی خانووەکان ڕوویان لە باشووری ڕۆژهەڵات، باشوور یان باشووری ڕۆژئاوایە، و ئەیوانەکە بەسەر خۆردا دەکرێتەوە: لە هاویندا، کاتێک خۆر بەرزە، سەربانەکەی سێبەر بۆ ژوورەکانی تەنیشتی دەکات؛ لە زستاندا خۆری نزم لە ژێریدا دێتە ژوورەوە. دیوارە بەرزەکانی حەوشە و کۆڵانە تەسکەکانی دەوروبەری سێبەر بۆ یەکتر دەکەن و هەوا لە جووڵەدا دەهێڵنەوە، و کونە خڕە بچووکەکان، بەرز لە دیوارەکاندا، شێ لە ژوورەکان دەردەکەن.\n\nتا چ ڕادەیەک کار دەکات؟ مۆدێلێکی کۆمپیوتەری بۆ جۆرە خانووە کۆنەکانی سلێمانی، بەبێ گەرمکردنەوە و فێنککردنەوە، دۆزییەوە کە باشترینیان، خانوویەکی یەک نهۆمی بە دوو لای حەوشەکەیدا، لە ١٤٦ ڕۆژی ساڵدا لە نێوان ٢٠ و ٢٦ پلەدا بوو. لە ڕۆژەکانی تری ساڵدا خێزان دەگوازرایەوە: لە زستاندا بۆ لای ئاگردان، لە هاویندا بۆ ئەیوان و حەوشە و سەربان.",
+                            "text_ar": "الإيوان هو القاعة المظلَّلة: غرفة ينقصها جانب، مفتوحة على الفناء. في آب ٢٠٢٣ قاست دراسة أربعة إيوانات في آمد، كلها متجهة إلى الشمال. فكان كل منها في المتوسط أبرد من الفناء ومن الغرفة التي خلفه معاً، عظماه وصغراه أدنى من غيرهما، وكان أنفع ما يكون في حرّ العصر، نحو الثالثة.\n\nأما السليمانية فتدير الغرفة نفسها إلى الجهة الأخرى. هناك تتجه معظم البيوت إلى الجنوب الشرقي أو الجنوب أو الجنوب الغربي، وينفتح الإيوان على الشمس: في الصيف، والشمس عالية، يظلّل سقفه الغرف التي إلى جانبيه؛ وفي الشتاء تدخل الشمس المنخفضة تحته. وجدران الفناء العالية والأزقة الضيقة حوله يظلّل بعضها بعضاً ويُبقي الهواء متحركاً، وفتحات مستديرة صغيرة عالية في الجدران تُخرج الرطوبة من الغرف.\n\nفإلى أي حدّ تنجح؟ وجد نموذج حاسوبي لأنماط البيوت القديمة في السليمانية، شُغّل بلا تدفئة ولا تبريد، أن أفضلها، بيتاً من طابق واحد على جانبين من فنائه، بقي بين ٢٠ و٢٦ درجة في ١٤٦ يوماً من السنة. وفي باقي السنة كانت الأسرة تنتقل: إلى النار في الشتاء، وإلى الإيوان والفناء والسطح في الصيف."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "Down and up: the serdab and the roof",
+                "heading_ku": "بۆ خوارەوە و بۆ سەرەوە: سەرداب و سەربان",
+                "heading_ar": "نزولاً وصعوداً: السرداب والسطح",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "Through 2009 two architects of Dicle University measured one house in Amed every month: the family home of the poet Cahit Sıtkı Tarancı, which had no heater or cooler of any kind. Each seasonal room came nearest to comfort in its own season. In July and August they followed the summer’s day as well, and found the family’s old habits written in the numbers.\n\nThe serdab came nearest to comfort, almost all day. The lower summer room stayed comfortable from the small hours until about eleven in the morning; the summer room above it, with seven high windows facing east and south, never did, and was 1.5°C warmer than the room below. The roof reached 51°C at three in the afternoon, and yet between about a quarter past three and half past six in the morning it was the coolest place in the house. That is why people slept on it.\n\nOne more finding: the winter room, facing south, was not the hottest room in summer, because a large tree in the court shaded it.",
+                            "text_ku": "بە درێژایی ٢٠٠٩ دوو تەلارساز لە زانکۆی دیجلە هەموو مانگێک خانوویەکیان لە ئامەد پێوا: ماڵی بنەماڵەی شاعیر جاهید سدقی تارانجی، کە هیچ جۆرە گەرمکەرەوە یان فێنککەرەوەیەکی تێدا نەبوو. هەر ژوورێکی وەرزی لە وەرزی خۆیدا لە هەموان نزیکتر بوو لە ئاسوودەیی. لە تەممووز و ئابدا ڕۆژی هاوینیشیان شوێن کەوتن، و نەریتە کۆنەکانی خێزانیان لە ژمارەکاندا نووسراو دۆزییەوە.\n\nسەرداب لە هەموو شوێنێک نزیکتر بوو لە ئاسوودەیی، نزیکەی هەموو ڕۆژەکە. ژووری هاوینەی خوارەوە لە دوای نیوەشەوەوە تا نزیکەی کاتژمێر یازدەی بەیانی ئاسوودە بوو؛ ژووری هاوینەی سەرەوەی، کە حەوت پەنجەرەی بەرزی بەرەو ڕۆژهەڵات و باشوور هەبوو، هەرگیز ئاسوودە نەبوو، و ١.٥ پلە لە ژوورەکەی خوارەوە گەرمتر بوو. سەربانەکە لە کاتژمێر سێی دوانیوەڕۆدا گەیشتە ٥١ پلە، کەچی لە نێوان نزیکەی سێ و چارەکی بەیانی و شەش و نیودا فێنکترین شوێنی خانووەکە بوو. هەر بۆیە خەڵک لەسەری دەنووستن.\n\nدۆزینەوەیەکی تر: ژووری زستانە، کە ڕووی لە باشوورە، لە هاویندا گەرمترین ژوور نەبوو، چونکە دارێکی گەورە لە حەوشەکەدا سێبەری بۆ دەکرد.",
+                            "text_ar": "على مدار ٢٠٠٩ قاس معماريان من جامعة دجلة بيتاً في آمد كل شهر: بيت أسرة الشاعر جاهد صدقي طرانجي، ولم يكن فيه أي جهاز للتدفئة أو التبريد. وكانت كل غرفة فصلية أقرب ما تكون إلى الراحة في فصلها. وفي تموز وآب تتبّعا يوم الصيف أيضاً، فوجدا عادات الأسرة القديمة مكتوبة في الأرقام.\n\nكان السرداب أقرب الأماكن إلى الراحة، طوال النهار تقريباً. وبقيت الغرفة الصيفية السفلى مريحة من بعد منتصف الليل حتى نحو الحادية عشرة صباحاً؛ أما الغرفة الصيفية فوقها، وفيها سبع نوافذ عالية نحو الشرق والجنوب، فلم تكن مريحة قط، وكانت أدفأ من التي تحتها بدرجة ونصف. وبلغ السطح ٥١ درجة في الثالثة بعد الظهر، ومع ذلك كان بين الثالثة والربع والسادسة والنصف صباحاً أبرد مكان في البيت. لهذا كان الناس ينامون عليه.\n\nونتيجة أخرى: الغرفة الشتوية المتجهة إلى الجنوب لم تكن أحرّ الغرف في الصيف، لأن شجرة كبيرة في الفناء كانت تظلّلها."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "text",
+                "heading_en": "What we take from them",
+                "heading_ku": "ئەوەی لێیان وەردەگرین",
+                "heading_ar": "ما نأخذه منها",
+                "parts": [
+                    {
+                        "type": "paragraphs",
+                        "data": {
+                            "text_en": "Three things stay with us at the drawing board. Draw the sun in the section, not only the north point on the plan: a roof over a south-facing front shades it in summer and lets the winter sun in, and nothing else does both so simply. Give a house somewhere to retreat to: a room half in the ground, a shaded hall, a roof to sleep on. Comfort was never one room at every hour, but the right room at the right hour. And mass still works: a thick wall and a heavy roof cost more than thin ones, and they keep paying it back.",
+                            "text_ku": "سێ شت لای مێزی کێشان لەگەڵمان دەمێننەوە. خۆر لە بڕگەکەدا بکێشە، نەک تەنها نیشانەی باکوور لەسەر نەخشەکە: سەربانێک بەسەر ڕووێکی بەرەو باشووردا لە هاویندا سێبەری بۆ دەکات و لە زستاندا خۆر دەهێڵێتە ژوورەوە، و هیچ شتێکی تر هەردووکیان ئاوا سادە ناکات. شوێنێک بدە بە خانوو کە پەنای بۆ ببرێت: ژوورێک کە نیوەی لە زەویدایە، هۆڵێکی سێبەردار، سەربانێک بۆ لەسەر نووستن. ئاسوودەیی هەرگیز یەک ژوور نەبوو لە هەموو کاتژمێرێکدا، بەڵکو ژووری گونجاو لە کاتژمێری گونجاودا. و بارستایی هێشتا کار دەکات: دیوارێکی ئەستوور و سەربانێکی قورس لە هی تەنک گرانترن، و بەردەوام تێچووەکەیان دەدەنەوە.",
+                            "text_ar": "ثلاثة أشياء تبقى معنا عند لوحة الرسم. ارسم الشمس في المقطع، لا سهم الشمال على المسقط وحده: سقف فوق واجهة جنوبية يظلّلها في الصيف ويُدخل شمس الشتاء، ولا شيء غيره يفعل الأمرين بهذه البساطة. وأعطِ البيت مكاناً يُلجأ إليه: غرفة نصفها في الأرض، وقاعة مظلَّلة، وسطحاً للنوم. لم تكن الراحة يوماً غرفة واحدة في كل ساعة، بل الغرفة المناسبة في الساعة المناسبة. والكتلة ما زالت تعمل: الجدار السميك والسطح الثقيل أغلى من الرقيقين، ويظلّان يسدّدان ثمنهما."
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "chapter",
+            "data": {
+                "style": "sources",
+                "heading_en": "Sources",
+                "heading_ku": "سەرچاوەکان",
+                "heading_ar": "المصادر",
+                "parts": [
+                    {
+                        "type": "refs",
+                        "data": {
+                            "items": [
+                                {
+                                    "text": "High Commission for Erbil Citadel Revitalization (HCECR), *Nomination of Erbil Citadel (Kurdistan Region, Iraq) for Inscription on the UNESCO World Heritage List*, vol. I (text) and vol. II (annexes), 2012: the walls, roofs, sirdabs and porticoes of the Citadel’s houses. [whc.unesco.org/en/list/1437/documents](https://whc.unesco.org/en/list/1437/documents/)"
+                                },
+                                {
+                                    "text": "Mustafa, F. A. and Ali, L. A. (2024), ‘Common architectural characteristics of traditional courtyard houses in Erbil city’, *Ain Shams Engineering Journal* 15(11), 103003. Rashid Agha’s and Salim Qaqa’s houses on plates SC-02 and SC-03 are its houses C1 and C2. [doi.org/10.1016/j.asej.2024.103003](https://doi.org/10.1016/j.asej.2024.103003)"
+                                },
+                                {
+                                    "text": "Bekleyen, A. and Dalkılıç, N. (2012), ‘Design with Climate: What Can We Learn from the Past to Cope with Climate in Terms of Design Strategy and Usage Style of Courtyard Houses?’, *Middle-East Journal of Scientific Research* 11(3), 357–366."
+                                },
+                                {
+                                    "text": "Ergün, R. (2025), ‘The effect of iwan as traditional shading element on indoor temperature: the case of Diyarbakır houses’, *Informes de la Construcción* 77(578), e6980. [doi.org/10.3989/ic.6980](https://doi.org/10.3989/ic.6980)"
+                                },
+                                {
+                                    "text": "Abdulla, G. K. F. and Qaradaghi, A. M. A. (2025), ‘The Impact of Environmental Design Solution on Livability in the Traditional Houses of Sulaymaniyah City’, *Sulaimani Journal for Engineering Sciences* 12(1), 163–181. [doi.org/10.17656/sjes.102007](https://doi.org/10.17656/sjes.102007)"
+                                },
+                                {
+                                    "text": "Raof, B. Y., Bahaadin, S. D. and Rasul, H. Q. (2020), ‘The Thermal Performance of Vernacular Houses as An Identity of Kurdish Traditional Architecture’, *Kurdistan Journal of Applied Research* 5(1). [doi.org/10.24017/science.2020.1.17](https://doi.org/10.24017/science.2020.1.17)"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "note",
+                        "data": {
+                            "text_en": "The sun on the first plate is calculated from the latitude, as the height of the sun at noon on the longest and the shortest day (90° less the latitude, plus or less 23.4°); it is not measured, and it leaves out the hills and the neighbours. The sections on the other plates are traced from the published figures, as exact as those allow; the wall thicknesses quoted are measured off our drawings and are approximate.",
+                            "text_ku": "خۆری تابلۆی یەکەم لە هێڵی پانییەوە ژمێردراوە، وەک بەرزیی خۆر لە نیوەڕۆی درێژترین و کورتترین ڕۆژدا (٩٠ پلە کەم هێڵی پانی، زیاد یان کەم ٢٣.٤ پلە)؛ نەپێوراوە، و گرد و دراوسێکان لەبەرچاو ناگرێت. بڕگەکانی تابلۆکانی تر لە وێنە بڵاوکراوەکانەوە هەڵگیراونەتەوە، ئەوەندە وردن کە ئەو وێنانە ڕێگە دەدەن؛ ئەستووریی ئەو دیوارانەی باس کراون لەسەر نەخشەکانی خۆمان پێوراون و نزیکەیین.",
+                            "text_ar": "شمس اللوحة الأولى محسوبة من خط العرض، ارتفاعاً للشمس ظهر أطول يوم وأقصره (٩٠ درجة ناقص خط العرض، زائداً أو ناقصاً ٢٣٫٤)؛ ليست مقيسة، ولا تحسب حساب التلال والجيران. والمقاطع في اللوحتين الأخريين منقولة عن الأشكال المنشورة، بالدقة التي تسمح بها؛ وسماكات الجدران المذكورة مقيسة على رسومنا وتقريبية."
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -170,14 +170,14 @@ class JournalEssaysTest extends TestCase
         $feed = simplexml_load_string($res->getContent());
         $this->assertNotFalse($feed);
         $titles = array_map(fn ($e) => (string) $e->title, iterator_to_array($feed->entry, false));
-        $this->assertSame(['Roof slab cast', 'The courtyard house across Kurdistan: Erbil, Sulaimani, Amed and Amedi', 'Building with earth',
-            'The Qaysari: Erbil’s covered bazaar, in plan and section', 'The houses of the Citadel, in plan, section and elevation'], $titles);   // the draft left out
+        $this->assertSame(['Roof slab cast', 'The courtyard house across Kurdistan: Erbil, Sulaimani, Amed and Amedi', 'Staying cool without machines: the old house in section',
+            'Building with earth', 'The Qaysari: Erbil’s covered bazaar, in plan and section', 'The houses of the Citadel, in plan, section and elevation'], $titles);   // the draft left out
         $this->assertSame('The last pour & the first rain.', (string) $feed->entry[0]->summary);
         $this->assertSame('2026-11-30T00:00:00+00:00', (string) $feed->updated);
 
         $ar = simplexml_load_string($this->get('/ar/journal/feed')->assertOk()->getContent());
-        $this->assertSame(url('/ar/journal/qaysari-bazaar'), (string) $ar->entry[3]->link['href']);
-        $this->assertSame('القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا', (string) $ar->entry[3]->title);
+        $this->assertSame(url('/ar/journal/qaysari-bazaar'), (string) $ar->entry[4]->link['href']);
+        $this->assertSame('القيصرية: سوق أربيل المسقوف، مسقطًا ومقطعًا', (string) $ar->entry[4]->title);
 
         $this->assertFalse(Essay::slugIsFree('feed'));
     }
@@ -185,22 +185,23 @@ class JournalEssaysTest extends TestCase
     public function test_every_drawing_an_essay_shows_has_its_walls(): void
     {
         $files = Drawing::files();
-        $this->assertSame(['citadel-drawings' => 18, 'kurdistan-drawings' => 3, 'qaysari-drawings' => 8], array_map('count', $files));
+        $this->assertSame(['citadel-drawings' => 18, 'cooling-drawings' => 1, 'kurdistan-drawings' => 3, 'qaysari-drawings' => 8], array_map('count', $files));
         foreach (Drawing::code() as $key => $dwg) {
             $this->assertStringStartsWith('M', $dwg['d']['wall'], $key);
             // the box round what is built, which the journal card frames by
             $this->assertCount(4, $dwg['bb'], $key);
             $this->assertGreaterThan(0, $dwg['bb'][2] * $dwg['bb'][3], $key);
         }
-        // each essay draws every one of its file's drawings, its card's two among them, and has its link preview;
-        // one may also borrow another's (the courtyard houses set a Citadel house beside their own)
-        foreach (['citadel-house-plans' => 'citadel-drawings', 'qaysari-bazaar' => 'qaysari-drawings', 'courtyard-house-across-kurdistan' => 'kurdistan-drawings'] as $slug => $file) {
+        // each essay draws every one of its file's drawings, and its card's two, and has its link preview; one may also
+        // borrow another's (the courtyard houses set a Citadel house beside their own, staying cool reads two of its sections)
+        foreach (['citadel-house-plans' => 'citadel-drawings', 'qaysari-bazaar' => 'qaysari-drawings', 'courtyard-house-across-kurdistan' => 'kurdistan-drawings',
+            'staying-cool-without-machines' => 'cooling-drawings'] as $slug => $file) {
             $essay = Essay::where('slug', $slug)->sole();
             preg_match_all('/"code:([a-z0-9-]+)"/', json_encode($essay->sections), $m);
             $this->assertEqualsCanonicalizing(array_keys($files[$file]), array_values(array_intersect(array_unique($m[1]), array_keys($files[$file]))), $slug);
             $this->assertEmpty(array_diff($m[1], array_keys(Drawing::code())), $slug);
-            $this->assertArrayHasKey(substr($essay->extras['cover_plan'], 5), $files[$file]);
-            $this->assertArrayHasKey(substr($essay->extras['cover_section'], 5), $files[$file]);
+            $this->assertContains(substr($essay->extras['cover_plan'], 5), $m[1], $slug);
+            $this->assertContains(substr($essay->extras['cover_section'], 5), $m[1], $slug);
             $this->assertFileExists(public_path('images/journal/'.$slug.'-ar.jpg'));
         }
     }
@@ -313,5 +314,40 @@ class JournalEssaysTest extends TestCase
             ->assertSee('A word on the drawings.')->assertSee('Amedi, the plan we could not draw');
         $this->get('/ku/journal/courtyard-house-across-kurdistan')->assertSee('ڕەواق')->assertSee('هاوینە');
         $this->get('/sitemap.xml')->assertOk()->assertSee(url('/ar/journal/courtyard-house-across-kurdistan'), false);
+    }
+
+    public function test_staying_cool_reads_the_house_in_section_with_the_noon_sun_drawn_in(): void
+    {
+        $this->get('/journal')->assertOk()
+            ->assertSee('href="'.url('/journal/staying-cool-without-machines').'"', false)
+            ->assertSee('4 SECTIONS · 2 PLANS')->assertSee('SC-01 — SC-03');
+
+        foreach (['' => 'Staying cool without machines: the old house in section', '/ku' => 'فێنک مانەوە بەبێ ئامێر: خانووی کۆن لە بڕگەدا', '/ar' => 'البرودة بلا آلات: البيت القديم مقطعاً'] as $lang => $title) {
+            $html = $this->get($lang.'/journal/staying-cool-without-machines')->assertOk()->assertSee($title)->getContent();
+            // three plates: the sun over a court (one section), two houses of the Citadel (two plans, three sections)
+            $this->assertSame(3, substr_count($html, '<article class="ja-plate"'), $lang);
+            $this->assertSame(6, substr_count($html, '<svg class="ja-dwg"'), $lang);
+            $this->assertStringContainsString('<span class="ja-plate__code" dir="ltr">SC-03</span>', $html);
+            foreach (['https://doi.org/10.1016/j.asej.2024.103003', 'https://doi.org/10.3989/ic.6980', 'https://doi.org/10.17656/sjes.102007',
+                'https://doi.org/10.24017/science.2020.1.17', 'https://whc.unesco.org/en/list/1437/documents/'] as $doi) {
+                $this->assertStringContainsString($doi, $html, $lang);
+            }
+            $this->assertStringContainsString('<meta property="og:image" content="'.url('/images/journal/staying-cool-without-machines-'.($lang ? substr($lang, 1) : 'en').'.jpg'), $html);
+        }
+
+        // the noon sun at Amed's latitude, 37.9 N, on the solstices: the two angles the section draws and the page names
+        $this->assertEqualsWithDelta(75.5, 90 - 37.9 + 23.44, 0.1);
+        $this->assertEqualsWithDelta(28.7, 90 - 37.9 - 23.44, 0.1);
+        $sun = Drawing::code()['s-sun'];
+        $words = array_column($sun['text'], 3);
+        foreach (['75.5°', '28.7°', '@serdab', '@iwan', '@court', '@roof'] as $w) {
+            $this->assertContains($w, $words);
+        }
+        $this->assertNotSame('', $sun['d']['over']);   // the rays, dashed
+
+        $this->get('/journal/staying-cool-without-machines')->assertSee('SERDAB')->assertSee('A word on the drawings.')
+            ->assertSee('Down and up: the serdab and the roof');
+        $this->get('/ar/journal/staying-cool-without-machines')->assertSee('سرداب');
+        $this->get('/sitemap.xml')->assertOk()->assertSee(url('/ku/journal/staying-cool-without-machines'), false);
     }
 }
